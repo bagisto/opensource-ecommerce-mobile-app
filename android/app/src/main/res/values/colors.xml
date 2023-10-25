@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="layout_background">#ffffff</color>
+    <color name="btn_text_color">#ffffff</color>
+    <color name="camera_search_background">#000</color>
+    <color name="main_grey">#efefef</color>
+
+    <color name="colorPrimary">#FFFFFFFF</color>
+    <color name="colorPrimaryDark">#FFe6e6e6</color>
+    <color name="colorAccent">#FF000000</color>
+
+</resources>

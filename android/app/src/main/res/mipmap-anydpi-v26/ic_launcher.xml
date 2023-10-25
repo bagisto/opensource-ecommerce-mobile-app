@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Webkul Software.
+  ~ @package Mobikul Application Code.
+  ~ @Category Mobikul
+  ~ @author Webkul <support@webkul.com>
+  ~ @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+  ~ @license https://store.webkul.com/license.html
+  ~ @link https://store.webkul.com/license.html
+  -->
+
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@drawable/ic_launcher_background"/>
+    <foreground android:drawable="@mipmap/ic_launcher_foreground"/>
+</adaptive-icon>

@@ -1,0 +1,19 @@
+<!--
+  ~ Webkul Software.
+  ~ @package Mobikul Application Code.
+  ~ @Category Mobikul
+  ~ @author Webkul <support@webkul.com>
+  ~ @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+  ~ @license https://store.webkul.com/license.html
+  ~ @link https://store.webkul.com/license.html
+  -->
+
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="webkul.bagisto_app_demo">
+    <!-- Flutter needs it to communicate with the running application
+         to allow setting breakpoints, to provide hot reload, etc.
+    -->
+    <uses-permission android:name="android.permission.USE_BIOMETRIC"/>
+    <uses-permission android:name="android.permission.USE_FINGERPRINT"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+</manifest>

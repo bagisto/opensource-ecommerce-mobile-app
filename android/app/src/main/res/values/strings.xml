@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Bagisto Laravel App</string>
+
+    <string name="maps_api_key" translatable="false">AIzaSyBAlqVDV_6ec8DKG3yJPAE29HV4f-GOsdk</string>
+
+    <string name="results_found"> Results Found</string>
+    <string name="x_results_found">%d Results Found</string>
+    <string name="error_while_using_flash">There has been some error while accessing flash on your device.</string>
+    <string name="invalid_image_link">Invalid Image Link</string>
+    <string name="the_ar_feature_is_not_supported_by_your_device">The Ar Feature is not supported by your Device</string>
+    <string name="downloading_model">Preparing the 3D Model</string>
+    <string name="something_went_wrong">Something went wrong</string>
+    <string name="model_ready">3D Model is Ready, Now tap on the detected surface.</string>
+    <string name="model_error">Unable to load the model</string>
+    <string name="dismiss">Dismiss</string>
+    <string name="try_again">Try Again</string>
+
+</resources>

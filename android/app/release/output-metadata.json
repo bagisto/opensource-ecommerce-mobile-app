@@ -1,0 +1,20 @@
+{
+  "version": 3,
+  "artifactType": {
+    "type": "APK",
+    "kind": "Directory"
+  },
+  "applicationId": "com.webkul.bagisto.mobikul",
+  "variantName": "release",
+  "elements": [
+    {
+      "type": "SINGLE",
+      "filters": [],
+      "attributes": [],
+      "versionCode": 113,
+      "versionName": "2.0.3",
+      "outputFile": "app-release.apk"
+    }
+  ],
+  "elementType": "File"
+}
