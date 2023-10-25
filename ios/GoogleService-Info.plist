@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>1076699867652-k67s9ig3pri6p4d27bhi1cbkqslu1suo.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.1076699867652-k67s9ig3pri6p4d27bhi1cbkqslu1suo</string>
+	<key>API_KEY</key>
+	<string>AIzaSyAb9BLQKViQqQVTBhuLdGMbeVKbwrzFwm8</string>
+	<key>GCM_SENDER_ID</key>
+	<string>1076699867652</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.webkul.bagistoApp.iOS</string>
+	<key>PROJECT_ID</key>
+	<string>bagisto-mobikul-app</string>
+	<key>STORAGE_BUCKET</key>
+	<string>bagisto-mobikul-app.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:1076699867652:ios:3802c1741e4142bdf06351</string>
+</dict>
+</plist>
