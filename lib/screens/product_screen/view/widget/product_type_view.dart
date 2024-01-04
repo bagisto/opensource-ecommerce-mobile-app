@@ -1,10 +1,15 @@
-import 'package:bagisto_app_demo/screens/product_screen/view/product_screen_index.dart';
+import 'package:bagisto_app_demo/widgets/price_widget.dart';
 
-import '../../../../configuration/app_global_data.dart';
+import '../../../../utils/status_color_helper.dart';
 import '../group_product.dart';
+import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
+import 'package:flutter/material.dart';
 import 'package:collection/collection.dart';
+
+
+// ignore: must_be_immutable
 class ProductTypeView extends StatefulWidget {
-  final Product? productData;
+  final NewProducts? productData;
   final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey;
   bool isLoggedIn = false;
   Function(
@@ -15,14 +20,12 @@ class ProductTypeView extends StatefulWidget {
     List groupedParams,
     List downloadLinks,
     int qty,
-      dynamic configurableProductId,
+    dynamic configurableProductId,
   )? callback;
   int qty = 1;
   String? price;
   final scrollController;
-  var configurableProductId;
-
-
+  dynamic configurableProductId;
 
   ProductTypeView({
     Key? key,
@@ -49,7 +52,8 @@ class _ProductTypeViewState extends State<ProductTypeView> {
   List selectParam = [];
   @override
   Widget build(BuildContext context) {
-    var productFlats = widget.productData?.productFlats?.firstWhereOrNull((e) => e.locale==GlobalData.locale );
+    var productFlats = widget.productData?.productFlats
+        ?.firstWhereOrNull((e) => e.locale == GlobalData.locale);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -71,91 +75,77 @@ class _ProductTypeViewState extends State<ProductTypeView> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  CommonWidgets().getTextFieldHeight(8),
-                  ((widget.productData?.priceHtml?.special ?? "").isEmpty ||
-                      (( productFlats?.maxPrice ==
-                          productFlats?.minPrice) &&
-                          ( productFlats?.maxPrice !=
-                              null)))
-                      ? CommonWidgets().priceText(widget.price ??
-                      widget.productData?.priceHtml?.regular ??
-                      "")
-                      : CommonWidgets().priceText(widget.price ??
-                      widget.productData?.priceHtml?.special ??
-                      ""),
-                  ((widget.productData?.priceHtml?.special ?? "").isEmpty ||
-                      ( productFlats?.maxPrice ==
-                          productFlats?.minPrice) &&
-                          productFlats?.maxPrice !=
-                              null)
-                      ? const Text("")
-                      : Text(widget.productData?.priceHtml?.regular ?? "",
-                      style: const TextStyle(
-                          fontSize: 16,
-                          decoration: TextDecoration.lineThrough)),
-                  Row(
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                            color: MobikulTheme().getColor(double.tryParse(
-                                widget.productData?.averageRating
-                                    .toString() ??
-                                    "0") ??
-                                0),
-                            borderRadius: BorderRadius.circular(5)),
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 5, horizontal: NormalPadding),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            if (widget.productData?.reviews?.isNotEmpty ?? true)
-                              Text(
-                                  (widget.productData?.reviews?[0].rating ?? 0)
-                                      .toString(),
-                                  style: const TextStyle(color: Colors.white)),
-                            if (widget.productData?.reviews?.isNotEmpty ?? true)
-                              CommonWidgets().getTextFieldWidth(NormalWidth),
-                            const Icon(
-                              Icons.star,
-                              color: Colors.white,
-                              size: 14,
-                            )
-                          ],
+                  CommonWidgets().getHeightSpace(8),
+                  PriceWidgetHtml(priceHtml: widget.price ??
+                      widget.productData?.priceHtml?.priceHtml ?? ""),
+                  if (widget.productData?.reviews?.isNotEmpty ?? true)
+                    Row(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                              color: ReviewColorHelper.getColor(double.tryParse(
+                                      widget.productData?.rating.toString() ??
+                                          "0") ??
+                                  0),
+                              borderRadius: BorderRadius.circular(5)),
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 5, horizontal: AppSizes.spacingNormal),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              if (widget.productData?.reviews?.isNotEmpty ??
+                                  true)
+                                Text(
+                                    (widget.productData?.reviews?[0].rating ??
+                                            0)
+                                        .toString(),
+                                    style:
+                                        const TextStyle(color: Colors.white)),
+                              if (widget.productData?.reviews?.isNotEmpty ??
+                                  true)
+                                CommonWidgets()
+                                    .getWidthSpace(AppSizes.spacingSmall),
+                              const Icon(
+                                Icons.star,
+                                color: Colors.white,
+                                size: 14,
+                              )
+                            ],
+                          ),
                         ),
-                      ),
-                      CommonWidgets().getTextFieldWidth(HighWidth),
-                      GestureDetector(
-                        onTap: () {
-                          ((widget.productData?.reviews?.length ?? 0) > 0)
-                              ? widget.scrollController.animateTo(
-                              widget.scrollController.position
-                                  .maxScrollExtent,
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.ease)
-                              : null;
-                        },
-                        child: Text(
-                          "${widget.productData?.reviews?.length} Review(s)"
-                              .localized(),
-                          style: TextStyle(
-                              color: Colors.grey.shade600,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600),
+                        CommonWidgets().getWidthSpace(AppSizes.spacingNormal),
+                        GestureDetector(
+                          onTap: () {
+                            ((widget.productData?.reviews?.length ?? 0) > 0)
+                                ? widget.scrollController.animateTo(
+                                    widget.scrollController.position
+                                        .maxScrollExtent,
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.ease)
+                                : null;
+                          },
+                          child: Text(
+                            "${widget.productData?.reviews?.length} Review(s)"
+                                .localized(),
+                            style: TextStyle(
+                                color: Colors.grey.shade600,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
                 ],
               ),
             ),
           ),
         ),
-        if (widget.productData?.type != Grouped)
+        if (widget.productData?.type != StringConstants.grouped)
           const SizedBox(
             height: 8,
           ),
-        if (widget.productData?.type != Grouped)
+        if (widget.productData?.type != StringConstants.grouped)
           Card(
             elevation: 2,
             child: StatefulBuilder(builder: (context, changeState) {
@@ -165,9 +155,10 @@ class _ProductTypeViewState extends State<ProductTypeView> {
                   qty: widget.qty.toString(),
                   callBack: (qty) {
                     changeState(() {
-                      this.widget.qty = qty;
+                      widget.qty = qty;
                     });
-                    widget.callback!(configurableParams,
+                    widget.callback!(
+                        configurableParams,
                         bundleParams,
                         selectList,
                         selectParam,
@@ -180,77 +171,109 @@ class _ProductTypeViewState extends State<ProductTypeView> {
               );
             }),
           ),
-        if (widget.productData?.type == Grouped)
-          GroupProduct(
-            groupedProducts: widget.productData?.groupedProducts,
-            callBack: (qties) {
-              groupedParams = qties;
-              selectList = groupedParams;
-              widget.callback!(configurableParams,
-                bundleParams,
-                selectList,
-                selectParam,
-                groupedParams,
-                downloadLinks,
-                widget.qty,
-              widget.configurableProductId);            },
+        if (widget.productData?.type == StringConstants.grouped)
+          const SizedBox(
+            height: 8,
           ),
-        if (widget.productData?.type == Downloadable)
-          Column(
-            children: [
-              DownloadProductSample(
-                samples: widget.productData?.downloadableSamples,
-                scaffoldMessengerKey: widget.scaffoldMessengerKey,
-              ),
-              DownloadProductOptions(
-                options: widget.productData?.downloadableLinks,
-                callBack: (ids) {
-                  downloadLinks = ids;
-                  selectList =downloadLinks;
-                  widget.callback!(configurableParams,
-                     bundleParams,
-                     selectList,
-                     selectParam,
-                     groupedParams,
-                     downloadLinks,
-                    widget.qty,widget.configurableProductId);
-                },
-              )
-            ],
+        if (widget.productData?.type == StringConstants.grouped)
+          Card(
+            child: GroupProduct(
+              groupedProducts: widget.productData?.groupedProducts,
+              callBack: (qty) {
+                groupedParams = qty;
+                selectList = groupedParams;
+                widget.callback!(
+                    configurableParams,
+                    bundleParams,
+                    selectList,
+                    selectParam,
+                    groupedParams,
+                    downloadLinks,
+                    widget.qty,
+                    widget.configurableProductId);
+              },
+            ),
           ),
-        if (widget.productData?.type == configurable)
-          CustomOptionsView(
-            productData: widget.productData,
-            customOptions: widget.productData?.configutableData?.attributes,
-            variants: widget.productData?.variants,
-            callback: (data, id) {
-             configurableParams = data;
-              widget.configurableProductId = id;
-             selectList =configurableParams;
-             widget.callback!(configurableParams,
-               bundleParams,
-               selectList,
-               selectParam,
-               groupedParams,
-               downloadLinks,
-               widget.qty, widget.configurableProductId);
-             getConfigurablePrice();
-            },
+        if (widget.productData?.type == StringConstants.downloadable)
+          const SizedBox(
+            height: 8,
           ),
-        if (widget.productData?.type == Bundle)
-          BundleOptionsView(
-            options: widget.productData?.bundleOptions,
-            callBack: (data) {
-              bundleParams = data;
-              selectList = bundleParams;
-              widget.callback!(configurableParams,
-                bundleParams,
-                selectList,
-                selectParam,
-                groupedParams,
-                downloadLinks,
-                widget.qty,widget.configurableProductId);
-            },
+        if (widget.productData?.type == StringConstants.downloadable)
+          Card(
+            child: Column(
+              children: [
+                DownloadProductSample(
+                  samples: widget.productData?.downloadableSamples,
+                  scaffoldMessengerKey: widget.scaffoldMessengerKey,
+                ),
+                DownloadProductOptions(
+                  options: widget.productData?.downloadableLinks,
+                  callBack: (ids) {
+                    downloadLinks = ids;
+                    selectList = downloadLinks;
+                    widget.callback!(
+                        configurableParams,
+                        bundleParams,
+                        selectList,
+                        selectParam,
+                        groupedParams,
+                        downloadLinks,
+                        widget.qty,
+                        widget.configurableProductId);
+                  },
+                )
+              ],
+            ),
+          ),
+        if (widget.productData?.type == StringConstants.configurable)
+          const SizedBox(
+            height: 8,
+          ),
+        if (widget.productData?.type == StringConstants.configurable)
+          Card(
+            child: CustomOptionsView(
+              productData: widget.productData,
+              customOptions: widget.productData?.configurableData?.attributes,
+              variants: widget.productData?.variants,
+              callback: (data, id) {
+                configurableParams = data;
+                widget.configurableProductId = id;
+                selectList = configurableParams;
+                widget.callback!(
+                    configurableParams,
+                    bundleParams,
+                    selectList,
+                    selectParam,
+                    groupedParams,
+                    downloadLinks,
+                    widget.qty,
+                    widget.configurableProductId);
+                getConfigurablePrice();
+              },
+            ),
+          ),
+        if (widget.productData?.type == StringConstants.bundle)
+          const SizedBox(
+            height: 8,
+          ),
+        if (widget.productData?.type == StringConstants.bundle)
+          Card(
+            child: BundleOptionsView(
+              options: widget.productData?.bundleOptions,
+              callBack: (data) {
+                bundleParams = data;
+                selectList = bundleParams;
+                widget.callback!(
+                    configurableParams,
+                    bundleParams,
+                    selectList,
+                    selectParam,
+                    groupedParams,
+                    downloadLinks,
+                    widget.qty,
+                    widget.configurableProductId);
+              },
+            ),
           ),
       ],
     );
@@ -258,13 +281,13 @@ class _ProductTypeViewState extends State<ProductTypeView> {
 
   String? getConfigurablePrice() {
     for (int i = 0;
-        i <= (widget.productData?.configutableData?.variantPrices?.length ?? 0);
+        i <= (widget.productData?.configurableData?.variantPrices?.length ?? 0);
         i++) {
       if (widget.configurableProductId ==
-          widget.productData?.configutableData?.variantPrices?[i].id) {
+          widget.productData?.configurableData?.variantPrices?[i].id) {
         setState(() {
-          widget.price = widget.productData?.configutableData?.variantPrices?[i]
-              .regularPrice?.formatedPrice;
+          widget.price = widget.productData?.configurableData?.variantPrices?[i]
+              .regularPrice?.formattedPrice;
         });
       } else {}
     }

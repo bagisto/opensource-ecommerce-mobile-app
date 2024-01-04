@@ -8,37 +8,30 @@
  * @link https://store.webkul.com/license.html
  */
 
-// ignore_for_file: file_names, deprecated_member_use
-import 'package:bagisto_app_demo/Configuration/mobikul_theme.dart';
-import 'package:bagisto_app_demo/common_widget/common_widgets.dart';
-import 'package:bagisto_app_demo/helper/email_validator.dart';
-import 'package:bagisto_app_demo/helper/phone_number_validator.dart';
-import 'package:bagisto_app_demo/helper/string_constants.dart';
-import 'package:bagisto_app_demo/helper/application_localization.dart';
-import 'package:bagisto_app_demo/models/address_model/address_model.dart';
-import 'package:bagisto_app_demo/screens/checkout/guest_add_address/bloc/guest_address_bloc.dart';
-import 'package:bagisto_app_demo/screens/checkout/guest_add_address/event/guest_address_country_event.dart';
-import 'package:bagisto_app_demo/screens/checkout/guest_add_address/state/guest_address_base_state.dart';
-import 'package:bagisto_app_demo/screens/checkout/guest_add_address/state/guest_address_country_state.dart';
-import 'package:bagisto_app_demo/screens/checkout/guest_add_address/state/guest_initial_state.dart';
+import 'package:bagisto_app_demo/utils/application_localization.dart';
+import 'package:bagisto_app_demo/widgets/loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:collection/collection.dart';
-import '../../../../common_widget/show_message.dart';
-import '../../../../configuration/app_global_data.dart';
-import '../../../../configuration/app_sizes.dart';
-import '../../../../common_widget/circular_progress_indicator.dart';
-import '../../../../common_widget/common_drop_down_field.dart';
-import '../../../../common_widget/common_error_msg.dart';
-import '../../../../models/address_model/country_model.dart';
-import '../../../locationSearch/view/location_screen.dart';
+import '../../../../utils/app_constants.dart';
+import '../../../../utils/app_global_data.dart';
+import '../../../../utils/input_field_validators.dart';
+import '../../../../utils/mobikul_theme.dart';
+import '../../../../utils/string_constants.dart';
+import '../../../../widgets/common_drop_down_field.dart';
+import '../../../../widgets/common_error_msg.dart';
+import '../../../../widgets/common_widgets.dart';
+import '../../../../widgets/show_message.dart';
+import '../../../address_list/data_model/address_model.dart';
+import '../../../address_list/data_model/country_model.dart';
+import '../bloc/guest_address_base_event.dart';
+import '../bloc/guest_address_bloc.dart';
+import '../bloc/guest_address_country_state.dart';
 
 // ignore: must_be_immutable
 class GuestAddAddressForm extends StatefulWidget {
   Function(
       String? billingCompanyName,
-
-
       String? billingFirstName,
       String? billingLastName,
       String? billingAddress,
@@ -90,24 +83,26 @@ class _GuestAddAddressFormState extends State<GuestAddAddressForm>
   final stateNameController = TextEditingController();
   final phoneController = TextEditingController();
   final emailController = TextEditingController();
-
   CountriesData? countryData;
   List<Data>? countryList = [];
   String? countryName;
   String? state;
-
   States? selectedState;
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return ScaffoldMessenger(
       key: scaffoldMessengerKey,
       child: Scaffold(
-        body: Directionality(
-          textDirection: GlobalData.contentDirection(),
-          child: _guestAddressBloc( context),
-        )
-      ),
+          body: Directionality(
+        textDirection: GlobalData.contentDirection(),
+        child: _guestAddressBloc(context),
+      )),
     );
   }
 
@@ -136,7 +131,8 @@ class _GuestAddAddressFormState extends State<GuestAddAddressForm>
         return _getAddressForm();
       }
       if (state.status == GuestStatus.fail) {
-        return ErrorMessage.errorMsg("SomethingWrong".localized());
+        return ErrorMessage.errorMsg(
+            StringConstants.somethingWrong.localized());
       }
     }
     if (state is GuestAddressInitialState) {
@@ -149,6 +145,7 @@ class _GuestAddAddressFormState extends State<GuestAddAddressForm>
 
   _getAddressForm() {
     return RefreshIndicator(
+      color: Theme.of(context).colorScheme.onPrimary,
       onRefresh: () {
         return Future.delayed(const Duration(seconds: 1), () {
           _getAddressForm();
@@ -168,127 +165,127 @@ class _GuestAddAddressFormState extends State<GuestAddAddressForm>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    CommonWidgets().getTextFieldHeight(20.0),
-                    CommonWidgets().getTextField(
-                        context,
-                        firstNameController,
-                        "FirstNameLabel".localized(),
-                        "FirstNameHint".localized(),
-                        "PleaseFillLabel".localized() +
-                            "FirstNameLabel".localized(), validator: (name) {
-                      if (name!.isEmpty) {
-                        return "PleaseFillLabel".localized() +
-                            "FirstNameLabel".localized();
+                    const SizedBox(height: AppSizes.spacingWide),
+                    CommonWidgets().getTextField(context, firstNameController,
+                        StringConstants.firstNameHint.localized(),
+                        label: StringConstants.firstNameLabel.localized(),
+                        validLabel: StringConstants.pleaseFillLabel.localized() +
+                            StringConstants.firstNameLabel.localized(),
+                        isRequired: true, validator: (name) {
+                      if ((name ?? "").isEmpty) {
+                        return StringConstants.pleaseFillLabel.localized() +
+                            StringConstants.firstNameLabel.localized();
                       }
                       return null;
                     }, emailValue: billingAddress?.firstName),
-                    CommonWidgets().getTextFieldHeight(20.0),
+                    const SizedBox(height: AppSizes.spacingWide),
                     CommonWidgets().getTextField(
                         context,
                         lastNameController,
-                        "LastNameLabel".localized(),
-                        "LastNameLabel".localized(),
-                        "PleaseFillLabel".localized() +
-                            "LastNameLabel".localized(), validator: (lastName) {
-                      if (lastName!.isEmpty) {
-                        return "PleaseFillLabel".localized() +
-                            "LastNameLabel".localized();
+                        StringConstants.lastNameHint.localized(),
+                        label: StringConstants.lastNameLabel.localized(),
+                        validLabel: StringConstants.pleaseFillLabel.localized() +
+                            StringConstants.lastNameLabel.localized(),
+                        isRequired: true, validator: (lastName) {
+                      if ((lastName ?? "").isEmpty) {
+                        return StringConstants.pleaseFillLabel.localized() +
+                            StringConstants.lastNameLabel.localized();
                       }
                       return null;
                     }, emailValue: billingAddress?.lastName),
-                    CommonWidgets().getTextFieldHeight(20.0),
+                    const SizedBox(height: AppSizes.spacingWide),
                     CommonWidgets().getTextField(
                       context,
                       emailController,
-                      "SignInEmailLabel".localized(),
-                      "SignInEmailHint".localized(),
-                      "PleaseFillLabel".localized() +
-                          "SignInEmailLabel".localized(),
+                      StringConstants.signInEmailHint.localized(),
+                      label: StringConstants.signInEmailLabel.localized(),
+                        validLabel: StringConstants.pleaseFillLabel.localized() +
+                            StringConstants.signInEmailLabel.localized(),
+                      isRequired: true,
                       validator: (email) {
                         if (email!.isEmpty) {
-                          return "PleaseFillLabel".localized() +
-                              "SignInEmailLabel".localized();
+                          return StringConstants.pleaseFillLabel.localized() +
+                              StringConstants.signInEmailLabel.localized();
                         } else if (!isValidEmail(email)) {
-                          return "ValidEmailLabel".localized();
+                          return StringConstants.signInEmailLabel.localized();
                         }
                         return null;
-                      },
-                      validLabel: "ValidEmailLabel".localized(),
+                      }
                     ),
-                    CommonWidgets().getTextFieldHeight(20.0),
+                    const SizedBox(height: AppSizes.spacingWide),
                     CommonWidgets().getTextField(
                         context,
                         companyController,
-                        "CompanyNameLabel".localized(),
-                        "CompanyNameHint".localized(),
-                        "PleaseFillLabel".localized() +
-                            "CompanyNameLabel".localized(),
-                        validator: (companyName) {
+                        StringConstants.companyNameHint.localized(),
+                        label: StringConstants.companyNameLabel.localized(),
+                        validLabel: StringConstants.pleaseFillLabel.localized() +
+                            StringConstants.companyNameLabel.localized(),
+                        isRequired: true, validator: (companyName) {
                       if (companyName!.isEmpty) {
-                        return "PleaseFillLabel".localized() +
-                            "CompanyNameLabel".localized();
+                        return StringConstants.pleaseFillLabel.localized() +
+                            StringConstants.companyNameLabel.localized();
                       }
                       return null;
                     }, emailValue: billingAddress?.companyName),
-                    CommonWidgets().getTextFieldHeight(20.0),
+                    const SizedBox(height: AppSizes.spacingWide),
                     CommonWidgets().getTextField(
                         context,
                         phoneController,
-                        "ContactUsPhoneLabel".localized(),
-                        "ContactUsPhoneHint".localized(),
-                        "PleaseFillLabel".localized() +
-                            "ContactUsPhoneLabel".localized(),
+                        StringConstants.contactUsPhoneHint.localized(),
+                        label: StringConstants.contactUsPhoneLabel.localized(),
+                        validLabel: StringConstants.pleaseFillLabel.localized() +
+                            StringConstants.contactUsPhoneLabel.localized(),
+                        isRequired: true,
                         keyboardType: TextInputType.phone, validator: (phone) {
-                      if (phone!.isEmpty) {
-                        return "PleaseFillLabel".localized() +
-                            "ContactUsPhoneLabel".localized();
+                      if ((phone ?? "").isEmpty) {
+                        return StringConstants.pleaseFillLabel.localized() +
+                            StringConstants.contactUsPhoneLabel.localized();
                       } else if (!isValidPhone(phone)) {
-                        return "PhoneWarning".localized();
+                        return StringConstants.phoneWarning.localized();
                       }
                       return null;
                     }, emailValue: billingAddress?.phone),
-                    CommonWidgets().getTextFieldHeight(20.0),
+                    const SizedBox(height: AppSizes.spacingWide),
                     CommonWidgets().getTextField(
                       context,
                       street1Controller,
-                      "StreetLabel".localized(),
-                      "StreetHint".localized(),
-                      "PleaseFillLabel".localized() + "StreetLabel".localized(),
+                      StringConstants.streetHint.localized(),
+                      label: StringConstants.streetLabel.localized(),
+                      isRequired: true,
+                      validLabel: StringConstants.pleaseFillLabel.localized() + StringConstants.streetLabel.localized(),
                       validator: (street1) {
-                        if (street1!.isEmpty) {
-                          return "PleaseFillLabel".localized() +
-                              "StreetLabel".localized();
+                        if ((street1 ?? "").isEmpty) {
+                          return StringConstants.pleaseFillLabel.localized() +
+                              StringConstants.streetLabel.localized();
                         }
                         return null;
                       },
                     ),
-                    CommonWidgets().getTextFieldHeight(20.0),
+                    const SizedBox(height: AppSizes.spacingWide),
                     CommonWidgets().getTextField(
                         context,
                         zipCodeController,
-                        "ZipLabel".localized(),
-                        "ZipHint".localized(),
-                        "PleaseFillLabel".localized() + "ZipLabel".localized(),
+                        StringConstants.zipHint.localized(),
+                        label: StringConstants.zipLabel.localized(),
+                        validLabel: StringConstants.pleaseFillLabel.localized() + StringConstants.zipLabel.localized(),
                         keyboardType: TextInputType.number,
-                        validator: (zipCode) {
+                        isRequired: true, validator: (zipCode) {
                       if (zipCode!.isEmpty) {
-                        return "PleaseFillLabel".localized() +
-                            "ZipLabel".localized();
+                        return StringConstants.pleaseFillLabel.localized() +
+                            StringConstants.zipLabel.localized();
                       }
                       return null;
                     }, emailValue: billingAddress?.address1.toString()),
-                    CommonWidgets().getTextFieldHeight(20.0),
-                    /*   widget.addressModel?.country == null
-                        ? countryData?.data != null*/
+                    const SizedBox(height: AppSizes.spacingWide),
                     CommonDropDownField(
                       value: countryName,
                       itemList: getCountryStrings(),
-                      hintText: "CountryHint".localized(),
-                      labelText: "CountryLabel".localized(),
+                      hintText: StringConstants.countryHint.localized(),
+                      labelText: StringConstants.countryLabel.localized(),
                       key: const Key('country'),
                       callBack: dropdownUpdate,
                     ),
-                    CommonWidgets().getTextFieldHeight(20.0),
+                    const SizedBox(height: AppSizes.spacingWide),
                     (selectedCountry != null &&
                             (selectedCountry!.states?.length ?? 0) > 0)
                         ? CommonDropDownField(
@@ -297,42 +294,44 @@ class _GuestAddAddressFormState extends State<GuestAddAddressForm>
                                     ?.map((e) => e.defaultName ?? '')
                                     .toList() ??
                                 [],
-                            hintText: "StateHint".localized(),
-                            labelText: "StateLabel".localized(),
+                            hintText: StringConstants.stateHint.localized(),
+                            labelText: StringConstants.stateLabel.localized(),
                             key: const Key('States'),
                             callBack: dropdownUpdate,
                           )
                         : CommonWidgets().getTextField(
                             context,
                             stateNameController,
-                            "StateLabel".localized(),
-                            "StateHint".localized(),
-                            "PleaseFillLabel".localized() +
-                                "StateLabel".localized(),
+                            StringConstants.stateHint.localized(),
+                            label: StringConstants.stateLabel.localized(),
+                            validLabel: StringConstants.pleaseFillLabel.localized() +
+                                StringConstants.stateLabel.localized(),
+                            isRequired: true,
                             validator: (cityName) {
-                              if (cityName!.isEmpty) {
-                                return "PleaseFillLabel".localized() +
-                                    "StateLabel".localized();
+                              if ((cityName ?? "").isEmpty) {
+                                return StringConstants.pleaseFillLabel.localized() +
+                                    StringConstants.stateLabel.localized();
                               }
                               return null;
                             },
                           ),
-                    CommonWidgets().getTextFieldHeight(AppSizes.widgetHeight),
+                    const SizedBox(height: AppSizes.spacingWide),
                     CommonWidgets().getTextField(
                       context,
                       cityController,
-                      "CityLabel".localized(),
-                      "CityHint".localized(),
-                      "PleaseFillLabel".localized() + "CityLabel".localized(),
+                      StringConstants.cityHint.localized(),
+                      label: StringConstants.cityLabel.localized(),
+                      validLabel: StringConstants.pleaseFillLabel.localized() + StringConstants.cityLabel.localized(),
+                      isRequired: true,
                       validator: (cityName) {
-                        if (cityName!.isEmpty) {
-                          return "PleaseFillLabel".localized() +
-                              "CityLabel".localized();
+                        if ((cityName ?? "").isEmpty) {
+                          return StringConstants.pleaseFillLabel.localized() +
+                              StringConstants.cityLabel.localized();
                         }
                         return null;
                       },
                     ),
-                    CommonWidgets().getTextFieldHeight(AppSizes.widgetHeight),
+                    const SizedBox(height: AppSizes.spacingWide),
                     MaterialButton(
                       shape: const RoundedRectangleBorder(
                           borderRadius: BorderRadius.all(Radius.circular(5.0)),
@@ -340,58 +339,22 @@ class _GuestAddAddressFormState extends State<GuestAddAddressForm>
                       elevation: 0.0,
                       height: AppSizes.buttonHeight,
                       minWidth: MediaQuery.of(context).size.width,
-                      color: Theme.of(context).colorScheme.background,
+                      color: Theme.of(context).colorScheme.onBackground,
                       textColor: MobikulTheme.primaryColor,
                       onPressed: () {
                         _onPressSaveButton();
                       },
                       child: Text(
-                        "SaveAddress".localized().toUpperCase(),
+                        StringConstants.saveAddress.localized().toUpperCase(),
                         style:
-                            const TextStyle(fontSize: AppSizes.normalFontSize),
+                            const TextStyle(fontSize: AppSizes.spacingLarge),
                       ),
                     ),
-                    CommonWidgets().getTextFieldHeight(NormalHeight)
+                    const SizedBox(height: AppSizes.spacingMedium),
                   ],
                 ),
               ),
             ),
-            Positioned(
-              right: 8,
-              top: 8,
-              child: InkWell(
-                onTap: () async {
-                  Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (_) => const LocationScreen()))
-                      .then((value) {
-                    if (value is Map) {
-                      street1Controller.text = value['street1'];
-                      cityController.text = value['city'];
-                      zipCodeController.text = value['zip'];
-                      stateNameController.text = value['state'];
-                      setState(() {
-                        countryName = value['country'];
-                        state = value['state'];
-                      });
-                    }
-                  });
-                },
-                child: Container(
-                  width: 35.0,
-                  height: 35.0,
-                  decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.onPrimary,
-                      borderRadius:
-                          const BorderRadius.all(Radius.circular(100))),
-                  child: Icon(
-                    Icons.my_location,
-                    color: Theme.of(context).cardColor,
-                  ),
-                ),
-              ),
-            )
           ],
         ),
       ),
@@ -403,9 +366,7 @@ class _GuestAddAddressFormState extends State<GuestAddAddressForm>
     if (countryList != null) {
       for (Data item in countryList ?? []) {
         if (item.name == null) {
-          country.add(
-            "Select Country...",
-          );
+          country.add("Select Country...");
         } else {
           country.add(item.name ?? '');
         }
@@ -477,38 +438,36 @@ class _GuestAddAddressFormState extends State<GuestAddAddressForm>
             return Dialog(
               child: Container(
                 color: Theme.of(context).appBarTheme.backgroundColor,
-                padding: const EdgeInsets.all(AppSizes.widgetHeight),
+                padding: const EdgeInsets.all(AppSizes.spacingWide),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const SizedBox(
-                      height: AppSizes.normalHeight,
+                      height: AppSizes.spacingNormal,
                     ),
-                    CircularProgressIndicatorClass.circularProgressIndicator(
-                        context),
-                    const SizedBox(height: AppSizes.widgetHeight),
+                    const Loader(),
+                    const SizedBox(height: AppSizes.spacingWide),
                     SizedBox(
                       width: MediaQuery.of(context).size.width / 2.5,
                       child: Center(
                         child: Text(
-                          "PleaseWaitProcessingRequest".localized(),
+                          StringConstants.processWaitingMsg.localized(),
                           softWrap: true,
                         ),
                       ),
                     ),
-                    const SizedBox(height: AppSizes.normalPadding),
+                    const SizedBox(height: AppSizes.spacingNormal),
                   ],
                 ),
               ),
             );
           });
-
       _saveAddress();
       Future.delayed(const Duration(seconds: 1)).then((value) {
         Navigator.pop(context, true);
         ShowMessage.showNotification(
-            "Address added successfully",
-            "",
+            StringConstants.success.localized(),
+            StringConstants.addressAdded.localized(),
             const Color.fromRGBO(140, 194, 74, 5),
             const Icon(Icons.check_circle_outline));
       });

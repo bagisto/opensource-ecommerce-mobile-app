@@ -1,82 +1,65 @@
-import 'package:bagisto_app_demo/helper/application_localization.dart';
-import 'package:bagisto_app_demo/models/order_model/order_detail_model.dart';
-import 'package:flutter/material.dart';
-
-import '../../../common_widget/common_widgets.dart';
-import '../../../configuration/app_sizes.dart';
+import 'package:bagisto_app_demo/data_model/order_model/order_detail_model.dart';
+import 'package:bagisto_app_demo/screens/cart_screen/cart_index.dart';
 
 Widget shippingPaymentInfo(
     BuildContext context, OrderDetail? orderDetailModel) {
   return Container(
-    padding: const EdgeInsets.all(AppSizes.normalPadding),
-    margin: const EdgeInsets.all(AppSizes.normalPadding),
+    padding: const EdgeInsets.all(AppSizes.spacingNormal),
+    margin: const EdgeInsets.all(AppSizes.spacingNormal),
     child: Column(
       children: [
-        CommonWidgets().getTextFieldHeight(AppSizes.normalPadding),
+        const SizedBox(height: AppSizes.spacingNormal),
         Row(
           children: [
             Text(
-              "ShippingAndPaymentInfo".localized().toUpperCase(),
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: AppSizes.normalFontSize,
-              ),
-            ),
+                StringConstants.shippingAndPaymentInfo
+                    .localized()
+                    .toUpperCase(),
+                style: Theme.of(context).textTheme.labelLarge),
           ],
         ),
-        CommonWidgets().getTextFieldHeight(AppSizes.normalPadding),
-        CommonWidgets().divider(),
-        CommonWidgets().getTextFieldHeight(AppSizes.normalPadding),
+        const SizedBox(height: AppSizes.spacingNormal),
+        const Divider(),
+        const SizedBox(height: AppSizes.spacingNormal),
         Container(
-          padding: const EdgeInsets.symmetric(vertical: AppSizes.normalPadding),
+          padding: const EdgeInsets.symmetric(vertical: AppSizes.spacingNormal),
           alignment: Alignment.topLeft,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Text(
-                "ShippingAddress".localized().toUpperCase(),
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: AppSizes.normalFontSize,
-                ),
-              ),
+              Text(StringConstants.shippingAddress.localized().toUpperCase(),
+                  style: Theme.of(context).textTheme.labelLarge),
               const SizedBox(
-                height: AppSizes.genericPadding,
+                height: AppSizes.spacingMedium,
               ),
               CommonWidgets().getDrawerTileText(
                   "${orderDetailModel?.shippingAddress?.firstName ?? ""} ${orderDetailModel?.shippingAddress?.lastName ?? ""}",
                   context,
                   isBold: true),
-              CommonWidgets().getTextFieldHeight(8),
+              const SizedBox(height: AppSizes.spacingNormal),
               _getFormattedAddress(orderDetailModel!),
-              CommonWidgets().getTextFieldHeight(8),
+              const SizedBox(height: AppSizes.spacingNormal),
               Text(
-             "Contact".localized() +
+                StringConstants.contact.localized() +
                     (orderDetailModel.shippingAddress?.phone ?? ""),
                 style: const TextStyle(fontSize: 18),
               ),
-              CommonWidgets().getTextFieldHeight(12),
-              Text(
-                "BillingAddress".localized().toUpperCase(),
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  // color: Theme.of(context).colorScheme.onPrimary,
-                  fontSize: AppSizes.normalFontSize,
-                ),
-              ),
+              const SizedBox(height: AppSizes.spacingSmall),
+              Text(StringConstants.billingAddress.localized().toUpperCase(),
+                  style: Theme.of(context).textTheme.labelLarge),
               const SizedBox(
-                height: AppSizes.genericPadding,
+                height: AppSizes.spacingNormal,
               ),
               CommonWidgets().getDrawerTileText(
                   "${orderDetailModel.billingAddress?.firstName ?? ""} ${orderDetailModel.billingAddress?.lastName ?? ""}",
                   context,
                   isBold: true),
-              CommonWidgets().getTextFieldHeight(8),
+              const SizedBox(height: AppSizes.spacingNormal),
               _getFormattedBillingAddress(orderDetailModel),
-              CommonWidgets().getTextFieldHeight(8),
+              const SizedBox(height: AppSizes.spacingNormal),
               Text(
-                "Contact".localized() +
+                StringConstants.contact.localized() +
                     (orderDetailModel.billingAddress?.phone ?? ""),
                 style: const TextStyle(fontSize: 18),
               ),
@@ -84,39 +67,29 @@ Widget shippingPaymentInfo(
           ),
         ),
         Container(
-          padding: const EdgeInsets.symmetric(vertical: AppSizes.normalPadding),
+          padding: const EdgeInsets.symmetric(vertical: AppSizes.spacingNormal),
           alignment: Alignment.topLeft,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Text(
-                "ShippingMethod".localized().toUpperCase(),
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: AppSizes.normalFontSize,
-                ),
-              ),
-              CommonWidgets().getTextFieldHeight(4),
+              Text(StringConstants.shippingMethod.localized().toUpperCase(),
+                  style: Theme.of(context).textTheme.labelLarge),
+              const SizedBox(height: AppSizes.spacingNormal),
               Text(orderDetailModel.shippingTitle ?? ""),
             ],
           ),
         ),
         Container(
-          padding: const EdgeInsets.symmetric(vertical: AppSizes.normalPadding),
+          padding: const EdgeInsets.symmetric(vertical: AppSizes.spacingNormal),
           alignment: Alignment.topLeft,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Text(
-                "PaymentMethod".localized().toUpperCase(),
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: AppSizes.normalFontSize,
-                ),
-              ),
-              CommonWidgets().getTextFieldHeight(4),
+              Text(StringConstants.paymentMethod.localized().toUpperCase(),
+                  style: Theme.of(context).textTheme.labelLarge),
+              const SizedBox(height: AppSizes.spacingNormal),
               Text(
                 orderDetailModel.payment?.methodTitle ?? "",
               ),

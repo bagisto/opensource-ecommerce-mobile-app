@@ -1,11 +1,11 @@
 {
-    "name": "bagisto_app_demo",
-    "short_name": "bagisto_app_demo",
+    "name": "bagisto_2_flutter_mobile_app",
+    "short_name": "bagisto_2_flutter_mobile_app",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter application.",
+    "description": "A new Flutter project.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

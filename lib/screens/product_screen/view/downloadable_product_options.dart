@@ -8,18 +8,17 @@
  * @link https://store.webkul.com/license.html
  */
 
-// ignore_for_file: file_names, must_be_immutable
-
-import 'package:bagisto_app_demo/common_widget/check_box_group.dart';
-import 'package:bagisto_app_demo/helper/application_localization.dart';
+import 'package:bagisto_app_demo/utils/application_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:carousel_slider/carousel_controller.dart';
+import '../../../utils/check_box_group.dart';
+import '../../../utils/string_constants.dart';
+import '../../home_page/data_model/new_product_data.dart';
 
-import '../../../models/product_model/product_screen_model.dart';
-
+//ignore: must_be_immutable
 class DownloadProductOptions extends StatefulWidget {
-  List<DownloadableProduct>? options;
+  List<DownloadableLinks>? options;
   Function(List)? callBack;
 
   DownloadProductOptions({Key? key, this.options, this.callBack})
@@ -43,48 +42,51 @@ class _DownloadProductOptionsState extends State<DownloadProductOptions> {
   @override
   Widget build(BuildContext context) {
     return (widget.options?.length ?? 0) > 0
-        ? Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-                Text(
-                  "Links".localized(),
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(
-                  height: 8,
-                ),
-                CheckboxGroup(
-                  activeColor: Colors.black,
-                  labels: widget.options
-                          ?.map(
-                              (e) => '${e.title ?? ''} + ${e.price.toString()}')
-                          .toList() ??
-                      [],
-                  checked: selected,
-                  onChange: (isChecked, label, index, key) {
-                    setState(() {
-                      if (isChecked) {
-                        selected.add(label);
-                      } else {
-                        selected.remove(label);
+        ? Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                  Text(
+                    StringConstants.links.localized(),
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(
+                    height: 8,
+                  ),
+                  CheckboxGroup(
+                    activeColor: Colors.black,
+                    labels: widget.options
+                            ?.map((e) =>
+                                '${e.title ?? ''} + ${e.price}')
+                            .toList() ??
+                        [],
+                    checked: selected,
+                    onChange: (isChecked, label, index, key) {
+                      setState(() {
+                        if (isChecked) {
+                          selected.add(label);
+                        } else {
+                          selected.remove(label);
+                        }
+                      });
+                      var list = selected
+                          .map((e) =>
+                              widget.options
+                                  ?.firstWhere((element) =>
+                                      '${element.title ?? ''} + ${element.price}' ==
+                                      e)
+                                  .id ??
+                              0)
+                          .toList();
+                      if (widget.callBack != null) {
+                        widget.callBack!(list);
                       }
-                    });
-                    var list = selected
-                        .map((e) =>
-                            widget.options
-                                ?.firstWhere((element) =>
-                                    '${element.title ?? ''} + ${element.price.toString()}' ==
-                                    e)
-                                .id ??
-                            0)
-                        .toList();
-                    if (widget.callBack != null) {
-                      widget.callBack!(list);
-                    }
-                  },
-                )
-              ])
+                    },
+                  )
+                ]),
+        )
         : Container();
   }
 }

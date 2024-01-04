@@ -8,30 +8,26 @@
  * @link https://store.webkul.com/license.html
  */
 
-// ignore_for_file: file_names, deprecated_member_use, unnecessary_null_comparison
-
-import 'package:bagisto_app_demo/common_widget/common_error_msg.dart';
-import 'package:bagisto_app_demo/common_widget/common_widgets.dart';
-import 'package:bagisto_app_demo/common_widget/show_message.dart';
-import 'package:bagisto_app_demo/helper/application_localization.dart';
-import 'package:bagisto_app_demo/models/address_model/address_model.dart';
-import 'package:bagisto_app_demo/helper/no_data_class.dart';
+import 'package:bagisto_app_demo/screens/address_list/view/widget/add_new_address_button.dart';
+import 'package:bagisto_app_demo/screens/address_list/view/widget/address_loader_view.dart';
+import 'package:bagisto_app_demo/screens/address_list/view/widget/saved_address_list.dart';
+import 'package:bagisto_app_demo/utils/application_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../Configuration/mobikul_theme.dart';
-import '../../../configuration/app_global_data.dart';
-import '../../../configuration/app_sizes.dart';
-import '../../../common_widget/circular_progress_indicator.dart';
-import '../../../helper/shared_preference_helper.dart';
-import '../../../routes/route_constants.dart';
+import '../../../data_model/app_route_arguments.dart';
+import '../../../utils/app_constants.dart';
+import '../../../utils/app_global_data.dart';
+import '../../../utils/assets_constants.dart';
+import '../../../utils/route_constants.dart';
+import '../../../utils/shared_preference_helper.dart';
+import '../../../utils/string_constants.dart';
+import '../../../widgets/common_error_msg.dart';
+import '../../../widgets/empty_data_view.dart';
+import '../../../widgets/show_message.dart';
 import '../bloc/address_bloc.dart';
-import '../events/fetch_address_event.dart';
-import '../state/address_base_state.dart';
-import '../state/ferch_address_state.dart';
-import '../state/initial_address_state.dart';
-import '../state/remove_address_state.dart';
-import 'add_new_address_button.dart';
-import 'saved_address_list.dart';
+import '../bloc/ferch_address_state.dart';
+import '../bloc/fetch_address_event.dart';
+import '../data_model/address_model.dart';
 
 class AddressScreen extends StatefulWidget {
   const AddressScreen({Key? key, this.isFromDashboard}) : super(key: key);
@@ -46,12 +42,11 @@ AddressModel? _addressModel;
 class _AddressScreenState extends State<AddressScreen> {
   final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
       GlobalKey<ScaffoldMessengerState>();
-  AddressBloc? addressBloc;
 
   @override
   void initState() {
-    addressBloc = context.read<AddressBloc>();
-    addressBloc?.add(FetchAddressEvent());
+    AddressBloc addressBloc = context.read<AddressBloc>();
+    addressBloc.add(FetchAddressEvent());
     super.initState();
   }
 
@@ -61,15 +56,14 @@ class _AddressScreenState extends State<AddressScreen> {
       key: scaffoldMessengerKey,
       child: Directionality(
         textDirection: GlobalData.contentDirection(),
-        child:Scaffold(
-        appBar: (widget.isFromDashboard ?? false)
-            ? null
-            : AppBar(
-                centerTitle: false,
-                title: CommonWidgets.getHeadingText(
-                    "Address".localized(), context),
-              ),
-        body:  _addressBloc(context),
+        child: Scaffold(
+          appBar: (widget.isFromDashboard ?? false)
+              ? null
+              : AppBar(
+                  centerTitle: false,
+                  title: Text(StringConstants.address.localized()),
+                ),
+          body: _addressBloc(context),
         ),
       ),
     );
@@ -82,18 +76,17 @@ class _AddressScreenState extends State<AddressScreen> {
         if (state is FetchAddressState) {
           if (state.status == AddressStatus.fail) {
           } else if (state.status == AddressStatus.success) {
-            // _addressModel==null?
             _addressModel = state.addressModel;
           }
         }
         if (state is RemoveAddressState) {
           if (state.status == AddressStatus.fail) {
-            ShowMessage.showNotification(
-                state.error, "", Colors.red, const Icon(Icons.cancel_outlined));
+            ShowMessage.showNotification(StringConstants.failed.localized(), state.error,
+                Colors.red, const Icon(Icons.cancel_outlined));
           } else if (state.status == AddressStatus.success) {
             ShowMessage.showNotification(
+                StringConstants.success.localized(),
                 state.response?.message ?? "",
-                "",
                 const Color.fromRGBO(140, 194, 74, 5),
                 const Icon(Icons.check_circle_outline));
           }
@@ -113,32 +106,34 @@ class _AddressScreenState extends State<AddressScreen> {
         return _addressList(state.addressModel!);
       }
       if (state.status == AddressStatus.fail) {
-        return ErrorMessage.errorMsg(state.error ?? "Error");
+        return ErrorMessage.errorMsg(state.error ?? StringConstants.error);
       }
     }
 
     if (state is InitialAddressState) {
-      return CircularProgressIndicatorClass.circularProgressIndicator(context);
+      return AddressLoader(
+        isFromDashboard: widget.isFromDashboard,
+      );
     }
     if (state is RemoveAddressState) {
       if (state.status == AddressStatus.success) {
         var customerId = state.customerDeletedId;
-        if (_addressModel!.addressData != null) {
-          _addressModel!.addressData!.removeWhere(
+        if (_addressModel?.addressData != null) {
+          _addressModel?.addressData!.removeWhere(
               (element) => element.id.toString() == customerId.toString());
-          return _addressList(_addressModel!);
+          return _addressList(_addressModel);
         } else {}
       }
     }
 
-    return Container();
+    return _addressList(_addressModel);
   }
 
   ///this method will show address list
-  _addressList(AddressModel addressModel) {
+  _addressList(AddressModel? addressModel) {
     if (addressModel == null) {
       SharedPreferenceHelper.setAddressData(true);
-      return const NoDataFound();
+      return const EmptyDataView(assetPath: AssetConstants.emptyAddress);
     } else if (addressModel.addressData?.isEmpty ?? false) {
       SharedPreferenceHelper.setAddressData(true);
       return AddNewAddressButton(
@@ -149,7 +144,7 @@ class _AddressScreenState extends State<AddressScreen> {
       SharedPreferenceHelper.setAddressData(false);
       return Column(
         children: [
-          CommonWidgets().getTextFieldHeight(AppSizes.spacingTiny),
+          const SizedBox(height: AppSizes.spacingSmall,),
           Card(
             elevation: 2,
             child: (widget.isFromDashboard ?? false)
@@ -157,7 +152,7 @@ class _AddressScreenState extends State<AddressScreen> {
                 : Container(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(8.0, 8, 8, 8),
+                      padding: const EdgeInsets.all(8.0),
                       child: MaterialButton(
                         shape: RoundedRectangleBorder(
                             borderRadius:
@@ -166,9 +161,9 @@ class _AddressScreenState extends State<AddressScreen> {
                                 width: 2,
                                 color:
                                     Theme.of(context).colorScheme.onPrimary)),
-                        padding: const EdgeInsets.all(AppSizes.mediumPadding),
+                        padding: const EdgeInsets.all(AppSizes.spacingMedium),
                         onPressed: () {
-                          Navigator.pushNamed(context, AddAddress,
+                          Navigator.pushNamed(context, addAddressScreen,
                                   arguments: AddressNavigationData(
                                       isEdit: false, addressModel: null))
                               .then((value) {
@@ -184,7 +179,7 @@ class _AddressScreenState extends State<AddressScreen> {
                               color: Theme.of(context).colorScheme.onPrimary,
                             ),
                             Text(
-                              "AddNewAddress".localized().toUpperCase(),
+                              StringConstants.addNewAddress.localized().toUpperCase(),
                               style: TextStyle(
                                   color:
                                       Theme.of(context).colorScheme.onPrimary),
@@ -200,7 +195,7 @@ class _AddressScreenState extends State<AddressScreen> {
           ),
           Flexible(
             child: RefreshIndicator(
-              color: MobikulTheme.accentColor,
+              color: Theme.of(context).colorScheme.onPrimary,
               onRefresh: () {
                 return Future.delayed(const Duration(seconds: 1), () {
                   AddressBloc addressBloc = context.read<AddressBloc>();
@@ -228,14 +223,7 @@ class _AddressScreenState extends State<AddressScreen> {
   }
 
   fetchAddressData() async {
-    addressBloc?.add(FetchAddressEvent());
+    AddressBloc addressBloc = context.read<AddressBloc>();
+    addressBloc.add(FetchAddressEvent());
   }
-}
-
-///class used to send data on edit/add screen
-class AddressNavigationData {
-  AddressNavigationData({this.isEdit, this.addressModel});
-
-  bool? isEdit;
-  AddressData? addressModel;
 }

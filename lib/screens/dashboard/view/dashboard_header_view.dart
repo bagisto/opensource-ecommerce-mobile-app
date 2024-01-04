@@ -1,11 +1,7 @@
-import 'package:bagisto_app_demo/helper/application_localization.dart';
+import 'package:bagisto_app_demo/screens/cart_screen/cart_index.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/material.dart';
-import '../../../Configuration/mobikul_theme.dart';
-import '../../../common_widget/image_view.dart';
-import '../../../configuration/app_sizes.dart';
-import '../../../helper/shared_preference_helper.dart';
-import '../../../routes/route_constants.dart';
+import '../../../utils/index.dart';
+
 class DashboardHeaderView extends StatefulWidget {
   const DashboardHeaderView({Key? key}) : super(key: key);
 
@@ -17,6 +13,7 @@ class _DashboardHeaderViewState extends State<DashboardHeaderView> {
   String? name;
   String? customerEmail;
   String? image;
+
   @override
   void initState() {
     SharedPreferenceHelper.getCustomerName().then((value) {
@@ -32,10 +29,11 @@ class _DashboardHeaderViewState extends State<DashboardHeaderView> {
     });
     super.initState();
   }
+
   @override
   Widget build(BuildContext context) {
-    return   SizedBox(
-      height: AppSizes.height / 3,
+    return SizedBox(
+      height: MediaQuery.of(context).size.height / 3,
       width: MediaQuery.of(context).size.width,
       child: Card(
           elevation: 0,
@@ -43,9 +41,11 @@ class _DashboardHeaderViewState extends State<DashboardHeaderView> {
           child: Stack(
             children: [
               Image.asset(
-                "assets/images/customer_banner_placeholder.png",width: MediaQuery.of(context).size.width,),
+                "assets/images/customer_banner_placeholder.png",
+                width: MediaQuery.of(context).size.width,
+              ),
               Container(
-                  height: AppSizes.height / 3,
+                  height: MediaQuery.of(context).size.height / 3,
                   decoration: const BoxDecoration(
                     color: Color(0x0bd7f77d),
                     shape: BoxShape.rectangle,
@@ -67,7 +67,7 @@ class _DashboardHeaderViewState extends State<DashboardHeaderView> {
                                     width: 1.0)),
                             child: ClipRRect(
                                 borderRadius: BorderRadius.circular(100.0),
-                                child: CachedNetworkImage(
+                                child:CachedNetworkImage(
                                   fit: BoxFit.cover,
                                   imageUrl: image ?? "",
                                   placeholder: (context, url) => Image.asset('assets/images/customer_profile_placeholder.png'),
@@ -84,13 +84,12 @@ class _DashboardHeaderViewState extends State<DashboardHeaderView> {
                               name ?? "",
                               style: Theme.of(context)
                                   .textTheme
-                                  .headlineSmall
+                                  .labelMedium
                                   ?.copyWith(
-                                  fontSize: AppSizes.spacingDefault,
-                                  color: Colors.white),
+                                      color: Colors.white),
                             ),
                             const SizedBox(
-                              height: AppSizes.spacingTiny,
+                              height: AppSizes.spacingSmall,
                             ),
                             Text(
                               customerEmail ?? "",
@@ -98,26 +97,24 @@ class _DashboardHeaderViewState extends State<DashboardHeaderView> {
                                   .textTheme
                                   .bodyMedium
                                   ?.copyWith(
-                                  fontSize: AppSizes.spacingDefault,
-                                  color: Colors.white,
-                                  letterSpacing: 1,
-                                  fontWeight: FontWeight.w400),
+                                      fontSize: AppSizes.spacingMedium,
+                                      color: Colors.white,
+                                      letterSpacing: 1,
+                                      fontWeight: FontWeight.w400),
                             ),
                             const SizedBox(
-                              height: AppSizes.normalHeight,
+                              height: AppSizes.spacingNormal,
                             ),
                             GestureDetector(
                               onTap: () {
                                 Navigator.of(context)
-                                    .pushNamed(AccountInfo)
+                                    .pushNamed(accountInfo)
                                     .then((value) {
                                   SharedPreferenceHelper.getCustomerName()
                                       .then((value) {
-                                    SharedPreferenceHelper
-                                        .getCustomerEmail()
+                                    SharedPreferenceHelper.getCustomerEmail()
                                         .then((email) {
-                                      SharedPreferenceHelper
-                                          .getCustomerImage()
+                                      SharedPreferenceHelper.getCustomerImage()
                                           .then((img) {
                                         setState(() {
                                           name = value;
@@ -133,23 +130,20 @@ class _DashboardHeaderViewState extends State<DashboardHeaderView> {
                                   decoration: const BoxDecoration(
                                       color: Colors.white30,
                                       shape: BoxShape.rectangle,
-                                      borderRadius:
-                                      BorderRadius.all(
+                                      borderRadius: BorderRadius.all(
                                           Radius.circular(25.0))),
-
                                   child: Padding(
                                     padding: const EdgeInsets.symmetric(
                                       vertical: AppSizes.spacingNormal,
-                                      horizontal: AppSizes.size22,
+                                      horizontal: AppSizes.spacingMedium,
                                     ),
                                     child: Text(
-                                      "EditInfo".localized().toUpperCase(),
+                                      StringConstants.editInfo.localized().toUpperCase(),
                                       style: Theme.of(context)
                                           .textTheme
-                                          .bodyMedium
+                                          .labelMedium
                                           ?.copyWith(
-                                          fontSize:
-                                          AppSizes.normalFontSize,color: Colors.white),
+                                              color: Colors.white),
                                     ),
                                   )),
                             ),

@@ -1,21 +1,21 @@
-
-import 'package:bagisto_app_demo/common_widget/common_widgets.dart';
-import 'package:bagisto_app_demo/helper/application_localization.dart';
 import 'package:bagisto_app_demo/screens/downloadable_products/bloc/downloadable_products_bloc.dart';
-import 'package:bagisto_app_demo/screens/downloadable_products/state/downlaodable_products_state.dart';
+import 'package:bagisto_app_demo/screens/downloadable_products/bloc/downlaodable_products_state.dart';
 import 'package:bagisto_app_demo/screens/downloadable_products/view/widgets/download_product_item.dart';
-import 'package:bagisto_app_demo/screens/downloadable_products/view/widgets/no_downlodable_products.dart';
+import 'package:bagisto_app_demo/utils/application_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../common_widget/circular_progress_indicator.dart';
-import '../../../common_widget/common_error_msg.dart';
-import '../../../common_widget/show_message.dart';
-import '../../../configuration/app_global_data.dart';
-import '../../../models/downloadable_products/download_product_model.dart';
-import '../../../models/downloadable_products/downloadable_product_model.dart';
-import '../../../models/homepage_model/new_product_data.dart';
+import 'package:skeleton_loader/skeleton_loader.dart';
+import '../../../utils/app_global_data.dart';
+import '../../../utils/assets_constants.dart';
+import '../../../utils/string_constants.dart';
+import '../../../widgets/common_error_msg.dart';
+import '../../../widgets/empty_data_view.dart';
+import '../../../widgets/show_message.dart';
+import '../../home_page/data_model/new_product_data.dart';
 import '../../product_screen/view/file_download.dart';
-import '../events/downloadable_products_events.dart';
+import '../bloc/downloadable_products_events.dart';
+import '../data_model/download_product_model.dart';
+import '../data_model/downloadable_product_model.dart';
 
 class DownLoadableScreen extends StatefulWidget {
   const DownLoadableScreen({Key? key}) : super(key: key);
@@ -33,26 +33,26 @@ class _DownLoadableScreenState extends State<DownLoadableScreen> {
   DownloadableLinkPurchases? linkPurchases;
   DownloadableProductsBloc? downloadableProductsBloc;
 
-
   @override
   void initState() {
     downloadableProductsBloc = context.read<DownloadableProductsBloc>();
-    downloadableProductsBloc?.add(DownloadableProductsCustomerEvent(page, limit));
+    downloadableProductsBloc
+        ?.add(DownloadableProductsCustomerEvent(page, limit));
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return Directionality(
+      textDirection: GlobalData.contentDirection(),
+      child: Scaffold(
         appBar: AppBar(
           centerTitle: false,
-          title: CommonWidgets.getHeadingText(
-              "DownloadableProductsList".localized(), context),
+          title: Text(StringConstants.downloadableProductsList.localized()),
         ),
-        body:  Directionality(
-          textDirection: GlobalData.contentDirection(),
-          child: _downloadableProductsList() ,
-        ),);
+        body: _downloadableProductsList(),
+      ),
+    );
   }
 
   ///Downloadable Product bloc method
@@ -61,11 +61,13 @@ class _DownLoadableScreenState extends State<DownLoadableScreen> {
         DownloadableProductsBaseState>(
       listener: (BuildContext context, DownloadableProductsBaseState state) {
         if (state is DownloadProductState) {
-            downloadLink = state.downloadLink;
-            if (downloadLink?.status == true) {
-              ShowMessage.showNotification("success".localized(), "downloadSuccess".localized(),Colors.green,const Icon(Icons.check_circle));
-            }
-            downloadableProductsBloc?.add(DownloadableProductsCustomerEvent(page, limit));
+          downloadLink = state.downloadLink;
+          if (downloadLink?.status == true) {
+            ShowMessage.showNotification(StringConstants.downloadSuccess.localized(), "",
+                Colors.green, const Icon(Icons.check_circle));
+          }
+          downloadableProductsBloc
+              ?.add(DownloadableProductsCustomerEvent(page, limit));
         }
       },
       builder: (BuildContext context, DownloadableProductsBaseState state) {
@@ -77,11 +79,26 @@ class _DownLoadableScreenState extends State<DownLoadableScreen> {
   ///build container method
   Widget _downloadableProductsItems(DownloadableProductsBaseState state) {
     if (state is DownloadableProductsInitialState) {
-      return CircularProgressIndicatorClass.circularProgressIndicator(context);
+      return SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(8.0, 8, 8, 8),
+          child: SkeletonLoader(
+            items: 6,
+            builder: Card(
+              child: Container(
+                height: 125,
+              ),
+            ),
+          ),
+        ),
+      );
     }
     if (state is DownloadProductState) {
       downloadLink = state.downloadLink;
-      DownloadFile().saveBase64String(downloadLink?.string ?? "", (downloadLink?.download?.name ?? "") + (downloadLink?.download?.fileName ?? "image.jpg"));
+      DownloadFile().saveBase64String(
+          downloadLink?.string ?? "",
+          (downloadLink?.download?.name ?? "") +
+              (downloadLink?.download?.fileName ?? "image.jpg"));
     }
     if (state is DownloadableProductsCustomerDataState) {
       productsList = state.productsList;
@@ -92,29 +109,35 @@ class _DownLoadableScreenState extends State<DownLoadableScreen> {
         return downloadableList();
       }
       if (state.status == DownloadableProductsStatus.fail) {
-        return ErrorMessage.errorMsg(state.error ?? "Error");
+        return ErrorMessage.errorMsg(state.error ?? StringConstants.error);
       }
     }
     return downloadableList();
   }
 
   Widget downloadableList() {
-    if((productsList?.downloadableLinkPurchases ??[]).isNotEmpty){
+    if ((productsList?.downloadableLinkPurchases ?? []).isNotEmpty) {
       return ListView.builder(
           scrollDirection: Axis.vertical,
           shrinkWrap: true,
           itemCount: productsList?.downloadableLinkPurchases?.length ?? 0,
           itemBuilder: (context, index) {
             linkPurchases = productsList?.downloadableLinkPurchases?[index];
-            int available = (linkPurchases?.downloadBought ??0) - (linkPurchases?.downloadUsed ??0);
-            return DownloadProductItem(available: available, downloadableProductsBloc: downloadableProductsBloc,
-            linkPurchases: linkPurchases, product: data?[index],);
+            int available = (linkPurchases?.downloadBought ?? 0) -
+                (linkPurchases?.downloadUsed ?? 0);
+            return DownloadProductItem(
+              available: available,
+              downloadableProductsBloc: downloadableProductsBloc,
+              linkPurchases: linkPurchases,
+              product: data?[index],
+            );
           });
-    }
-    else{
-      return const NoDownloadableProduct();
+    } else {
+      return EmptyDataView(
+          assetPath: AssetConstants.emptyCart,
+          message: StringConstants.noProducts,
+          width: MediaQuery.of(context).size.width / 1.5,
+          height: MediaQuery.of(context).size.width / 2);
     }
   }
 }
-
-

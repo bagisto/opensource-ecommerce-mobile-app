@@ -1,13 +1,19 @@
 
-import 'package:bagisto_app_demo/screens/product_screen/view/product_screen_index.dart';
+import '../../../cart_screen/cart_model/cart_data_model.dart';
+import '../../../home_page/data_model/new_product_data.dart';
+import 'package:flutter/material.dart';
 
+import '../CustomOptions/text_field_type.dart';
+
+
+//ignore: must_be_immutable
 class GetTextField extends StatefulWidget {
   final Attributes? variation;
   final int  index;
   final List optionArray;
   Function(List, String)? callback;
   List<Attributes>? customOptions = [];
-  Product? productData;
+  NewProducts? productData;
   GetTextField({Key? key, this.variation, required this.index, required this.optionArray,this.callback,this.productData,this.customOptions}) : super(key: key);
 
   @override
@@ -69,6 +75,7 @@ class _GetTextFieldState extends State<GetTextField> {
   _updateCallBack() {
     if (widget.callback != null) {
       Map<String, dynamic> dict = {};
+      print("optionArray updateCallback --> ${widget.optionArray}");
       dict["superAttribute"] = widget.optionArray;
       widget.callback!(widget.optionArray, _getId());
     }
@@ -103,25 +110,25 @@ class _GetTextFieldState extends State<GetTextField> {
       if (mappedKey) {
         loopIndexes:
         for (var index1 = 0;
-        index1 < (widget.productData?.configutableData?.index?.length ?? 0);
+        index1 < (widget.productData?.configurableData?.index?.length ?? 0);
         index1++) {
           for (var indexData = optionArrayKey;
           indexData <
-              (widget.productData?.configutableData?.index?[index1]
+              (widget.productData?.configurableData?.index?[index1]
                   .attributeOptionIds?.length ??
                   0);
           indexData++) {
             if (widget.optionArray[optionArrayKey]['attributeId'].toString() ==
-                widget.productData?.configutableData?.index?[index1]
+                widget.productData?.configurableData?.index?[index1]
                     .attributeOptionIds?[indexData].attributeId
                     .toString() &&
                 widget.optionArray[optionArrayKey]['attributeOptionId'].toString() ==
-                    widget.productData?.configutableData?.index?[index1]
+                    widget.productData?.configurableData?.index?[index1]
                         .attributeOptionIds?[indexData].attributeOptionId
                         .toString()) {
               mappedKey = true;
               selectedProductAttributeId =
-                  widget.productData?.configutableData?.index?[index1].id ?? "";
+                  widget.productData?.configurableData?.index?[index1].id ?? "";
               break loopIndexes;
             } else {
               mappedKey = false;

@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "webkul" "\0"
-            VALUE "FileDescription", "bagisto_app_demo" "\0"
+            VALUE "CompanyName", "com.example" "\0"
+            VALUE "FileDescription", "bagisto_2_flutter_mobile_app" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "bagisto_app_demo" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2022 webkul. All rights reserved." "\0"
-            VALUE "OriginalFilename", "bagisto_app_demo.exe" "\0"
-            VALUE "ProductName", "bagisto_app_demo" "\0"
+            VALUE "InternalName", "bagisto_2_flutter_mobile_app" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2023 com.example. All rights reserved." "\0"
+            VALUE "OriginalFilename", "bagisto_2_flutter_mobile_app.exe" "\0"
+            VALUE "ProductName", "bagisto_2_flutter_mobile_app" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

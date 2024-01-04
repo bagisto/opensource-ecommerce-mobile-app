@@ -12,15 +12,13 @@
 
 import 'dart:convert';
 import 'dart:io';
-
-import 'package:bagisto_app_demo/helper/application_localization.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-import '../../../common_widget/show_message.dart';
+import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
 
 class DownloadFile {
   var tag = "DownloadFile";
@@ -50,12 +48,12 @@ class DownloadFile {
         }
         if (((android?.version.sdkInt ?? 30) < 33) || Platform.isIOS) {
           if (status.isGranted) {
-            getDownload(dio, url, fileName, fileType);
+            getDownload(dio, url, fileName, fileType, context);
           } else if (status.isDenied) {
             Permission.storage.request();
           }
         } else {
-          getDownload(dio, url, fileName, fileType);
+          getDownload(dio, url, fileName, fileType, context);
         }
       } catch (e) {
         debugPrint("${tag}exception while downloading invoice $e");
@@ -82,13 +80,12 @@ class DownloadFile {
   }
 
   void getDownload(
-      Dio dio, String url, String fileName, String fileType) async {
+      Dio dio, String url, String fileName, String fileType, BuildContext context) async {
     await _prepareSaveDir();
-    ShowMessage.showNotification(
-        "Downloading".localized(),
-        "",
-        const Color.fromRGBO(140, 194, 74, 5),
-        const Icon(Icons.check_circle_outline));
+
+    if(context.mounted) {
+      ShowMessage.successNotification(StringConstants.downloading.localized(), context);
+    }
 
     await dio.download(url, "$_localPath/$fileName",
         onReceiveProgress: (received, total) {
@@ -98,11 +95,9 @@ class DownloadFile {
       }
     });
 
-    ShowMessage.showNotification(
-        "DownloadCompleted".localized(),
-        "",
-        const Color.fromRGBO(140, 194, 74, 5),
-        const Icon(Icons.check_circle_outline));
+    if(context.mounted) {
+      ShowMessage.successNotification(StringConstants.downloadCompleted.localized(), context);
+    }
   }
 
   Future saveBase64String(

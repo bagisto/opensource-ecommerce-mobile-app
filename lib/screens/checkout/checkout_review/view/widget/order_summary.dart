@@ -1,12 +1,12 @@
-import 'package:bagisto_app_demo/helper/application_localization.dart';
+import 'package:bagisto_app_demo/utils/application_localization.dart';
 import 'package:flutter/material.dart';
-import '../../../../../common_widget/common_widgets.dart';
-import '../../../../../common_widget/image_view.dart';
-import '../../../../../configuration/app_global_data.dart';
-import '../../../../../configuration/app_sizes.dart';
-import '../../../../../helper/string_constants.dart';
-import '../../../../../models/checkout_models/save_payment_model.dart';
 import 'package:collection/collection.dart';
+import '../../../../../utils/app_constants.dart';
+import '../../../../../utils/app_global_data.dart';
+import '../../../../../utils/string_constants.dart';
+import '../../../../../widgets/common_widgets.dart';
+import '../../../../../widgets/image_view.dart';
+import '../../../data_model/save_payment_model.dart';
 
 class OrderSummary extends StatelessWidget {
   final SavePayment savePaymentModel;
@@ -17,9 +17,8 @@ class OrderSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(
-        AppSizes.spacingNormal,
-      ),
+      padding: const EdgeInsets.fromLTRB(
+          0, AppSizes.spacingNormal, 0, AppSizes.spacingNormal),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.start,
@@ -27,11 +26,8 @@ class OrderSummary extends StatelessWidget {
           Row(
             children: [
               Text(
-                "OrderSummary".localized().toUpperCase(),
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: AppSizes.normalFontSize,
-                ),
+                StringConstants.orderSummary.localized().toUpperCase(),
+                style: Theme.of(context).textTheme.labelLarge,
               ),
             ],
           ),
@@ -49,7 +45,8 @@ class OrderSummary extends StatelessWidget {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemBuilder: (BuildContext context, int itemIndex) {
-                var productFlats = savePaymentModel.cart?.items![itemIndex].product?.productFlats?.firstWhereOrNull((e) => e.locale==GlobalData.locale );
+                var productFlats = savePaymentModel.cart?.items?[itemIndex];
+
                 return Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -58,7 +55,7 @@ class OrderSummary extends StatelessWidget {
                       flex: 1,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            vertical: AppSizes.linePadding, horizontal: 6.0),
+                            vertical: AppSizes.spacingSmall, horizontal: 6.0),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -68,14 +65,13 @@ class OrderSummary extends StatelessWidget {
                                         [])
                                     .isNotEmpty
                                 ? ImageView(
-                                    url: (imageUrl) +
-                                        (savePaymentModel
-                                                .cart
-                                                ?.items![itemIndex]
-                                                .product
-                                                ?.images?[0]
-                                                .path ??
-                                            ""),
+                                    url: (savePaymentModel
+                                            .cart
+                                            ?.items?[itemIndex]
+                                            .product
+                                            ?.images?[0]
+                                            .url ??
+                                        ""),
                                     height:
                                         MediaQuery.of(context).size.width / 3,
                                   )
@@ -91,8 +87,7 @@ class OrderSummary extends StatelessWidget {
                     Flexible(
                       flex: 2,
                       child: Container(
-                        padding:
-                            const EdgeInsets.all(AppSizes.genericPaddingMin),
+                        padding: const EdgeInsets.all(AppSizes.spacingNormal),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -100,30 +95,26 @@ class OrderSummary extends StatelessWidget {
                             Wrap(
                               children: [
                                 Text(
-                                  productFlats?.name ??
-                                      "",
+                                  productFlats?.sku ?? "",
                                   style: const TextStyle(
-                                    fontSize: AppSizes.normalFontSize,
+                                    fontSize: AppSizes.spacingLarge,
                                   ),
                                 ),
                               ],
                             ),
                             const SizedBox(
-                              height: NormalPadding,
+                              height: AppSizes.spacingNormal,
                             ),
                             Wrap(
                               children: [
                                 Text(
-                                  "CartPageQtyLabel".localized(),
+                                  StringConstants.cartPageQtyLabel.localized(),
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                                 Text(
-                                  savePaymentModel
-                                          .cart?.items![itemIndex].quantity
-                                          .toString() ??
-                                      "",
+                                  productFlats?.quantity.toString() ?? "",
                                   style: const TextStyle(
                                       fontWeight: FontWeight.bold),
                                 )
@@ -135,16 +126,13 @@ class OrderSummary extends StatelessWidget {
                             Wrap(
                               children: [
                                 Text(
-                                  "Price -".localized(),
+                                  "${StringConstants.price.localized()} - ",
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                                 Text(
-                                  savePaymentModel.cart?.items![itemIndex]
-                                          .formattedPrice?.price
-                                          .toString() ??
-                                      "",
+                                  "${savePaymentModel.cart?.formattedPrice?.baseTotal ?? ""}",
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -157,16 +145,14 @@ class OrderSummary extends StatelessWidget {
                             Wrap(
                               children: [
                                 Text(
-                                  "CartPageSubtotalLabel".localized(),
+                                  StringConstants.cartPageSubtotalLabel
+                                      .localized(),
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                                 Text(
-                                  savePaymentModel.cart?.items![itemIndex]
-                                          .formattedPrice?.total
-                                          .toString() ??
-                                      "",
+                                  "${savePaymentModel.cart?.formattedPrice?.total ?? ""}",
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                   ),

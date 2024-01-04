@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Bagisto Laravel App</string>
+<!--    <string name="app_name">Bagisto Laravel App</string>-->
 
     <string name="maps_api_key" translatable="false">AIzaSyBAlqVDV_6ec8DKG3yJPAE29HV4f-GOsdk</string>
 

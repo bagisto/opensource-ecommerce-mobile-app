@@ -10,37 +10,46 @@
 
 // ignore_for_file: file_names, must_be_immutable
 
-import 'package:bagisto_app_demo/common_widget/common_widgets.dart';
-import 'package:bagisto_app_demo/models/product_model/product_screen_model.dart';
 import 'package:flutter/material.dart';
+import '../../../../widgets/common_widgets.dart';
+import '../../../cart_screen/cart_model/cart_data_model.dart';
 
 
 class DropDownType extends StatefulWidget {
-  List<Options> options;
-  Attributes? variation ;
+  List<Options?> options;
+  Attributes? variation;
+
   final Function(int)? callback;
-  DropDownType({Key? key, this.variation,required this.options, this.callback}) : super(key: key);
+
+  DropDownType({Key? key, this.variation, required this.options, this.callback})
+      : super(key: key);
+
   @override
   State<StatefulWidget> createState() => _DropDownTypeState();
 }
 
 class _DropDownTypeState extends State<DropDownType> {
-@override
+  @override
   void initState() {
     // TODO: implement initState
     super.initState();
   }
+
   @override
   Widget build(BuildContext context) {
-    return CommonWidgets().getDropdown(Key(widget.variation?.id?.toString() ??''), context,widget.options.map((e) => e.label ?? '').toList() ,
+    return CommonWidgets().getDropdown(
+        Key(widget.variation?.id?.toString() ?? ''),
+        context,
+        widget.options.map((e) => e?.label ?? '').toList(),
         widget.variation?.label,
-        null , null,  widget.variation?.label??"", (p0, p1) {
-
-      if(widget.callback != null) {
-        widget.callback!(int.parse(widget.options.firstWhere((element) => element.label == p0).id??"") );
+        null,
+        null,
+        widget.variation?.label ?? "", (p0, p1) {
+      if (widget.callback != null) {
+        widget.callback!(int.parse(
+            widget.options.firstWhere((element) => element?.label == p0)?.id ??
+                ""));
       }
     }, false);
-
   }
 }
-

@@ -8,20 +8,10 @@
  * @link https://store.webkul.com/license.html
  */
 
-// ignore_for_file: file_names
-
-import 'package:bagisto_app_demo/models/order_model/order_detail_model.dart';
+import 'package:bagisto_app_demo/utils/index.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
-import '../../../base_model/graphql_base_model.dart';
-import '../../../helper/application_localization.dart';
-import '../event/order_detail_base_event.dart';
-import '../event/order_detail_fetch_event.dart';
-import '../repository/order_detail_repository.dart';
-import '../state/order_detail_base_state.dart';
-import '../state/order_detail_fetch.dart';
-import '../state/order_detail_fetch_state.dart';
+import 'package:bagisto_app_demo/screens/order_detail/utils/index.dart';
 
 class OrderDetailBloc extends Bloc<OrderDetailBaseEvent, OrderDetailBaseState> {
   OrderDetailRepository? repository;
@@ -37,7 +27,7 @@ class OrderDetailBloc extends Bloc<OrderDetailBaseEvent, OrderDetailBaseState> {
     if (event is OrderDetailFetchDataEvent) {
       try {
         OrderDetail orderDetailModel =
-            await repository!.getOrderDetails(event.orderId ?? 1);
+        await repository!.getOrderDetails(event.orderId ?? 1);
         if (orderDetailModel.responseStatus == true) {
           emit(
             OrderDetailFetchDataState.success(
@@ -57,11 +47,11 @@ class OrderDetailBloc extends Bloc<OrderDetailBaseEvent, OrderDetailBaseState> {
               baseModel: baseModel,
               successMsg: baseModel.success));
         } else {
-          emit(CancelOrderState.fail(error: baseModel.success));
+          emit(CancelOrderState.fail(error: baseModel.error));
         }
       } catch (e) {
         emit(CancelOrderState.fail(
-            error: "SomethingWrong".localized()));
+            error: StringConstants.somethingWrong.localized()));
       }
     }else if(event is OnClickOrderLoadingEvent){
       emit (OnClickLoadingState(isReqToShowLoader: event.isReqToShowLoader));

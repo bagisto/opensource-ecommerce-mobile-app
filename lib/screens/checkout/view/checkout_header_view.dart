@@ -8,25 +8,21 @@
  * @link https://store.webkul.com/license.html
  */
 
-// ignore_for_file: file_names, must_be_immutable, unnecessary_null_comparison
-
-import 'package:bagisto_app_demo/configuration/mobikul_theme.dart';
-import 'package:bagisto_app_demo/helper/string_constants.dart';
-import 'package:bagisto_app_demo/helper/application_localization.dart';
+import 'package:bagisto_app_demo/utils/application_localization.dart';
 import 'package:flutter/material.dart';
+import '../../../utils/app_constants.dart';
+import '../../../utils/mobikul_theme.dart';
+import '../../../utils/string_constants.dart';
 
-import '../../../configuration/app_sizes.dart';
-
+//ignore: must_be_immutable
 class CheckoutHeaderView extends StatefulWidget {
   String? total;
   int curStep;
   ValueChanged<int>? didSelect;
   BuildContext? context;
-
   CheckoutHeaderView(
       {Key? key, this.curStep = 1, this.didSelect, this.total, this.context})
       : super(key: key);
-
   @override
   State<StatefulWidget> createState() {
     return _CheckoutHeaderViewState();
@@ -34,11 +30,11 @@ class CheckoutHeaderView extends StatefulWidget {
 }
 
 class _CheckoutHeaderViewState extends State<CheckoutHeaderView> {
-  late List<String> titles = [
-    "AddressCheckout".localized(),
-    "Shipping".localized(),
-    "Payment".localized(),
-    "Checkout".localized(),
+  late List<String>? titles = [
+    StringConstants.addressCheckout.localized(),
+    StringConstants.shipping.localized(),
+    StringConstants.payment.localized(),
+    StringConstants.checkout.localized(),
   ];
   List<IconData> stepIcons = [
     Icons.person,
@@ -48,18 +44,14 @@ class _CheckoutHeaderViewState extends State<CheckoutHeaderView> {
   ];
   final Color _activeColor = MobikulTheme.accentColor;
   final Color _inactiveColor = MobikulTheme.checkOutInActiveColor;
-  final double lineWidth = NormalWidth;
-
-  @override
-  void initState() {
-    super.initState();
-  }
+  final double lineWidth = AppSizes.spacingSmall;
 
   @override
   Widget build(BuildContext context) {
     debugPrint(widget.curStep.toString());
     return Card(
       elevation: 2,
+      margin: const EdgeInsets.fromLTRB(0, 4, 0, 4),
       child: Container(
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
           width: MediaQuery.of(context).size.width,
@@ -74,7 +66,7 @@ class _CheckoutHeaderViewState extends State<CheckoutHeaderView> {
                   children: _iconViews(),
                 ),
               ),
-              const SizedBox(height: AppSizes.normalHeight),
+              const SizedBox(height: AppSizes.spacingWide),
               if (titles != null)
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -88,7 +80,6 @@ class _CheckoutHeaderViewState extends State<CheckoutHeaderView> {
   List<Widget> _iconViews() {
     var list = <Widget>[];
     stepIcons.asMap().forEach((i, icon) {
-      //colors according to state
       var circleColor =
           (i == 0 || widget.curStep > i) ? _activeColor : Colors.grey[400];
 
@@ -101,8 +92,8 @@ class _CheckoutHeaderViewState extends State<CheckoutHeaderView> {
 
       list.add(InkWell(
         child: Container(
-          width: 30.0,
-          height: 30.0,
+          width: AppSizes.spacingLarge*2,
+          height: AppSizes.spacingLarge*2,
           padding: const EdgeInsets.all(0),
           decoration: BoxDecoration(
             color: circleColor,
@@ -115,8 +106,6 @@ class _CheckoutHeaderViewState extends State<CheckoutHeaderView> {
           ),
         ),
       ));
-
-      //line between icons
       if (i != stepIcons.length - 1) {
         list.add(Expanded(
             child: Container(
@@ -131,8 +120,8 @@ class _CheckoutHeaderViewState extends State<CheckoutHeaderView> {
 
   List<Widget> _titleViews() {
     var list = <Widget>[];
-    titles.asMap().forEach((i, text) {
-      list.add(Text(text, style: const TextStyle(fontWeight: FontWeight.w700)));
+    titles?.asMap().forEach((i, text) {
+      list.add(Text(text, style: Theme.of(context).textTheme.bodyLarge));
     });
     return list;
   }

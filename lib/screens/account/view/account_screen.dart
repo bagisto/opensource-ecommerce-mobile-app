@@ -8,12 +8,13 @@
  * @link https://store.webkul.com/license.html
  */
 
-// ignore_for_file: constant_identifier_names, file_names, implementation_imports, deprecated_member_use
-
-import 'package:bagisto_app_demo/screens/account/view/widget/account_index.dart';
-import 'package:bagisto_app_demo/screens/account/view/widget/profile_detail.dart';
-import '../../../configuration/app_global_data.dart';
-import '../../../models/account_models/account_update_model.dart';
+import 'package:bagisto_app_demo/data_model/account_models/account_update_model.dart';
+import 'package:bagisto_app_demo/screens/account/bloc/account_info_bloc.dart';
+import 'package:bagisto_app_demo/screens/account/bloc/account_info_detail_state.dart';
+import 'package:bagisto_app_demo/screens/account/utils/index.dart';
+import 'package:bagisto_app_demo/screens/cart_screen/cart_index.dart';
+import '../../../utils/index.dart';
+import '../../home_page/utils/fetch_shared_pref_helper.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({Key? key}) : super(key: key);
@@ -40,6 +41,7 @@ AccountInfoDetails? _accountInfoDetails;
 AccountUpdate? _accountUpdate;
 bool isLoad = true;
 String? base64string;
+AccountInfoBloc? accountInfoBloc;
 
 GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
     GlobalKey<ScaffoldMessengerState>();
@@ -52,8 +54,8 @@ class _AccountScreenState extends State<AccountScreen>
     currentPasswordController.text = "";
     newPasswordController.text = "";
     confirmNewPasswordController.text = "";
-    AccountInfoBloc accountInfoBloc = context.read<AccountInfoBloc>();
-    accountInfoBloc.add(AccountInfoDetailsEvent());
+    accountInfoBloc = context.read<AccountInfoBloc>();
+    accountInfoBloc?.add(AccountInfoDetailsEvent());
     super.initState();
   }
 
@@ -61,41 +63,40 @@ class _AccountScreenState extends State<AccountScreen>
   Widget build(BuildContext context) {
     return ScaffoldMessenger(
       key: scaffoldMessengerKey,
-      child:Directionality(
+      child: Directionality(
         textDirection: GlobalData.contentDirection(),
         child: Scaffold(
-        appBar: AppBar(
-          centerTitle: false,
-          title: CommonWidgets.getHeadingText(
-              "AccountInformation".localized(), context),
-        ),
-        body:  _profileBloc(context),
-        bottomNavigationBar: SizedBox(
-          height: 80,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 14.0, horizontal: 12),
-            child: MaterialButton(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.0)),
-              elevation: AppSizes.elevation,
-              height: AppSizes.buttonHeight,
-              minWidth: MediaQuery.of(context).size.width,
-              color: Theme.of(context).colorScheme.background,
-              textColor: Theme.of(context).colorScheme.onBackground,
-              onPressed: () {
-                _onPressSaveButton();
-              },
-              child: Text(
-                "Save".localized().toUpperCase(),
-                style: TextStyle(
-                    fontSize: AppSizes.normalFontSize,
-                    color: MobikulTheme.primaryColor),
+          appBar: AppBar(
+            centerTitle: false,
+            title: Text(StringConstants.accountInfo.localized()),
+          ),
+          body: _profileBloc(context),
+          bottomNavigationBar: SizedBox(
+            height: 80,
+            child: Padding(
+              padding:
+                  const EdgeInsets.symmetric(vertical: 14.0, horizontal: 12),
+              child: MaterialButton(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0)),
+                elevation: 2.0,
+                height: AppSizes.buttonHeight,
+                minWidth: MediaQuery.of(context).size.width,
+                color: Theme.of(context).colorScheme.onBackground,
+                onPressed: () {
+                  _onPressSaveButton();
+                },
+                child: Text(StringConstants.save.localized().toUpperCase(),
+                  style: TextStyle(
+                      fontSize: AppSizes.spacingLarge,
+                      color: MobikulTheme.primaryColor),
+                ),
               ),
             ),
           ),
         ),
       ),
-      ));
+    );
   }
 
   ///Profile BLOC CONTAINER///
@@ -104,44 +105,29 @@ class _AccountScreenState extends State<AccountScreen>
       listener: (BuildContext context, AccountInfoBaseState state) {
         if (state is AccountInfoUpdateState) {
           if (state.status == AccountStatus.fail) {
-            ShowMessage.showNotification(
-                "Invalid Data",
-                "InvalidData".localized(),
-                Colors.red,
-                const Icon(Icons.cancel_outlined));
+            ShowMessage.errorNotification(StringConstants.invalidData.localized(),context);
           } else if (state.status == AccountStatus.success) {
             if (state.accountUpdate?.status == true) {
-              ShowMessage.showNotification(
-                  "Success",
-                  state.accountUpdate?.message ?? "",
-                  const Color.fromRGBO(140, 194, 74, 5),
-                  const Icon(Icons.check_circle));
+              ShowMessage.successNotification(
+                  state.accountUpdate?.message ?? "", context);
 
               Future.delayed(const Duration(seconds: 2)).then((value) {
                 _updateSharedPreferences(_accountUpdate!);
                 Navigator.pop(context, true);
-                // Navigator.pushReplacementNamed(context, Home);
               });
             } else {
               Navigator.of(context).pop();
-              ShowMessage.showNotification(
-                  "Failed",
-                  state.accountUpdate?.success ?? "",
-                  Colors.red,
-                  const Icon(Icons.check_circle));
+              ShowMessage.errorNotification(
+                  state.accountUpdate?.success ?? "",context);
             }
           }
         } else if (state is AccountInfoDeleteState) {
           if (state.status == AccountStatus.fail) {
-            ShowMessage.showNotification("Failed", state.successMsg, Colors.red,
-                const Icon(Icons.cancel_outlined));
+            ShowMessage.errorNotification(state.successMsg ?? "", context);
           } else if (state.status == AccountStatus.success) {
             if (state.baseModel?.status == true) {
-              ShowMessage.showNotification(
-                  "Success",
-                  state.baseModel?.success ?? "",
-                  const Color.fromRGBO(140, 194, 74, 5),
-                  const Icon(Icons.check_circle));
+              ShowMessage.successNotification(
+                  state.baseModel?.success ?? "", context);
               Navigator.pop(context);
               HomePageRepositoryImp().callLogoutApi().then((response) async {
                 Navigator.pop(context);
@@ -150,18 +136,14 @@ class _AccountScreenState extends State<AccountScreen>
                     await SharedPreferenceHelper.onUserLogout();
                     _fetchSharedPreferenceData();
                   }
-                  // ignore: use_build_context_synchronously
-                  return Navigator.pushReplacementNamed(context, Home);
+                  return Navigator.pushReplacementNamed(context, home);
                 });
               });
             } else {
               Navigator.pop(context);
               Navigator.of(context).pop();
-              ShowMessage.showNotification(
-                  "Warning",
-                  state.baseModel?.success ?? "",
-                  Colors.yellow,
-                  const Icon(Icons.warning_amber));
+              ShowMessage.warningNotification(
+                  state.baseModel?.success ?? "", context);
             }
           }
         }
@@ -185,9 +167,6 @@ class _AccountScreenState extends State<AccountScreen>
           phoneController.text = _accountInfoDetails?.data?.phone ?? "";
           emailController.text = _accountInfoDetails?.data?.email ?? "";
         }
-        return ProfileDetailView(
-          formKey: _formKey,
-        );
       }
       if (state.status == AccountStatus.fail) {
         return ErrorMessage.errorMsg(state.error ?? "error");
@@ -200,34 +179,21 @@ class _AccountScreenState extends State<AccountScreen>
         if (_accountUpdate != null) {
           _updateSharedPreferences(_accountUpdate!);
         }
-        return ProfileDetailView(
-          formKey: _formKey,
-        );
       }
-      if (state.status == AccountStatus.fail) {
-        return ProfileDetailView(
-          formKey: _formKey,
-        );
-      }
+      if (state.status == AccountStatus.fail) {}
     }
     if (state is AccountInfoDeleteState) {
-      if (state.status == AccountStatus.success) {
-        return ProfileDetailView(
-          formKey: _formKey,
-        );
-      }
-      if (state.status == AccountStatus.fail) {
-        return ProfileDetailView(
-          formKey: _formKey,
-        );
-      }
+      if (state.status == AccountStatus.success) {}
+      if (state.status == AccountStatus.fail) {}
     }
 
     if (state is InitialAccountState) {
-      return CircularProgressIndicatorClass.circularProgressIndicator(context);
+      return const AccountLoaderView();
     }
 
-    return Container();
+    return ProfileDetailView(
+      formKey: _formKey,
+    );
   }
 
   _fetchSharedPreferenceData() {
@@ -241,8 +207,7 @@ class _AccountScreenState extends State<AccountScreen>
         });
       } else {
         setState(() {
-          customerUserName = /*WelcomeGuest*/
-              "WelcomeGuest".localized();
+          customerUserName = StringConstants.welcomeGuest.localized();
           isLoggedIn = isLogged;
         });
       }
@@ -259,37 +224,34 @@ class _AccountScreenState extends State<AccountScreen>
             return Dialog(
               child: Container(
                 color: Theme.of(context).appBarTheme.backgroundColor,
-                padding: const EdgeInsets.all(AppSizes.widgetSidePadding),
+                padding: const EdgeInsets.all(AppSizes.spacingWide),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const SizedBox(
-                      height: AppSizes.normalHeight,
+                      height: AppSizes.spacingMedium,
                     ),
                     CircularProgressIndicatorClass.circularProgressIndicator(
                         context),
-                    const SizedBox(
-                      height: AppSizes.widgetHeight,
-                    ),
+                    const SizedBox(height: AppSizes.spacingWide),
                     SizedBox(
                       width: MediaQuery.of(context).size.width / 2.5,
                       child: Center(
                         child: Text(
-                          "PleaseWaitProcessingRequest".localized(),
+                          StringConstants.processWaitingMsg.localized(),
                           softWrap: true,
                         ),
                       ),
                     ),
                     const SizedBox(
-                      height: AppSizes.normalHeight,
+                      height: AppSizes.spacingMedium,
                     ),
                   ],
                 ),
               ),
             );
           });
-      AccountInfoBloc accountInfoBloc = context.read<AccountInfoBloc>();
-      accountInfoBloc.add(AccountInfoUpdateEvent(
+      accountInfoBloc?.add(AccountInfoUpdateEvent(
           firstName: firstNameController.text,
           lastName: lastNameController.text,
           gender: genderValues?[currentGenderValue],
