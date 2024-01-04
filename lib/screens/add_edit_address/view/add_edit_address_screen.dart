@@ -1,3 +1,5 @@
+// ignore_for_file: unnecessary_statements
+
 /*
  * Webkul Software.
  * @package Mobikul Application Code.
@@ -8,33 +10,26 @@
  * @link https://store.webkul.com/license.html
  */
 
-// ignore_for_file: file_names, deprecated_member_use
-import 'package:bagisto_app_demo/common_widget/common_error_msg.dart';
-import 'package:bagisto_app_demo/common_widget/common_widgets.dart';
-import 'package:bagisto_app_demo/common_widget/show_message.dart';
-import 'package:bagisto_app_demo/helper/application_localization.dart';
-import 'package:bagisto_app_demo/helper/phone_number_validator.dart';
-import 'package:bagisto_app_demo/helper/string_constants.dart';
-import 'package:bagisto_app_demo/models/address_model/address_model.dart';
-import 'package:bagisto_app_demo/screens/add_edit_address/bloc/add_edi_address_bloc.dart';
-import 'package:bagisto_app_demo/screens/add_edit_address/events/address_country_event.dart';
-import 'package:bagisto_app_demo/screens/add_edit_address/events/fetch_add_address_event.dart';
-import 'package:bagisto_app_demo/screens/add_edit_address/events/fetch_edit_address_event.dart';
-import 'package:bagisto_app_demo/screens/add_edit_address/state/address_country_state.dart';
-import 'package:bagisto_app_demo/screens/add_edit_address/state/fetch_add_address_state.dart';
-import 'package:bagisto_app_demo/screens/add_edit_address/state/fetch_edit_address_state.dart';
-
-// ignore: depend_on_referenced_packages
-import 'package:collection/collection.dart';
+import 'package:bagisto_app_demo/utils/application_localization.dart';
+import 'package:bagisto_app_demo/widgets/loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../Configuration/mobikul_theme.dart';
-import '../../../common_widget/circular_progress_indicator.dart';
-import '../../../common_widget/common_drop_down_field.dart';
-import '../../../configuration/app_global_data.dart';
-import '../../../configuration/app_sizes.dart';
-import '../../../models/address_model/country_model.dart';
-import '../../locationSearch/view/location_screen.dart';
+import 'package:collection/collection.dart';
+import '../../../utils/app_constants.dart';
+import '../../../utils/app_global_data.dart';
+import '../../../utils/input_field_validators.dart';
+import '../../../utils/mobikul_theme.dart';
+import '../../../utils/shared_preference_helper.dart';
+import '../../../utils/string_constants.dart';
+import '../../../widgets/common_drop_down_field.dart';
+import '../../../widgets/common_error_msg.dart';
+import '../../../widgets/common_widgets.dart';
+import '../../../widgets/show_message.dart';
+import '../../address_list/data_model/address_model.dart';
+import '../../address_list/data_model/country_model.dart';
+import '../bloc/add_edit_address_bloc.dart';
+import '../bloc/address_country_event.dart';
+import '../bloc/fetch_add_address_state.dart';
 
 // ignore: must_be_immutable
 class AddNewAddress extends StatefulWidget {
@@ -50,7 +45,8 @@ class AddNewAddress extends StatefulWidget {
 class _AddNewAddressState extends State<AddNewAddress>
     with PhoneNumberValidator {
   final _formKey = GlobalKey<FormState>();
-  final bool _autoValidate = false;
+  final bool _autoValidate =
+      false; //this bool value is used to decide when to validate form
   Data? selectedCountry;
   final firstNameController = TextEditingController();
   final lastNameController = TextEditingController();
@@ -65,6 +61,10 @@ class _AddNewAddressState extends State<AddNewAddress>
   CountriesData? countryData;
   List<Data>? countryList = [];
   States? selectedState;
+  String? editCountryName;
+  String? customerUserName;
+  String? addCountryName;
+  String? stateName;
   String? countryCode;
   String? stateCode;
   final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
@@ -74,12 +74,7 @@ class _AddNewAddressState extends State<AddNewAddress>
 
   @override
   void initState() {
-    widget.isEdit
-        ? firstNameController.text = widget.addressModel?.firstName ?? ""
-        : "";
-    widget.isEdit
-        ? lastNameController.text = widget.addressModel?.lastName ?? ""
-        : "";
+    _fetchSharedPreferenceData();
     widget.isEdit
         ? companyController.text = widget.addressModel?.companyName ?? ""
         : "";
@@ -102,69 +97,43 @@ class _AddNewAddressState extends State<AddNewAddress>
     widget.isEdit
         ? vatIdController.text = widget.addressModel?.vatId ?? ""
         : "";
-     widget.isEdit ? selectedCountry?.name = widget.addressModel?.countryName ?? "" : "";
+    widget.isEdit
+        ? editCountryName = widget.addressModel?.countryName ?? ""
+        : "";
     widget.isEdit ? countryCode = widget.addressModel?.country ?? "" : "";
     widget.isEdit ? stateCode = widget.addressModel?.state ?? "" : "";
-
+    addCountryName = countryData?.data
+            ?.firstWhereOrNull((e) => e.code == selectedCountry?.code)
+            ?.name ??
+        countryData?.data?.first.name;
     addEditAddressBloc = context.read<AddEditAddressBloc>();
     super.initState();
+  }
+
+  _fetchSharedPreferenceData() async {
+    customerUserName = await SharedPreferenceHelper.getCustomerName();
+    widget.isEdit
+        ? firstNameController.text = widget.addressModel?.firstName ?? ""
+        : firstNameController.text = customerUserName!.split(" ").elementAt(0);
+    widget.isEdit
+        ? lastNameController.text = widget.addressModel?.lastName ?? ""
+        : lastNameController.text =
+            customerUserName!.split(" ").elementAt(1); // Lorem
   }
 
   @override
   Widget build(BuildContext context) {
     return ScaffoldMessenger(
       key: scaffoldMessengerKey,
-      child:Directionality(
+      child: Directionality(
         textDirection: GlobalData.contentDirection(),
-        child:  Scaffold(
+        child: Scaffold(
           appBar: AppBar(
             centerTitle: false,
-            title: widget.isEdit
-                ? CommonWidgets.getHeadingText(
-                    "EditAddressLabel".localized(), context)
-                : CommonWidgets.getHeadingText(
-                    "AddAddressLabel".localized(), context),
-            actions: [
-              Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: InkWell(
-                  onTap: () async {
-                    Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => const LocationScreen()))
-                        .then((value) {
-                      if (value is Map) {
-                        street1Controller.text =
-                            value['street1'] + " " + value['street3'] ?? "";
-                        cityController.text = value['city'];
-                        zipCodeController.text = value['zip'];
-                        stateNameController.text = value['state'];
-                        setState(() {
-                          selectedCountry?.name = value['country'];
-                          selectedState?.defaultName = value['state'];
-                        });
-                      }
-                    });
-                  },
-                  child: Container(
-                    width: 35.0,
-                    height: 35.0,
-                    decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.onPrimary,
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(100))),
-                    child: Icon(
-                      Icons.my_location,
-                      color: Theme.of(context).cardColor,
-                    ),
-                  ),
-                ),
-              ),
-            ],
+            title: Text(widget.isEdit ? StringConstants.editAddressLabel.localized(): StringConstants.addAddressLabel.localized()),
           ),
-          body:  _addEditAddressBloc(context),
-          ),
+          body: _addEditAddressBloc(context),
+        ),
       ),
     );
   }
@@ -193,7 +162,7 @@ class _AddNewAddressState extends State<AddNewAddress>
                     companyName: companyController.text,
                     vatId: vatIdController.text,
                     address1: [street1Controller.text].toString(),
-                    country: selectedCountry?.code ?? "",
+                    country: selectedCountry?.code ?? countryCode,
                     countryName:
                         selectedCountry?.name ?? countryController.text,
                     state: selectedState?.code ?? stateNameController.text,
@@ -211,7 +180,7 @@ class _AddNewAddressState extends State<AddNewAddress>
                       companyName: companyController.text,
                       vatId: vatIdController.text,
                       address1: [street1Controller.text].toString(),
-                      country: selectedCountry?.code ?? "",
+                      country: selectedCountry?.code ?? countryCode,
                       countryName:
                           selectedCountry?.name ?? countryController.text,
                       state: selectedState?.code ?? stateNameController.text,
@@ -227,12 +196,9 @@ class _AddNewAddressState extends State<AddNewAddress>
             ShowMessage.showNotification(
                 state.error, "", Colors.red, const Icon(Icons.cancel_outlined));
           } else if (state.status == AddEditStatus.success) {
-            ShowMessage.showNotification(
-                state.baseModel!.message,
-                "",
-                const Color.fromRGBO(140, 194, 74, 5),
-                const Icon(Icons.check_circle));
-            if (selectedCountry?.code != null) {
+            ShowMessage.showNotification(state.baseModel!.message, "",
+                const Color.fromRGBO(140, 194, 74, 5), const Icon(Icons.check_circle));
+            if (countryCode != null) {
               Future.delayed(const Duration(seconds: 2), () {
                 Navigator.pop(
                     context,
@@ -241,7 +207,7 @@ class _AddNewAddressState extends State<AddNewAddress>
                       address1: [street1Controller.text].toString(),
                       city: cityController.text,
                       state: selectedState?.code ?? "",
-                      country: selectedCountry?.code ?? "",
+                      country: selectedCountry?.code ?? countryCode,
                       lastName: lastNameController.text,
                       postcode: zipCodeController.text,
                       phone: phoneController.text,
@@ -259,7 +225,7 @@ class _AddNewAddressState extends State<AddNewAddress>
                     address1: [street1Controller.text].toString(),
                     city: cityController.text,
                     state: selectedState?.code ?? "",
-                    country: selectedCountry?.code ?? "",
+                    country: selectedCountry?.code ?? countryCode,
                     lastName: lastNameController.text,
                     postcode: zipCodeController.text,
                     phone: phoneController.text,
@@ -286,11 +252,13 @@ class _AddNewAddressState extends State<AddNewAddress>
         countryData = state.countryData;
         countryList = state.countryData!.data;
         if (selectedCountry == null) {
-          if ((selectedCountry?.states?.length ?? 0) > 0) {
-            selectedState = selectedCountry?.states?.first;
+          if (widget.isEdit) {
+          } else {
+            if ((selectedCountry?.states?.length ?? 0) > 0) {
+              selectedState = selectedCountry?.states?.first;
+            }
           }
         }
-          selectedCountry = countryData?.data?.first;
       }
       if (state.status == AddEditStatus.fail) {
         return ErrorMessage.errorMsg(state.error ?? "Error");
@@ -300,7 +268,7 @@ class _AddNewAddressState extends State<AddNewAddress>
       if ((countryList?.length ?? 0) == 0) {
         addEditAddressBloc?.add(AddressCountryEvent());
       }
-      return CircularProgressIndicatorClass.circularProgressIndicator(context);
+      return const Loader();
     }
     if (state is FetchAddAddressState) {
       if (state.status == AddEditStatus.success) {}
@@ -316,7 +284,7 @@ class _AddNewAddressState extends State<AddNewAddress>
   ///address form
   _getAddressForm() {
     return RefreshIndicator(
-      color: MobikulTheme.accentColor,
+      color: Theme.of(context).colorScheme.onPrimary,
       onRefresh: () {
         return Future.delayed(const Duration(seconds: 1), () {
           _getAddressForm();
@@ -325,215 +293,209 @@ class _AddNewAddressState extends State<AddNewAddress>
       child: SingleChildScrollView(
         child: Container(
           padding: const EdgeInsets.symmetric(
-              vertical: AppSizes.normalPadding,
-              horizontal: AppSizes.mediumPadding),
-          child: Stack(
-            children: [
-              Form(
-                key: _formKey,
-                autovalidateMode: _autoValidate
-                    ? AutovalidateMode.onUserInteraction
-                    : AutovalidateMode.disabled,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    CommonWidgets().getTextFieldHeight(AppSizes.widgetHeight),
-                    CommonWidgets().getTextField(
+              vertical: AppSizes.spacingNormal,
+              horizontal: AppSizes.spacingMedium),
+          child: Form(
+            key: _formKey,
+            autovalidateMode: _autoValidate
+                ? AutovalidateMode.onUserInteraction
+                : AutovalidateMode.disabled,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: AppSizes.spacingWide),
+                CommonWidgets().getTextField(
+                    context,
+                    firstNameController,
+                    StringConstants.firstNameHint.localized(),
+                    label: StringConstants.firstNameLabel.localized(),
+                    validLabel: StringConstants.pleaseFillLabel.localized() +
+                        StringConstants.firstNameHint.localized(), validator: (name) {
+                  if ((name ??"").isEmpty) {
+                    return StringConstants.pleaseFillLabel.localized() +
+                        StringConstants.firstNameLabel.localized();
+                  }
+                  return null;
+                }),
+                const SizedBox(height: AppSizes.spacingWide),
+                CommonWidgets().getTextField(
+                  context,
+                  lastNameController,
+                  StringConstants.lastNameLabel.localized(),
+                   label: StringConstants.lastNameLabel.localized(),
+                  validLabel: StringConstants.pleaseFillLabel.localized() + StringConstants.lastNameLabel.localized(),
+                  validator: (lastName) {
+                    if (lastName!.isEmpty) {
+                      return StringConstants.pleaseFillLabel.localized() +
+                          StringConstants.lastNameLabel.localized();
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: AppSizes.spacingWide),
+                CommonWidgets().getTextField(
+                  context,
+                  companyController,
+                   StringConstants.companyNameHint.localized(),
+                  label: StringConstants.companyNameLabel.localized(),
+                  validLabel: StringConstants.pleaseFillLabel.localized() +
+                      StringConstants.companyNameLabel.localized(),
+                  validator: (companyName) {
+                    if (companyName!.isEmpty) {
+                      return StringConstants.pleaseFillLabel.localized() +
+                          StringConstants.companyNameLabel.localized();
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: AppSizes.spacingWide),
+                CommonWidgets().getTextField(
+                  context,
+                  phoneController,
+                   StringConstants.contactUsPhoneHint.localized(),
+                  label: StringConstants.contactUsPhoneLabel.localized(),
+                  validLabel: StringConstants.pleaseFillLabel.localized() +
+                      StringConstants.contactUsPhoneLabel.localized(),
+                  keyboardType: TextInputType.phone,
+                  validator: (phone) {
+                    if (phone!.isEmpty) {
+                      return StringConstants.pleaseFillLabel.localized() +
+                          StringConstants.contactUsPhoneLabel.localized();
+                    } else if (!isValidPhone(phone)) {
+                      return StringConstants.phoneWarning.localized();
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: AppSizes.spacingWide),
+                CommonWidgets().getTextField(
+                  context,
+                  street1Controller,
+                  StringConstants.streetHint.localized(),
+                  label: StringConstants.streetLabel.localized(),
+                  validLabel: StringConstants.pleaseFillLabel.localized() + StringConstants.streetLabel.localized(),
+                  validator: (street1) {
+                    if (street1!.isEmpty) {
+                      return StringConstants.pleaseFillLabel.localized() +
+                          StringConstants.streetLabel.localized();
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: AppSizes.spacingWide),
+                Text(StringConstants.vatIdNote.localized()),
+                const SizedBox(height: 6),
+                CommonWidgets().getTextField(
+                  context,
+                  vatIdController,
+                   StringConstants.vatIdHint.localized(),
+                  label:   StringConstants.vatIdLabel.localized(),
+                  validLabel: StringConstants.pleaseFillLabel.localized() + StringConstants.vatIdLabel.localized(),
+                ),
+                const SizedBox(height: AppSizes.spacingWide),
+                CommonWidgets().getTextField(
+                  context,
+                  zipCodeController,
+                   StringConstants.zipHint.localized(),
+                  label: StringConstants.zipLabel.localized(),
+                  validLabel: StringConstants.pleaseFillLabel.localized() + StringConstants.zipLabel.localized(),
+                  keyboardType: TextInputType.number,
+                  validator: (zipCode) {
+                    if (zipCode!.isEmpty) {
+                      return StringConstants.pleaseFillLabel.localized() +
+                          StringConstants.zipLabel.localized();
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: AppSizes.spacingWide),
+                CommonDropDownField(
+                  value: widget.isEdit ? editCountryName : addCountryName,
+                  itemList: getCountryStrings(),
+                  hintText: StringConstants.countryHint.localized(),
+                  labelText: StringConstants.countryLabel.localized(),
+                  key: const Key('country'),
+                  callBack: dropdownUpdate,
+                ),
+                const SizedBox(height: AppSizes.spacingWide),
+                (selectedCountry != null &&
+                        (selectedCountry!.states?.length ?? 0) > 0)
+                    ? CommonDropDownField(
+                        value: stateName,
+                        itemList: selectedCountry?.states
+                                ?.map((e) => e.defaultName ?? '')
+                                .toList() ??
+                            [],
+                        hintText: StringConstants.stateHint.localized(),
+                        labelText: StringConstants.stateLabel.localized(),
+                        key: const Key('States'),
+                        callBack: dropdownUpdate,
+                      )
+                    : CommonWidgets().getTextField(
                         context,
-                        firstNameController,
-                        "FirstNameLabel".localized(),
-                        "FirstNameHint".localized(),
-                        "PleaseFillLabel".localized() +
-                            "FirstNameLabel".localized(), validator: (name) {
-                      if (name!.isEmpty) {
-                        return "PleaseFillLabel".localized() +
-                            "FirstNameLabel".localized();
-                      }
-                      return null;
-                    }),
-                    CommonWidgets().getTextFieldHeight(AppSizes.widgetHeight),
-                    CommonWidgets().getTextField(
-                      context,
-                      lastNameController,
-                      "LastNameLabel".localized(),
-                      "LastNameLabel".localized(),
-                      "PleaseFillLabel".localized() +
-                          "LastNameLabel".localized(),
-                      validator: (lastName) {
-                        if (lastName!.isEmpty) {
-                          return "PleaseFillLabel".localized() +
-                              "LastNameLabel".localized();
-                        }
-                        return null;
-                      },
-                    ),
-                    CommonWidgets().getTextFieldHeight(AppSizes.widgetHeight),
-                    CommonWidgets().getTextField(
-                      context,
-                      companyController,
-                      "CompanyNameLabel".localized(),
-                      "CompanyNameHint".localized(),
-                      "PleaseFillLabel".localized() +
-                          "CompanyNameLabel".localized(),
-                      validator: (companyName) {
-                        if (companyName!.isEmpty) {
-                          return "PleaseFillLabel".localized() +
-                              "CompanyNameLabel".localized();
-                        }
-                        return null;
-                      },
-                    ),
-                    CommonWidgets().getTextFieldHeight(AppSizes.widgetHeight),
-                    CommonWidgets().getTextField(
-                      context,
-                      phoneController,
-                      "ContactUsPhoneLabel".localized(),
-                      "ContactUsPhoneHint".localized(),
-                      "PleaseFillLabel".localized() +
-                          "ContactUsPhoneLabel".localized(),
-                      keyboardType: TextInputType.phone,
-                      validator: (phone) {
-                        if (phone!.isEmpty) {
-                          return "PleaseFillLabel".localized() +
-                              "ContactUsPhoneLabel".localized();
-                        } else if (!isValidPhone(phone)) {
-                          return "PhoneWarning".localized();
-                        }
-                        return null;
-                      },
-                    ),
-                    CommonWidgets().getTextFieldHeight(AppSizes.widgetHeight),
-                    CommonWidgets().getTextField(
-                      context,
-                      street1Controller,
-                      "StreetLabel".localized(),
-                      "StreetHint".localized(),
-                      "PleaseFillLabel".localized() + "StreetLabel".localized(),
-                      validator: (street1) {
-                        if (street1!.isEmpty) {
-                          return "PleaseFillLabel".localized() +
-                              "StreetLabel".localized();
-                        }
-                        return null;
-                      },
-                    ),
-                    CommonWidgets().getTextFieldHeight(AppSizes.widgetHeight),
-                    Text("vatIdNote".localized()),
-                    CommonWidgets().getTextFieldHeight(6),
-                    CommonWidgets().getTextField(
-                      context,
-                      vatIdController,
-                      "VatIdLabel".localized(),
-                      "VatIdHint".localized(),
-                      "PleaseFillLabel".localized() + "VatIdLabel".localized(),
-                    ),
-                    CommonWidgets().getTextFieldHeight(AppSizes.widgetHeight),
-                    CommonWidgets().getTextField(
-                      context,
-                      zipCodeController,
-                      "ZipLabel".localized(),
-                      "ZipHint".localized(),
-                      "PleaseFillLabel".localized() + "ZipLabel".localized(),
-                      keyboardType: TextInputType.number,
-                      validator: (zipCode) {
-                        if (zipCode!.isEmpty) {
-                          return "PleaseFillLabel".localized() +
-                              "ZipLabel".localized();
-                        }
-                        return null;
-                      },
-                    ),
-                    CommonWidgets().getTextFieldHeight(AppSizes.widgetHeight),
-                    CommonDropDownField(
-                      value: selectedCountry?.name,
-                      itemList: getCountryStrings(),
-                      hintText: "CountryHint".localized(),
-                      labelText: "CountryLabel".localized(),
-                      key: const Key('country'),
-                      callBack: dropdownUpdate,
-                    ),
-                    CommonWidgets().getTextFieldHeight(AppSizes.widgetHeight),
-                    (selectedCountry != null &&
-                            (selectedCountry!.states?.length ?? 0) > 0)
-                        ? CommonDropDownField(
-                            value: selectedState?.defaultName,
-                            itemList: selectedCountry?.states
-                                    ?.map((e) => e.defaultName ?? '')
-                                    .toList() ??
-                                [],
-                            hintText: "StateHint".localized(),
-                            labelText: "StateLabel".localized(),
-                            key: const Key('States'),
-                            callBack: dropdownUpdate,
-                          )
-                        : CommonWidgets().getTextField(
-                            context,
-                            stateNameController,
-                            "StateLabel".localized(),
-                            "StateHint".localized(),
-                            "PleaseFillLabel".localized() +
-                                "StateLabel".localized(),
-                            validator: (cityName) {
-                              if (cityName!.isEmpty) {
-                                return "PleaseFillLabel".localized() +
-                                    "StateLabel".localized();
-                              }
-                              return null;
-                            },
-                          ),
-                    CommonWidgets().getTextFieldHeight(AppSizes.widgetHeight),
-                    CommonWidgets().getTextField(
-                      context,
-                      cityController,
-                      "CityLabel".localized(),
-                      "CityHint".localized(),
-                      "PleaseFillLabel".localized() + "CityLabel".localized(),
-                      validator: (cityName) {
-                        if (cityName!.isEmpty) {
-                          return "PleaseFillLabel".localized() +
-                              "CityLabel".localized();
-                        }
-                        return null;
-                      },
-                    ),
-                    CommonWidgets().getTextFieldHeight(AppSizes.widgetHeight),
-                    Row(
-                      children: <Widget>[
-                        Checkbox(
-                            value: isDefault,
-                            activeColor: MobikulTheme.accentColor,
-                            onChanged: (bool? value) {
-                              setState(() {
-                                isDefault = value ?? false;
-                              });
-                            }),
-                        Text('DefaultAddress'.localized()),
-                      ],
-                    ),
-                    CommonWidgets().getTextFieldHeight(AppSizes.widgetHeight),
-                    MaterialButton(
-                      shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                          side: BorderSide(width: 2)),
-                      elevation: 0.0,
-                      height: 48,
-                      minWidth: MediaQuery.of(context).size.width,
-                      color: Theme.of(context).colorScheme.background,
-                      textColor: Colors.white,
-                      onPressed: () {
-                        _onPressSaveButton();
-                      },
-                      child: Text(
-                        "SaveAddress".localized().toUpperCase(),
-                        style:
-                            const TextStyle(fontSize: AppSizes.normalFontSize),
+                        stateNameController,
+                        StringConstants.stateHint.localized(),
+                        label: StringConstants.stateLabel.localized(),
+                        validLabel: StringConstants.pleaseFillLabel.localized() +
+                            StringConstants.stateLabel.localized(),
+                        validator: (cityName) {
+                          if (cityName!.isEmpty) {
+                            return StringConstants.pleaseFillLabel.localized() +
+                                StringConstants.stateLabel.localized();
+                          }
+                          return null;
+                        },
                       ),
-                    ),
-                    CommonWidgets().getTextFieldHeight(NormalHeight)
+                const SizedBox(height: AppSizes.spacingWide),
+                CommonWidgets().getTextField(
+                  context,
+                  cityController,
+                   StringConstants.cityHint.localized(),
+                  label:  StringConstants.cityLabel.localized(),
+                  validLabel: StringConstants.pleaseFillLabel.localized() + StringConstants.cityLabel.localized(),
+                  validator: (cityName) {
+                    if (cityName!.isEmpty) {
+                      return StringConstants.pleaseFillLabel.localized() +
+                          StringConstants.cityLabel.localized();
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: AppSizes.spacingWide),
+                Row(
+                  children: [
+                    Checkbox(
+                        value: isDefault,
+                        onChanged: (bool? value) {
+                          setState(() {
+                            isDefault = value ?? false;
+                            debugPrint("$isDefault");
+                          });
+                        }),
+                    Text(StringConstants.defaultAddress.localized()),
                   ],
                 ),
-              ),
-            ],
+                const SizedBox(height: AppSizes.spacingWide),
+                MaterialButton(
+                  shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                      side: BorderSide(width: 2)),
+                  elevation: 0.0,
+                  height: 48,
+                  minWidth: MediaQuery.of(context).size.width,
+                  color: Theme.of(context).colorScheme.background,
+                  textColor: Theme.of(context).colorScheme.onBackground,
+                  onPressed: () {
+                    _onPressSaveButton();
+                  },
+                  child: Text(
+                    StringConstants.saveAddress.localized().toUpperCase(),
+                    style: const TextStyle(fontSize: AppSizes.spacingLarge),
+                  ),
+                ),
+                const SizedBox(height: AppSizes.spacingWide),
+              ],
+            ),
           ),
         ),
       ),
@@ -547,9 +509,7 @@ class _AddNewAddressState extends State<AddNewAddress>
         if (item.name == null) {
           country.add("Select Country...");
         } else {
-          if (!country.contains(selectedCountry?.name)) {
-            country.add(item.name ?? '');
-          }
+          country.add(item.name ?? '');
         }
       }
     }
@@ -560,17 +520,21 @@ class _AddNewAddressState extends State<AddNewAddress>
     if (key == const Key('country')) {
       var country = countryList?.firstWhereOrNull((e) => e.name == item);
       selectedCountry = country;
+      countryCode = selectedCountry?.code;
       if ((country?.states?.length ?? 0) > 0) {
         selectedState = country?.states?.first;
       }
+      countryController.text = selectedCountry?.name ?? "";
     } else if (key == const Key('States')) {
       if (selectedCountry != null) {
         var state = selectedCountry?.states
             ?.firstWhereOrNull((element) => element.defaultName == item);
         if (state != null) {
           selectedState = state;
+          stateName = selectedState?.defaultName;
         }
       }
+      stateNameController.text = selectedState?.code ?? "";
     }
     setState(() {});
   }
@@ -585,29 +549,28 @@ class _AddNewAddressState extends State<AddNewAddress>
             return Dialog(
               child: Container(
                 color: Theme.of(context).appBarTheme.backgroundColor,
-                padding: const EdgeInsets.all(AppSizes.widgetSidePadding),
+                padding: const EdgeInsets.all(AppSizes.spacingWide),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const SizedBox(
-                      height: AppSizes.normalHeight,
+                      height: AppSizes.spacingMedium,
                     ),
-                    CircularProgressIndicatorClass.circularProgressIndicator(
-                        context),
+                    const Loader(),
                     const SizedBox(
-                      height: AppSizes.widgetHeight,
+                      height: AppSizes.spacingWide,
                     ),
                     SizedBox(
                       width: MediaQuery.of(context).size.width / 2.5,
                       child: Center(
                         child: Text(
-                          "PleaseWaitProcessingRequest".localized(),
+                          StringConstants.processWaitingMsg.localized(),
                           softWrap: true,
                         ),
                       ),
                     ),
                     const SizedBox(
-                      height: AppSizes.normalHeight,
+                      height: AppSizes.spacingMedium,
                     ),
                   ],
                 ),
@@ -622,12 +585,15 @@ class _AddNewAddressState extends State<AddNewAddress>
               city: cityController.text,
               country: (widget.isEdit && selectedCountry?.code == null)
                   ? countryCode
-                  : selectedCountry?.code ?? "",
+                  : selectedCountry?.code ?? countryCode,
+              // countryName: selectedCountry?.name ?? countryController.text,
               phone: phoneController.text,
               postCode: zipCodeController.text,
-              state: (widget.isEdit && selectedState?.countryCode == null)
-                  ? stateCode
-                  : selectedState?.code ?? stateNameController.text,
+              state: stateNameController.text.isNotEmpty
+                  ? stateNameController.text
+                  : ((stateCode ?? "").isNotEmpty
+                      ? stateCode!
+                      : selectedState?.code ?? stateNameController.text),
               companyName: companyController.text,
               firstName: firstNameController.text,
               lastName: lastNameController.text,
@@ -636,13 +602,14 @@ class _AddNewAddressState extends State<AddNewAddress>
           : addEditAddressBloc?.add(FetchAddAddressEvent(
               address: street1Controller.text,
               city: cityController.text,
-              country: selectedCountry?.code ?? "",
+              country: selectedCountry?.code ?? countryCode,
               phone: phoneController.text,
               postCode: zipCodeController.text,
               state: selectedState?.code ?? stateNameController.text,
               companyName: companyController.text,
               firstName: firstNameController.text,
               lastName: lastNameController.text,
+              isDefault: isDefault,
               vatId: vatIdController.text,
             ));
     }

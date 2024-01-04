@@ -1,6 +1,5 @@
 name: bagisto_app_demo
-description: A new Flutter application.
-
+description: A new Flutter project.
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -12,13 +11,15 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # build by specifying --build-name and --build-number, respectively.
 # In Android, build-name is used as versionName while build-number used as versionCode.
 # Read more about Android versioning at https://developer.android.com/studio/publish/versioning
-# In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
+# In iOS, build-name is used as CFBundleShortVersionString while build-number is used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
+# In Windows, build-name is used as the major, minor, and patch parts
+# of the product and file versions while build-number is used as the build suffix.
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.12.0 <3.0.0"
+  sdk: '>=3.0.1 <4.0.0'
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -34,118 +35,77 @@ dependencies:
   lottie: ^2.2.0
   provider: ^6.0.1
   shared_preferences: ^2.0.8
-  crypto: ^3.0.1
-  location: ^4.3.0
-  geocoding: ^2.0.4
-  google_maps_flutter: ^2.1.4
   flutter_bloc: ^8.0.1
   equatable: ^2.0.3
   carousel_slider: ^4.0.0
-  webview_flutter: ^4.2.0
-  device_info_plus: ^9.0.2
-  flutter_rating_bar: ^4.0.0
-  image_picker: ^0.8.4+4
-  dio_cookie_manager: ^3.0.0
+  image_picker: ^1.0.1
   path_provider: ^2.0.8
-  quick_actions: ^1.0.1
   permission_handler:
-  flutter_share: ^2.0.0
-  speech_to_text: ^5.4.3
   firebase_messaging: ^14.2.1
-  flutter_local_notifications:  ^9.8.0+1
+  flutter_local_notifications: ^9.8.0+1
   graphql_flutter: ^5.1.1
-  web_socket_channel: ^2.4.0
-  local_auth: ^2.1.6
   get_storage: ^2.0.3
-  http: ^0.13.5
-  intl: ^0.18.0-nullsafety.2
-  flutter_widget_from_html: ^0.10.0
-  upgrader: ^7.0.0
-  json_annotation: ^4.8.1
+  http: ^1.1.0
+  flutter_widget_from_html: ^0.14.9
+  simple_html_css: ^4.0.0
+  skeleton_loader: ^2.0.0+4
   floor: ^1.4.2
+  firebase_core: ^2.17.0
+  hive: ^2.2.3
+  intl: ^0.18.1
+  speech_to_text: ^5.4.3
+  cached_network_image: ^3.2.1
+  url_launcher: ^6.1.12
+  google_fonts: ^6.1.0
+  json_annotation: ^4.8.1
   overlay_support: ^2.1.0
   cupertino_icons: ^1.0.2
-  google_sign_in: ^6.1.0
-  flutter_login_facebook: ^1.0.1
   connectivity_plus: ^4.0.1
-  hive_flutter: ^1.1.0
-  hive: ^2.2.3
-  cached_network_image: ^3.2.1
-  geolocator: ^10.1.0
+  floor_generator: ^1.4.2
+  google_sign_in: ^6.1.0
+#  flutter_login_facebook: ^1.0.1
+  local_auth: ^2.1.6
+  flutter_share: ^2.0.0
+  flutter_rating_bar: ^4.0.0
+  device_info_plus: ^9.1.0
+  webview_flutter: ^4.4.2
+  flutter_inappwebview: ^5.8.0
+  location: ^4.3.0
+  geocoding: ^2.0.4
+  google_maps_flutter: ^2.1.4
 
 
 
 
-#dependency_overrides:
-#  webview_flutter_wkwebview: '3.5.0'
+dependency_overrides:
+  intl: ^0.18.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  build_runner: ^2.1.2
 
+  build_runner: ^2.1.4
   retrofit_generator: ^7.0.0
   built_value_generator: ^8.1.2
   json_serializable: ^6.5.4
-  floor_generator: ^1.4.2
   hive_generator: ^2.0.0
 
+  flutter_lints: ^2.0.0
 
 
-
-
-  # The "flutter_lints" package below contains a set of recommended lints to
-  # encourage good coding practices. The lint set provided by the package is
-  # activated in the `analysis_options.yaml` file located at the root of your
-  # package. See that file for information about deactivating specific lint
-  # rules and activating additional ones.
-  flutter_lints: ^2.0.1
-
-# For information on the generic Dart part of this file, see the
-# following page: https://dart.dev/tools/pub/pubspec
-
-# The following section is specific to Flutter.
 flutter:
 
-  # The following line ensures that the Material Icons font is
-  # included with your application, so that you can use the icons in
-  # the material Icons class.
+
   uses-material-design: true
 
   assets:
-    - assets/lottie/empty_address.json
-    - assets/lottie/empty_cart.json
-    - assets/lottie/empty_catalog.json
-    - assets/lottie/empty_compare_list.json
-    - assets/lottie/empty_downloadable_list.json
-    - assets/lottie/empty_order_list.json
-    - assets/lottie/empty_review_list.json
-    - assets/lottie/empty_wish_list.json
-    - assets/lottie/finger_print.json
-    - assets/lottie/splash_screen.json
-    - assets/lottie/wishlist_heart.json
-    - assets/images/placeholder.png
-    - assets/images/customer_banner_placeholder.png
-    - assets/images/customer_profile_placeholder.png
-    - assets/images/review_cart_marking.png
-    - assets/images/change_icon.png
+    - assets/lottie/
     - assets/language/
-    - assets/homePageResponse.json
-    - assets/images/change_icon.png
-    - assets/images/compare-icon.png
-    - assets/images/google.png
-    - assets/images/facebook.png
-    - assets/images/apple_icon.png
-    - assets/images/apple_icon_dark.png
-    - assets/images/category_placeholder.png
+    - assets/images/
 
-  # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
-  # https://flutter.dev/assets-and-images/#resolution-aware.
+  # https://flutter.dev/assets-and-images/#resolution-aware
 
   # For details regarding adding assets from package dependencies, see
   # https://flutter.dev/assets-and-images/#from-packages

@@ -1,20 +1,16 @@
-import 'package:bagisto_app_demo/helper/application_localization.dart';
-import 'package:bagisto_app_demo/helper/shared_preference_helper.dart';
-import 'package:bagisto_app_demo/screens/orders/bloc/order_bloc.dart';
+import 'package:bagisto_app_demo/screens/address_list/bloc/address_bloc.dart';
+import 'package:bagisto_app_demo/screens/address_list/bloc/address_repository.dart';
+import 'package:bagisto_app_demo/screens/address_list/view/address_screen.dart';
+import 'package:bagisto_app_demo/screens/orders/bloc/order_list_bloc.dart';
+import 'package:bagisto_app_demo/screens/orders/bloc/order_list_repo.dart';
+import 'package:bagisto_app_demo/screens/orders/screen/order_list.dart';
+import 'package:bagisto_app_demo/screens/review/bloc/review_bloc.dart';
+import 'package:bagisto_app_demo/screens/review/bloc/review_repo.dart';
+import 'package:bagisto_app_demo/screens/review/screen/reviews.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../Configuration/mobikul_theme.dart';
-import '../../../configuration/app_global_data.dart';
-import '../../../configuration/app_sizes.dart';
-import '../../../routes/route_constants.dart';
-import '../../address_list/bloc/address_bloc.dart';
-import '../../address_list/repository/address_repository.dart';
-import '../../address_list/view/address_screen.dart';
-import '../../orders/repository/order_repository.dart';
-import '../../orders/view/order_list.dart';
-import '../../review/bloc/review_bloc.dart';
-import '../../review/repository/review_repository.dart';
-import '../../review/view/reviews.dart';
+import '../../../data_model/app_route_arguments.dart';
+import '../../../utils/index.dart';
 import 'dashboard_header_view.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -26,10 +22,10 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen>
     with SingleTickerProviderStateMixin {
-  bool addressIsEmpty =false;
+  bool addressIsEmpty = false;
   Widget orderScreen = BlocProvider(
       create: (context) =>
-          OrderListBloc(repository: OrderListRepositoryImp(), context: context),
+          OrderListBloc(repository: OrderListRepositoryImp()),
       child: const OrdersList(
         isFromDashboard: true,
       ));
@@ -42,14 +38,12 @@ class _DashboardScreenState extends State<DashboardScreen>
       ));
 
   Widget addressScreen = BlocProvider(
-      create: (context) => AddressBloc(repository: AddressRepositoryImp()),
+      create: (context) => AddressBloc(AddressRepositoryImp()),
       child: const AddressScreen(
         isFromDashboard: true,
       ));
 
-
-
-  getAddressData() async{
+  getAddressData() async {
     addressIsEmpty = await SharedPreferenceHelper.getAddressData();
     setState(() {});
   }
@@ -59,13 +53,13 @@ class _DashboardScreenState extends State<DashboardScreen>
     getAddressData();
     return DefaultTabController(
       length: 3,
-      child:Directionality(
+      child: Directionality(
         textDirection: GlobalData.contentDirection(),
-        child :Scaffold(
-        appBar: AppBar(
-          title: Text("Dashboard".localized()),
-        ),
-        body: dashboardView(),
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text(StringConstants.dashboard.localized()),
+          ),
+          body: dashboardView(),
         ),
       ),
     );
@@ -80,16 +74,20 @@ class _DashboardScreenState extends State<DashboardScreen>
               const DashboardHeaderView(),
               TabBar(
                 unselectedLabelColor: Colors.grey[600],
+                labelColor: Theme.of(context).colorScheme.onPrimary,
+                labelStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontSize: 12
+                ),
                 indicatorColor: MobikulTheme.accentColor,
                 tabs: <Widget>[
                   Tab(
-                    text: "RecentOrders".localized(),
+                    text: StringConstants.recentOrders.localized(),
                   ),
                   Tab(
-                    text: "AddressTitle".localized(),
+                    text: StringConstants.addressTitle.localized(),
                   ),
                   Tab(
-                    text: "ReviewsTitle".localized(),
+                    text: StringConstants.reviewsTitle.localized(),
                   ),
                 ],
               ),
@@ -99,7 +97,7 @@ class _DashboardScreenState extends State<DashboardScreen>
               ),
               Container(
                 height: MediaQuery.of(context).size.height / 2.15,
-                color: MobikulTheme.primaryColor,
+                color: Theme.of(context).colorScheme.background,
                 child: TabBarView(children: [
                   ///orderScreen
                   Column(
@@ -111,15 +109,17 @@ class _DashboardScreenState extends State<DashboardScreen>
                         child: SizedBox(
                           height: 40,
                           child: MaterialButton(
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.all(Radius.circular(4))),
+                            shape: const RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(4.0))),
                             elevation: 0.0,
                             height: AppSizes.buttonHeight,
                             minWidth: MediaQuery.of(context).size.width,
-                            color: Theme.of(context).colorScheme.onPrimary,
-                            textColor: Theme.of(context).colorScheme.onBackground,
+                            color: Theme.of(context).colorScheme.onBackground,
+                            textColor:
+                                Theme.of(context).colorScheme.background,
                             onPressed: () {
-                              Navigator.pushReplacementNamed(context, Home);
+                              Navigator.pushReplacementNamed(context, home);
                             },
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -132,11 +132,12 @@ class _DashboardScreenState extends State<DashboardScreen>
                                   width: 4,
                                 ),
                                 Text(
-                                  "ContinueShopping".localized().toUpperCase(),
+                                  StringConstants.continueShopping.localized().toUpperCase(),
                                   style: Theme.of(context)
                                       .textTheme
-                                      .bodyLarge
-                                      ?.copyWith(color: MobikulTheme.primaryColor),
+                                      .bodyLarge?.copyWith(
+                                    color: Theme.of(context).colorScheme.background
+                                  ),
                                 ),
                               ],
                             ),
@@ -156,24 +157,30 @@ class _DashboardScreenState extends State<DashboardScreen>
                         child: SizedBox(
                           height: 40,
                           child: MaterialButton(
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.all(Radius.circular(4))),
+                            shape: const RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(4))),
                             elevation: 0.0,
                             height: AppSizes.buttonHeight,
                             minWidth: MediaQuery.of(context).size.width,
-                            color: Theme.of(context).colorScheme.onPrimary,
-                            textColor: Theme.of(context).colorScheme.onBackground,
+                            color: Theme.of(context).colorScheme.onBackground,
+                            textColor:
+                                Theme.of(context).colorScheme.background,
                             onPressed: () {
-                              addressIsEmpty ? Navigator.pushNamed(context, AddAddress,
-                                  arguments: AddressNavigationData(
-                                      isEdit: false, addressModel: null)) :
-                              Navigator.of(context).pushNamed(AddressList);
+                              addressIsEmpty
+                                  ? Navigator.pushNamed(context, addAddressScreen,
+                                      arguments: AddressNavigationData(
+                                          isEdit: false, addressModel: null))
+                                  : Navigator.of(context)
+                                      .pushNamed(addressList);
                             },
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(
-                                  addressIsEmpty  ? Icons.add :  Icons.arrow_forward_outlined,
+                                  addressIsEmpty
+                                      ? Icons.add
+                                      : Icons.arrow_forward_outlined,
                                   color: Colors.white,
                                 ),
                                 const SizedBox(
@@ -181,12 +188,17 @@ class _DashboardScreenState extends State<DashboardScreen>
                                 ),
                                 Text(
                                   addressIsEmpty
-                                      ? "AddNewAddress".localized().toUpperCase()
-                                      : "ManageAddress".localized().toUpperCase(),
+                                      ? StringConstants.addNewAddress
+                                          .localized()
+                                          .toUpperCase()
+                                      : StringConstants.manageAddress
+                                          .localized()
+                                          .toUpperCase(),
                                   style: Theme.of(context)
                                       .textTheme
                                       .bodyLarge
-                                      ?.copyWith(color: MobikulTheme.primaryColor),
+                                      ?.copyWith(
+                                          color: Theme.of(context).colorScheme.background),
                                 ),
                               ],
                             ),
@@ -206,15 +218,17 @@ class _DashboardScreenState extends State<DashboardScreen>
                         child: SizedBox(
                           height: 40,
                           child: MaterialButton(
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.all(Radius.circular(4))),
+                            shape: const RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(4.0))),
                             elevation: 0.0,
                             height: AppSizes.buttonHeight,
                             minWidth: MediaQuery.of(context).size.width,
-                            color: Theme.of(context).colorScheme.onPrimary,
-                            textColor: Theme.of(context).colorScheme.onBackground,
+                            color: Theme.of(context).colorScheme.onBackground,
+                            textColor:
+                                Theme.of(context).colorScheme.background,
                             onPressed: () {
-                              Navigator.pushReplacementNamed(context, Home);
+                              Navigator.pushReplacementNamed(context, home);
                             },
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -227,11 +241,12 @@ class _DashboardScreenState extends State<DashboardScreen>
                                   width: 4,
                                 ),
                                 Text(
-                                  "ContinueShopping".localized().toUpperCase(),
+                                  StringConstants.continueShopping.localized().toUpperCase(),
                                   style: Theme.of(context)
                                       .textTheme
-                                      .bodyLarge
-                                      ?.copyWith(color: MobikulTheme.primaryColor),
+                                      .bodyLarge?.copyWith(
+                                      color: Theme.of(context).colorScheme.background
+                                  ),
                                 ),
                               ],
                             ),

@@ -1,7 +1,27 @@
 // ignore_for_file: file_names, deprecated_member_use, unnecessary_null_comparison
 
-import '../../../configuration/app_global_data.dart';
-import 'compare_index.dart';
+import 'dart:async';
+import 'package:bagisto_app_demo/screens/compare/view/widget/compare_loader_view.dart';
+import 'package:bagisto_app_demo/utils/application_localization.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../utils/app_constants.dart';
+import '../../../utils/app_global_data.dart';
+import '../../../utils/badge_helper.dart';
+import '../../../utils/route_constants.dart';
+import '../../../utils/shared_preference_helper.dart';
+import '../../../utils/status_color_helper.dart';
+import '../../../utils/string_constants.dart';
+import '../../../widgets/common_error_msg.dart';
+import '../../../widgets/empty_data_view.dart';
+import '../../../widgets/loader.dart';
+import '../../../widgets/show_message.dart';
+import '../../cart_screen/cart_model/add_to_cart_model.dart';
+import '../bloc/compare_base_state.dart';
+import '../bloc/compare_screen_bloc.dart';
+import '../bloc/compare_screen_event.dart';
+import '../data_model/compare_product_model.dart';
+import 'widget/compare_view.dart';
 
 class CompareScreen extends StatefulWidget {
   const CompareScreen({Key? key}) : super(key: key);
@@ -25,7 +45,7 @@ class _CompareScreenState extends State<CompareScreen>
   final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
       GlobalKey<ScaffoldMessengerState>();
   bool isLoading = false;
-  bool isVisible = false;
+  final bool _isVisible = false;
 
   @override
   void initState() {
@@ -38,6 +58,12 @@ class _CompareScreenState extends State<CompareScreen>
     super.initState();
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+    _myStreamCtrl.close();
+  }
+
   ///method to get cart count save in share pref
   Future getSharePreferenceCartCount() async {
     return await SharedPreferenceHelper.getCartCount();
@@ -47,38 +73,54 @@ class _CompareScreenState extends State<CompareScreen>
   Widget build(BuildContext context) {
     return ScaffoldMessenger(
       key: scaffoldMessengerKey,
-      child:Directionality(
+      child: Directionality(
         textDirection: GlobalData.contentDirection(),
-        child:  Scaffold(
-        appBar: AppBar(
-
-          title: CommonWidgets.getHeadingText("Compare".localized(), context),
-          actions: [
-            StreamBuilder(
-              stream: onVariableChanged,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return _cartButtonValue(0);
-                }
-                return _cartButtonValue(
-                    int.tryParse(snapshot.data.toString()) ?? 0);
-              },
-            )
-          ],
-        ),
-        body:  _compareData( context),
-        floatingActionButton: StreamBuilder(
-          stream: onUpdate,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text(StringConstants.compare.localized()),
+            actions: [
+              StreamBuilder(
+                stream: onVariableChanged,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return _cartButtonValue(0);
+                  }
+                  return _cartButtonValue(
+                      int.tryParse(snapshot.data.toString()) ?? 0);
+                },
+              )
+            ],
+          ),
+          body: _compareData(context),
+          floatingActionButton: StreamBuilder(
+            stream: onUpdate,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Visibility(
+                  visible: _isVisible,
+                  child: FloatingActionButton(
+                    onPressed: () {
+                      CompareScreenBloc compareScreenBloc =
+                          context.read<CompareScreenBloc>();
+                      compareScreenBloc.add(
+                          OnClickCompareLoaderEvent(isReqToShowLoader: true));
+                      compareScreenBloc.add(RemoveAllCompareListEvent(""));
+                    },
+                    child: Icon(
+                      Icons.delete,
+                      color: Theme.of(context).colorScheme.onBackground,
+                    ),
+                  ),
+                );
+              }
               return Visibility(
-                visible: isVisible,
+                visible: snapshot.data.toString() == "true" ? true : false,
                 child: FloatingActionButton(
                   onPressed: () {
                     CompareScreenBloc compareScreenBloc =
                         context.read<CompareScreenBloc>();
-                    compareScreenBloc.add(
-                        OnClickCompareLoaderEvent(isReqToShowLoader: true));
+                    compareScreenBloc
+                        .add(OnClickCompareLoaderEvent(isReqToShowLoader: true));
                     compareScreenBloc.add(RemoveAllCompareListEvent(""));
                   },
                   child: Icon(
@@ -87,27 +129,11 @@ class _CompareScreenState extends State<CompareScreen>
                   ),
                 ),
               );
-            }
-            return Visibility(
-              visible: snapshot.data.toString() == "true" ? true : false,
-              child: FloatingActionButton(
-                onPressed: () {
-                  CompareScreenBloc compareScreenBloc =
-                      context.read<CompareScreenBloc>();
-                  compareScreenBloc
-                      .add(OnClickCompareLoaderEvent(isReqToShowLoader: true));
-                  compareScreenBloc.add(RemoveAllCompareListEvent(""));
-                },
-                child: Icon(
-                  Icons.delete,
-                  color: Theme.of(context).colorScheme.onBackground,
-                ),
-              ),
-            );
-          },
+            },
+          ),
         ),
       ),
-    )   );
+    );
   }
 
   ///method to set badge value
@@ -116,10 +142,10 @@ class _CompareScreenState extends State<CompareScreen>
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: BadgeIcon(
           icon: IconButton(
-            icon: const Icon(Icons.shopping_cart),
+            icon: const Icon(Icons.shopping_bag_outlined),
             // color: Colors.black,
             onPressed: () {
-              Navigator.pushNamed(context, CartPage);
+              Navigator.pushNamed(context, cartScreen);
             },
           ),
           badgeCount: count),
@@ -133,55 +159,54 @@ class _CompareScreenState extends State<CompareScreen>
         if (state is RemoveFromCompareState) {
           if (state.status == CompareStatusStatus.fail) {
             ShowMessage.showNotification(
-                state.error, "", Colors.red, const Icon(Icons.cancel_outlined));
+                StringConstants.failed.localized(),state.error,  Colors.red, const Icon(Icons.cancel_outlined));
           } else if (state.status == CompareStatusStatus.success) {
             ShowMessage.showNotification(
-                state.successMsg,
-                "",
+                StringConstants.success.localized(),state.successMsg,
                 const Color.fromRGBO(140, 194, 74, 5),
                 const Icon(Icons.check_circle_outline));
           }
         } else if (state is RemoveAllCompareProductState) {
           if (state.status == CompareStatusStatus.fail) {
             ShowMessage.showNotification(
-                state.error, "", Colors.red, const Icon(Icons.cancel_outlined));
+                StringConstants.failed.localized(), state.error, Colors.red, const Icon(Icons.cancel_outlined));
           } else if (state.status == CompareStatusStatus.success) {
             ShowMessage.showNotification(
+                StringConstants.success.localized(),
                 state.successMsg,
-                "",
                 const Color.fromRGBO(140, 194, 74, 5),
                 const Icon(Icons.check_circle_outline));
           }
         } else if (state is AddToCartCompareState) {
           if (state.status == CompareStatusStatus.fail) {
-            ShowMessage.showNotification("Failed", state.successMsg, Colors.red,
+            ShowMessage.showNotification(StringConstants.failed.localized(), state.successMsg, Colors.red,
                 const Icon(Icons.cancel_outlined));
           } else if (state.status == CompareStatusStatus.success) {
             ShowMessage.showNotification(
-                state.response?.message,
-                "",
+                StringConstants.success.localized(),
+                state.successMsg,
                 const Color.fromRGBO(140, 194, 74, 5),
                 const Icon(Icons.check_circle_outline));
           }
-        } else if (state is AddtoWishlistCompareState) {
+        } else if (state is AddToWishlistCompareState) {
           if (state.status == CompareStatusStatus.fail) {
-            ShowMessage.showNotification("Failed", state.error ?? "",
+            ShowMessage.showNotification(StringConstants.failed.localized(), state.error ?? "",
                 Colors.red, const Icon(Icons.cancel_outlined));
           } else if (state.status == CompareStatusStatus.success) {
             ShowMessage.showNotification(
+                StringConstants.success.localized(),
                 state.successMsg ?? "",
-                "",
                 const Color.fromRGBO(140, 194, 74, 5),
                 const Icon(Icons.check_circle_outline));
           }
         } else if (state is RemoveFromWishlistState) {
           if (state.status == CompareStatusStatus.fail) {
-            ShowMessage.showNotification("Failed", state.error ?? "",
+            ShowMessage.showNotification(StringConstants.failed.localized(), state.error ?? "",
                 Colors.red, const Icon(Icons.cancel_outlined));
           } else if (state.status == CompareStatusStatus.success) {
             ShowMessage.showNotification(
+                StringConstants.success.localized(),
                 state.successMsg ?? "",
-                "",
                 const Color.fromRGBO(140, 194, 74, 5),
                 const Icon(Icons.check_circle_outline));
           }
@@ -196,7 +221,7 @@ class _CompareScreenState extends State<CompareScreen>
   ///build container method
   Widget buildContainer(BuildContext context, CompareScreenBaseState state) {
     if (state is CompareScreenInitialState) {
-      return CircularProgressIndicatorClass.circularProgressIndicator(context);
+      return const CompareLoaderView();
     }
     if (state is CompareScreenFetchDataState) {
       if (state.status == CompareStatusStatus.success) {
@@ -210,6 +235,7 @@ class _CompareScreenState extends State<CompareScreen>
           _myStreamCtrl.sink
               .add(_compareScreenModel?.data?[0].cart?.itemsCount ?? 0);
         }
+
         return _compareScreen(state.compareScreenModel!, isLoading);
       }
       if (state.status == CompareStatusStatus.fail) {
@@ -222,7 +248,7 @@ class _CompareScreenState extends State<CompareScreen>
         var productId = state.productDeletedId;
         if (_compareScreenModel != null) {
           _compareScreenModel!.data!.removeWhere((element) =>
-              element.productFlatId.toString() == productId.toString());
+              element.productId.toString() == productId.toString());
           return _compareScreen(_compareScreenModel!, isLoading);
         } else {
           streamController.add(false);
@@ -248,7 +274,7 @@ class _CompareScreenState extends State<CompareScreen>
         _myStreamCtrl.sink.add(addToCartModel.cart?.itemsCount ?? 0);
       }
     }
-    if (state is AddtoWishlistCompareState) {
+    if (state is AddToWishlistCompareState) {
       isLoading = false;
       if (state.status == CompareStatusStatus.success) {
         getSharePreferenceCartCount().then((value) {
@@ -272,6 +298,7 @@ class _CompareScreenState extends State<CompareScreen>
         _myStreamCtrl.sink.add(value);
       });
     }
+
     return _compareScreen(_compareScreenModel!, isLoading);
   }
 
@@ -282,12 +309,12 @@ class _CompareScreenState extends State<CompareScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicatorClass.circularProgressIndicator(context),
+            Loader(),
             const SizedBox(
-              height: AppSizes.widgetSidePadding,
+              height: AppSizes.spacingNormal,
             ),
             Text(
-              "PleaseWaitProcessingRequest".localized(),
+              StringConstants.processWaitingMsg.localized(),
               softWrap: true,
             ),
           ],
@@ -296,22 +323,17 @@ class _CompareScreenState extends State<CompareScreen>
     } else if (compareScreenModel.data?.isEmpty ??
         false || compareScreenModel.data == null) {
       streamController.add(false);
-      return const EmptyCompareScreen();
+      return const EmptyDataView();
     } else {
       return Stack(
         children: [
-          SingleChildScrollView(
-              child: CompareView(
-            compareScreenBloc: compareScreenBloc,
-            compareScreenModel: compareScreenModel,
-          )),
+          SingleChildScrollView(child: CompareView(compareScreenBloc: compareScreenBloc, compareScreenModel: compareScreenModel,)),
           if (isLoading)
-            Align(
+            const Align(
               alignment: Alignment.center,
               child: SizedBox(
                   child:
-                      CircularProgressIndicatorClass.circularProgressIndicator(
-                          context)),
+                      Loader()),
             )
         ],
       );

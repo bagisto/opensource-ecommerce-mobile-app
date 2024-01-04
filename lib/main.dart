@@ -8,15 +8,19 @@
  * @link https://store.webkul.com/license.html
  */
 
-// ignore_for_file: must_be_immutable, void_checks
+// must_be_immutable, void_checks
 
-import 'package:bagisto_app_demo/Navigation/app_navigation.dart'
-    as app_navigate;
-import 'package:bagisto_app_demo/configuration/server_configuration.dart';
-import 'package:bagisto_app_demo/helper/application_localization.dart';
-import 'package:bagisto_app_demo/routes/route_constants.dart';
-
-// ignore: depend_on_referenced_packages
+import 'dart:io';
+import 'package:bagisto_app_demo/screens/home_page/data_model/get_categories_drawer_data_model.dart';
+import 'package:bagisto_app_demo/screens/home_page/data_model/new_product_data.dart';
+import 'package:bagisto_app_demo/utils/app_global_data.dart';
+import 'package:bagisto_app_demo/utils/app_navigation.dart';
+import 'package:bagisto_app_demo/utils/application_localization.dart';
+import 'package:bagisto_app_demo/utils/mobikul_theme.dart';
+import 'package:bagisto_app_demo/utils/route_constants.dart';
+import 'package:bagisto_app_demo/utils/server_configuration.dart';
+import 'package:bagisto_app_demo/utils/shared_preference_helper.dart';
+import 'package:bagisto_app_demo/utils/theme_provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -28,13 +32,6 @@ import 'package:hive/hive.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:quick_actions/quick_actions.dart';
-import 'package:upgrader/upgrader.dart';
-import 'configuration/app_global_data.dart';
-import 'configuration/mobikul_theme.dart';
-import 'helper/shared_preference_helper.dart';
-import 'helper/theme_provider.dart';
-import 'models/homepage_model/new_product_data.dart';
 
 String? token;
 
@@ -50,25 +47,22 @@ AndroidNotificationChannel channel = const AndroidNotificationChannel(
 );
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
-
 Future<void> main() async {
-
+  HttpOverrides.global = MyHttpOverrides();
   String selectedLanguage = "en";
   WidgetsFlutterBinding.ensureInitialized();
-  WidgetsFlutterBinding.ensureInitialized();
-  await Upgrader.clearSavedSettings();
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
-  GlobalData.selectedLanguage=await SharedPreferenceHelper.getCustomerLanguage();
+  GlobalData.selectedLanguage =
+      await SharedPreferenceHelper.getCustomerLanguage();
   await Firebase.initializeApp();
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   await flutterLocalNotificationsPlugin
       .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(channel);
-
   await initHiveForFlutter();
   hiveRegisterAdapter();
   runApp(
@@ -79,24 +73,25 @@ Future<void> main() async {
 }
 
 Future<void> hiveRegisterAdapter() async {
-  await initHiveForFlutter();
-
   var dir = await getApplicationDocumentsDirectory();
   Hive.init(dir.path);
-// Home Page Model
+
+  ///Home Page Model
   Hive.registerAdapter(NewProductsModelAdapter());
   Hive.registerAdapter(NewProductsAdapter());
   Hive.registerAdapter(ReviewsAdapter());
+  Hive.registerAdapter(SellerAdapter());
+  Hive.registerAdapter(SellerProductAdapter());
   Hive.registerAdapter(PriceHtmlAdapter());
   Hive.registerAdapter(ProductFlatsAdapter());
   Hive.registerAdapter(ImagesAdapter());
+  Hive.registerAdapter(HomeCategoriesAdapter());
+  Hive.registerAdapter(GetDrawerCategoriesDataAdapter());
 }
 
 class RestartWidget extends StatefulWidget {
   const RestartWidget({Key? key, required this.child}) : super(key: key);
-
   final Widget child;
-
   static restartApp(BuildContext context) {
     context.findAncestorStateOfType<_RestartWidgetState>()?.restartApp();
   }
@@ -109,11 +104,9 @@ class RestartWidget extends StatefulWidget {
 
 class _RestartWidgetState extends State<RestartWidget> {
   Key _key = UniqueKey();
-
   void restartApp() {
     setState(() {
       _key = UniqueKey();
-
     });
   }
 
@@ -121,30 +114,27 @@ class _RestartWidgetState extends State<RestartWidget> {
   Widget build(BuildContext context) {
     return KeyedSubtree(
       key: _key,
-      child: widget.child ?? Container(),
+      child: widget.child,
     );
   }
 }
 
 class BagistoApp extends StatefulWidget {
-  BagistoApp(
-    this.selectedLanguage, {
-    Key? key,
-  }) : super(key: key);
-  String? selectedLanguage;
+  const BagistoApp(
+    this.selectedLanguage, {Key? key,}) : super(key: key);
 
+  final String? selectedLanguage;
   @override
   State<BagistoApp> createState() => _BagistoAppState();
 }
 
 class _BagistoAppState extends State<BagistoApp> {
-  QuickActions quickActions = const QuickActions();
   Locale? _locale;
-  String appRoot = Splash;
+  String appRoot = splash;
 
   @override
   void initState() {
-    _locale =  Locale(GlobalData.locale??defaultStoreCode);
+    _locale = Locale(GlobalData.locale ?? defaultStoreCode);
     getToken();
     getSubscription();
     super.initState();
@@ -173,10 +163,10 @@ class _BagistoAppState extends State<BagistoApp> {
         return MaterialApp(
           theme: themeNotifier.isDark == 'true'
               ? MobikulTheme.darkTheme
-              : MobikulTheme.mobikulTheme,
+              : MobikulTheme.lightTheme,
           themeMode: ThemeMode.system,
           initialRoute: appRoot,
-          onGenerateRoute: app_navigate.generateRoute,
+          onGenerateRoute: generateRoute,
           title: "Bagisto App",
           debugShowCheckedModeBanner: false,
           supportedLocales: supportedLocale.map((e) => Locale(e)),
@@ -200,5 +190,14 @@ class _BagistoAppState extends State<BagistoApp> {
         );
       }),
     ));
+  }
+}
+
+class MyHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
   }
 }

@@ -9,23 +9,12 @@
  */
 
 // ignore_for_file: file_names, implementation_imports
-import 'package:bagisto_app_demo/common_widget/common_widgets.dart';
-import 'package:bagisto_app_demo/helper/application_localization.dart';
-import 'package:bagisto_app_demo/helper/order_status_Bg_color_helper.dart';
+
+import 'package:bagisto_app_demo/utils/status_color_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
-import '../../../common_widget/circular_progress_indicator.dart';
-import '../../../common_widget/common_error_msg.dart';
-import '../../../common_widget/show_message.dart';
-import '../../../configuration/app_global_data.dart';
-import '../../../models/order_model/order_detail_model.dart';
-import '../bloc/order_detail_bloc.dart';
-import '../event/order_detail_fetch_event.dart';
-import '../state/order_detail_base_state.dart';
-import '../state/order_detail_fetch.dart';
-import '../state/order_detail_fetch_state.dart';
-import 'order_detail_tile.dart';
+import '../../../utils/index.dart';
+import 'package:bagisto_app_demo/screens/order_detail/utils/index.dart';
 
 class OrderDetailScreen extends StatefulWidget {
   final int? orderId;
@@ -58,15 +47,14 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
   Widget build(BuildContext context) {
     return ScaffoldMessenger(
       key: scaffoldMessengerKey,
-      child:Directionality(
+      child: Directionality(
         textDirection: GlobalData.contentDirection(),
-        child:  Scaffold(
-        appBar: AppBar(
-          centerTitle: false,
-          title:
-              CommonWidgets.getHeadingText("OrderDetails".localized(), context),
-        ),
-        body: _orderDetail(context) ,
+        child: Scaffold(
+          appBar: AppBar(
+            centerTitle: false,
+            title: Text(StringConstants.orderDetails.localized()),
+          ),
+          body: _orderDetail(context),
         ),
       ),
     );
@@ -78,14 +66,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
       listener: (BuildContext context, OrderDetailBaseState state) {
         if (state is CancelOrderState) {
           if (state.status == OrderDetailStatus.fail) {
-            ShowMessage.showNotification("Failed", state.error,
-                Colors.redAccent, const Icon(Icons.cancel_outlined));
+            ShowMessage.errorNotification(state.error ?? "",context);
           } else if (state.status == OrderDetailStatus.success) {
-            ShowMessage.showNotification(
-                state.baseModel?.message,
-                "",
-                const Color.fromRGBO(140, 194, 74, 5),
-                const Icon(Icons.check_circle_outline));
+            ShowMessage.successNotification(
+                state.baseModel?.message ?? "",context);
             Future.delayed(const Duration(seconds: 2)).then((value) {
               Navigator.pop(context);
             });
@@ -101,7 +85,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
   ///build container method
   Widget buildContainer(BuildContext context, OrderDetailBaseState state) {
     if (state is OrderDetailInitialState) {
-      return CircularProgressIndicatorClass.circularProgressIndicator(context);
+      return const OrderDetailLoader();
     }
     if (state is OrderDetailFetchDataState) {
       if (state.status == OrderDetailStatus.success) {
@@ -132,5 +116,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
       orderDetailBloc: orderDetailBloc,
       isLoading: isLoading,
     );
+  }
+
+  fetchOrders() async {
+    orderDetailBloc = context.read<OrderDetailBloc>();
+    orderDetailBloc?.add(OrderDetailFetchDataEvent(widget.orderId));
   }
 }

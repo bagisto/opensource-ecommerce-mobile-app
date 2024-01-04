@@ -1,4 +1,3 @@
-
 /*
  * Webkul Software.
  * @package Mobikul Application Code.
@@ -9,36 +8,28 @@
  * @link https://store.webkul.com/license.html
  */
 
-// ignore_for_file: file_names, implementation_imports, deprecated_member_use
 
 import 'dart:async';
-import 'package:bagisto_app_demo/helper/badge_helper.dart';
-import 'package:bagisto_app_demo/common_widget/common_widgets.dart';
-import 'package:bagisto_app_demo/helper/shared_preference_helper.dart';
-import 'package:bagisto_app_demo/common_widget/show_message.dart';
-import 'package:bagisto_app_demo/helper/application_localization.dart';
-import 'package:bagisto_app_demo/models/add_to_cart_model/add_to_cart_model.dart';
-import 'package:bagisto_app_demo/screens/wishList/bloc/wishlist_bloc.dart';
-import 'package:bagisto_app_demo/screens/wishList/events/delete_item_event.dart';
-import 'package:bagisto_app_demo/screens/wishList/events/fetch_wishlist_event.dart';
-import 'package:bagisto_app_demo/screens/wishList/events/wishlist_loader_event.dart';
-import 'package:bagisto_app_demo/screens/wishList/events/addToCartWishlistEvent.dart';
-import 'package:bagisto_app_demo/screens/wishList/state/delete_item_state.dart';
-import 'package:bagisto_app_demo/screens/wishList/state/fetch_wishlist_state.dart';
-import 'package:bagisto_app_demo/screens/wishList/state/loader_wishlist_state.dart';
-import 'package:bagisto_app_demo/screens/wishList/state/show_loader_wishlist_state.dart';
-import 'package:bagisto_app_demo/screens/wishList/state/addToCartWishlistState.dart';
-import 'package:bagisto_app_demo/screens/wishList/state/wishlist_base_state.dart';
-import 'package:bagisto_app_demo/screens/wishList/view/wishlist_item_list.dart';
+import 'package:bagisto_app_demo/screens/wishList/view/widget/wishlist_Item_list.dart';
+import 'package:bagisto_app_demo/screens/wishList/view/widget/wishlist_loader.dart';
+import 'package:bagisto_app_demo/utils/application_localization.dart';
+import 'package:bagisto_app_demo/utils/route_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_share/flutter_share.dart';
-import '../../../common_widget/circular_progress_indicator.dart';
-import '../../../common_widget/common_error_msg.dart';
-import '../../../configuration/app_global_data.dart';
-import '../../../models/wishlist_model/wishlist_model.dart';
-import '../../../routes/route_constants.dart';
-import 'empty_wishlist.dart';
+import '../../../utils/app_global_data.dart';
+import '../../../utils/assets_constants.dart';
+import '../../../utils/badge_helper.dart';
+import '../../../utils/shared_preference_helper.dart';
+import '../../../utils/string_constants.dart';
+import '../../../widgets/common_error_msg.dart';
+import '../../../widgets/empty_data_view.dart';
+import '../../../widgets/show_message.dart';
+import '../../cart_screen/cart_model/add_to_cart_model.dart';
+import '../bloc/fetch_wishlist_event.dart';
+import '../bloc/fetch_wishlist_state.dart';
+import '../bloc/wishlist_bloc.dart';
+import '../data_model/wishlist_model.dart';
+
 class WishListScreen extends StatefulWidget {
   const WishListScreen({Key? key}) : super(key: key);
 
@@ -49,16 +40,20 @@ class WishListScreen extends StatefulWidget {
 class _WishListScreenState extends State<WishListScreen> {
   WishListData? mWishList;
   ShareWishlistData? share;
-  final StreamController _myStreamCtrl = StreamController.broadcast();
   final StreamController streamController = StreamController.broadcast();
+  final StreamController _myStreamCtrl = StreamController.broadcast();
+
   Stream get onVariableChanged => _myStreamCtrl.stream;
+
   Stream get onUpdate => streamController.stream;
-  int?cartCount=0;
-  final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+  int? cartCount = 0;
+  final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
+      GlobalKey<ScaffoldMessengerState>();
   bool isLoading = false;
   AddToCartModel? addToCartModel;
-  bool  isVisible  = false;
+  final bool _isVisible = false;
   WishListBloc? wishListBloc;
+
   @override
   void initState() {
     getSharePreferenceCartCount().then((value) {
@@ -68,204 +63,166 @@ class _WishListScreenState extends State<WishListScreen> {
     wishListBloc?.add(FetchWishListEvent());
     super.initState();
   }
+
   Future getSharePreferenceCartCount() async {
     return await SharedPreferenceHelper.getCartCount();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _myStreamCtrl.close();
   }
 
   @override
   Widget build(BuildContext context) {
     return ScaffoldMessenger(
       key: scaffoldMessengerKey,
-      child:Directionality(
-          textDirection: GlobalData.contentDirection(),
-          child:  Scaffold(
-        appBar: AppBar(
-         centerTitle: false,
-          title: CommonWidgets.getHeadingText(
-             "WishList".localized(),context),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
-              child: IconButton(onPressed: ()  {
-                wishListBloc?.add(ShareWishlistEvent(true));
-                wishListBloc?.add(OnClickWishListLoaderEvent(isReqToShowLoader: true));
-
-              }, icon: const Icon(Icons.share)),
-            ),
-            StreamBuilder(
-              stream: onVariableChanged,
-              builder: (context, snapshot){
-                if(snapshot.connectionState == ConnectionState.waiting){
-                  return _cartButtonValue(0);
-                }
-                return  _cartButtonValue( int.tryParse(snapshot.data.toString() ) ?? 0);
-              },
-            ),
-          ],
-        ),
-        body:  _setWishListData (context),
-
-        floatingActionButton:StreamBuilder(
-          stream: onUpdate,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Visibility(
-                visible: isVisible,
-                child: FloatingActionButton(
-                  onPressed: () {
-                    wishListBloc?.add(OnClickWishListLoaderEvent(isReqToShowLoader: true));
-                    wishListBloc?.add(RemoveAllWishlistEvent(""));
+      child: Directionality(
+        textDirection: GlobalData.contentDirection(),
+        child: Scaffold(
+            appBar: AppBar(
+              centerTitle: false,
+              title: Text(StringConstants.wishlist.localized(), style: Theme.of(context).textTheme.titleLarge),
+              actions: [
+                StreamBuilder(
+                  stream: onVariableChanged,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return _cartButtonValue(0);
+                    }
+                    return _cartButtonValue(
+                        int.tryParse(snapshot.data.toString()) ?? 0);
                   },
-                  child: Icon(Icons.delete,color: Theme.of(context).colorScheme.onBackground,),
                 ),
-              );
-            }
-            return Visibility(
-              visible: snapshot.data.toString() == "true" ? true : false,
-              child: FloatingActionButton(
-                onPressed: () {
-                  wishListBloc?.add(OnClickWishListLoaderEvent(isReqToShowLoader: true));
-                  wishListBloc?.add(RemoveAllWishlistEvent(""));
-                },
-                child: Icon(Icons.delete,color: Theme.of(context).colorScheme.onBackground,),
-              ),
-            );
-          },
-        )
+              ],
+            ),
+            body: _setWishListData(context),
+            floatingActionButton: StreamBuilder(
+              stream: onUpdate,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Visibility(
+                    visible: _isVisible,
+                    child: FloatingActionButton(
+                      onPressed: () {
+                        wishListBloc?.add(OnClickWishListLoaderEvent(
+                            isReqToShowLoader: true));
+                        wishListBloc?.add(RemoveAllWishlistEvent(""));
+                      },
+                      child: Icon(
+                        Icons.delete,
+                        color: Theme.of(context).colorScheme.onBackground,
+                      ),
+                    ),
+                  );
+                }
+                return Visibility(
+                  visible: snapshot.data.toString() == "true" && (mWishList?.data ?? []).isNotEmpty ? true : false,
+                  child: FloatingActionButton(
+                    onPressed: () {
+                      wishListBloc?.add(
+                          OnClickWishListLoaderEvent(isReqToShowLoader: true));
+                      wishListBloc?.add(RemoveAllWishlistEvent(""));
+                    },
+                    child: Icon(
+                      Icons.delete,
+                      color: Theme.of(context).colorScheme.onBackground,
+                    ),
+                  ),
+                );
+              },
+            )),
       ),
-    ));
-
+    );
   }
 
-  _cartButtonValue(int count){
-    return BadgeIcon(
-        icon:  IconButton(
-          icon: const Icon(Icons.shopping_cart),
-          // color: Colors.black,
-          onPressed: () {
-            Navigator.pushNamed(context, CartPage);
-          },
-        ),
-        badgeCount:count);
+  _cartButtonValue(int count) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: BadgeIcon(
+          icon: IconButton(
+            icon: const Icon(Icons.shopping_bag_outlined),
+            onPressed: () {
+              Navigator.pushNamed(context, cartScreen);
+            },
+          ),
+          badgeCount: count),
+    );
   }
 
-///BLOCK CONTAINER
+  ///BLOCK CONTAINER
   _setWishListData(BuildContext context) {
     return BlocConsumer<WishListBloc, WishListBaseState>(
       listener: (BuildContext context, WishListBaseState state) {
         if (state is FetchDeleteAddItemState) {
           if (state.status == WishListStatus.fail) {
-            ShowMessage.showNotification("Failed", state.error??"",
+            ShowMessage.showNotification(StringConstants.failed.localized(), state.error ?? "",
                 Colors.red, const Icon(Icons.cancel_outlined));
           } else if (state.status == WishListStatus.success) {
-            ShowMessage.showNotification( state.successMsg??"","",
-                const Color.fromRGBO(140,194,74,5),const Icon(Icons.check_circle_outline));
-            wishListBloc?.add(FetchWishListEvent());
+            ShowMessage.showNotification(
+                StringConstants.success.localized(),
+                state.successMsg ?? "",
+                const Color.fromRGBO(140, 194, 74, 5),
+                const Icon(Icons.check_circle_outline));
           }
-        }
-        else if (state is RemoveAllWishlistProductState) {
+        } else if (state is RemoveAllWishlistProductState) {
           if (state.status == WishListStatus.fail) {
-            ShowMessage.showNotification("Failed", state.error??"",
+            ShowMessage.showNotification(StringConstants.failed.localized(), state.error ?? "",
                 Colors.red, const Icon(Icons.cancel_outlined));
           } else if (state.status == WishListStatus.success) {
-            ShowMessage.showNotification( state.successMsg??"","",
-                const Color.fromRGBO(140,194,74,5),const Icon(Icons.check_circle_outline));
+            ShowMessage.showNotification(
+                StringConstants.success.localized(),
+                state.successMsg ?? "",
+                const Color.fromRGBO(140, 194, 74, 5),
+                const Icon(Icons.check_circle_outline));
           }
-        }
-        else if (state is AddToCartWishlistState) {
+        } else if (state is AddToCartWishlistState) {
           if (state.status == WishListStatus.fail) {
-            ShowMessage.showNotification("Failed", state.error??"",
-                  Colors.red, const Icon(Icons.cancel_outlined));
-          } else if (state.status == WishListStatus.success) {
-            ShowMessage.showNotification( state.successMsg??"","",
-                const Color.fromRGBO(140,194,74,5),const Icon(Icons.check_circle_outline));
-            wishListBloc?.add(FetchWishListEvent());
-          }
-        }
-        else if (state is ShareWishlistState) {
-          if (state.status == WishListStatus.fail) {
-            ShowMessage.showNotification("Failed", state.error??"",
+            ShowMessage.showNotification(StringConstants.failed.localized(), state.error ?? "",
                 Colors.red, const Icon(Icons.cancel_outlined));
           } else if (state.status == WishListStatus.success) {
-
+            ShowMessage.showNotification(
+                StringConstants.success.localized(),
+                state.successMsg ?? "",
+                const Color.fromRGBO(140, 194, 74, 5),
+                const Icon(Icons.check_circle_outline));
+            WishListBloc wishListBloc = context.read<WishListBloc>();
+            wishListBloc.add(FetchWishListEvent());
           }
         }
-
-      },
-      buildWhen: (WishListBaseState prev, WishListBaseState current) {
-        if (current is FetchDataState) {
-          return true;
-        }
-        if (current is ShowLoaderWishListState) {
-          return true;
-        }
-        if (current is FetchDeleteAddItemState) {
-          if ((current).status == WishListStatus.success) {
-            return true;
-          }
-        }
-        if (current is RemoveAllWishlistProductState) {
-          if ((current).status == WishListStatus.success) {
-            return true;
-          }
-        }
-        if (current is AddToCartWishlistState) {
-          if ((current).status == WishListStatus.success){
-            return true;
-          }
-        }
-        if (current is ShareWishlistState) {
-          if ((current).status == WishListStatus.success){
-            return true;
-          }
-        }
-        if(current is OnClickWishListLoaderState){
-          return true;
-        }
-        return false;
       },
       builder: (BuildContext context, WishListBaseState state) {
-        return buildContainer(context, state);
+        return SafeArea(child: buildContainer(context, state));
       },
     );
   }
 
- ///UI METHODS
+  ///UI METHODS
   Widget buildContainer(BuildContext context, WishListBaseState state) {
     if (state is ShowLoaderWishListState) {
-      return   CircularProgressIndicatorClass.circularProgressIndicator(context);
+      return const WishListLoader();
     }
     if (state is FetchDataState) {
       if (state.status == WishListStatus.success) {
         mWishList = state.wishListProducts;
-        if((mWishList?.data?.length??0)>0) {
+        if ((mWishList?.data?.length ?? 0) > 0) {
           streamController.add(true);
         }
+        return _showWishList(mWishList!, context, isLoading);
       }
       if (state.status == WishListStatus.fail) {
-        return ErrorMessage.errorMsg(state.error??"");
-      }
-    }
-    if (state is ShareWishlistState) {
-      if (state.status == WishListStatus.success) {
-        wishListBloc?.add(OnClickWishListLoaderEvent(isReqToShowLoader: false));
-        share = state.response;
-        share!=null ? FlutterShare.share(
-            title:  share?.wishlistSharedLink ?? "",
-            text: '',
-            linkUrl:share?.wishlistSharedLink ?? "",
-            chooserTitle: ''):null;
-      }
-      if (state.status == WishListStatus.fail) {
-        return ErrorMessage.errorMsg(state.error??"");
+        return ErrorMessage.errorMsg(state.error ?? "");
       }
     }
     if (state is FetchDeleteAddItemState) {
       isLoading = false;
       if (state.status == WishListStatus.success) {
         var productId = state.producDeletedId;
-        if(mWishList!=null){
-          mWishList?.data!.removeWhere((element) => element.product?.id == productId);
+        if (mWishList != null) {
+          mWishList?.data!
+              .removeWhere((element) => element.product?.id == productId);
+          return _showWishList(mWishList!, context, isLoading);
         }
       }
     }
@@ -274,7 +231,8 @@ class _WishListScreenState extends State<WishListScreen> {
       if (state.status == WishListStatus.success) {
         if (mWishList != null) {
           mWishList?.data?.clear();
-          streamController.add(true);
+          streamController.add(false);
+          return _showWishList(mWishList!, context, isLoading);
         }
       }
     }
@@ -282,31 +240,41 @@ class _WishListScreenState extends State<WishListScreen> {
       isLoading = false;
       if (state.status == WishListStatus.success) {
         var productId = state.cartProductId;
-        mWishList?.data!.removeWhere((element) => element.productId == productId);
-         addToCartModel=state.response!;
-        SharedPreferenceHelper.setCartCount(addToCartModel?.cart?.itemsCount??2);
+        mWishList?.data!
+            .removeWhere((element) => element.productId == productId);
+        addToCartModel = state.response!;
+        SharedPreferenceHelper.setCartCount(
+            addToCartModel?.cart?.itemsCount ?? 2);
         _myStreamCtrl.sink.add(addToCartModel?.cart?.itemsCount);
+        return _showWishList(mWishList!, context, isLoading);
       }
     }
     if (state is OnClickWishListLoaderState) {
-      isLoading = state.isReqToShowLoader ?? false;
-      SharedPreferenceHelper.setCartCount(mWishList?.cartCount??2);
+      isLoading = false;
+      SharedPreferenceHelper.setCartCount(mWishList?.cartCount ?? 2);
       _myStreamCtrl.sink.add(mWishList?.cartCount);
+      return _showWishList(mWishList!, context, isLoading);
     }
-    return _showWishList(mWishList!, context, isLoading);
+    return const SizedBox();
   }
 
   ///show wishlist data
-  _showWishList(WishListData wishListData, BuildContext context,bool isLoading) {
+  _showWishList(
+      WishListData wishListData, BuildContext context, bool isLoading) {
     var wishListItems = wishListData.data;
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          (wishListItems != null && wishListItems.isNotEmpty)
-              ? WishlistItemList(model:wishListData, isLoading:isLoading,wishListBloc: wishListBloc,)
-              : EmptyWishlist(streamController: streamController,)
-        ],
-      ),
-    );
+    return (wishListItems != null && wishListItems.isNotEmpty)
+        ? WishlistItemList(
+            model: wishListData,
+            isLoading: isLoading,
+            wishListBloc: wishListBloc,
+          )
+        : EmptyDataView(
+            assetPath: AssetConstants.emptyWishlist,
+            message: StringConstants.emptyWishList,
+        width: MediaQuery.of(context).size.width / 1.5,
+        height: MediaQuery.of(context).size.width / 2,
+        showDescription: true,
+        description: StringConstants.emptyWishListNoItem,
+          );
   }
 }

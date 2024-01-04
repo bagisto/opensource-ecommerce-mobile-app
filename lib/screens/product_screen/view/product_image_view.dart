@@ -8,23 +8,23 @@
  * @link https://store.webkul.com/license.html
  */
 
-// ignore_for_file: file_names, must_be_immutable
-
-import 'package:bagisto_app_demo/common_widget/image_view.dart';
-import 'package:bagisto_app_demo/helper/application_localization.dart';
-import 'package:bagisto_app_demo/screens/product_screen/view/imaze_zoom_view.dart';
+import 'package:bagisto_app_demo/screens/product_screen/view/image_zoom_view.dart';
+import 'package:bagisto_app_demo/utils/application_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import '../../../Configuration/mobikul_theme.dart';
-import '../../../common_widget/show_message.dart';
-import '../../../configuration/app_sizes.dart';
-import '../../../helper/check_internet_connection.dart';
-import '../../../models/product_model/product_screen_model.dart';
+import '../../../utils/app_constants.dart';
+import '../../../utils/assets_constants.dart';
+import '../../../utils/check_internet_connection.dart';
+import '../../../utils/string_constants.dart';
+import '../../../widgets/image_view.dart';
+import '../../../widgets/show_message.dart';
+import '../../home_page/data_model/new_product_data.dart';
 
+//ignore: must_be_immutable
 class ProductImageView extends StatefulWidget {
   final List<String>? imgList;
   ValueChanged<String>? callBack;
-  Product? productData;
+  NewProducts? productData;
   ProductFlats? product;
 
   ProductImageView(
@@ -59,13 +59,14 @@ class ProductImageViewState extends State<ProductImageView> {
                       builder: (context) =>
                           ZoomImageView(imgList: widget.productData?.images)));
             },
-            child: CarouselSlider(
+            child: (widget.imgList ?? []).isNotEmpty ? CarouselSlider(
               carouselController: buttonCarouselController,
               options: CarouselOptions(
                   autoPlay: false,
                   enlargeCenterPage: true,
                   viewportFraction: 1.0,
-                  height: MediaQuery.of(context).size.width,
+                  enableInfiniteScroll: false,
+                  height: MediaQuery.of(context).size.width/2,
                   onPageChanged: (index, reason) {
                     setState(() {
                       _current = index;
@@ -73,11 +74,16 @@ class ProductImageViewState extends State<ProductImageView> {
                   }),
               items: widget.imgList
                   ?.map((item) => Center(
-                      child: ImageView(
-                          url: item,
-                          width: MediaQuery.of(context).size.width,
-                          height: MediaQuery.of(context).size.width)))
-                  .toList(),
+                  child: ImageView(
+                      url: item,
+                      width: MediaQuery.of(context).size.width,
+                      height: MediaQuery.of(context).size.width,
+                    fit: BoxFit.cover,
+                  ))).toList(),
+            ) : ImageView(
+              url: "",
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.width,
             ),
           ),
         ]),
@@ -117,7 +123,6 @@ class ProductImageViewState extends State<ProductImageView> {
             ),
           ),
       ]),
-      // if ((widget.imgList?.length ?? 0)>1)
       Positioned(
           right: 8.0,
           top:  20.0,
@@ -126,10 +131,10 @@ class ProductImageViewState extends State<ProductImageView> {
               if (widget.callBack != null) {
                 checkInternetConnection().then((value) {
                   if (value) {
-                    widget.callBack!('wishlist');
+                    widget.callBack!(StringConstants.wishlist);
                   } else {
-                    ShowMessage.showNotification("InternetIssue".localized(),
-                        "", Colors.red, const Icon(Icons.cancel_outlined));
+                    ShowMessage.showNotification(StringConstants.failed.localized(),StringConstants.internetIssue.localized(),
+                         Colors.red, const Icon(Icons.cancel_outlined));
                   }
                 });
 
@@ -138,7 +143,8 @@ class ProductImageViewState extends State<ProductImageView> {
             child: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                   color: Colors.black,
+                  // color: Theme.of(context).colorScheme.onBackground,
+                  color: Colors.black,
                   borderRadius: const BorderRadius.all(Radius.circular(20)),
                   boxShadow: [
                     BoxShadow(
@@ -151,26 +157,26 @@ class ProductImageViewState extends State<ProductImageView> {
                 ),
                 child: widget.productData?.isInWishlist ?? false
                     ? const Icon(
-                        Icons.favorite,
-                        color: Colors.white,
-                      )
+                  Icons.favorite,
+                  color: Colors.white,
+                )
                     : const Icon(
-                        Icons.favorite_outline_rounded,
-                        color: Colors.white,
-                      )),
+                  Icons.favorite_outline_rounded,
+                  color: Colors.white,
+                )),
           )),
       Positioned(
         right: 8.0,
-        top:70.0,
+        top: 70.0,
         child: InkWell(
           onTap: () {
             if (widget.callBack != null) {
               checkInternetConnection().then((value) {
                 if (value) {
-                  widget.callBack!('compare');
+                  widget.callBack!(StringConstants.compare);
                 } else {
-                  ShowMessage.showNotification("InternetIssue".localized(),
-                      "", Colors.red, const Icon(Icons.cancel_outlined));
+                  ShowMessage.showNotification(StringConstants.failed.localized(), StringConstants.internetIssue.localized(),
+                       Colors.red, const Icon(Icons.cancel_outlined));
                 }
               });
             }
@@ -178,9 +184,7 @@ class ProductImageViewState extends State<ProductImageView> {
           child: Container(
               padding: const EdgeInsets.all(9),
               decoration: BoxDecoration(
-                color: ThemeMode.dark == true
-                    ? MobikulTheme.accentColor
-                    : MobikulTheme.primaryColor,
+                color: Theme.of(context).colorScheme.primary,
                 borderRadius: const BorderRadius.all(Radius.circular(18)),
                 boxShadow: [
                   BoxShadow(
@@ -191,32 +195,53 @@ class ProductImageViewState extends State<ProductImageView> {
                   ),
                 ],
               ),
-              child: Image.asset(
-                "assets/images/compare-icon.png",
-                height: 20,
-                width: 20,
+              child: Image.asset(AssetConstants.compareIcon,
+                height: AppSizes.spacingWide,
+                width: AppSizes.spacingWide,
               )),
         ),
       ),
-      if (widget.product?.isNew ?? true)
-        Positioned(
-            left: AppSizes.size8,
-            top: AppSizes.size8,
-            child: Container(
-              decoration: const BoxDecoration(
-                  color: Colors.green,
-                  borderRadius: BorderRadius.all(Radius.circular(15))),
-              child: const Padding(
-                  padding: EdgeInsets.only(
-                      left: AppSizes.size8,
-                      right: AppSizes.size8,
-                      top: AppSizes.size2,
-                      bottom: AppSizes.spacingTiny),
-                  child: Text(
-                    "New",
-                    style: TextStyle(color: Colors.white),
-                  )),
-            )),
+      (widget.productData?.isInSale ?? false)
+          ? Positioned(
+          left: AppSizes.spacingNormal,
+          top: AppSizes.spacingNormal,
+          child: Container(
+            decoration: const BoxDecoration(
+                color: Colors.red,
+                borderRadius: BorderRadius.all(Radius.circular(15))),
+            child: Padding(
+                padding: const EdgeInsets.only(
+                    left: AppSizes.spacingMedium,
+                    right: AppSizes.spacingMedium,
+                    top: AppSizes.spacingSmall,
+                    bottom: AppSizes.spacingSmall),
+                child: Text(
+                  StringConstants.sale.localized(),
+                  style: const TextStyle(color: Colors.white),
+                )),
+          ))
+          : (widget.productData?.productFlats?[0].isNew ?? false) ?
+         Positioned(
+          left: AppSizes.spacingNormal,
+          top: AppSizes.spacingNormal,
+          child: Container(
+            decoration: const BoxDecoration(
+                color: Colors.green,
+                borderRadius: BorderRadius.all(Radius.circular(15))),
+            child: Padding(
+                padding: const EdgeInsets.only(
+                    left: AppSizes.spacingNormal,
+                    right: AppSizes.spacingNormal,
+                    top: AppSizes.spacingSmall/2,
+                    bottom: AppSizes.spacingSmall),
+                child: Text(
+                  StringConstants.statusNew.localized(),
+                  style: const TextStyle(color: Colors.white),
+                )
+            ),
+          )) :
+      Container(color: Colors.transparent,),
     ]);
   }
 }
+

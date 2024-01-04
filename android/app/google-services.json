@@ -7,6 +7,45 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:1076699867652:android:7627738ab9478170f06351",
+        "android_client_info": {
+          "package_name": "com.webkul.bagisto.marketplace"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1076699867652-6nijb4tlissq470kebt6ij3bh4drm3fb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD9oLzksLYsYpJnPvW9-5oXYo2jTKzGt_A"
+        },
+        {
+          "current_key": "AIzaSyDL5pg-OdSNY31ekS9CjVEbk9_pK0j1avU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1076699867652-6nijb4tlissq470kebt6ij3bh4drm3fb.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1076699867652-cofvnvlt7i0bfbp9h7n66jsvkllpmuqq.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.webkul.bagisto.iOS"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:1076699867652:android:dc081e4de9130a48f06351",
         "android_client_info": {
           "package_name": "com.webkul.bagisto.mobikul"
@@ -22,11 +61,22 @@
           }
         },
         {
+          "client_id": "1076699867652-o456sfuqsbcan4svdhpt6rg12loq9jbq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.webkul.bagisto.mobikul",
+            "certificate_hash": "61a253a049223dac296ae6ac3a733f744db12235"
+          }
+        },
+        {
           "client_id": "1076699867652-6nijb4tlissq470kebt6ij3bh4drm3fb.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
+        {
+          "current_key": "AIzaSyD9oLzksLYsYpJnPvW9-5oXYo2jTKzGt_A"
+        },
         {
           "current_key": "AIzaSyDL5pg-OdSNY31ekS9CjVEbk9_pK0j1avU"
         }

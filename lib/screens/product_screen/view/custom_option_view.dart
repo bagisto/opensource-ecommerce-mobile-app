@@ -8,14 +8,18 @@
  * @link https://store.webkul.com/license.html
  */
 // ignore_for_file: file_names, must_be_immutable, must_call_super
-import 'package:bagisto_app_demo/screens/product_screen/view/product_screen_index.dart';
-import 'package:bagisto_app_demo/screens/product_screen/view/widget/get_text_field.dart';
+
+import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
+import 'package:flutter/material.dart';
+import '../../../data_model/categories_data_model/categories_product_model.dart';
+import '../../cart_screen/cart_model/cart_data_model.dart';
+
 
 class CustomOptionsView extends StatefulWidget {
   Function(List, String)? callback;
   List<Attributes>? customOptions = [];
   List<Variants>? variants = [];
-  Product? productData;
+  NewProducts? productData;
 
   CustomOptionsView(
       {Key? key,
@@ -48,13 +52,13 @@ class _CustomOptionsViewState extends State<CustomOptionsView> {
             itemBuilder: (context, index) {
               var item = widget.customOptions?[index];
               switch (widget.productData?.superAttributes?[index].type ?? '') {
-                case select:
+                case StringConstants.select:
                   switch (item?.swatchType ?? '') {
-                    case color:
+                    case StringConstants.color:
                       return _getColorCollectionType(item, index);
-                    case text:
+                    case StringConstants.text:
                       return _getCollectionListType(item, index);
-                    case image:
+                    case StringConstants.image:
                       return _getImageType(item, index);
                     default:
                       return GetTextField(
@@ -131,12 +135,14 @@ class _CustomOptionsViewState extends State<CustomOptionsView> {
 
   Widget _getColorCollectionType(Attributes? variation, int index) {
     return Container(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+        padding: const EdgeInsets.fromLTRB(12, 8, 16, 8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(variation?.label ?? 'edfr34ft4t5'),
+            Text(variation?.label ?? '',
+              style:TextStyle(color: Colors.grey.shade600, fontWeight: FontWeight.w600,fontSize: AppSizes.spacingLarge),
+            ),
             const SizedBox(
               height: 12.0,
             ),
@@ -189,13 +195,15 @@ class _CustomOptionsViewState extends State<CustomOptionsView> {
 
   Widget _getCollectionListType(Attributes? variation, int index) {
     return Container(
-        // color: Colors.white,
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+        padding: const EdgeInsets.fromLTRB(12, 8, 16, 8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(variation?.label ?? 'defre34ft4efter34f'),
+            Text(variation?.label ?? '', style: TextStyle(
+                color: Colors.grey.shade600,
+                fontWeight: FontWeight.w600,fontSize: AppSizes.spacingLarge),
+            ),
             const SizedBox(
               height: 12.0,
             ),
@@ -277,25 +285,25 @@ class _CustomOptionsViewState extends State<CustomOptionsView> {
       if (mappedKey) {
         loopIndexes:
         for (var index1 = 0;
-            index1 < (widget.productData?.configutableData?.index?.length ?? 0);
+            index1 < (widget.productData?.configurableData?.index?.length ?? 0);
             index1++) {
           for (var indexData = optionArrayKey;
               indexData <
-                  (widget.productData?.configutableData?.index?[index1]
+                  (widget.productData?.configurableData?.index?[index1]
                           .attributeOptionIds?.length ??
                       0);
               indexData++) {
             if (optionArray[optionArrayKey]['attributeId'].toString() ==
-                    widget.productData?.configutableData?.index?[index1]
+                    widget.productData?.configurableData?.index?[index1]
                         .attributeOptionIds?[indexData].attributeId
                         .toString() &&
                 optionArray[optionArrayKey]['attributeOptionId'].toString() ==
-                    widget.productData?.configutableData?.index?[index1]
+                    widget.productData?.configurableData?.index?[index1]
                         .attributeOptionIds?[indexData].attributeOptionId
                         .toString()) {
               mappedKey = true;
               selectedProductAttributeId =
-                  widget.productData?.configutableData?.index?[index1].id ?? "";
+                  widget.productData?.configurableData?.index?[index1].id ?? "";
               break loopIndexes;
             } else {
               mappedKey = false;
@@ -310,6 +318,7 @@ class _CustomOptionsViewState extends State<CustomOptionsView> {
   _updateCallBack() {
     if (widget.callback != null) {
       Map<String, dynamic> dict = {};
+      print("optionArray updateCallback --> $optionArray");
       dict["superAttribute"] = optionArray;
       widget.callback!(optionArray, _getId());
     }

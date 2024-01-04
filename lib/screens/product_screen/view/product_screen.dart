@@ -1,17 +1,28 @@
-// ignore_for_file: file_names, must_be_immutable, unnecessary_null_comparison, deprecated_member_use, implementation_imports, avoid_print, prefer_is_empty
-import 'package:bagisto_app_demo/screens/product_screen/view/product_screen_index.dart';
-import '../../../configuration/app_global_data.dart';
-import '../../../helper/check_internet_connection.dart';
-import '../../../models/cart_model/cart_data_model.dart';
-import '../../recent_product/database.dart';
-import '../../recent_product/recent_product_entity.dart';
-import '../../recent_product/recent_view_controller.dart';
+
+import 'dart:async';
+import 'package:bagisto_app_demo/screens/cart_screen/cart_model/add_to_cart_model.dart';
+import 'package:bagisto_app_demo/screens/recent_product/utils/database.dart';
+import 'package:bagisto_app_demo/screens/recent_product/utils/recent_product_entity.dart';
+import 'package:bagisto_app_demo/screens/recent_product/utils/recent_view_controller.dart';
+import 'package:bagisto_app_demo/utils/badge_helper.dart';
+import 'package:bagisto_app_demo/utils/check_internet_connection.dart';
+import 'package:flutter_share/flutter_share.dart';
+import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:collection/collection.dart';
+
+import '../../cart_screen/cart_model/cart_data_model.dart';
+
+
+//ignore: must_be_immutable
 class ProductScreen extends StatefulWidget {
   int? productId;
   String? title;
+  String? sku;
 
-  ProductScreen({Key? key, this.title, this.productId}) : super(key: key);
+  ProductScreen({Key? key, this.title, this.productId, this.sku})
+      : super(key: key);
 
   @override
   State<ProductScreen> createState() => _ProductScreenState();
@@ -26,30 +37,28 @@ class _ProductScreenState extends State<ProductScreen> {
   List configurableParams = [];
   List selectList = [];
   List selectParam = [];
+  int bundleQty = 1;
   dynamic configurableProductId;
   String? price;
-  Product? productData;
+  NewProducts? productData;
   CartModel? cart;
-  final StreamController _myStreamCtrl = StreamController.broadcast();
+  final StreamController myStreamCtrl = StreamController.broadcast();
   dynamic productFlats;
-  Stream get onVariableChanged => _myStreamCtrl.stream;
-  int? cartCount = 5;
+  Stream get onVariableChanged => myStreamCtrl.stream;
   AddToCartModel? addToCartModel;
   final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
       GlobalKey<ScaffoldMessengerState>();
   bool isLoading = false;
   final _scrollController = ScrollController();
-  CartScreenBloc? cartScreenBloc;
   ProductScreenBLoc? productScreenBLoc;
 
   @override
   void initState() {
     _fetchSharedPreferenceData();
-    cartScreenBloc = context.read<CartScreenBloc>();
     getSharePreferenceCartCount().then((value) {
-      _myStreamCtrl.sink.add(value);
+      myStreamCtrl.sink.add(value);
       productScreenBLoc = context.read<ProductScreenBLoc>();
-      productScreenBLoc?.add(FetchProductEvent(widget.productId));
+      productScreenBLoc?.add(FetchProductEvent(widget.sku ?? ""));
     });
     super.initState();
   }
@@ -59,88 +68,91 @@ class _ProductScreenState extends State<ProductScreen> {
   }
 
   @override
+  void dispose() {
+    myStreamCtrl.close();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return ScaffoldMessenger(
       key: scaffoldMessengerKey,
-      child:Directionality(
+      child: Directionality(
         textDirection: GlobalData.contentDirection(),
-        child:  Scaffold(
-        appBar: AppBar(
-          title: CommonWidgets.getHeadingText(widget.title ?? '', context),
-          centerTitle: false,
-          actions: [
-            StreamBuilder(
-              stream: onVariableChanged,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return _cartButtonValue(0);
-                }
-                return _cartButtonValue(
-                    int.tryParse(snapshot.data.toString()) ?? 0);
-              },
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text(widget.title ?? '', style: Theme.of(context).textTheme.labelLarge),
+            centerTitle: false,
+            automaticallyImplyLeading: false,
+            leading: IconButton(onPressed: () {
+              setRecentViewed();
+              Navigator.pop(context);
+            },
+            icon:const Icon(Icons.arrow_back_ios)),
+            actions: [
+              IconButton(
+                  onPressed: () async {
+                    await FlutterShare.share(
+                        title: productFlats?.name ?? productData?.productFlats?[0].name ?? "",
+                        text: '',
+                        linkUrl: productData?.shareURL ?? "",
+                        chooserTitle: '');
+                  },
+                  icon: const Icon(
+                    Icons.share,
+                  )),
+              StreamBuilder(
+                stream: onVariableChanged,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return _cartButtonValue(0);
+                  }
+                  return _cartButtonValue(
+                      int.tryParse(snapshot.data.toString()) ?? 0);
+                },
+              ),
+            ],
+          ),
+          body: _setProductData(context),
+          bottomNavigationBar: SizedBox(
+            height: AppSizes.spacingWide*4,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 14.0, horizontal: 16),
+              child: MaterialButton(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppSizes.spacingMedium),
+                    side: BorderSide(color: Theme.of(context).colorScheme.onBackground)
+                  ),
+                  elevation: AppSizes.spacingSmall,
+                  height: AppSizes.buttonHeight,
+                  minWidth: MediaQuery.of(context).size.width,
+                  color: Theme.of(context).colorScheme.background,
+                  textColor: Theme.of(context).colorScheme.onBackground,
+                  onPressed: () {
+                    checkInternetConnection().then((value) {
+                      if (value) {
+                        ProductScreenBLoc productBloc =
+                            context.read<ProductScreenBLoc>();
+                        productBloc.add(
+                            OnClickProductLoaderEvent(isReqToShowLoader: true));
+                        _addToCart(context);
+                      } else {
+                        ShowMessage.errorNotification(StringConstants.internetIssue.localized(), context);
+                      }
+                    });
+                  },
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        StringConstants.addToCart.localized().toUpperCase(),
+                        style: Theme.of(context).textTheme.labelMedium),
+                    ],
+                  )),
             ),
-            IconButton(
-                onPressed: () async {
-                  await FlutterShare.share(
-                      title: productFlats?.name ?? productData?.productFlats?[0].name ?? "",
-                      text: '',
-                      linkUrl: productData?.shareURL ?? "",
-                      chooserTitle: '');
-                },
-                icon: const Icon(
-                  Icons.share,
-                )),
-          ],
-        ),
-        body:  _setProductData(context),
-
-        bottomNavigationBar: SizedBox(
-          height: 80,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 14.0, horizontal: 12),
-            child: MaterialButton(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.0)),
-                elevation: AppSizes.elevation,
-                height: AppSizes.buttonHeight,
-                minWidth: MediaQuery.of(context).size.width,
-                color: Theme.of(context).colorScheme.background,
-                textColor: Theme.of(context).colorScheme.onBackground,
-                onPressed: () {
-                  checkInternetConnection().then((value) {
-                    if (value) {
-                      ProductScreenBLoc productBloc =
-                          context.read<ProductScreenBLoc>();
-                      productBloc.add(
-                          OnClickProductLoaderEvent(isReqToShowLoader: true));
-                      _addToCart(context);
-                    } else {
-                      ShowMessage.showNotification("InternetIssue".localized(),
-                          "", Colors.red, const Icon(Icons.cancel_outlined));
-                    }
-                  });
-                },
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.shopping_cart,
-                      color: Colors.white,
-                    ),
-                    const SizedBox(
-                      width: 4,
-                    ),
-                    Text(
-                      "AddToCart".localized().toUpperCase(),
-                      style: const TextStyle(
-                          fontSize: AppSizes.normalFontSize,
-                          color: Colors.white),
-                    ),
-                  ],
-                )),
           ),
         ),
-      ), ),
+      ),
     );
   }
 
@@ -150,33 +162,29 @@ class _ProductScreenState extends State<ProductScreen> {
         padding: const EdgeInsets.symmetric(vertical: 8.0),
         child: BadgeIcon(
             icon: IconButton(
-              icon: const Icon(Icons.shopping_cart),
+              icon: const Icon(Icons.shopping_bag_outlined),
               onPressed: () {
                 checkInternetConnection().then((value) {
                   if (value) {
-                    Navigator.pushNamed(context, CartPage).then((value) {
+                    Navigator.pushNamed(context, cartScreen).then((value) {
                       if (value == true) {
                         ProductScreenBLoc productScreenBLoc =
-                        context.read<ProductScreenBLoc>();
-                        productScreenBLoc.add(FetchProductEvent(widget.productId));
+                            context.read<ProductScreenBLoc>();
+                        productScreenBLoc.add(FetchProductEvent(widget.sku ?? ""));
                       }
                     });
                   } else {
-                    ShowMessage.showNotification("InternetIssue".localized(),
-                        "", Colors.red, const Icon(Icons.cancel_outlined));
+                    ShowMessage.errorNotification(StringConstants.internetIssue.localized(), context);
                   }
                 });
-
               },
             ),
             badgeCount: count),
       ),
       onTap: () {
-        Navigator.pushNamed(context, CartPage).then((value) {
+        Navigator.pushNamed(context, cartScreen).then((value) {
           if (value == true) {
-            ProductScreenBLoc productScreenBLoc =
-                context.read<ProductScreenBLoc>();
-            productScreenBLoc.add(FetchProductEvent(widget.productId));
+            productScreenBLoc?.add(FetchProductEvent(widget.sku ?? ""));
           }
         });
       },
@@ -189,50 +197,32 @@ class _ProductScreenState extends State<ProductScreen> {
       listener: (BuildContext context, ProductBaseState state) {
         if (state is AddToCartProductState) {
           if (state.status == ProductStatus.fail) {
-            ShowMessage.showNotification(state.error ?? "", "", Colors.red,
-                const Icon(Icons.cancel_outlined));
+            ShowMessage.errorNotification(state.error ?? "", context);
           } else if (state.status == ProductStatus.success) {
             addToCartModel = state.response;
-            ShowMessage.showNotification(
-                state.successMsg ?? "",
-                "",
-                const Color.fromRGBO(140, 194, 74, 5),
-                const Icon(Icons.check_circle_outline));
+            ShowMessage.successNotification(
+                state.successMsg ?? "", context);
           }
         }
         if (state is AddToCompareListState) {
           if (state.status == ProductStatus.fail) {
-            ShowMessage.showNotification(state.error ?? "", "", Colors.red,
-                const Icon(Icons.cancel_outlined));
+            ShowMessage.errorNotification(state.error ?? "", context);
           } else if (state.status == ProductStatus.success) {
-            ShowMessage.showNotification(
-                state.successMsg ?? "",
-                "",
-                const Color.fromRGBO(140, 194, 74, 5),
-                const Icon(Icons.check_circle_outline));
+            ShowMessage.successNotification(state.successMsg ?? "", context);
           }
         }
         if (state is AddToWishListProductState) {
           if (state.status == ProductStatus.fail) {
-            ShowMessage.showNotification(state.error ?? "", "", Colors.red,
-                const Icon(Icons.cancel_outlined));
+            ShowMessage.errorNotification(state.error ?? "", context);
           } else if (state.status == ProductStatus.success) {
-            ShowMessage.showNotification(
-                state.successMsg ?? "",
-                "",
-                const Color.fromRGBO(140, 194, 74, 5),
-                const Icon(Icons.check_circle_outline));
+            ShowMessage.successNotification(
+                StringConstants.success.localized(), context);
           }
         } else if (state is RemoveFromWishlistState) {
           if (state.status == ProductStatus.fail) {
-            ShowMessage.showNotification(state.error ?? "", "", Colors.red,
-                const Icon(Icons.cancel_outlined));
+            ShowMessage.errorNotification(state.error ?? "", context);
           } else if (state.status == ProductStatus.success) {
-            ShowMessage.showNotification(
-                state.successMsg ?? "",
-                "",
-                const Color.fromRGBO(140, 194, 74, 5),
-                const Icon(Icons.check_circle_outline));
+            ShowMessage.successNotification(StringConstants.success.localized(), context);
           }
         }
       },
@@ -245,27 +235,26 @@ class _ProductScreenState extends State<ProductScreen> {
   ///build container method
   Widget buildContainer(BuildContext context, ProductBaseState state) {
     if (state is ProductInitialState) {
-      return CircularProgressIndicatorClass.circularProgressIndicator(context);
+      return const ProductDetailLoader();
     }
     if (state is FetchProductState) {
       if (state.status == ProductStatus.success) {
         productData = state.productData;
-         productFlats = productData?.productFlats?.firstWhereOrNull((e) => e.locale==GlobalData.locale );
+        productFlats = productData?.productFlats?.firstWhereOrNull((e) => e.locale==GlobalData.locale );
 
         cart = state.productData?.cart;
         SharedPreferenceHelper.setCartCount(productData?.cart?.itemsCount ?? 0);
-        _myStreamCtrl.sink.add(productData?.cart?.itemsCount ?? 0);
-        setRecentViewed();
+        myStreamCtrl.sink.add(productData?.cart?.itemsCount ?? 0);
       } else if (state.status == ProductStatus.fail) {
         Future.delayed(Duration.zero).then((value) => const NoInternetError());
-        return CommonWidgets().getTextFieldHeight(0);
+        return CommonWidgets().getHeightSpace(0);
       }
     }
     if (state is AddToCompareListState) {
       isLoading = false;
       if (state.status == ProductStatus.success) {
         getSharePreferenceCartCount().then((value) {
-          _myStreamCtrl.sink.add(value);
+          myStreamCtrl.sink.add(value);
         });
       }
     }
@@ -274,14 +263,14 @@ class _ProductScreenState extends State<ProductScreen> {
       if (state.status == ProductStatus.success) {
         SharedPreferenceHelper.setCartCount(
             addToCartModel?.cart?.itemsCount ?? 0);
-        _myStreamCtrl.sink.add(addToCartModel?.cart?.itemsCount ?? 0);
+        myStreamCtrl.sink.add(addToCartModel?.cart?.itemsCount ?? 0);
       }
     }
     if (state is AddToWishListProductState) {
       isLoading = false;
       if (state.status == ProductStatus.success) {
         getSharePreferenceCartCount().then((value) {
-          _myStreamCtrl.sink.add(value);
+          myStreamCtrl.sink.add(value);
         });
       }
     }
@@ -292,18 +281,20 @@ class _ProductScreenState extends State<ProductScreen> {
       isLoading = false;
       if (state.status == ProductStatus.success) {
         getSharePreferenceCartCount().then((value) {
-          _myStreamCtrl.sink.add(value);
+          myStreamCtrl.sink.add(value);
         });
       }
     }
+
     return ProductView(
-      productData: productData!,
+      productData: productData,
       isLoading: isLoading,
       isLoggedIn: isLoggedIn,
       callback: (configurableParams, bundleParams, selectList, selectParam,
-          groupedParams, downloadLinks, qty, configurableProductId) {
+          groupedParams, downloadLinks, qty, configurableProductId,bundleQuantity) {
         this.configurableParams = configurableParams;
         this.bundleParams = bundleParams;
+        bundleQty =  bundleQuantity;
         this.selectList = selectList;
         this.selectParam = selectParam;
         this.groupedParams = groupedParams;
@@ -323,115 +314,113 @@ class _ProductScreenState extends State<ProductScreen> {
   _addToCart(BuildContext context) {
     ProductScreenBLoc productScreenBLoc = context.read<ProductScreenBLoc>();
     List list = [];
-    if (productData?.type == Grouped) {
+    if (productData?.type == StringConstants.grouped) {
       if (groupedParams.isNotEmpty) {
         list.add(groupedParams);
         productScreenBLoc.add(AddToCartProductEvent(
             qty,
-            int.parse(productData?.id ?? ""),
+            productData?.id ?? "",
             downloadLinks,
             groupedParams,
             bundleParams,
             configurableParams,
-            configurableProductId ?? 0,
+            configurableProductId,
+            0,
             ""));
       } else {
-        ShowMessage.showNotification("AtleastOneWarning".localized(), "",
-            Colors.yellow, const Icon(Icons.warning_amber));
+        ShowMessage.warningNotification(StringConstants.atLeastOneWarning.localized(), context);
         productScreenBLoc
             .add(OnClickProductLoaderEvent(isReqToShowLoader: false));
 
         return;
       }
-    } else if (productData?.type == Bundle) {
+    } else if (productData?.type == StringConstants.bundle) {
       productData?.bundleOptions?.forEach((element) {
         if (bundleParams.isNotEmpty) {
+          print("BundleParams-->$bundleParams");
           list.add(bundleParams);
           productScreenBLoc.add(AddToCartProductEvent(
               qty,
-              int.parse(productData?.id ?? ""),
+              productData?.id ?? "",
               downloadLinks,
               groupedParams,
               bundleParams,
               configurableParams,
-              configurableProductId ?? 0,
+              configurableProductId,
+              0,
               ""));
-          debugPrint("dedcdscdsedfef  ${bundleParams.toString()}");
         } else {
-          ShowMessage.showNotification("AtleastOneWarning".localized(), "",
-              Colors.yellow, const Icon(Icons.warning_amber));
+          ShowMessage.warningNotification(StringConstants.atLeastOneWarning.localized(), context);
 
           productScreenBLoc
               .add(OnClickProductLoaderEvent(isReqToShowLoader: false));
           return;
         }
       });
-    } else if (productData?.type == Downloadable) {
+    } else if (productData?.type == StringConstants.downloadable) {
       if (downloadLinks.isNotEmpty) {
         productScreenBLoc.add(AddToCartProductEvent(
             qty,
-            int.parse(productData?.id ?? ""),
+            productData?.id ?? "",
             downloadLinks,
             groupedParams,
             bundleParams,
             configurableParams,
-            configurableProductId ?? 0,
+            configurableProductId,
+            0,
             ""));
       } else {
-        ShowMessage.showNotification("LinkRequired".localized(), "",
-            Colors.yellow, const Icon(Icons.warning_amber));
+        ShowMessage.warningNotification(StringConstants.linkRequired.localized(),context);
         productScreenBLoc
             .add(OnClickProductLoaderEvent(isReqToShowLoader: false));
 
         return;
       }
-    } else if (productData?.type == configurable) {
-      debugPrint("param --> $configurableParams");
-      debugPrint("param --> $configurableProductId");
-
+    } else if (productData?.type == StringConstants.configurable) {
       String? id = getId(productData, configurableParams);
 
-      if (configurableParams == null || configurableProductId == null) {
-        ShowMessage.showNotification("PleaseSelectVariants".localized(), "",
-            Colors.yellow, const Icon(Icons.warning_amber));
+      if (configurableParams.isEmpty || configurableProductId == null) {
+        ShowMessage.warningNotification(StringConstants.pleaseSelectVariants.localized(), context);
 
         productScreenBLoc
             .add(OnClickProductLoaderEvent(isReqToShowLoader: false));
       } else {
         productScreenBLoc.add(AddToCartProductEvent(
             qty,
-            int.parse(productData?.id ?? ""),
+            productData?.id ?? "",
             downloadLinks,
             groupedParams,
             bundleParams,
             configurableParams,
-            id ?? 0,
+            id,
+            0,
             ""));
       }
     } else {
       productScreenBLoc.add(AddToCartProductEvent(
           qty,
-          int.tryParse(productData?.id ?? "") ?? 0,
+          productData?.id ?? "",
           downloadLinks,
           groupedParams,
           bundleParams,
           configurableParams,
-          configurableProductId ?? "0",
+          configurableProductId,
+          0,
           ""));
     }
   }
 
-  String? getId(Product? productData, List? configurableParams) {
+  String? getId(NewProducts? productData, List? configurableParams) {
     String? id = "0";
-    if ((productData?.configutableData?.index ?? []).isNotEmpty) {
-      id = productData?.configutableData?.index?[0].id;
+    if ((productData?.configurableData?.index ?? []).isNotEmpty) {
+      id = productData?.configurableData?.index?[0].id;
     }
     for (var indexData = 0;
-        indexData < (productData?.configutableData?.index?.length ?? 0);
+        indexData < (productData?.configurableData?.index?.length ?? 0);
         indexData++) {
       List map = [];
 
-      Index? data = productData?.configutableData?.index?[indexData];
+      Index? data = productData?.configurableData?.index?[indexData];
 
       for (int i = 0; i < (data?.attributeOptionIds?.length ?? 0); i++) {
         AttributeOptionIds? item = data?.attributeOptionIds?[i];
@@ -462,12 +451,15 @@ class _ProductScreenState extends State<ProductScreen> {
             RecentProduct(
               id: productData?.id,
               isInWishlist: productData?.isInWishlist,
-              isNew: productFlats?.isNew ?? productData?.productFlats?[0].isNew,
+              isNew: productData?.productFlats?[0].isNew,
+              isInSale:productData?.isInSale ,
               name: productFlats?.name ?? productData?.productFlats?[0].name,
-              price: productData?.priceHtml?.regular,
+              price: productData?.priceHtml?.priceHtml,
+              specialPrice: productData?.priceHtml?.formattedFinalPrice ,
               type: productData?.type,
-              shortDescription: productFlats?.shortDescription ?? productData?.productFlats?[0].shortDescription,
-              productId: productFlats?.id ?? productData?.productFlats?[0].id,
+              urlKey: productData?.urlKey,
+              shortDescription: productData?.productFlats?[0].shortDescription,
+              productId: productData?.productFlats?[0].id,
               url: (productData?.images ?? []).isNotEmpty
                   ? (productData?.images?[0].url.toString())
                   : "",
@@ -506,11 +498,3 @@ Future getCustomerLoggedInPrefValue() async {
   return await SharedPreferenceHelper.getCustomerLoggedIn();
 }
 
-class ProductData {
-  ProductData({this.product, this.typeParam, this.price, this.selectParam});
-
-  Product? product;
-  String? price;
-  List? typeParam = [];
-  List? selectParam = [];
-}

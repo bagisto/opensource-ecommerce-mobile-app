@@ -28,7 +28,7 @@ Make sure you have installed the API module and set this up properly on your bag
 - Use the git clone command followed by the repository URL
 
 ```sh
-git clone https://github.com/<username>/<repository-name>.git
+git clone https://github.com/bagisto/opensource-ecommerce-mobile-app.git
 ```
 ### Install dependencies
 
@@ -102,6 +102,7 @@ Replace "GoogleService-Info.plist".
 > Helpful Articles
 
 > Android  → https://mobikul.com/knowledgebase/generating-google-service-file-enable-fcm-firebase-cloud-messaging-android-application/
+
 > iOS → https://mobikul.com/knowledgebase/generating-new-googleservice-info-plist-file-fcm-based-project-ios-app/
 
 ### For Application Title

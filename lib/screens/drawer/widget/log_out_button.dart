@@ -1,19 +1,21 @@
-import 'package:bagisto_app_demo/helper/application_localization.dart';
+import 'package:bagisto_app_demo/utils/application_localization.dart';
+import 'package:bagisto_app_demo/widgets/loader.dart';
 import 'package:flutter/material.dart';
+import '../../../data_model/account_models/account_info_details.dart';
+import '../../../utils/app_constants.dart';
+import '../../../utils/check_internet_connection.dart';
+import '../../../utils/mobikul_theme.dart';
+import '../../../utils/shared_preference_helper.dart';
+import '../../../utils/string_constants.dart';
+import '../../../widgets/show_message.dart';
+import '../../home_page/bloc/home_page_repository.dart';
 
-import '../../../Configuration/mobikul_theme.dart';
-import '../../../common_widget/circular_progress_indicator.dart';
-import '../../../common_widget/common_widgets.dart';
-import '../../../common_widget/show_message.dart';
-import '../../../configuration/app_sizes.dart';
-import '../../../helper/check_internet_connection.dart';
-import '../../../helper/shared_preference_helper.dart';
-import '../../../models/account_models/account_info_details.dart';
-import '../../homepage/repository/homepage_repository.dart';
 // ignore: must_be_immutable
 class LogoutButton extends StatefulWidget {
-   final dynamic  fetchSharedPreferenceData;
-    const LogoutButton({Key? key, this.fetchSharedPreferenceData}) : super(key: key);
+  AccountInfoDetails? customerDetails;
+  final dynamic fetchSharedPreferenceData;
+  LogoutButton({Key? key, this.customerDetails, this.fetchSharedPreferenceData})
+      : super(key: key);
 
   @override
   State<LogoutButton> createState() => _LogoutButtonState();
@@ -27,28 +29,25 @@ class _LogoutButtonState extends State<LogoutButton> {
         _onPressedLogout();
       },
       title: MaterialButton(
-        color: Theme.of(context).colorScheme.background,
+        color: Theme.of(context).colorScheme.onBackground,
         elevation: 0.0,
-        textColor: Theme.of(context).colorScheme.onBackground,
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8.0)),
+        textColor: Theme.of(context).colorScheme.background,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
         padding: const EdgeInsets.symmetric(vertical: 12.0),
         onPressed: () {
           checkInternetConnection().then((value) {
             if (value) {
               _onPressedLogout();
             } else {
-              ShowMessage.showNotification("InternetIssue".localized(),
-                  "", Colors.red, const Icon(Icons.cancel_outlined));
+              ShowMessage.errorNotification(StringConstants.internetIssue.localized(), context);
             }
           });
         },
         child: Text(
-          "LogOutTitle".localized().toUpperCase(),
-          style: TextStyle(
-              fontSize: AppSizes.normalFontSize,
-              fontWeight: FontWeight.w600,
-              color: MobikulTheme.primaryColor),
+          StringConstants.logOutTitle.localized().toUpperCase(),
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+            color: Theme.of(context).colorScheme.background
+          ),
         ),
       ),
     );
@@ -63,23 +62,30 @@ class _LogoutButtonState extends State<LogoutButton> {
         return AlertDialog(
           backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
           title: Text(
-            "LogOutWarningMsg".localized(),
+            StringConstants.logOutTitle.localized(),
+            style: Theme.of(context).textTheme.headlineSmall,
           ),
-          actions: <Widget>[
-             MaterialButton(
+          content: Text(
+            StringConstants.logOutWarningMsg.localized(),
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          actions: [
+            MaterialButton(
               onPressed: () {
                 Navigator.of(context, rootNavigator: true).pop();
               },
               child: Text(
-                "ButtonLabelNO".localized(),
+              StringConstants.no.localized(),
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
             ),
-             TextButton(
+            TextButton(
                 onPressed: () {
+                  widget.customerDetails = null;
                   _onPressConfirmLogout();
                 },
-                child: Text("ButtonLabelYes".localized())),
+                child: Text(StringConstants.yes.localized(),
+                  style: Theme.of(context).textTheme.bodyMedium)),
           ],
         );
       },
@@ -96,25 +102,22 @@ class _LogoutButtonState extends State<LogoutButton> {
           return Dialog(
             child: Container(
               color: Theme.of(context).appBarTheme.backgroundColor,
-              padding: const EdgeInsets.all(AppSizes.widgetSidePadding),
+              padding: const EdgeInsets.all(AppSizes.spacingWide),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  CommonWidgets().getTextFieldHeight(AppSizes.normalHeight),
-                  CircularProgressIndicatorClass.circularProgressIndicator(
-                      context),
-                  CommonWidgets()
-                      .getTextFieldHeight(AppSizes.widgetSidePadding),
+                  const SizedBox(height:AppSizes.spacingMedium),
+                  const Loader(),
+                  const SizedBox(height:AppSizes.spacingWide),
                   SizedBox(
                     width: MediaQuery.of(context).size.width / 2.5,
                     child: Center(
-                      child: Text(
-                        "PleaseWaitProcessingRequest".localized(),
+                      child: Text(StringConstants.processWaitingMsg.localized(),
                         softWrap: true,
                       ),
                     ),
                   ),
-                  CommonWidgets().getTextFieldHeight(AppSizes.normalHeight)
+                  const SizedBox(height:AppSizes.spacingMedium),
                 ],
               ),
             ),
@@ -123,12 +126,7 @@ class _LogoutButtonState extends State<LogoutButton> {
     HomePageRepositoryImp().callLogoutApi().then((response) async {
       Navigator.pop(context);
       Navigator.pop(context);
-
-      ShowMessage.showNotification(
-          response.success,
-          "",
-          const Color.fromRGBO(140, 194, 74, 5),
-          const Icon(Icons.check_circle_outline));
+      ShowMessage.successNotification(response?.success ?? "", context);
       if (true) {
         await SharedPreferenceHelper.onUserLogout();
         widget.fetchSharedPreferenceData();
@@ -136,5 +134,3 @@ class _LogoutButtonState extends State<LogoutButton> {
     });
   }
 }
-
-

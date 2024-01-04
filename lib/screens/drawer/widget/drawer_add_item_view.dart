@@ -1,8 +1,8 @@
-import 'package:bagisto_app_demo/helper/application_localization.dart';
 import 'package:flutter/material.dart';
+import '../../../utils/application_localization.dart';
+import '../../../utils/app_constants.dart';
+import '../../../widgets/common_widgets.dart';
 
-import '../../../common_widget/common_widgets.dart';
-import '../../../configuration/app_sizes.dart';
 
 class DrawerAddItemList extends StatelessWidget {
   final String? headingTitle;
@@ -18,7 +18,7 @@ class DrawerAddItemList extends StatelessWidget {
   Widget build(BuildContext context) {
     return headingTitle != null
         ? SizedBox(
-            height: 50,
+            height: 40,
             child: ListTile(
                 title: Text(
               headingTitle?.localized().toUpperCase() ?? "",
@@ -35,14 +35,13 @@ class DrawerAddItemList extends StatelessWidget {
               onTap: onTap,
               leading: Icon(
                 icon,
-                size: AppSizes.iconSize,
+                size: AppSizes.spacingWide,
                 color: Theme.of(context).colorScheme.onPrimary,
               ),
               title: CommonWidgets()
                   .getDrawerTileText(subTitle?.localized() ?? "", context),
               trailing: Icon(
-                Icons.arrow_forward_ios,
-                size: AppSizes.iconSize,
+                Icons.chevron_right,
                 color: Theme.of(context).colorScheme.onPrimary,
               ),
             ),

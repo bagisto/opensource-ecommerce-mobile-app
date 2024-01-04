@@ -1,53 +1,39 @@
-/*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
- */
-
-// ignore_for_file: file_names, must_be_immutable
-
 import 'dart:async';
-
-import 'package:bagisto_app_demo/helper/shared_preference_helper.dart';
-import 'package:bagisto_app_demo/common_widget/show_message.dart';
-import 'package:bagisto_app_demo/helper/string_constants.dart';
-import 'package:bagisto_app_demo/helper/application_localization.dart';
-import 'package:bagisto_app_demo/screens/checkout/CheckOutAddres/checkout/bloc/checkout_bloc.dart';
-import 'package:bagisto_app_demo/screens/checkout/CheckOutAddres/checkout/repository/checkout_repository.dart';
-import 'package:bagisto_app_demo/screens/checkout/CheckOutAddres/checkout/view/checkout_address_view.dart';
-import 'package:bagisto_app_demo/screens/checkout/checkout_payment/bloc/checkout_payment_bloc.dart';
-import 'package:bagisto_app_demo/screens/checkout/checkout_payment/repository/checkout_payment_repository.dart';
-import 'package:bagisto_app_demo/screens/checkout/checkout_payment/view/checkout_payment_view.dart';
-import 'package:bagisto_app_demo/screens/checkout/checkout_review/bloc/checkout_review_bloc.dart';
-import 'package:bagisto_app_demo/screens/checkout/checkout_review/repository/checkout_review_repository.dart';
-import 'package:bagisto_app_demo/screens/checkout/checkout_shipping/bloc/checkout_shipping_bloc.dart';
-import 'package:bagisto_app_demo/screens/checkout/checkout_shipping/repository/checkout_shipping_repository.dart';
-import 'package:bagisto_app_demo/screens/checkout/checkout_shipping/view/checkout_shipping_view.dart';
-import 'package:bagisto_app_demo/screens/checkout/guest_add_address/bloc/guest_address_bloc.dart';
-import 'package:bagisto_app_demo/screens/checkout/guest_add_address/repository/guest_address_repository.dart';
-import 'package:bagisto_app_demo/screens/checkout/guest_add_address/view/guest_add_address_form.dart';
-import 'package:bagisto_app_demo/screens/checkout/view/checkout_header_view.dart';
+import 'package:bagisto_app_demo/utils/application_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../Configuration/mobikul_theme.dart';
-import '../../../configuration/app_global_data.dart';
-import '../../../configuration/app_sizes.dart';
-import '../../../models/cart_model/cart_data_model.dart';
-import '../../../routes/route_constants.dart';
+import '../../../utils/app_constants.dart';
+import '../../../utils/app_global_data.dart';
+import '../../../utils/mobikul_theme.dart';
+import '../../../utils/route_constants.dart';
+import '../../../utils/shared_preference_helper.dart';
+import '../../../utils/string_constants.dart';
+import '../../../widgets/show_message.dart';
 import '../../cart_screen/bloc/cart_screen_bloc.dart';
+import '../../cart_screen/cart_model/cart_data_model.dart';
+import '../checkout_addres/bloc/checkout_bloc.dart';
+import '../checkout_addres/bloc/checkout_repository.dart';
+import '../checkout_addres/view/checkout_address_view.dart';
+import '../checkout_payment/bloc/checkout_payment_bloc.dart';
+import '../checkout_payment/bloc/checkout_payment_repository.dart';
+import '../checkout_payment/view/checkout_payment_view.dart';
+import '../checkout_review/bloc/checkout_review_bloc.dart';
+import '../checkout_review/bloc/checkout_review_repository.dart';
 import '../checkout_review/view/checkout_order_review_view.dart';
+import '../checkout_shipping/bloc/checkout_shipping_bloc.dart';
+import '../checkout_shipping/bloc/checkout_shipping_repository.dart';
+import '../checkout_shipping/view/checkout_shipping_view.dart';
+import '../guest_add_address/bloc/guest_address_bloc.dart';
+import '../guest_add_address/bloc/guest_address_repository.dart';
+import '../guest_add_address/view/guest_add_address_form.dart';
+import 'checkout_header_view.dart';
 
+// ignore: must_be_immutable
 class CheckoutScreen extends StatefulWidget {
   CartScreenBloc? cartScreenBloc;
-
   String? total;
   bool? isDownloadable;
   CartModel? cartDetailsModel;
-
   CheckoutScreen(
       {Key? key,
       this.total,
@@ -88,15 +74,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   String? shippingPhone;
   String shippingId = '';
   String paymentId = "";
+  int? billingAddressId;
+  int? shippingAddressId;
   bool isUser = false;
   String? email;
   String? updatedPrice;
   final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
       GlobalKey<ScaffoldMessengerState>();
   final StreamController _myStreamCtrl = StreamController.broadcast();
-
   Stream get onVariableChanged => _myStreamCtrl.stream;
-
   @override
   void initState() {
     _fetchSharedPrefData();
@@ -113,26 +99,32 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   }
 
   @override
+  void dispose() {
+    super.dispose();
+    _myStreamCtrl.close();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return ScaffoldMessenger(
       key: scaffoldMessengerKey,
-      child:Directionality(
-          textDirection: GlobalData.contentDirection(),
-          child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            currentIndex == 1
-                ? "AddressTitle".localized()
-                : currentIndex == 2
-                    ? "ShippingMethods".localized()
-                    : currentIndex == 3
-                        ? "PaymentMethod".localized()
-                        : "reviewAndCheckout".localized(),
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+      child: Directionality(
+        textDirection: GlobalData.contentDirection(),
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text(
+              currentIndex == 1
+                  ? StringConstants.addressTitle.localized()
+                  : currentIndex == 2
+                      ? StringConstants.shippingMethods.localized()
+                      : currentIndex == 3
+                          ? StringConstants.paymentMethods.localized()
+                          : StringConstants.reviewAndCheckout.localized(),
+              style: Theme.of(context).textTheme.labelLarge,
+            ),
           ),
+          body: _buildUI(context),
         ),
-        body:  _buildUI( context),
-        )
       ),
     );
   }
@@ -154,8 +146,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       case 1:
         return isUser
             ? BlocProvider(
-                create: (context) =>
-                    CheckOutBloc(repository: CheckOutRepositoryImp()),
+                create: (context) => CheckOutBloc(CheckOutRepositoryImp()),
                 child: CheckoutAddressView(
                   callBack: (billingCompanyName,
                       billingFirstName,
@@ -176,35 +167,87 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       shippingState,
                       shippingCity,
                       shippingPostCode,
-                      shippingPhone) {
-                    this.billingCompanyName = billingCompanyName;
-                    this.billingFirstName = billingFirstName;
-                    this.billingLastName = billingLastName;
-                    this.billingAddress = billingAddress;
-                    billingEmail = email;
-                    this.billingAddress2 = billingAddress2;
-                    this.billingCountry = billingCountry;
-                    this.billingState = billingState;
-                    this.billingCity = billingCity;
-                    this.billingPostCode = billingPostCode;
-                    this.billingPhone = billingPhone;
-                    this.shippingCompanyName = shippingCompanyName;
-                    this.shippingFirstName = shippingFirstName;
-                    this.shippingLastName = shippingLastName;
-                    this.shippingAddress = shippingAddress;
-                    shippingEmail = email;
-                    this.shippingAddress2 = shippingAddress2;
-                    this.shippingCountry = shippingCountry;
-                    this.shippingState = shippingState;
-                    this.shippingCity = shippingCity;
-                    this.shippingPostCode = shippingPostCode;
-                    this.shippingPhone = shippingPhone;
+                      shippingPhone,
+                      billingAddressId,
+                      shippingAddressId) {
+                    if (billingCompanyName != null) {
+                      this.billingCompanyName = billingCompanyName;
+                    }
+                    if (billingFirstName != null) {
+                      this.billingFirstName = billingFirstName;
+                    }
+                    if (billingLastName != null) {
+                      this.billingLastName = billingLastName;
+                    }
+                    if (billingAddress != null) {
+                      this.billingAddress = billingAddress;
+                    }
+                    if (billingAddress2 != null) {
+                      this.billingAddress2 = billingAddress2;
+                    }
+                    if (email != null) {
+                      billingEmail = email;
+                    }
+                    if (billingCountry != null) {
+                      this.billingCountry = billingCountry;
+                    }
+                    if (billingState != null) {
+                      this.billingState = billingState;
+                    }
+                    if (billingCity != null) {
+                      this.billingCity = billingCity;
+                    }
+                    if (billingPostCode != null) {
+                      this.billingPostCode = billingPostCode;
+                    }
+                    if (billingPhone != null) {
+                      this.billingPhone = billingPhone;
+                    }
+                    if (shippingCompanyName != null) {
+                      this.shippingCompanyName = shippingCompanyName;
+                    }
+                    if (shippingFirstName != null) {
+                      this.shippingFirstName = shippingFirstName;
+                    }
+                    if (shippingLastName != null) {
+                      this.shippingLastName = shippingLastName;
+                    }
+                    if (shippingAddress != null) {
+                      this.shippingAddress = shippingAddress;
+                    }
+                    if (email != null) {
+                      shippingEmail = email;
+                    }
+                    if (shippingAddress2 != null) {
+                      this.shippingAddress2 = shippingAddress2;
+                    }
+                    if (shippingCountry != null) {
+                      this.shippingCountry = shippingCountry;
+                    }
+                    if (shippingState != null) {
+                      this.shippingState = shippingState;
+                    }
+                    if (shippingCity != null) {
+                      this.shippingCity = shippingCity;
+                    }
+                    if (shippingPostCode != null) {
+                      this.shippingPostCode = shippingPostCode;
+                    }
+                    if (shippingPhone != null) {
+                      this.shippingPhone = shippingPhone;
+                    }
+                    if (billingAddressId != 0) {
+                      this.billingAddressId = billingAddressId;
+                    }
+                    if (shippingAddressId != 0) {
+                      this.shippingAddressId = shippingAddressId;
+                    }
                   },
                 ),
               )
             : BlocProvider(
                 create: (context) =>
-                    GuestAddressBloc(repository: GuestAddressRepositoryImp()),
+                    GuestAddressBloc(GuestAddressRepositoryImp()),
                 child: GuestAddAddressForm(callBack: (billingCompanyName,
                     billingFirstName,
                     billingLastName,
@@ -255,7 +298,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       case 2:
         return BlocProvider(
           create: (context) =>
-              CheckOutShippingBloc(repository: CheckOutShippingRepositoryImp()),
+              CheckOutShippingBloc(CheckOutShippingRepositoryImp()),
           child: CheckoutShippingPageView(
             billingCompanyName: billingCompanyName,
             billingFirstName: billingFirstName,
@@ -279,18 +322,19 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             shippingCity: shippingCity,
             shippingPostCode: shippingPostCode,
             shippingPhone: shippingPhone,
+            billingId: billingAddressId ?? 0,
+            shippingId: shippingAddressId ?? 0,
             callBack: (
               id,
             ) {
               shippingId = id;
             },
-
           ),
         );
       case 3:
         return BlocProvider(
           create: (context) =>
-              CheckOutPaymentBloc(repository: CheckOutPaymentRepositoryImp()),
+              CheckOutPaymentBloc(CheckOutPaymentRepositoryImp()),
           child: CheckoutPaymentView(
             total: widget.total,
             shippingId: shippingId,
@@ -306,7 +350,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       case 4:
         return BlocProvider(
           create: (context) =>
-              CheckOutReviewBloc(repository: CheckOutReviewRepositoryImp()),
+              CheckOutReviewBloc(CheckOutReviewRepositoryImp()),
           child: CheckoutOrderReviewView(
             paymentId: paymentId,
             cartDetailsModel: widget.cartDetailsModel,
@@ -317,13 +361,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           ),
         );
       default:
-        return Container();
+        return const SizedBox();
     }
   }
 
   _buildUI(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(14, 0.0, 14.0, 0),
+      padding: const EdgeInsets.fromLTRB(
+          AppSizes.spacingLarge, 0.0, AppSizes.spacingLarge, 0),
       child: Column(
         children: [
           CheckoutHeaderView(
@@ -345,11 +390,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Card(
                   elevation: 12,
+                  margin: const EdgeInsets.fromLTRB(0, 4, 0, 4),
                   child: Container(
-                    // color: Colors.white,
                     padding: const EdgeInsets.symmetric(
-                        vertical: NormalPadding, horizontal: HighPadding),
-                    margin: const EdgeInsets.fromLTRB(0, NormalWidth, 0, 0),
+                        vertical: AppSizes.spacingNormal,
+                        horizontal: AppSizes.spacingWide),
+                    margin: const EdgeInsets.fromLTRB(
+                        0, AppSizes.spacingSmall, 0, 0),
                     child: Row(
                       children: [
                         Expanded(
@@ -359,16 +406,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                "CartPageAmountToBePaidLabel".localized(),
-                                style: TextStyle(
-                                    color: Colors.grey[600],
-                                    fontWeight: FontWeight.w500),
+                                StringConstants.cartPageAmountToBePaidLabel
+                                    .localized(),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(color: Colors.grey.shade600),
                               ),
                               Text(
                                 widget.total ?? "",
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: AppSizes.mediumFontSize),
+                                style:
+                                    Theme.of(context).textTheme.headlineLarge,
                               ),
                             ],
                           ),
@@ -376,7 +424,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         Expanded(
                           flex: 1,
                           child: MaterialButton(
-                            color: Theme.of(context).colorScheme.background,
+                            color: Theme.of(context).colorScheme.onBackground,
                             elevation: 0.0,
                             textColor: MobikulTheme.primaryColor,
                             shape: RoundedRectangleBorder(
@@ -384,41 +432,50 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             ),
                             padding: const EdgeInsets.symmetric(vertical: 12.0),
                             onPressed: () {
+                              debugPrint(
+                                  "billingAddress -> $currentIndex * $billingAddress");
                               if (currentIndex < 5) {
                                 if (currentIndex == 2 && shippingId == '') {
                                   ShowMessage.showNotification(
-                                      "pleaseSelectShipping".localized(),
-                                      "",
+                                      StringConstants.warning.localized(),
+                                      StringConstants.pleaseSelectShipping
+                                          .localized(),
                                       Colors.yellow,
                                       const Icon(Icons.warning_amber));
                                 } else if (currentIndex == 3 &&
                                     paymentId == '') {
                                   ShowMessage.showNotification(
-                                      "pleaseSelectPayment".localized(),
-                                      "",
+                                      StringConstants.warning.localized(),
+                                      StringConstants.pleaseSelectPayment
+                                          .localized(),
                                       Colors.yellow,
                                       const Icon(Icons.warning_amber));
                                 } else if ((currentIndex == 1 &&
                                         billingAddress == null ||
-                                    shippingAddress == null)) {
+                                    shippingAddress ==
+                                        null) /*||(billing?['address1']==null)*/) {
                                   if (currentIndex == 1 &&
                                       billingAddress == null &&
                                       shippingAddress == null) {
                                     ShowMessage.showNotification(
-                                        "unaddressable".localized(),
-                                        "",
+                                        StringConstants.warning.localized(),
+                                        StringConstants.pleaseFillAddress
+                                            .localized(),
                                         Colors.yellow,
                                         const Icon(Icons.warning_amber));
                                   } else if (billingAddress == null) {
                                     ShowMessage.showNotification(
-                                        "pleasefillbillingaddress".localized(),
-                                        "",
+                                        StringConstants.warning.localized(),
+                                        StringConstants.pleaseFillBillingAddress
+                                            .localized(),
                                         Colors.yellow,
                                         const Icon(Icons.warning_amber));
                                   } else if (shippingAddress == null) {
                                     ShowMessage.showNotification(
-                                        "pleasefillshippingaddress".localized(),
-                                        "",
+                                        StringConstants.warning.localized(),
+                                        StringConstants
+                                            .pleaseFillShippingAddress
+                                            .localized(),
                                         Colors.yellow,
                                         const Icon(Icons.warning_amber));
                                   }
@@ -435,17 +492,22 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                               }
                               if (currentIndex == 5) {
                                 Navigator.pushReplacementNamed(
-                                    context, OrderPlacedScreen);
+                                    context, orderPlacedScreen);
                               }
                             },
                             child: Text(
                               currentIndex == 4
-                                  ? 'PlaceOrder'.localized()
-                                  : 'Proceed'.localized().toUpperCase(),
-                              style: TextStyle(
-                                  fontSize: 16.0,
-                                  fontWeight: FontWeight.w500,
-                                  color: MobikulTheme.primaryColor),
+                                  ? StringConstants.placeOrder.localized()
+                                  : StringConstants.proceed
+                                      .localized()
+                                      .toUpperCase(),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelMedium
+                                  ?.copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .background),
                             ),
                           ),
                         ),
@@ -456,9 +518,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               }
               return Card(
                 elevation: 12,
+                margin: const EdgeInsets.fromLTRB(0, 4, 0, 4),
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                      vertical: AppSizes.normalPadding, horizontal: 18.0),
+                      vertical: AppSizes.spacingNormal, horizontal: 18.0),
                   margin: const EdgeInsets.fromLTRB(0, 4, 0, 0),
                   child: Row(
                     children: [
@@ -469,16 +532,16 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              "CartPageAmountToBePaidLabel".localized(),
-                              style: TextStyle(
-                                  color: Colors.grey[600],
-                                  fontWeight: FontWeight.w500),
+                              StringConstants.cartPageAmountToBePaidLabel
+                                  .localized(),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(color: Colors.grey.shade600),
                             ),
                             Text(
                               snapshot.data.toString(),
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: AppSizes.mediumFontSize),
+                              style: Theme.of(context).textTheme.headlineLarge,
                             ),
                           ],
                         ),
@@ -486,56 +549,61 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       Expanded(
                         flex: 1,
                         child: MaterialButton(
-                          color: Theme.of(context).colorScheme.background,
+                          color: Theme.of(context).colorScheme.onBackground,
                           elevation: 0.0,
-                          textColor: Theme.of(context).colorScheme.onBackground,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8.0),
                           ),
                           padding: const EdgeInsets.symmetric(vertical: 12.0),
                           onPressed: () {
                             if (currentIndex < 5) {
-                              if(currentIndex == 2 && shippingId == ''){
-                                ShowMessage.showNotification("pleaseSelectShipping".localized(),"",Colors.yellow,Icon(Icons.warning_amber));
-                              }else if(currentIndex == 3 && paymentId == ''){
-                                ShowMessage.showNotification("pleaseSelectPayment".localized(),"",Colors.yellow,Icon(Icons.warning_amber));
-                              }
-                              else if((currentIndex==1 && billingAddress == null || shippingAddress == null) /*||(billing?['address1']==null)*/){
-                                if(currentIndex==1 && billingAddress == null && shippingAddress == null) {
-                                  ShowMessage.showNotification("pleasefilladdress".localized(),"",Colors.yellow,Icon(Icons.warning_amber));
-                                }
-                                else if(billingAddress == null){
-                                  ShowMessage.showNotification("pleasefillbillingaddress".localized(),"",Colors.yellow,Icon(Icons.warning_amber));
-                                }
-                                else if(shippingAddress == null){
-                                  ShowMessage.showNotification("pleasefillshippingaddress".localized(),"",Colors.yellow,Icon(Icons.warning_amber));
-                                }
-                              }
-                              else{
+                              if (currentIndex == 2 && shippingId == '') {
+                                ShowMessage.showNotification(
+                                    StringConstants.warning.localized(),
+                                    StringConstants.pleaseSelectShipping
+                                        .localized(),
+                                    Colors.yellow,
+                                    const Icon(Icons.warning_amber));
+                              } else if (currentIndex == 3 && paymentId == '') {
+                                ShowMessage.showNotification(
+                                    StringConstants.warning.localized(),
+                                    StringConstants.pleaseSelectPayment
+                                        .localized(),
+                                    Colors.yellow,
+                                    const Icon(Icons.warning_amber));
+                              } else if ((currentIndex == 1 &&
+                                  billingAddress ==
+                                      null) /*||(billing?['address1']==null)*/) {
+                                ShowMessage.showNotification(
+                                    StringConstants.warning.localized(),
+                                    StringConstants.pleaseFillAddress
+                                        .localized(),
+                                    Colors.yellow,
+                                    const Icon(Icons.warning_amber));
+                              } else {
                                 setState(() {
-                                  if((widget.isDownloadable ?? false) && currentIndex==1){
-                                    currentIndex = currentIndex + 2;
-                                  }
-                                  else{
-                                    currentIndex = currentIndex + 1;
-                                  }
+                                  currentIndex = currentIndex + 1;
                                 });
                               }
-
                             }
                             if (currentIndex == 5) {
                               Navigator.pushReplacementNamed(
-                                context, OrderPlacedScreen,);
+                                  context, orderPlacedScreen);
                             }
                           },
                           child: Text(
                             currentIndex == 4
-                                ? 'PlaceOrder'.localized()
-                                : 'Proceed'.localized().toUpperCase(),
-                            style: TextStyle(
-                                fontSize: 16.0,
-                                fontWeight: FontWeight.w500,
-                                color: MobikulTheme.primaryColor),
+                                ? StringConstants.placeOrder.localized()
+                                : StringConstants.proceed
+                                    .localized()
+                                    .toUpperCase(),
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelMedium
+                                ?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .background),
                           ),
                         ),
                       ),

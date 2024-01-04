@@ -8,24 +8,15 @@
  * @link https://store.webkul.com/license.html
  */
 
-// ignore_for_file: file_names
 
-import 'package:bagisto_app_demo/models/account_models/account_info_details.dart';
-import 'package:bagisto_app_demo/screens/account/events/account_info_base_event.dart';
-import 'package:bagisto_app_demo/screens/account/events/account_info_details_event.dart';
-import 'package:bagisto_app_demo/screens/account/events/account_info_update_event.dart';
-import 'package:bagisto_app_demo/screens/account/repository/account_info_repository.dart';
-import 'package:bagisto_app_demo/screens/account/state/account_delete_state.dart';
-import 'package:bagisto_app_demo/screens/account/state/account_info_base_state.dart';
-import 'package:bagisto_app_demo/screens/account/state/account_info_detail_state.dart';
-import 'package:bagisto_app_demo/screens/account/state/account_info_initial_state.dart';
-import 'package:bagisto_app_demo/screens/account/state/account_info_update_state.dart';
+import 'package:bagisto_app_demo/data_model/account_models/account_info_details.dart';
+import 'package:bagisto_app_demo/data_model/account_models/account_update_model.dart';
+import 'package:bagisto_app_demo/data_model/graphql_base_model.dart';
+import 'package:bagisto_app_demo/screens/account/bloc/account_info_details_event.dart';
+import 'package:bagisto_app_demo/screens/account/bloc/account_info_repository.dart';
+import 'package:bagisto_app_demo/screens/account/bloc/account_info_detail_state.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
-import '../../../base_model/graphql_base_model.dart';
-import '../../../models/account_models/account_update_model.dart';
-import '../events/aacount_delete_event.dart';
 
 class AccountInfoBloc extends Bloc<AccountInfoBaseEvent, AccountInfoBaseState> {
   AccountInfoRepository? repository;
@@ -52,8 +43,8 @@ class AccountInfoBloc extends Bloc<AccountInfoBaseEvent, AccountInfoBaseState> {
       }
     }else if(event is AccountInfoDeleteEvent){
       try{
-        GraphQlBaseModel baseModel=await repository!.callDeleteAccountApi(event.password??"");
-        emit (AccountInfoDeleteState.success(baseModel: baseModel,successMsg: baseModel.message));
+        GraphQlBaseModel? baseModel = await repository?.callDeleteAccountApi(event.password??"");
+        emit (AccountInfoDeleteState.success(baseModel: baseModel,successMsg: baseModel?.message));
       }catch(e){
         emit (AccountInfoDeleteState.fail(error: e.toString()));
       }

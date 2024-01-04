@@ -8,16 +8,13 @@
  * @link https://store.webkul.com/license.html
  */
 
-// ignore_for_file: file_names
-
-import 'package:bagisto_app_demo/models/sign_in_model/signin_model.dart';
-import 'package:bagisto_app_demo/screens/sign_in/state/sign_in_initial_state.dart';
+import 'package:bagisto_app_demo/data_model/sign_in_model/signin_model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../events/fetch_sign_in_event.dart';
-import '../repository/sign_in_repository.dart';
-import '../state/fetch_sign_in_state.dart';
-import '../state/sign_in_base_state.dart';
+import 'fetch_sign_in_event.dart';
+import 'sign_in_base_event.dart';
+import 'sign_in_repository.dart';
+import 'sign_in_state.dart';
 
 class SignInBloc extends Bloc<SignInBaseEvent, SignInBaseState> {
   SignInRepository? repository;
@@ -38,7 +35,6 @@ class SignInBloc extends Bloc<SignInBaseEvent, SignInBaseState> {
         } else {
           emit(FetchSignInState.fail(error: signInModel.success ?? ""));
         }
-        // }
       } catch (e) {
         emit(FetchSignInState.fail(error: e.toString()));
       }
@@ -48,16 +44,13 @@ class SignInBloc extends Bloc<SignInBaseEvent, SignInBaseState> {
             event.email ?? "",
             event.firstName ?? "",
             event.lastName ?? "",
-            event.phone ?? "");
-
-        // if (signInModel.token !=null) {
+            event.phone ?? "",event.signUpType ?? "");
         if (signUpResponseModel?.status == true) {
           emit(SocialLoginState.success(signInModel: signUpResponseModel));
         } else {
           emit(
               SocialLoginState.fail(error: signUpResponseModel?.success ?? ""));
         }
-        // }
       } catch (e) {
         emit(SocialLoginState.fail(error: e.toString()));
       }

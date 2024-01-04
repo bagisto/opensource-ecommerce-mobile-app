@@ -8,25 +8,20 @@
  * @link https://store.webkul.com/license.html
  */
 
-// ignore_for_file: file_names
-
-import 'package:bagisto_app_demo/helper/string_constants.dart';
-import 'package:bagisto_app_demo/helper/application_localization.dart';
-import 'package:bagisto_app_demo/screens/checkout/checkout_save_order/bloc/save_order_bloc.dart';
-import 'package:bagisto_app_demo/screens/checkout/checkout_save_order/state/save_order_base_state.dart';
-import 'package:bagisto_app_demo/screens/checkout/checkout_save_order/state/save_order_initial_state.dart';
-import 'package:bagisto_app_demo/screens/checkout/checkout_save_order/state/save_oredr_fetch_state.dart';
+import 'package:bagisto_app_demo/utils/application_localization.dart';
+import 'package:bagisto_app_demo/widgets/loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
-import '../../../../configuration/app_global_data.dart';
-import '../../../../configuration/app_sizes.dart';
-import '../../../../common_widget/circular_progress_indicator.dart';
-import '../../../../common_widget/common_error_msg.dart';
-import '../../../../models/checkout_models/save_order_model.dart';
-import '../../../../routes/route_constants.dart';
-import '../event/save_order_fetch_data_event.dart';
-
+import '../../../../utils/app_constants.dart';
+import '../../../../utils/app_global_data.dart';
+import '../../../../utils/route_constants.dart';
+import '../../../../utils/shared_preference_helper.dart';
+import '../../../../utils/string_constants.dart';
+import '../../../../widgets/common_error_msg.dart';
+import '../../data_model/save_order_model.dart';
+import '../bloc/save_order_base_event.dart';
+import '../bloc/save_order_bloc.dart';
+import '../bloc/save_oredr_fetch_state.dart';
 
 class CheckOutSaveOrder extends StatefulWidget {
   const CheckOutSaveOrder({Key? key}) : super(key: key);
@@ -36,26 +31,34 @@ class CheckOutSaveOrder extends StatefulWidget {
 }
 
 class _CheckOutSaveOrderState extends State<CheckOutSaveOrder> {
+  bool isLoggedIn = false;
+
   @override
   void initState() {
     SaveOrderBloc saveOrderBloc = context.read<SaveOrderBloc>();
     saveOrderBloc.add(SaveOrderFetchDataEvent());
+    checkLoggedIn();
     super.initState();
   }
+
+  checkLoggedIn(){
+    SharedPreferenceHelper.getCustomerLoggedIn().then((isLogged){
+      setState(() {
+        isLoggedIn = isLogged;
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Directionality(
-          textDirection: GlobalData.contentDirection(),
-          child:   _saveOrderBloc(context)
-      )
-    );
+        body: Directionality(
+            textDirection: GlobalData.contentDirection(),
+            child: _saveOrderBloc(context)));
   }
-
 
   ///SaverOrder BLOC CONTAINER///
   _saveOrderBloc(BuildContext context) {
-
     return BlocConsumer<SaveOrderBloc, SaveOrderBaseState>(
       listener: (BuildContext context, SaveOrderBaseState state) {},
       builder: (BuildContext context, SaveOrderBaseState state) {
@@ -71,109 +74,122 @@ class _CheckOutSaveOrderState extends State<CheckOutSaveOrder> {
         return _orderPlacedView(state.saveOrderModel!);
       }
       if (state.status == SaveOrderStatus.fail) {
-        return ErrorMessage.errorMsg("${state.error ?? ""} PleaseAddmoreproductsforplacingorder".localized()
-            );
+        return ErrorMessage.errorMsg(
+            "${state.error ?? ""} ${StringConstants.addMoreProductsMsg}"
+                .localized());
       }
     }
     if (state is SaveOrderInitialState) {
-      return  CircularProgressIndicatorClass.circularProgressIndicator(context);
+      return const Loader();
     }
 
     return Container();
   }
 
-
   _orderPlacedView(SaveOrderModel saveOrderModel) {
     return Container(
-
       height: double.infinity,
-      padding: const EdgeInsets.all(NormalPadding),
+      padding: const EdgeInsets.all(AppSizes.spacingNormal),
       alignment: Alignment.center,
       child: Wrap(
         children: [
           Card(
             elevation: 0,
             shape: const ContinuousRectangleBorder(),
+            // color: Colors.white,
             child: Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(AppSizes.normalHeight),
+              padding: const EdgeInsets.all(AppSizes.spacingMedium),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   const SizedBox(
-                    height:AppSizes.mediumPadding,
-                  ),
-                  Wrap(
-                    children: [
-                      Text("OrderReceivedMsg".localized()
-                       .toUpperCase(),
-                        style: const TextStyle(
-                          fontSize: AppSizes.normalFontSize,
-                        ),
-                      )
-                    ],
-                  ),
-                  const SizedBox(
-                    height:  AppSizes.mediumPadding,
+                    height: AppSizes.spacingMedium,
                   ),
                   Wrap(
                     children: [
                       Text(
-                       "ThankYouMsg".localized(),
+                        StringConstants.orderReceivedMsg
+                            .localized()
+                            .toUpperCase(),
                         style: const TextStyle(
-                          fontSize: AppSizes.normalFontSize,
+                          // color: Colors.grey.shade700,
+                          fontSize: AppSizes.spacingLarge,
                         ),
                       )
                     ],
                   ),
                   const SizedBox(
-                    height: AppSizes.normalHeight,
+                    height: AppSizes.spacingMedium,
                   ),
                   Wrap(
                     children: [
-                      Text( "${"YourOrderIdMsg".localized()} ${saveOrderModel.order?.id??""}"
-                        ,style: const TextStyle(
-                          color: Colors.blueAccent,
-                          fontSize:AppSizes.normalFontSize,
+                      Text(
+                        StringConstants.thankYouMsg.localized(),
+                        style: const TextStyle(
+                          fontSize: AppSizes.spacingLarge,
                         ),
                       )
                     ],
                   ),
                   const SizedBox(
-                    height:  AppSizes.mediumPadding,
+                    height: AppSizes.spacingMedium,
+                  ),
+                  InkWell(
+                    onTap: isLoggedIn ? () async {
+                        Navigator.pushNamed(context, orderDetailPage,
+                            arguments: saveOrderModel.order?.id);
+                    } : null,
+                    child: Wrap(
+                      children: [
+                        Text(
+                          "${StringConstants.yourOrderIdMsg.localized()} ${saveOrderModel.order?.id ?? ""}",
+                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              color: isLoggedIn ? Colors.blueAccent : null
+                          )
+                        )
+                      ],
+                    ),
+                  ),
+                  const SizedBox(
+                    height: AppSizes.spacingMedium,
                   ),
                   Wrap(
                     alignment: WrapAlignment.center,
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       Text(
-                   "OrderConfirmationMsg".localized(),
+                        StringConstants.orderConfirmationMsg.localized(),
                         style: const TextStyle(
-                          fontSize: AppSizes.normalFontSize,
+                          // color: Colors.grey.shade700,
+                          fontSize: AppSizes.spacingLarge,
                         ),
                         textAlign: TextAlign.center,
                       )
                     ],
                   ),
                   const SizedBox(
-                    height: AppSizes.mediumPadding,
+                    height: AppSizes.spacingMedium,
                   ),
                   MaterialButton(
-                    color:  Theme.of(context).colorScheme.background,
+                    color: Theme.of(context).colorScheme.onBackground,
                     elevation: 0.0,
-                    textColor: Theme.of(context).colorScheme.onBackground,
+                    textColor: Theme.of(context).colorScheme.background,
                     onPressed: () {
-                      Navigator.pushReplacementNamed(context, Home);
+                      Navigator.pushReplacementNamed(context, home);
                     },
                     child: Text(
-                       "ContinueShopping".localized().toUpperCase(),
-                      style:  const TextStyle(
-                          fontSize:AppSizes.normalFontSize, fontWeight: FontWeight.w600,color: Colors.white),
+                      StringConstants.continueShopping
+                          .localized()
+                          .toUpperCase(),
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.background
+                      ),
                     ),
                   ),
                   const SizedBox(
-                    height:  AppSizes.mediumPadding,
+                    height: AppSizes.spacingMedium,
                   ),
                 ],
               ),

@@ -7,8 +7,24 @@
  * @license https://store.webkul.com/license.html
  * @link https://store.webkul.com/license.html
  */
-import '../../../configuration/app_global_data.dart';
-import 'add_review_index.dart';
+
+import 'package:bagisto_app_demo/screens/add_review/view/widget/add_image_view.dart';
+import 'package:bagisto_app_demo/utils/application_localization.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import '../../../utils/app_constants.dart';
+import '../../../utils/app_global_data.dart';
+import '../../../utils/mobikul_theme.dart';
+import '../../../utils/string_constants.dart';
+import '../../../widgets/common_error_msg.dart';
+import '../../../widgets/common_widgets.dart';
+import '../../../widgets/image_view.dart';
+import '../../../widgets/loader.dart';
+import '../../../widgets/show_message.dart';
+import '../bloc/add_review_base_event.dart';
+import '../bloc/add_review_bloc.dart';
+import '../bloc/add_review_fetch_state.dart';
 
 // ignore: must_be_immutable
 class AddReview extends StatefulWidget {
@@ -28,11 +44,12 @@ class _AddReviewState extends State<AddReview> {
   final _reviewFormKey = GlobalKey<FormState>();
   final titleController = TextEditingController();
   final commentController = TextEditingController();
-  dynamic rating;
+  var rating;
   bool isLoading = false;
   final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
       GlobalKey<ScaffoldMessengerState>();
   AddReviewBloc? addReviewBloc;
+  List<Map<String, String>> images = [];
 
   @override
   void initState() {
@@ -46,13 +63,12 @@ class _AddReviewState extends State<AddReview> {
       key: scaffoldMessengerKey,
       child: Directionality(
         textDirection: GlobalData.contentDirection(),
-        child:Scaffold(
-        appBar: AppBar(
-          title:
-              CommonWidgets.getHeadingText("AddaReview".localized(), context),
-          centerTitle: false,
-        ),
-        body:  _addReviewBloc(context),
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text(StringConstants.addaReview.localized()),
+            centerTitle: false,
+          ),
+          body: _addReviewBloc(context),
         ),
       ),
     );
@@ -65,13 +81,12 @@ class _AddReviewState extends State<AddReview> {
         if (state is AddReviewFetchState) {
           isLoading = true;
           if (state.status == AddReviewStatus.fail) {
-            ShowMessage.showNotification(
-                state.error, "", Colors.red, const Icon(Icons.cancel_outlined));
+            ShowMessage.showNotification(StringConstants.failed, state.error, Colors.red,
+                const Icon(Icons.cancel_outlined));
           } else if (state.status == AddReviewStatus.success) {
             ShowMessage.showNotification(
-                state.addReviewModel!.success ??
-                   "Updated".localized(),
-                "",
+                StringConstants.success.localized(),
+                state.addReviewModel!.success ?? StringConstants.updated.localized(),
                 const Color.fromRGBO(140, 194, 74, 5),
                 const Icon(Icons.check_circle_outline));
           }
@@ -99,6 +114,14 @@ class _AddReviewState extends State<AddReview> {
       return _reviewForm();
     }
     if (state is ImagePickerState) {
+      String? image = state.image;
+      images.clear();
+      if(image != null){
+        images.add({
+          "uploadType": '\"base64\"',
+          "imageUrl": '\"data:image/png;base64,$image\"'
+        });
+      }
       return _reviewForm();
     }
     return Container();
@@ -112,8 +135,8 @@ class _AddReviewState extends State<AddReview> {
           child: SingleChildScrollView(
             child: Container(
               padding: const EdgeInsets.symmetric(
-                  vertical: AppSizes.mediumPadding,
-                  horizontal: AppSizes.widgetSidePadding),
+                  vertical: AppSizes.spacingMedium,
+                  horizontal: AppSizes.spacingLarge),
               child: Form(
                 key: _reviewFormKey,
                 autovalidateMode: _autoValidate
@@ -126,19 +149,19 @@ class _AddReviewState extends State<AddReview> {
                         url: widget.imageUrl ?? "",
                         width: MediaQuery.of(context).size.width,
                         height: MediaQuery.of(context).size.height * 0.4),
-                    CommonWidgets().getTextFieldHeight(NormalHeight),
+                    const SizedBox(height: AppSizes.spacingWide),
                     Text(
                       widget.productName ?? "",
                       style: const TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: AppSizes.mediumFontSize),
+                          fontSize: AppSizes.spacingLarge),
                     ),
-                    CommonWidgets().getTextFieldHeight(NormalHeight),
+                    const SizedBox(height: AppSizes.spacingWide),
                     Text(
-                      "rating".localized(),
+                      StringConstants.rating.localized(),
                       style: const TextStyle(fontSize: 16),
                     ),
-                    CommonWidgets().getTextFieldHeight(AppSizes.normalPadding),
+                    const SizedBox(height: AppSizes.spacingNormal),
                     RatingBar.builder(
                       unratedColor: MobikulTheme.appBarBackgroundColor,
                       itemSize: 30,
@@ -156,30 +179,31 @@ class _AddReviewState extends State<AddReview> {
                         rating = updatedRating.toInt();
                       },
                     ),
-                    CommonWidgets().getTextFieldHeight(AppSizes.widgetHeight),
+                    const SizedBox(height: AppSizes.spacingWide),
                     CommonWidgets().getTextField(
                       context,
                       titleController,
-                      "titleLabel".localized(),
-                      "titleHint".localized(),
-                      "PleaseFillLabel".localized() + "titleLabel".localized(),
+                      StringConstants.titleHint.localized(),
+                      label: StringConstants.titleLabel.localized(),
+                      validLabel: StringConstants.pleaseFillLabel.localized() + StringConstants.titleLabel.localized(),
+                      isRequired: true,
                       validator: (email) {
                         if (((email ?? "").trim()).isEmpty) {
-                          return "PleaseFillLabel".localized() +
-                              "titleLabel".localized();
+                          return StringConstants.pleaseFillLabel.localized() +
+                              StringConstants.titleLabel.localized();
                         }
                         return null;
                       },
                     ),
-                    CommonWidgets().getTextFieldHeight(AppSizes.widgetHeight),
+                    const SizedBox(height: AppSizes.spacingWide),
                     TextFormField(
                       maxLines: 8,
                       controller: commentController,
                       style: Theme.of(context).textTheme.bodyMedium,
                       decoration: InputDecoration(
                         alignLabelWithHint: true,
-                        labelText: "commentLabel".localized(),
-                        hintText: "commentHint".localized(),
+                        labelText: StringConstants.commentLabel.localized(),
+                        hintText: StringConstants.commentHint.localized(),
                         labelStyle: Theme.of(context).textTheme.bodyMedium,
                         enabledBorder: OutlineInputBorder(
                             borderRadius:
@@ -202,17 +226,17 @@ class _AddReviewState extends State<AddReview> {
                       ),
                       validator: (value) {
                         if (((value ?? "").trim()).isEmpty) {
-                          return "PleaseFillLabel".localized() +
-                              "commentLabel".localized();
+                          return StringConstants.pleaseFillLabel.localized() +
+                              StringConstants.commentLabel.localized();
                         }
                         return null;
                       },
                       textInputAction: TextInputAction.next,
                       keyboardType: TextInputType.emailAddress,
                     ),
-                    CommonWidgets().getTextFieldHeight(30.0),
+                    const SizedBox(height: 30),
                     AddImageView(addReviewBloc: addReviewBloc),
-                    CommonWidgets().getTextFieldHeight(20.0),
+                    const SizedBox(height: AppSizes.spacingWide),
                     MaterialButton(
                       shape: const RoundedRectangleBorder(
                           borderRadius: BorderRadius.all(Radius.circular(5.0)),
@@ -220,25 +244,25 @@ class _AddReviewState extends State<AddReview> {
                       elevation: 0.0,
                       height: AppSizes.buttonHeight,
                       minWidth: MediaQuery.of(context).size.width,
-                      color: Theme.of(context).colorScheme.background,
+                      color: Theme.of(context).colorScheme.onBackground,
                       textColor: MobikulTheme.primaryColor,
                       onPressed: () {
                         _onPressSubmitButton();
                       },
                       child: Text(
-                        "submitReview".localized().toUpperCase(),
+                        StringConstants.submitReview.localized().toUpperCase(),
                         style:
-                            const TextStyle(fontSize: AppSizes.normalFontSize),
+                            const TextStyle(fontSize: AppSizes.spacingLarge),
                       ),
                     ),
-                    CommonWidgets().getTextFieldHeight(AppSizes.widgetHeight),
+                    const SizedBox(height: AppSizes.spacingWide),
                   ],
                 ),
               ),
             ),
           ),
         ),
-        if (isLoading) Loader()
+        if (isLoading) const Loader()
       ],
     );
   }
@@ -246,56 +270,66 @@ class _AddReviewState extends State<AddReview> {
   ///method will call on press submit review button
   _onPressSubmitButton() {
     if (_reviewFormKey.currentState!.validate()) {
-      if ((rating ?? 0) > 0) {
-        showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (BuildContext context) {
-              return Dialog(
-                child: Container(
-                  padding: const EdgeInsets.all(AppSizes.widgetSidePadding),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const SizedBox(
-                        height: AppSizes.normalHeight,
-                      ),
-                      CircularProgressIndicatorClass.circularProgressIndicator(
-                          context),
-                      const SizedBox(
-                        height: AppSizes.widgetHeight,
-                      ),
-                      SizedBox(
-                        width: MediaQuery.of(context).size.width / 2.5,
-                        child: Center(
-                          child: Text(
-                            "PleaseWaitProcessingRequest".localized(),
-                            softWrap: true,
+      if(images.isNotEmpty){
+        if ((rating ?? 0) > 0) {
+          showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (BuildContext context) {
+                return Dialog(
+                  child: Container(
+                    padding: const EdgeInsets.all(AppSizes.spacingWide),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const SizedBox(
+                          height: AppSizes.spacingMedium,
+                        ),
+                        const Loader(),
+                        const SizedBox(
+                          height: AppSizes.spacingWide,
+                        ),
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width / 2.5,
+                          child: Center(
+                            child: Text(
+                              StringConstants.processWaitingMsg.localized(),
+                              softWrap: true,
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(
-                        height: AppSizes.normalHeight,
-                      ),
-                    ],
+                        const SizedBox(
+                          height: AppSizes.spacingMedium,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              );
-            });
-        AddReviewBloc addReviewBloc = context.read<AddReviewBloc>();
-        addReviewBloc.add(AddReviewFetchEvent(
-            productId: int.parse(widget.productId ?? ''),
-            rating: rating,
-            title: titleController.text,
-            comment: commentController.text,
-            name: "test"));
-        Future.delayed(const Duration(seconds: 3)).then((value) {
-          Navigator.pop(context);
-          Navigator.pop(context);
-        });
-      } else {
-        ShowMessage.showNotification("PleaseAddRating".localized(), "",
-            Colors.yellow, const Icon(Icons.warning_amber));
+                );
+              });
+          addReviewBloc?.add(AddReviewFetchEvent(
+              productId: int.parse(widget.productId ?? ''),
+              rating: rating,
+              title: titleController.text,
+              comment: commentController.text,
+              name: "", attachments: images));
+          Future.delayed(const Duration(seconds: 3)).then((value) {
+            Navigator.pop(context);
+            Navigator.pop(context);
+          });
+        } else {
+          ShowMessage.showNotification(
+              StringConstants.warning.localized(),
+              StringConstants.pleaseAddRating.localized(),
+              Colors.yellow,
+              const Icon(Icons.warning_amber));
+        }
+      }
+      else {
+        ShowMessage.showNotification(
+            StringConstants.warning.localized(),
+            StringConstants.addReviewImage.localized(),
+            Colors.yellow,
+            const Icon(Icons.warning_amber));
       }
     }
   }

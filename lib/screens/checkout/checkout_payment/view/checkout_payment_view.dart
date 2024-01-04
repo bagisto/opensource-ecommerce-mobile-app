@@ -8,25 +8,24 @@
  * @link https://store.webkul.com/license.html
  */
 
-// ignore_for_file: file_names, implementation_imports, must_be_immutable
-
-import 'package:bagisto_app_demo/configuration/server_configuration.dart';
-import 'package:bagisto_app_demo/common_widget/common_error_msg.dart';
-import 'package:bagisto_app_demo/common_widget/radio_button_group.dart';
-import 'package:bagisto_app_demo/helper/application_localization.dart';
-import 'package:bagisto_app_demo/screens/checkout/checkout_payment/bloc/checkout_payment_bloc.dart';
-import 'package:bagisto_app_demo/screens/checkout/checkout_payment/state/checkout_fetch_payment_state.dart';
-import 'package:bagisto_app_demo/screens/checkout/checkout_payment/state/checkout_payment_base_state.dart';
-import 'package:bagisto_app_demo/screens/checkout/checkout_payment/state/checkout_payment_initial_state.dart';
+import 'package:bagisto_app_demo/utils/application_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:skeleton_loader/skeleton_loader.dart';
 
-import '../../../../common_widget/circular_progress_indicator.dart';
-import '../../../../configuration/app_global_data.dart';
-import '../../../../helper/string_constants.dart';
-import '../../../../models/checkout_models/checkout_save_shipping_model.dart';
-import '../event/checkout_fetch_payment_event.dart';
+import '../../../../utils/app_constants.dart';
+import '../../../../utils/app_global_data.dart';
+import '../../../../utils/mobikul_theme.dart';
+import '../../../../utils/radio_button_group.dart';
+import '../../../../utils/server_configuration.dart';
+import '../../../../utils/string_constants.dart';
+import '../../../../widgets/common_error_msg.dart';
+import '../../data_model/checkout_save_shipping_model.dart';
+import '../bloc/checkout_fetch_payment_state.dart';
+import '../bloc/checkout_payment_base_event.dart';
+import '../bloc/checkout_payment_bloc.dart';
 
+//ignore: must_be_immutable
 class CheckoutPaymentView extends StatefulWidget {
   String? shippingId;
   Function(String)? callBack;
@@ -50,17 +49,15 @@ class _CheckoutPaymentViewState extends State<CheckoutPaymentView> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: GlobalData.contentDirection(),
-      child:   _paymentBloc(context)
-    );
-
+        textDirection: GlobalData.contentDirection(),
+        child: _paymentBloc(context));
   }
 
   ///ADDRESS BLOC CONTAINER///
   _paymentBloc(BuildContext context) {
-    CheckOutPaymentBloc checkOutPaymnetBloc =
+    CheckOutPaymentBloc checkOutPaymentBloc =
         context.read<CheckOutPaymentBloc>();
-    checkOutPaymnetBloc
+    checkOutPaymentBloc
         .add(CheckOutPaymentEvent(shippingMethod: widget.shippingId));
     return BlocConsumer<CheckOutPaymentBloc, CheckOutPaymentBaseState>(
       listener: (BuildContext context, CheckOutPaymentBaseState state) {},
@@ -77,13 +74,22 @@ class _CheckoutPaymentViewState extends State<CheckoutPaymentView> {
         return _paymentMethods(state.checkOutShipping!);
       }
       if (state.status == CheckOutPaymentStatus.fail) {
-        return ErrorMessage.errorMsg("SomethingWrong".localized());
+        return ErrorMessage.errorMsg(StringConstants.somethingWrong.localized());
       }
     }
     if (state is CheckOutPaymentInitialState) {
-      return CircularProgressIndicatorClass.circularProgressIndicator(context);
+      return SkeletonLoader(
+          highlightColor: Theme.of(context).highlightColor,
+          baseColor: Theme.of(context).appBarTheme.backgroundColor ??
+              MobikulTheme.primaryColor,
+          builder: Container(
+              height: 130,
+              padding: const EdgeInsets.fromLTRB(0, 12, 0, 0),
+              child: const Card(
+                margin: EdgeInsets.zero,
+                color: Colors.grey,
+              )));
     }
-
     return Container();
   }
 
@@ -95,16 +101,20 @@ class _CheckoutPaymentViewState extends State<CheckoutPaymentView> {
     var paymentMethods = checkOutShipping.paymentMethods
         ?.where((element) => availablePaymentMethods.contains(element.method));
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: NormalPadding),
+      padding: const EdgeInsets.symmetric(vertical: AppSizes.spacingNormal),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Divider(
-            thickness: 1,
+          const SizedBox(height: 8),
+          Text(
+            StringConstants.paymentMethods.localized(),
+            style: Theme.of(context).textTheme.labelLarge,
           ),
           Card(
             elevation: 2,
+            margin: const EdgeInsets.fromLTRB(0, 8, 0, 4),
             child: Container(
-              padding: const EdgeInsets.all(NormalPadding),
+              padding: const EdgeInsets.all(AppSizes.spacingNormal),
               child: RadioButtonGroup(
                   activeColor: Theme.of(context).colorScheme.onPrimary,
                   key: const Key('Payment'),
