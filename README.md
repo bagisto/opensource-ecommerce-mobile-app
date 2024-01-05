@@ -5,7 +5,7 @@
 
 This mobile app, built on the foundation of the Bagisto eCommerce framework and leveraging the robust Laravel stack, offers a plethora of features for a comprehensive and efficient mobile shopping experience. The app ensures easy product information management and accelerates time-to-market for your products, all while giving you complete control over your store.
 
-Supported Bagisto Version: v2.0
+**Compatibility:** Bagisto v 2.0
 
 ## Installation Guide
 
