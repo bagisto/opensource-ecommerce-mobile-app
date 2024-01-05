@@ -5,12 +5,12 @@
 
 This mobile app, built on the foundation of the Bagisto eCommerce framework and leveraging the robust Laravel stack, offers a plethora of features for a comprehensive and efficient mobile shopping experience. The app ensures easy product information management and accelerates time-to-market for your products, all while giving you complete control over your store.
 
-**Compatibility:** Bagisto v 2.0
 
 ## Installation Guide
 
 Before beginning with the installation, you will need the following with the mentioned versions
 
+- Bagisto Version - 2.0.0
 - Android Studio Version - Flamingo | 2022.2.1 
 - Flutter Version - 3.10.1
 - Dart - 3.0.1
