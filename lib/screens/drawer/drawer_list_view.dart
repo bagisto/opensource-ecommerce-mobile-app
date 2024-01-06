@@ -48,7 +48,6 @@ class DrawerListView extends StatefulWidget {
 }
 
 class _DrawerListViewState extends State<DrawerListView> {
-
   @override
   Widget build(BuildContext context) {
     List<Widget> drawerList = [];
@@ -64,8 +63,8 @@ class _DrawerListViewState extends State<DrawerListView> {
         },
         child: Container(
           margin: const EdgeInsets.all(AppSizes.spacingLarge),
-          padding: const EdgeInsets.symmetric(
-              vertical: AppSizes.spacingNormal / 2),
+          padding:
+              const EdgeInsets.symmetric(vertical: AppSizes.spacingNormal / 2),
           decoration: BoxDecoration(
               border: Border.all(color: Colors.grey.shade400),
               borderRadius: BorderRadius.circular(AppSizes.spacingLarge)),
@@ -83,18 +82,16 @@ class _DrawerListViewState extends State<DrawerListView> {
                       ))
                   : Padding(
                       padding: const EdgeInsets.all(AppSizes.spacingNormal),
-                      child: ClipOval(
-                          child: ImageView(
-                        url: widget.image ?? "",
-                        height: AppSizes.buttonHeight,
-                        width: AppSizes.buttonHeight,
-                      )),
+                      child: CircleAvatar(
+                        foregroundImage: NetworkImage(widget.image ?? ""),
+                        backgroundImage:
+                            const AssetImage(AssetConstants.userPlaceHolder),
+                      ),
                     ),
               Expanded(
                 child: Column(
                   mainAxisSize: MainAxisSize.max,
-                  crossAxisAlignment:
-                  CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       !widget.isLoggedIn
@@ -107,46 +104,42 @@ class _DrawerListViewState extends State<DrawerListView> {
                           const Shadow(
                             offset: Offset(0.5, 0.5),
                             blurRadius: 3.0,
-                            color: Color.fromARGB(
-                                40, 0, 0, 0),
+                            color: Color.fromARGB(40, 0, 0, 0),
                           ),
                           const Shadow(
                             offset: Offset(0.5, 0.5),
                             blurRadius: 5,
-                            color: Color.fromARGB(
-                                40, 0, 0, 255),
+                            color: Color.fromARGB(40, 0, 0, 255),
                           ),
                         ],
                       ),
                     ),
-                    if(widget.isLoggedIn) Text(
-                        widget.customerDetails?.data?.email ?? "",
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyLarge
-                            ?.copyWith(shadows: <Shadow>[
-                          const Shadow(
-                            offset: Offset(0.5, 0.5),
-                            blurRadius: 3.0,
-                            color:
-                            Color.fromARGB(40, 0, 0, 0),
-                          ),
-                          const Shadow(
-                            offset: Offset(0.5, 0.5),
-                            blurRadius: 5,
-                            color: Color.fromARGB(
-                                40, 0, 0, 255),
-                          ),
-                        ],
-                          color: Colors.grey,
-                        )),
+                    if (widget.isLoggedIn)
+                      Text(widget.customerDetails?.data?.email ?? "",
+                          style:
+                              Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            shadows: <Shadow>[
+                              const Shadow(
+                                offset: Offset(0.5, 0.5),
+                                blurRadius: 3.0,
+                                color: Color.fromARGB(40, 0, 0, 0),
+                              ),
+                              const Shadow(
+                                offset: Offset(0.5, 0.5),
+                                blurRadius: 5,
+                                color: Color.fromARGB(40, 0, 0, 255),
+                              ),
+                            ],
+                            color: Colors.grey,
+                          )),
                   ],
                 ),
               ),
-              if(!widget.isLoggedIn) const Padding(
-                padding: EdgeInsets.only(right: AppSizes.spacingNormal),
-                child: Icon(Icons.keyboard_double_arrow_right),
-              )
+              if (!widget.isLoggedIn)
+                const Padding(
+                  padding: EdgeInsets.only(right: AppSizes.spacingNormal),
+                  child: Icon(Icons.keyboard_double_arrow_right),
+                )
             ],
           ),
         ),
@@ -157,85 +150,88 @@ class _DrawerListViewState extends State<DrawerListView> {
       drawerList.add(DrawerCategoryItem(element));
     });
 
-    if(widget.isLoggedIn) {
+    if (widget.isLoggedIn) {
       drawerList.add(DrawerAddItemList(
-      onTap: () {
-        checkInternetConnection().then((value) {
-          if (value) {
-            Navigator.pop(context);
-            Navigator.of(context).pushNamed(dashboardScreen);
-          } else {
-            ShowMessage.showNotification(StringConstants.failed.localized(),StringConstants.internetIssue.localized(),
-                Colors.red, const Icon(Icons.cancel_outlined));
-          }
-        });
-      },
-      icon: Icons.dashboard,
-      subTitle: StringConstants.dashboard,
-    ));
+        onTap: () {
+          checkInternetConnection().then((value) {
+            if (value) {
+              Navigator.pop(context);
+              Navigator.of(context).pushNamed(dashboardScreen);
+            } else {
+              ShowMessage.showNotification(
+                  StringConstants.failed.localized(),
+                  StringConstants.internetIssue.localized(),
+                  Colors.red,
+                  const Icon(Icons.cancel_outlined));
+            }
+          });
+        },
+        icon: Icons.dashboard,
+        subTitle: StringConstants.dashboard,
+      ));
     }
 
-    if(widget.isLoggedIn) {
+    if (widget.isLoggedIn) {
       drawerList.add(DrawerAddItemList(
-      onTap: () {
-        checkInternetConnection().then((value) {
-          if (value) {
-            Navigator.pushNamed(context, downloadableProductScreen);
-          } else {
-            ShowMessage.showNotification(StringConstants.failed.localized(),
-                StringConstants.internetIssue.localized(),
-                Colors.red, const Icon(Icons.cancel_outlined));
-          }
-        });
-      },
-      icon: Icons.download_outlined,
-      subTitle: StringConstants.downloadableProductsList,
-    ));
+        onTap: () {
+          checkInternetConnection().then((value) {
+            if (value) {
+              Navigator.pushNamed(context, downloadableProductScreen);
+            } else {
+              ShowMessage.showNotification(
+                  StringConstants.failed.localized(),
+                  StringConstants.internetIssue.localized(),
+                  Colors.red,
+                  const Icon(Icons.cancel_outlined));
+            }
+          });
+        },
+        icon: Icons.download_outlined,
+        subTitle: StringConstants.downloadableProductsList,
+      ));
     }
 
-    if(widget.isLoggedIn) {
+    if (widget.isLoggedIn) {
       drawerList.add(DrawerAddItemList(
-      onTap: () {
-        Navigator.pop(context);
-        Navigator.of(context).pushNamed(addressListScreen);
-      },
-      icon: Icons.gps_fixed_outlined,
-      subTitle: StringConstants.addressTitle,
-    ));
-    }
-
-    if(widget.isLoggedIn) {
-      drawerList.add(DrawerAddItemList(
-      onTap: () {
-        Navigator.of(context).pushNamed(reviewList);
-      },
-      icon: Icons.reviews,
-      subTitle: StringConstants.reviewsTitle,
-    ));
-    }
-
-    if(widget.isLoggedIn) {
-      drawerList.add(DrawerAddItemList(
-      onTap: () {
-        Navigator.of(context)
-            .pushNamed(wishlistScreen)
-            .then((value) {
+        onTap: () {
           Navigator.pop(context);
-        });
-      },
-      icon: Icons.favorite_outline_rounded,
-      subTitle: StringConstants.wishListTitle,
-    ));
+          Navigator.of(context).pushNamed(addressListScreen);
+        },
+        icon: Icons.gps_fixed_outlined,
+        subTitle: StringConstants.addressTitle,
+      ));
     }
 
-    if(widget.isLoggedIn) {
+    if (widget.isLoggedIn) {
       drawerList.add(DrawerAddItemList(
-      onTap: () {
-        Navigator.of(context).pushNamed(orderListScreen);
-      },
-      icon: Icons.reorder,
-      subTitle: StringConstants.orderTitle,
-    ));
+        onTap: () {
+          Navigator.of(context).pushNamed(reviewList);
+        },
+        icon: Icons.reviews,
+        subTitle: StringConstants.reviewsTitle,
+      ));
+    }
+
+    if (widget.isLoggedIn) {
+      drawerList.add(DrawerAddItemList(
+        onTap: () {
+          Navigator.of(context).pushNamed(wishlistScreen).then((value) {
+            Navigator.pop(context);
+          });
+        },
+        icon: Icons.favorite_outline_rounded,
+        subTitle: StringConstants.wishListTitle,
+      ));
+    }
+
+    if (widget.isLoggedIn) {
+      drawerList.add(DrawerAddItemList(
+        onTap: () {
+          Navigator.of(context).pushNamed(orderListScreen);
+        },
+        icon: Icons.reorder,
+        subTitle: StringConstants.orderTitle,
+      ));
     }
 
     if (widget.cmsData != null) {
@@ -283,22 +279,27 @@ class _DrawerListViewState extends State<DrawerListView> {
               }).toList(),
               elevation: 0,
               onChanged: (val) async {
-                Currencies? currency = widget.currencyLanguageList?.currencies?.firstWhereOrNull((element) => element.name == val);
+                Currencies? currency = widget.currencyLanguageList?.currencies
+                    ?.firstWhereOrNull((element) => element.name == val);
 
                 if (currency?.name == widget.customerCurrency) {
-                  SharedPreferenceHelper.setCurrencyCode(currency?.code ?? "USD");
+                  SharedPreferenceHelper.setCurrencyCode(
+                      currency?.code ?? "USD");
                   Navigator.pop(context, currency?.code);
                 } else {
-                  SharedPreferenceHelper.setCurrencyCode(currency?.code ?? "USD");
-                  GlobalData.currency = await SharedPreferenceHelper.getCurrencyCode();
-                  SharedPreferenceHelper.setCurrencyLabel(currency?.name ?? "US Dollar");
+                  SharedPreferenceHelper.setCurrencyCode(
+                      currency?.code ?? "USD");
+                  GlobalData.currency =
+                      await SharedPreferenceHelper.getCurrencyCode();
+                  SharedPreferenceHelper.setCurrencyLabel(
+                      currency?.name ?? "US Dollar");
                   AppDatabase.getDatabase().then(
-                          (value) => value.recentProductDao
-                          .deleteRecentProducts());
+                      (value) => value.recentProductDao.deleteRecentProducts());
 
-                  if(context.mounted){
+                  if (context.mounted) {
                     RestartWidget.restartApp(context);
-                    Navigator.pushNamedAndRemoveUntil(context, splash, (route) => false);
+                    Navigator.pushNamedAndRemoveUntil(
+                        context, splash, (route) => false);
                   }
                 }
               },
@@ -316,19 +317,20 @@ class _DrawerListViewState extends State<DrawerListView> {
                 );
               }).toList(),
               elevation: 0,
-              onChanged: (val) async{
-                Locales? local = GlobalData.languageData?.firstWhereOrNull((element) => element.name == val);
+              onChanged: (val) async {
+                Locales? local = GlobalData.languageData
+                    ?.firstWhereOrNull((element) => element.name == val);
 
-                GlobalData.selectedLanguage = local?.code?? "";
+                GlobalData.selectedLanguage = local?.code ?? "";
                 SharedPreferenceHelper.setCustomerLanguage(local?.code ?? "");
                 GlobalData.locale =
                     await SharedPreferenceHelper.getCustomerLanguage();
                 SharedPreferenceHelper.setLanguageName(local?.name ?? "");
 
                 AppDatabase.getDatabase().then(
-                        (value) => value.recentProductDao.deleteRecentProducts());
+                    (value) => value.recentProductDao.deleteRecentProducts());
 
-                if(context.mounted){
+                if (context.mounted) {
                   RestartWidget.restartApp(context);
 
                   Navigator.pushNamedAndRemoveUntil(

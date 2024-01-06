@@ -81,14 +81,10 @@ class _AddressScreenState extends State<AddressScreen> {
         }
         if (state is RemoveAddressState) {
           if (state.status == AddressStatus.fail) {
-            ShowMessage.showNotification(StringConstants.failed.localized(), state.error,
-                Colors.red, const Icon(Icons.cancel_outlined));
+            ShowMessage.errorNotification(state.error ?? "", context);
           } else if (state.status == AddressStatus.success) {
-            ShowMessage.showNotification(
-                StringConstants.success.localized(),
-                state.response?.message ?? "",
-                const Color.fromRGBO(140, 194, 74, 5),
-                const Icon(Icons.check_circle_outline));
+            ShowMessage.successNotification(
+                state.response?.message ?? "", context);
           }
         }
       },
@@ -144,19 +140,22 @@ class _AddressScreenState extends State<AddressScreen> {
       SharedPreferenceHelper.setAddressData(false);
       return Column(
         children: [
-          const SizedBox(height: AppSizes.spacingSmall,),
+          const SizedBox(
+            height: AppSizes.spacingSmall,
+          ),
           Card(
             elevation: 2,
             child: (widget.isFromDashboard ?? false)
                 ? null
                 : Container(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(vertical: AppSizes.size8),
                     child: Padding(
-                      padding: const EdgeInsets.all(8.0),
+                      padding: const EdgeInsets.all(AppSizes.size8),
                       child: MaterialButton(
                         shape: RoundedRectangleBorder(
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(5.0)),
+                            borderRadius: const BorderRadius.all(
+                                Radius.circular(AppSizes.size4)),
                             side: BorderSide(
                                 width: 2,
                                 color:
@@ -179,7 +178,9 @@ class _AddressScreenState extends State<AddressScreen> {
                               color: Theme.of(context).colorScheme.onPrimary,
                             ),
                             Text(
-                              StringConstants.addNewAddress.localized().toUpperCase(),
+                              StringConstants.addNewAddress
+                                  .localized()
+                                  .toUpperCase(),
                               style: TextStyle(
                                   color:
                                       Theme.of(context).colorScheme.onPrimary),

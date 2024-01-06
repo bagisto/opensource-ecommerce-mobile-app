@@ -32,8 +32,9 @@ class _SignInScreenState extends State<SignInScreen> with EmailValidator {
   SignInModel? _signInModel;
   final _signInFormKey = GlobalKey<FormState>();
   final bool _autoValidate = false;
-  final passwordController = TextEditingController();
-  final emailController = TextEditingController();
+  final passwordController = TextEditingController(
+      text: "demo123");
+  final emailController = TextEditingController(text:"demo12@webkul.com");
   String passwordValue = "";
   String emailValue = "";
   bool showPassword = false;

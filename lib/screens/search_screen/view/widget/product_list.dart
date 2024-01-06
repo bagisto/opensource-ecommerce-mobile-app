@@ -1,7 +1,6 @@
 import 'package:bagisto_app_demo/utils/route_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:collection/collection.dart';
-import '../../../../data_model/categories_data_model/categories_product_model.dart';
 import '../../../../utils/app_constants.dart';
 import '../../../../utils/app_global_data.dart';
 import '../../../home_page/data_model/new_product_data.dart';

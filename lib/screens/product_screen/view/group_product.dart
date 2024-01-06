@@ -15,7 +15,6 @@ import 'package:flutter/material.dart';
 import '../../../utils/string_constants.dart';
 import '../../home_page/data_model/new_product_data.dart';
 
-
 //ignore: must_be_immutable
 class GroupProduct extends StatefulWidget {
   List<GroupedProducts>? groupedProducts;
@@ -44,7 +43,9 @@ class _GroupProductState extends State<GroupProduct> {
   getGroupData() {
     List<Data> qtyArray = [];
     for (int i = 0; i < (widget.groupedProducts?.length ?? 0); i++) {
-      qtyArray.add(Data(id: widget.groupedProducts?[i].id.toString(), qty: 1));
+      qtyArray.add(Data(
+          id: widget.groupedProducts?[i].associatedProductId,
+          qty: widget.groupedProducts?[i].qty));
       newData.add(qtyArray[i].toJson());
     }
     if (widget.callBack != null) {
@@ -56,42 +57,45 @@ class _GroupProductState extends State<GroupProduct> {
   Widget build(BuildContext context) {
     return (widget.groupedProducts?.length ?? 0) > 0
         ? Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: ListView.builder(
-              physics: const NeverScrollableScrollPhysics(),
-              shrinkWrap: true,
-              itemCount: (widget.groupedProducts?.length ?? 0) + 1,
-              itemBuilder: (context, i) {
-                if (i == 0) {
-                  return _title();
-                } else {
-                  var product = widget.groupedProducts?[i - 1];
-                  var price = Row(
-                    children: [
-                      const SizedBox(
-                        width: AppSizes.spacingMedium,
-                      ),
-                    ],
-                  );
-                  return QuantityView(
-                    title: product?.associatedProduct?.sku ?? '',
-                    qty:
-                        "1",
-                    minimum: 0,
-                    subTitle: price,
-                    callBack: (qty) {
-                      setState(() {
-                        newData.add(product?.id.toString() ?? '');
-                      });
-                      if (widget.callBack != null) {
-                        widget.callBack!(newData);
-                      }
-                    },
-                  );
-                }
-              }),
-        )
-        : Container();
+            padding: const EdgeInsets.all(12.0),
+            child: ListView.builder(
+                physics: const NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                itemCount: (widget.groupedProducts?.length ?? 0) + 1,
+                itemBuilder: (context, i) {
+                  if (i == 0) {
+                    return _title();
+                  } else {
+                    var product = widget.groupedProducts?[i - 1];
+                    var price = const Row(
+                      children: [
+                        SizedBox(
+                          width: AppSizes.spacingMedium,
+                        ),
+                      ],
+                    );
+                    return QuantityView(
+                      title:
+                          '${product?.associatedProduct?.sku ?? ' '} + ${product?.associatedProduct?.priceHtml?.formattedFinalPrice ?? ' '}',
+                      qty: '${product?.qty ?? ' '}',
+                      minimum: 1,
+                      subTitle: price,
+                      callBack: (qty) {
+                          for (var element in newData) {
+                            if (element['productId'] ==
+                                product?.associatedProduct?.id) {
+                              element['quantity'] = qty;
+                            }
+                          }
+                        if (widget.callBack != null) {
+                          widget.callBack!(newData);
+                        }
+                      },
+                    );
+                  }
+                }),
+          )
+        : const SizedBox.shrink();
   }
 
   Widget _title() {
@@ -113,7 +117,7 @@ class Data {
 
   factory Data.fromJson(Map<String, dynamic> json) => Data(
         id: json["productId"],
-        qty: json["qty"] == null ? null : json["quantity"],
+        qty: json["quantity"],
       );
 
   Map<String, dynamic> toJson() => {

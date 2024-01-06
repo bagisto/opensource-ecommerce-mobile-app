@@ -13,7 +13,6 @@ import '../../../data_model/add_to_wishlist_model/add_wishlist_model.dart';
 import '../../../data_model/graphql_base_model.dart';
 import '../../cart_screen/cart_model/add_to_cart_model.dart';
 import '../../home_page/data_model/new_product_data.dart';
-import '../data_model/product_details_model.dart';
 
 abstract class ProductBaseState {}
 

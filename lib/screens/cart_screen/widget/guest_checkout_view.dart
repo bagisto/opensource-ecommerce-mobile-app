@@ -77,7 +77,7 @@ class GuestCheckoutView extends StatelessWidget {
             ),
           ],
         ),
-        SizedBox(
+        checkDownloadable(cartDetailsModel.items) == false ? SizedBox(
           height: AppSizes.spacingWide*4,
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 14.0, horizontal: 12),
@@ -106,7 +106,7 @@ class GuestCheckoutView extends StatelessWidget {
                       color: Theme.of(context).colorScheme.background),
                 )),
           ),
-        ),
+        ):const SizedBox.shrink(),
       ],
     );
   }

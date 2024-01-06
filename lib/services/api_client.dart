@@ -152,7 +152,6 @@ class ApiClient {
       List downloadLinks,
       List groupedParams,
       List bundleParams,
-      int? bundleQty,
       List configurableParams,
       String? configurableId) async {
     var response = await (client.clientToQuery()).mutate(MutationOptions(
@@ -164,8 +163,7 @@ class ApiClient {
               groupedParams: groupedParams,
               bundleParams: bundleParams,
               configurableParams: configurableParams,
-              configurableId: configurableId,
-              bundleQty: bundleQty),
+              configurableId: configurableId),
         ),
         fetchPolicy: FetchPolicy.networkOnly));
     return handleResponse(

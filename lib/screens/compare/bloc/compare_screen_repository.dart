@@ -50,7 +50,7 @@ class CompareScreenRepositoryImp implements CompareScreenRepository {
   @override
   Future<AddToCartModel> callAddToCartAPi(int productId,int quantity ) async {
     AddToCartModel? graphQlBaseModel;
-    graphQlBaseModel = await ApiClient().addToCart(quantity,productId.toString(),[] ,[],[],0,[],null);
+    graphQlBaseModel = await ApiClient().addToCart(quantity,productId.toString(),[] ,[],[],[],null);
 
     return graphQlBaseModel!;
   }

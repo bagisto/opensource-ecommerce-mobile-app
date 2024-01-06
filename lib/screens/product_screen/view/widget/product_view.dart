@@ -28,7 +28,6 @@ class ProductView extends StatefulWidget {
       List downloadLinks,
       int qty,
       dynamic configurableProductId,
-      int bundleQty,
       )? callback;
 
   ProductView(
@@ -50,7 +49,6 @@ class ProductView extends StatefulWidget {
 
 class _ProductViewState extends State<ProductView> {
   int qty = 1;
-  int bundleQty = 1;
   List downloadLinks = [];
   List groupedParams = [];
   List bundleParams = [];
@@ -70,7 +68,6 @@ class _ProductViewState extends State<ProductView> {
         downloadLinks,
         qty,
         widget.configurableProductId,
-        bundleQty,
       );
   }
   @override
@@ -84,7 +81,7 @@ class _ProductViewState extends State<ProductView> {
       color: Theme.of(context).colorScheme.onPrimary,
       onRefresh: () {
         return Future.delayed(const Duration(seconds: 1), () {
-          widget.productScreenBLoc?.add(FetchProductEvent(widget.productData?.sku ??""));
+          widget.productScreenBLoc?.add(FetchProductEvent(widget.productData?.urlKey ??""));
         });
       },
       child: Stack(
@@ -110,11 +107,8 @@ class _ProductViewState extends State<ProductView> {
                           productScreenBLoc.add(AddToCompareListEvent(
                               widget.productData?.id ?? "", ""));
                         } else {
-                          ShowMessage.showNotification(
-                              StringConstants.warning.localized(),
-                              StringConstants.pleaseLogin.localized(),
-                              Colors.yellow,
-                              const Icon(Icons.warning_amber));
+                          ShowMessage.warningNotification(
+                              StringConstants.pleaseLogin.localized(),context);
                         }
                       } else if (type == StringConstants.wishlist) {
                         if (widget.isLoggedIn == true) {
@@ -133,11 +127,8 @@ class _ProductViewState extends State<ProductView> {
                                 isReqToShowLoader: true));
                           }
                         } else {
-                          ShowMessage.showNotification(
-                              StringConstants.warning.localized(),
-                              StringConstants.pleaseLogin.localized(),
-                              Colors.yellow,
-                              const Icon(Icons.warning_amber));
+                          ShowMessage.warningNotification(
+                              StringConstants.pleaseLogin.localized(),context);
                           productScreenBLoc.add(OnClickProductLoaderEvent(
                               isReqToShowLoader: false));
                         }

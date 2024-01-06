@@ -54,10 +54,9 @@ class AddToCartProductEvent extends ProductScreenBaseEvent{
   String? configurableId;
   String? productId;
   int quantity;
-  int bundleQuantity;
   final String? message;
 
-  AddToCartProductEvent(this.quantity,this.productId,this.downloadLinks,this.groupedParams,this.bundleParams,this.configurableParams,this.configurableId,this.bundleQuantity,this.message,);
+  AddToCartProductEvent(this.quantity,this.productId,this.downloadLinks,this.groupedParams,this.bundleParams,this.configurableParams,this.configurableId,this.message,);
 
 }
 

@@ -397,7 +397,6 @@ class MutationsData {
     List? downloadableLinks,
     List? groupedParams,
     List? bundleParams,
-    int? bundleQty,
     List? configurableParams,
     var configurableId,
   }) {
@@ -420,7 +419,6 @@ class MutationsData {
 
         # Only use while adding bundled product to cart
         bundleOptions: $bundleParams
-        bundleOptionQuantity: 1
       }) {
         status
         message
@@ -1123,6 +1121,7 @@ class MutationsData {
     mutation removeCartItem {
     removeCartItem(id: $id) {
         status
+        message
         cart {
             id
             customerEmail
@@ -1717,12 +1716,25 @@ class MutationsData {
                     type
                     attributeFamilyId
                     sku
+                    priceHtml {
+                        id
+                        type
+                        priceHtml
+                        priceWithoutHtml
+                        minPrice
+                        regularPrice
+                        formattedRegularPrice
+                        finalPrice
+                        formattedFinalPrice
+                        currencyCode
+                    }
                     parentId
                 }
             }
             downloadableSamples {
                 id
                 url
+                fileUrl
                 file
                 fileName
                 type
@@ -1742,11 +1754,13 @@ class MutationsData {
                 title
                 price
                 url
+                fileUrl
                 file
                 fileName
                 type
                 sampleUrl
                 sampleFile
+                sampleFileUrl
                 sampleFileName
                 sampleType
                 sortOrder
@@ -1774,11 +1788,29 @@ class MutationsData {
                     productBundleOptionId
                     productId
                     product {
-                    productFlats {
-                        name
-                        locale
-                        channel
-                    }
+                     sku
+                     priceHtml {
+                            id
+                            type
+                            priceHtml
+                            priceWithoutHtml
+                            minPrice
+                            regularPrice
+                            formattedRegularPrice
+                            finalPrice
+                            formattedFinalPrice
+                            currencyCode
+                            bundlePrice {
+                                finalPriceFrom
+                                formattedFinalPriceFrom
+                                regularPriceFrom
+                                formattedRegularPriceFrom
+                                finalPriceTo
+                                formattedFinalPriceTo
+                                regularPriceTo
+                                formattedRegularPriceTo
+                            }
+                        }
                 }
                 }
                 translations {
@@ -3446,6 +3478,10 @@ class MutationsData {
             items {
                 id
                 quantity
+                formattedPrice {
+                price
+                total
+              }
                 sku
                 type
                 name
@@ -3637,7 +3673,7 @@ class MutationsData {
         postcode: "$billingPostCode"
         phone: "$billingPhone"
         useForShipping: true
-        isSaved: true
+        isSaved: false
     }
     shipping: {
         customerId: $customerId
@@ -3653,7 +3689,7 @@ class MutationsData {
         state: "$shippingState"
         postcode: "$shippingPostCode"
         phone: "$shippingPhone"
-        isSaved: true
+        isSaved: false
     }
     type: "shipping"
     }) {

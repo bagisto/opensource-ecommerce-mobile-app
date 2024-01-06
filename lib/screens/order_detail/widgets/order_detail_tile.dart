@@ -490,7 +490,8 @@ class OrderDetailTile extends StatelessWidget with OrderStatusBGColorHelper {
                             ],
                           ),
                         ),
-                        Container(
+                        orderDetailModel?.formattedPrice
+                            ?.discountAmount != "\$0.00"?Container(
                           padding: const EdgeInsets.all(AppSizes.spacingSmall),
                           // color: Colors.white,
                           child: Row(
@@ -507,7 +508,7 @@ class OrderDetailTile extends StatelessWidget with OrderStatusBGColorHelper {
                                   context),
                             ],
                           ),
-                        ),
+                        ): const SizedBox.shrink(),
                         Container(
                           padding: const EdgeInsets.all(AppSizes.spacingSmall),
                           // color: Colors.white,
@@ -668,7 +669,7 @@ class OrderDetailTile extends StatelessWidget with OrderStatusBGColorHelper {
 
   _getFormattedAddress(OrderDetail orderDetailModel, BuildContext context) {
     return Text(
-      "${orderDetailModel.billingAddress?.address1!.replaceAll("[", "").replaceAll("]", "") ?? ""}, ${orderDetailModel.shippingAddress?.city ?? ""}, ${orderDetailModel.shippingAddress?.state ?? ""}, ${orderDetailModel.shippingAddress?.country ?? ""}, ${orderDetailModel.shippingAddress?.postcode ?? ""}",
+      "${orderDetailModel.shippingAddress?.address1!.replaceAll("[", "").replaceAll("]", "") ?? ""}, ${orderDetailModel.shippingAddress?.city ?? ""}, ${orderDetailModel.shippingAddress?.state ?? ""}, ${orderDetailModel.shippingAddress?.country ?? ""}, ${orderDetailModel.shippingAddress?.postcode ?? ""}",
       style: Theme.of(context).textTheme.labelSmall,
     );
   }

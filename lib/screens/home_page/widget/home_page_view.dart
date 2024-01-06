@@ -13,7 +13,6 @@ import 'package:bagisto_app_demo/utils/app_constants.dart';
 import 'package:bagisto_app_demo/widgets/loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:hive/hive.dart';
 import '../../../data_model/app_route_arguments.dart';
 import '../../../utils/app_global_data.dart';
 import '../../../utils/route_constants.dart';

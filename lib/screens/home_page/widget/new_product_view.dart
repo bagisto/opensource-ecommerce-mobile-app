@@ -1,9 +1,6 @@
 import 'package:bagisto_app_demo/utils/application_localization.dart';
 import 'package:bagisto_app_demo/widgets/price_widget.dart';
 import 'package:bagisto_app_demo/widgets/wishlist_compare_widget.dart';
-import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
-import 'package:get_storage/get_storage.dart';
-import 'package:simple_html_css/simple_html_css.dart';
 import '../../../utils/app_global_data.dart';
 import '../../../utils/app_constants.dart';
 import '../../../utils/check_internet_connection.dart';
