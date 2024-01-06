@@ -10,7 +10,7 @@ This mobile app, built on the foundation of the Bagisto eCommerce framework and 
 
 Before beginning with the installation, you will need the following with the mentioned versions
 
-- Bagisto Version - 2.0.0
+- Bagisto Version - v2.0.0
 - Android Studio Version - Flamingo | 2022.2.1 
 - Flutter Version - 3.10.1
 - Dart - 3.0.1
