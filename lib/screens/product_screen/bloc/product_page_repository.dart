@@ -12,7 +12,6 @@ import '../../../data_model/add_to_wishlist_model/add_wishlist_model.dart';
 import 'package:flutter/material.dart';
 import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
 import '../../cart_screen/cart_model/add_to_cart_model.dart';
-import '../../home_page/data_model/new_product_data.dart';
 
 abstract class ProductScreenRepository {
   Future<NewProductsModel?> getProductDetails(
@@ -24,7 +23,6 @@ abstract class ProductScreenRepository {
       List downloadLinks,
       List groupedParams,
       List bundleParams,
-      int? bundleQty,
       List configurableParams,
       String? configurableId);
 
@@ -59,7 +57,6 @@ class ProductScreenRepo implements ProductScreenRepository {
       List downloadLinks,
       List groupedParams,
       List bundleParams,
-      int? bundleQty,
       List configurableParams,
       String? configurableId) async {
     AddToCartModel? addToCartModel;
@@ -71,7 +68,6 @@ class ProductScreenRepo implements ProductScreenRepository {
           downloadLinks,
           groupedParams,
           bundleParams,
-          bundleQty,
           configurableParams,
           configurableId);
     } catch (error, stacktrace) {

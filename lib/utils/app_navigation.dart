@@ -52,6 +52,8 @@ import '../screens/address_list/data_model/address_model.dart';
 import '../screens/cart_screen/bloc/cart_screen_bloc.dart';
 import '../screens/cart_screen/bloc/cart_screen_repository.dart';
 import '../screens/cart_screen/cart_screen.dart';
+import '../screens/checkout/checkout_addres/bloc/checkout_bloc.dart';
+import '../screens/checkout/checkout_addres/bloc/checkout_repository.dart';
 import '../screens/checkout/checkout_addres/view/widget/checkout_address_list.dart';
 import '../screens/checkout/checkout_save_order/bloc/save_order_bloc.dart';
 import '../screens/checkout/checkout_save_order/bloc/save_order_repositroy.dart';
@@ -116,7 +118,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         builder: (_) => BlocProvider(
           create: (context)=> ProductScreenBLoc(ProductScreenRepo()),
           child: ProductScreen(title: (productData.title),
-            productId: productData.productId, sku: productData.urlKey),
+            productId: productData.productId, urlKey: productData.urlKey),
         ),
       );
 
@@ -228,8 +230,11 @@ Route<dynamic> generateRoute(RouteSettings settings) {
 
     case checkOutAddressList:
       return MaterialPageRoute(
-        builder: (_) => CheckoutAddressList(
-          addressModel: settings.arguments as AddressModel,
+        builder: (_) => BlocProvider(
+          create: (BuildContext context) => CheckOutBloc(CheckOutRepositoryImp()),
+          child: CheckoutAddressList(
+            addressModel: settings.arguments as AddressModel,
+          ),
         ),
       );
 

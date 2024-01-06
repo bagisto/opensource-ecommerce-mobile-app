@@ -60,11 +60,8 @@ class ProceedView extends StatelessWidget {
                   var isUser =
                       await SharedPreferenceHelper.getCustomerLoggedIn();
                   if (quantityChanged) {
-                    ShowMessage.showNotification(
-                        StringConstants.warning.localized(),
-                        StringConstants.updateCartWarning.localized(),
-                        Colors.yellow,
-                        const Icon(Icons.warning_amber));
+                    ShowMessage.warningNotification(
+                        StringConstants.updateCartWarning.localized(),context);
                   } else if (isUser) {
                     if(context.mounted) {
                       Navigator.pushNamed(context, checkoutScreen,

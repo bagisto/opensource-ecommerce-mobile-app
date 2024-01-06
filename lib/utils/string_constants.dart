@@ -190,7 +190,6 @@ class StringConstants {
   static const String cartPageRemoveItemLabel = "cartPageRemoveItemLabel";
   static const String deleteItemWarning = "deleteItemWarning";
   static const String priceDetails = "priceDetails";
-  static const String subtotal = "subtotal";
   static const String tax = "tax";
   static const String discount = "discount";
   static const String grandTotal = "grandTotal";
@@ -241,7 +240,7 @@ class StringConstants {
   static const String reviews = "reviews";
   static const String orderDetails = "orderDetails";
   static const String editInfo = "editInfo";
-  static const String subTotal = "subTotal";
+  static const String subTotal = "subtotal";
   static const String qty = "qty";
   static const String manageAddress = "manageAddress";
   static const String currentFilter = "currentFilter";
@@ -329,6 +328,9 @@ class StringConstants {
   static const String addedToCart = "addedToCart";
   static const String deletedSuccess = "deletedSuccess";
   static const String addReviewImage = "addReviewImage";
+  static const String noShippingMsg = "noShippingMsg";
+  static const String sample = "sample";
+
 
 }
 

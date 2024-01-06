@@ -10,13 +10,9 @@
 
 
 import 'package:bagisto_app_demo/screens/cart_screen/cart_index.dart';
-import 'package:bagisto_app_demo/utils/application_localization.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:flutter/material.dart';
-import '../../../utils/app_constants.dart';
 import '../../../utils/check_internet_connection.dart';
 import '../../../widgets/image_view.dart';
-import '../../../widgets/show_message.dart';
 import '../data_model/theme_customization.dart';
 
 class CarousalSlider extends StatefulWidget {

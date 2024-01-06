@@ -11,7 +11,6 @@
 import 'package:bagisto_app_demo/utils/application_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../data_model/add_to_wishlist_model/add_wishlist_model.dart';
-import '../../../data_model/categories_data_model/categories_product_model.dart';
 import '../../../data_model/categories_data_model/filter_product_model.dart';
 import '../../../data_model/graphql_base_model.dart';
 import '../../../utils/string_constants.dart';

@@ -588,9 +588,12 @@ class DownloadableLinks {
   int? sortOrder;
   String? productId;
   int? downloads;
+  String? fileUrl;
+  String? sampleFileUrl;
   List<Translations>? translations;
 
-  DownloadableLinks({this.id, this.title, this.price, this.url, this.file, this.fileName, this.type, this.sampleUrl, this.sampleFile, this.sampleFileName, this.sampleType, this.sortOrder, this.productId, this.downloads, this.translations});
+  DownloadableLinks({this.id, this.title, this.price, this.url, this.file, this.fileName, this.type, this.sampleUrl, this.sampleFile, this.sampleFileName, this.sampleType,
+    this.sortOrder, this.productId, this.downloads, this.translations, this.fileUrl, this.sampleFileUrl});
 
   factory DownloadableLinks.fromJson(Map<String, dynamic> json) =>
       _$DownloadableLinksFromJson(json);
@@ -643,9 +646,10 @@ class AssociatedProduct {
   String? type;
   String? attributeFamilyId;
   String? sku;
+  PriceHtml? priceHtml;
   dynamic parentId;
 
-  AssociatedProduct({this.id, this.type, this.attributeFamilyId, this.sku, this.parentId});
+  AssociatedProduct({this.id, this.type, this.attributeFamilyId, this.sku,this.priceHtml, this.parentId});
 
   factory AssociatedProduct.fromJson(Map<String, dynamic> json) =>
       _$AssociatedProductFromJson(json);

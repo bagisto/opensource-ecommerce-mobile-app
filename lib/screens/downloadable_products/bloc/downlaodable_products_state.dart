@@ -1,6 +1,4 @@
 
-import 'package:equatable/equatable.dart';
-
 import '../../home_page/data_model/new_product_data.dart';
 import '../data_model/download_product_model.dart';
 import '../data_model/downloadable_product_model.dart';

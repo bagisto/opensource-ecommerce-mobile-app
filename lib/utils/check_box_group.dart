@@ -8,7 +8,12 @@
  * @link https://store.webkul.com/license.html
  */
 
+import 'package:bagisto_app_demo/utils/application_localization.dart';
+import 'package:bagisto_app_demo/utils/string_constants.dart';
 import 'package:flutter/material.dart';
+
+import '../screens/home_page/data_model/new_product_data.dart';
+import '../screens/product_screen/view/file_download.dart';
 
 class CheckboxGroup extends StatefulWidget {
   final List<String>? labels;
@@ -22,6 +27,8 @@ class CheckboxGroup extends StatefulWidget {
   final bool triState;
   final EdgeInsetsGeometry padding;
   final EdgeInsetsGeometry margin;
+  final List<DownloadableLinks>? data;
+  final bool showText;
 
   const CheckboxGroup({
     Key? key,
@@ -35,6 +42,7 @@ class CheckboxGroup extends StatefulWidget {
     this.triState = false,
     this.padding = const EdgeInsets.all(0.0),
     this.margin = const EdgeInsets.all(0.0),
+    this.data, this.showText = false
   }) : super(key: key);
 
   @override
@@ -75,9 +83,24 @@ class _CheckboxGroupState extends State<CheckboxGroup> {
       content.add(Row(children: <Widget>[
         cb,
         Expanded(
-          flex: 10,
+          flex: 1,
           child: t,
         ),
+        if(widget.showText && (widget.data?[i].sampleFileUrl ?? "").isNotEmpty)Expanded(
+          flex: 1,
+          child: InkWell(
+            onTap: () {
+              DownloadFile().downloadPersonalData(
+                  widget.data?[i].url ?? widget.data?[i].sampleFileUrl ?? "",
+                  widget.data?[i].sampleFileName ?? "sample.jpg",
+                  widget.data?[i].type ?? "",
+                  context, GlobalKey());
+            },
+            child: Text(StringConstants.sample.localized(),
+              style: const TextStyle(color: Colors.blue),
+            ),
+          ),
+        )
       ]));
     }
 

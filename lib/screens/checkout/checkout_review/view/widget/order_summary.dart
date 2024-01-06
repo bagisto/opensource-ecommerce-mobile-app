@@ -1,8 +1,6 @@
 import 'package:bagisto_app_demo/utils/application_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:collection/collection.dart';
 import '../../../../../utils/app_constants.dart';
-import '../../../../../utils/app_global_data.dart';
 import '../../../../../utils/string_constants.dart';
 import '../../../../../widgets/common_widgets.dart';
 import '../../../../../widgets/image_view.dart';
@@ -16,6 +14,8 @@ class OrderSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+
     return Container(
       padding: const EdgeInsets.fromLTRB(
           0, AppSizes.spacingNormal, 0, AppSizes.spacingNormal),
@@ -132,7 +132,7 @@ class OrderSummary extends StatelessWidget {
                                   ),
                                 ),
                                 Text(
-                                  "${savePaymentModel.cart?.formattedPrice?.baseTotal ?? ""}",
+                                  "${savePaymentModel.cart?.items?[itemIndex].formattedPrice?.price ?? ""}",
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -152,7 +152,7 @@ class OrderSummary extends StatelessWidget {
                                   ),
                                 ),
                                 Text(
-                                  "${savePaymentModel.cart?.formattedPrice?.total ?? ""}",
+                                  "${savePaymentModel.cart?.items?[itemIndex].formattedPrice?.total ?? "\$10"}",
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                   ),

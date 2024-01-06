@@ -39,7 +39,6 @@ class ProductScreenBLoc extends Bloc<ProductScreenBaseEvent, ProductBaseState> {
             event.downloadLinks,
             event.groupedParams,
             event.bundleParams,
-            event.bundleQuantity,
             event.configurableParams,
             event.configurableId);
         if (cartModel?.responseStatus == true) {

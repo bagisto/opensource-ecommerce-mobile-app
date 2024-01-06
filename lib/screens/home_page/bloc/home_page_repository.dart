@@ -46,7 +46,7 @@ class HomePageRepositoryImp implements HomePageRepository {
   Future<AddToCartModel?> callAddToCartAPi(
       int productId,int quantity ) async {
     AddToCartModel? addToCartModel;
-    addToCartModel = await ApiClient().addToCart(quantity,productId.toString(),[] ,[],[],0,[],null);
+    addToCartModel = await ApiClient().addToCart(quantity,productId.toString(),[] ,[],[],[],null);
 
     return addToCartModel;
   }

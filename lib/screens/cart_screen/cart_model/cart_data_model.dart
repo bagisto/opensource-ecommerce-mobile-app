@@ -397,7 +397,8 @@ class FormattedPrice {
       this.total,
       this.taxTotal,
       this.baseTaxTotal, this.baseTotal,
-      this.baseDiscount, this.adjustmentFee, this.baseAdjustmentFee, this.adjustmentRefund);
+      this.baseDiscount, this.adjustmentFee, this.baseAdjustmentFee, this.adjustmentRefund, this.amountRefunded,
+      this.baseAmountRefunded, this.basePrice, this.baseTotalInvoiced, this.discountPercent, this.taxPercent, this.totalInvoiced);
 
 
   factory FormattedPrice.fromJson(Map<String, dynamic> json) {

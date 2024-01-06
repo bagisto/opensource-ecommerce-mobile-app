@@ -16,7 +16,9 @@ class ApplyCouponCode extends StatefulWidget {
   final SavePayment savePaymentModel;
   final CartScreenBloc? cartScreenBloc;
   final CartModel? cartDetailsModel;
-  const ApplyCouponCode({Key? key, required this.savePaymentModel, this.cartScreenBloc, this.cartDetailsModel}) : super(key: key);
+  final Function? callback;
+  const ApplyCouponCode({Key? key, required this.savePaymentModel, this.cartScreenBloc, this.cartDetailsModel,
+  this.callback}) : super(key: key);
 
   @override
   State<ApplyCouponCode> createState() => _ApplyCouponCodeState();
@@ -27,6 +29,12 @@ class _ApplyCouponCodeState extends State<ApplyCouponCode> {
   final bool _autoValidate = false;
   final _discountController = TextEditingController();
   bool  showButton = false;
+
+  @override
+  void initState() {
+    _discountController.text = widget.cartDetailsModel?.couponCode ?? "";
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -109,7 +117,14 @@ class _ApplyCouponCodeState extends State<ApplyCouponCode> {
                                       widget.cartDetailsModel));
                               _discountController.text = "";
                             }
+
+                            Future.delayed(const Duration(seconds: 1)).then((value) {
+                              if(widget.callback != null){
+                                widget.callback!();
+                              }
+                            });
                           }
+
                         },
                         child: widget.cartDetailsModel?.couponCode ==
                             null ||
@@ -149,7 +164,7 @@ class _ApplyCouponCodeState extends State<ApplyCouponCode> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          StringConstants.subtotal.localized(),
+                          StringConstants.subTotal.localized(),
                           style: const TextStyle(
                               fontWeight: FontWeight.w500),
                         ),
@@ -163,7 +178,7 @@ class _ApplyCouponCodeState extends State<ApplyCouponCode> {
                     ],
                   ),
                 ),
-                Container(
+                widget.savePaymentModel.cart?.selectedShippingRate!=null?Container(
                   padding: const EdgeInsets.all(4.0),
                   child:Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -183,7 +198,7 @@ class _ApplyCouponCodeState extends State<ApplyCouponCode> {
                       )
                     ],
                   ),
-                ),
+                ): const SizedBox.shrink(),
                 Container(
                   padding: const EdgeInsets.all(4.0),
                   child: Row(

@@ -57,6 +57,8 @@ class _DownloadProductOptionsState extends State<DownloadProductOptions> {
                   ),
                   CheckboxGroup(
                     activeColor: Colors.black,
+                    data: widget.options,
+                    showText: true,
                     labels: widget.options
                             ?.map((e) =>
                                 '${e.title ?? ''} + ${e.price}')
@@ -84,7 +86,7 @@ class _DownloadProductOptionsState extends State<DownloadProductOptions> {
                         widget.callBack!(list);
                       }
                     },
-                  )
+                  ),
                 ]),
         )
         : Container();

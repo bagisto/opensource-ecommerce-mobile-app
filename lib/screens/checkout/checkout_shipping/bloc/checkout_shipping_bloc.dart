@@ -12,9 +12,6 @@
 
 
 import 'package:bagisto_app_demo/screens/cart_screen/cart_index.dart';
-import 'package:bagisto_app_demo/utils/application_localization.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../utils/string_constants.dart';
 import '../../data_model/checkout_save_address_model.dart';
 import 'checkout_fetch_shipping_state.dart';
 import 'checkout_shipping_base_event.dart';

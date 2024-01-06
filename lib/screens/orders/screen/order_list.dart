@@ -76,7 +76,7 @@ class _OrdersListState extends State<OrdersList> with OrderStatusBGColorHelper {
                         },
                         icon: const Icon(
                           Icons.filter_alt,
-                          size: 30,
+                          size: AppSizes.size24,
                         ))
                   ],
                 ),
@@ -171,13 +171,14 @@ class _OrdersListState extends State<OrdersList> with OrderStatusBGColorHelper {
   _getOrderFilter() {
     return Directionality(
       textDirection: GlobalData.contentDirection(),
-      child: SingleChildScrollView(
-        child: Padding(
+      child:  Padding(
           padding:
               EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
           child: Card(
             margin: EdgeInsets.zero,
-            child: Column(
+            child: SingleChildScrollView(
+              child:Column(
+                mainAxisSize: MainAxisSize.min,
               children: [
                 Padding(
                   padding: const EdgeInsets.all(8.0),

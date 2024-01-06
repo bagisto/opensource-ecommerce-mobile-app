@@ -13,7 +13,6 @@
 
 import 'package:flutter/material.dart';
 import '../../../data_model/add_to_wishlist_model/add_wishlist_model.dart';
-import '../../../data_model/categories_data_model/categories_product_model.dart';
 import '../../../data_model/categories_data_model/filter_product_model.dart';
 import '../../../data_model/graphql_base_model.dart';
 import '../../../services/api_client.dart';
@@ -75,7 +74,7 @@ class CategoriesRepo implements CategoriesRepository {
       int productId,int quantity ) async {
     AddToCartModel? graphQlBaseModel;
 
-    graphQlBaseModel = await ApiClient().addToCart(quantity,productId.toString(),[] ,[],[],0,[],null);
+    graphQlBaseModel = await ApiClient().addToCart(quantity,productId.toString(),[] ,[],[],[],null);
 
     return graphQlBaseModel!;
   }

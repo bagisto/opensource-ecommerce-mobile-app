@@ -29,7 +29,7 @@ class PriceDetailView extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      StringConstants.subtotal.localized(),
+                      StringConstants.subTotal.localized(),
                       style: const TextStyle(fontWeight: FontWeight.w500),
                     ),
                     Text(
@@ -40,8 +40,7 @@ class PriceDetailView extends StatelessWidget {
                   ],
                 ),
               ),
-              cartDetailsModel.formattedPrice?.taxTotal != "\$0.00"
-                  ? Container(
+              Container(
                       padding: const EdgeInsets.fromLTRB(16, 5, 10, 0),
                       // color: Colors.white,
                       child: Row(
@@ -60,10 +59,8 @@ class PriceDetailView extends StatelessWidget {
                           ),
                         ],
                       ),
-                    )
-                  : const SizedBox.shrink(),
-              cartDetailsModel.formattedPrice?.discount != "\$0.00"
-                  ? Padding(
+                    ),
+                  Padding(
                       padding: const EdgeInsets.fromLTRB(16, 5, 10, 0),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -81,8 +78,7 @@ class PriceDetailView extends StatelessWidget {
                           ),
                         ],
                       ),
-                    )
-                  : const SizedBox.shrink(),
+                  ),
               Container(
                 padding: const EdgeInsets.fromLTRB(16, 5, 10, 0),
                 child: Row(

@@ -9,13 +9,10 @@
  */
 
 import 'package:bagisto_app_demo/screens/product_screen/view/quantity_view.dart';
-import 'package:bagisto_app_demo/utils/app_constants.dart';
-import 'package:bagisto_app_demo/utils/string_constants.dart';
 import 'package:flutter/material.dart';
-import '../../../utils/application_localization.dart';
+import 'package:bagisto_app_demo/utils/index.dart';
 import '../../../utils/check_box_group.dart';
 import '../../../utils/radio_button_group.dart';
-import '../../../widgets/common_widgets.dart';
 import '../../home_page/data_model/new_product_data.dart';
 import 'package:collection/collection.dart';
 
@@ -36,6 +33,8 @@ class _BundleOptionsViewState extends State<BundleOptionsView> {
   List newData = [];
   String? currentId;
   var bundleData = <dynamic, dynamic>{};
+  List<BundleData> qtyArray = [];
+  List<String> vals = [];
 
   @override
   void initState() {
@@ -46,14 +45,12 @@ class _BundleOptionsViewState extends State<BundleOptionsView> {
   }
 
   getBundleData() {
-    List<BundleData> qtyArray = [];
     for (int i = 0; i < (widget.options?.length ?? 0); i++) {
       for (int j = 0;
           j < (widget.options?[i].bundleOptionProducts?.length ?? 0);
           j++) {
-        List<String> vals = [];
         vals.add(
-            (widget.options?[i].bundleOptionProducts?[j].id ?? "").toString());
+            (widget.options?[i].bundleOptionProducts?[j].id ?? '').toString());
         qtyArray.add(BundleData(
             bundleOptionId: widget
                 .options?[i].bundleOptionProducts?[j].productBundleOptionId
@@ -117,7 +114,7 @@ class _BundleOptionsViewState extends State<BundleOptionsView> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              option?.translations?.map((e) => e.label ?? "").toString() ?? '',
+              option?.translations?.map((e) => e.label ?? '').toString() ?? '',
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(
@@ -126,44 +123,37 @@ class _BundleOptionsViewState extends State<BundleOptionsView> {
             RadioButtonGroup(
               key: Key(option?.id?.toString() ?? ''),
               labels: option?.bundleOptionProducts
-                  ?.map((e) => e.product?.productFlats?[0].name ?? "")
+                  ?.map((e) => e.product?.productFlats?[0].name ?? '')
                   .toList(),
               onChange: (label, index) {
                 if ((option?.bundleOptionProducts?.length ?? 0) > index) {
-                  _updateQtyValue(int.parse(option?.id ?? ""),
+                  _updateQtyValue(int.parse(option?.id ?? ''),
                       option?.bundleOptionProducts?[index].qty ?? 0);
                   _updateOptions(
-                      int.parse(option?.id ?? ""),
-                      int.parse(option?.bundleOptionProducts?[index].id ?? ""),
+                      int.parse(option?.id ?? ''),
+                      int.parse(option?.bundleOptionProducts?[index].id ?? ''),
                       -1,
                       true);
                 }
               },
             ),
             QuantityView(
-                qty: (bundleData["bundleOptionQuantity"]
+                qty: (bundleData['bundleOptionQuantity']
                             as Map<String, dynamic>?)?[option?.id.toString()]
                         ?.toString() ??
-                    "0",
+                    '0',
                 callBack: (qty) {
-                  _updateQtyValue(int.parse(option?.id ?? ""), qty);
+                  _updateQtyValue(int.parse(option?.id ?? ''), qty);
                 })
           ],
         ));
   }
 
   Widget _getCheckBoxType(BundleOptions? option) {
-    List<ProductFlats> item = [];
     var val = option?.bundleOptionProducts
-        ?.map((e) => e.product?.productFlats
-            ?.where((element) => element.locale == "en")
-            .toList())
+        ?.map((e) =>
+            "${e.product?.sku} + ${e.product?.priceHtml?.formattedFinalPrice}")
         .toList();
-
-    val?.forEach((element) {
-      item.addAll(element as Iterable<ProductFlats>);
-    });
-
     return (widget.options?.length ?? 0) > 0
         ? Column(
             mainAxisAlignment: MainAxisAlignment.start,
@@ -174,7 +164,7 @@ class _BundleOptionsViewState extends State<BundleOptionsView> {
                               ?.translations
                               ?.map((e) => e.label)
                               .toString() ??
-                          "") ??
+                          '') ??
                       '',
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
@@ -184,7 +174,7 @@ class _BundleOptionsViewState extends State<BundleOptionsView> {
                 CheckboxGroup(
                   activeColor: Theme.of(context).colorScheme.onBackground,
                   checkColor: Theme.of(context).colorScheme.background,
-                  labels: item.map((e) => e.name ?? "").toList(),
+                  labels: val?.toList(),
                   onChange: (isChecked, label, index, key) {
                     var product = option?.bundleOptionProducts
                         ?.firstWhereOrNull((element) {
@@ -193,27 +183,27 @@ class _BundleOptionsViewState extends State<BundleOptionsView> {
                           null;
                     });
                     if (isChecked) {
-                      _updateQtyValue(int.parse(option?.id ?? "0"),
-                          product?.qty?.toString() ?? '0');
-                      _updateOptions(int.parse(option?.id ?? "0"),
-                          int.parse(product?.id ?? "0"), -1, false);
+                      _updateQtyValue(int.parse(option?.id ?? '0'),
+                          product?.qty?.toString() ?? '1');
+                      _updateOptions(int.parse(option?.id ?? '0'),
+                          int.parse(product?.id ?? '1'), -1, false);
                     } else {
-                      _updateOptions(int.parse(option?.id ?? ""), -1,
-                          int.parse(product?.id ?? "0"), false);
+                      _updateOptions(int.parse(option?.id ?? ''), -1,
+                          int.parse(product?.id ?? '1'), false);
                     }
                   },
                 ),
                 QuantityView(
-                  qty: (bundleData["bundleOptionQuantity"]
+                  qty: (bundleData['bundleOptionQuantity']
                               as Map<String, dynamic>?)?[option?.id.toString()]
                           ?.toString() ??
-                      "0",
+                      '1',
                   callBack: (qty) {
-                    _updateQtyValue(int.parse(option?.id ?? ""), qty);
+                    _updateQtyValue(int.parse(option?.id ?? ''), qty);
                   },
                 ),
               ])
-        : Container();
+        : const SizedBox.shrink();
   }
 
   Widget _getTextField(BundleOptions? option) {
@@ -231,7 +221,7 @@ class _BundleOptionsViewState extends State<BundleOptionsView> {
                   Key(option?.id?.toString() ?? ''),
                   context,
                   option?.bundleOptionProducts
-                          ?.map((e) => e.product?.productFlats?[0].name ?? "")
+                          ?.map((e) => e.product?.productFlats?[0].name ?? '')
                           .toList() ??
                       [],
                   option?.translations?.map((e) => e.label).toString(),
@@ -242,59 +232,55 @@ class _BundleOptionsViewState extends State<BundleOptionsView> {
                 var product = option?.bundleOptionProducts?.firstWhere(
                     (element) =>
                         element.product?.productFlats?[0].name == label);
-                _updateQtyValue(int.parse(option?.id ?? ""),
-                    product?.qty?.toString() ?? '0');
-                _updateOptions(int.parse(option?.id ?? ""),
-                    int.parse(product?.id ?? ""), -1, true);
+                _updateQtyValue(int.parse(option?.id ?? ''),
+                    product?.qty?.toString() ?? '1');
+                _updateOptions(int.parse(option?.id ?? ''),
+                    int.parse(product?.id ?? ''), -1, true);
               }, false),
             ),
             QuantityView(
-                qty: (bundleData["bundleOptionQuantity"]
+                qty: (bundleData['bundleOptionQuantity']
                             as Map<String, dynamic>?)?[option?.id.toString()]
                         .toString() ??
-                    "0",
+                    '1',
                 callBack: (qty) {
-                  _updateQtyValue(int.parse(option?.id ?? ""), qty);
+                  _updateQtyValue(int.parse(option?.id ?? ''), qty);
                 })
           ],
         ));
   }
 
   _updateOptions(int id, int productId, int removeId, bool isReplace) {
-    if (bundleData["bundleOptions"] != null) {
-      if (bundleData["bundleOptions"][id.toString()] != null) {
+    if (bundleData['bundleOptions'] != null) {
+      if (bundleData['bundleOptions'][id.toString()] != null) {
         if (removeId != -1) {}
-        (bundleData["bundleOptions"]?[id.toString()] as List<dynamic>)
+        (bundleData['bundleOptions']?[id.toString()] as List<dynamic>)
             .remove(removeId);
 
         if (productId != -1) {
           if (isReplace) {
-            bundleData["bundleOptions"][id.toString()] = [productId];
+            bundleData['bundleOptions'][id.toString()] = [productId];
           } else {
-            (bundleData["bundleOptions"][id.toString()] as List<dynamic>)
+            (bundleData['bundleOptions'][id.toString()] as List<dynamic>)
                 .add(productId);
           }
         }
       } else {
-        bundleData["bundleOptions"][id.toString()] = [productId];
+        bundleData['bundleOptions'][id.toString()] = [productId];
       }
     } else {
-      bundleData["bundleOptions"] = {
+      bundleData['bundleOptions'] = {
         id.toString(): [productId]
       };
     }
   }
 
   _updateQtyValue(int id, dynamic qty) {
-    if (bundleData["bundleOptionQuantity"] != null) {
-      setState(() {
-        (bundleData["bundleOptionQuantity"]
-            as Map<String, dynamic>?)?[id.toString()] = qty;
-      });
+    if (bundleData['bundleOptionQuantity'] != null) {
+      (bundleData['bundleOptionQuantity']
+          as Map<String, dynamic>?)?[id.toString()] = qty;
     } else {
-      setState(() {
-        bundleData["bundleOptionQuantity"] = {id.toString(): qty};
-      });
+      bundleData['bundleOptionQuantity'] = {id.toString(): qty};
     }
   }
 }
@@ -306,12 +292,12 @@ class BundleData {
   BundleData({this.bundleOptionId, this.bundleOptionProductId});
 
   factory BundleData.fromJson(Map<String, dynamic> json) => BundleData(
-        bundleOptionId: json["bundleOptionId"],
-        bundleOptionProductId: json["bundleOptionProductId"].toList(),
+        bundleOptionId: json['bundleOptionId'],
+        bundleOptionProductId: json['bundleOptionProductId'].toList(),
       );
 
   Map<String, dynamic> toJson() => {
-        "bundleOptionId": bundleOptionId,
-        "bundleOptionProductId": bundleOptionProductId
+        'bundleOptionId': bundleOptionId,
+        'bundleOptionProductId': bundleOptionProductId
       };
 }

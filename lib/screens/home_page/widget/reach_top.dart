@@ -10,8 +10,7 @@
 
 
 import 'package:bagisto_app_demo/screens/cart_screen/cart_index.dart';
-import 'package:bagisto_app_demo/utils/application_localization.dart';
-import 'package:flutter/material.dart';
+
 
 Widget buildReachBottomView(
     BuildContext context, ScrollController scrollController) {

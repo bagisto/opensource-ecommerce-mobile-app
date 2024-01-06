@@ -8,12 +8,17 @@
  * @link https://store.webkul.com/license.html
  */
 
+import 'package:bagisto_app_demo/screens/cart_screen/cart_index.dart';
 import 'package:bagisto_app_demo/utils/application_localization.dart';
+import 'package:bagisto_app_demo/widgets/loader.dart';
 import 'package:flutter/material.dart';
 import '../../../../../../utils/app_constants.dart';
 import '../../../../../../utils/app_global_data.dart';
 import '../../../../../utils/string_constants.dart';
 import '../../../../address_list/data_model/address_model.dart';
+import '../../bloc/checkout_address_state.dart';
+import '../../bloc/checkout_base_event.dart';
+import '../../bloc/checkout_bloc.dart';
 
 //ignore: must_be_immutable
 class CheckoutAddressList extends StatefulWidget {
@@ -26,6 +31,18 @@ class CheckoutAddressList extends StatefulWidget {
 }
 
 class _CheckoutAddressListState extends State<CheckoutAddressList> {
+  CheckOutBloc? bloc;
+  bool loading = false;
+  late AddressModel address;
+
+  @override
+  void initState() {
+    address = widget.addressModel;
+    bloc = context.read<CheckOutBloc>();
+    bloc?.add(CheckOutAddressEvent());
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Directionality(
@@ -36,69 +53,86 @@ class _CheckoutAddressListState extends State<CheckoutAddressList> {
           centerTitle: false,
           title: Text(StringConstants.address.localized()),
         ),
-        body: _getAddressList(widget.addressModel),
+        body: _getAddressList(),
       ),
     );
   }
 
-  _getAddressList(AddressModel addressModel) {
-    return Column(
-      children: [
-        Expanded(
-          child: ListView.builder(
-              itemCount: addressModel.addressData!.length,
-              itemBuilder: (context, index) {
-                return InkWell(
-                  onTap: () {
-                    Navigator.of(context).pop(addressModel.addressData?[index]);
-                  },
-                  child: Card(
-                    elevation: 2,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(
-                          height: AppSizes.spacingNormal,
-                        ),
-                        const SizedBox(
-                          height: AppSizes.spacingLarge,
-                        ),
-                        _getFormattedAddress(addressModel, index),
-                        const SizedBox(
-                          height: AppSizes.spacingLarge,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(
-                              AppSizes.spacingMedium, 0, 0, 0),
-                          child: RichText(
-                            text: TextSpan(
-                              text: "",
-                              style: DefaultTextStyle.of(context).style,
-                              children: <TextSpan>[
-                                TextSpan(
-                                    text: ("Mobile: "),
-                                    style: TextStyle(color: Colors.grey[600])),
-                                TextSpan(
-                                    text: (addressModel
-                                            .addressData![index].phone ??
-                                        ""),
-                                    style:
-                                        const TextStyle(fontWeight: FontWeight.bold)),
-                              ],
-                            ),
+  _getAddressList() {
+    return BlocBuilder<CheckOutBloc, CheckOutBaseState>(builder: (context, state){
+      if(state is CheckOutLoaderState){
+        loading = true;
+      }
+
+      if(state is CheckOutAddressState){
+        loading = false;
+        if(state.addressModel != null){
+          address = state.addressModel!;
+        }
+      }
+      return Stack(
+        children: [
+          Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                    itemCount: address.addressData!.length,
+                    itemBuilder: (context, index) {
+                      return InkWell(
+                        onTap: () {
+                          Navigator.of(context).pop(address.addressData?[index]);
+                        },
+                        child: Card(
+                          elevation: 2,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(
+                                height: AppSizes.spacingNormal,
+                              ),
+                              const SizedBox(
+                                height: AppSizes.spacingLarge,
+                              ),
+                              _getFormattedAddress(address, index),
+                              const SizedBox(
+                                height: AppSizes.spacingLarge,
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(
+                                    AppSizes.spacingMedium, 0, 0, 0),
+                                child: RichText(
+                                  text: TextSpan(
+                                    text: "",
+                                    style: DefaultTextStyle.of(context).style,
+                                    children: <TextSpan>[
+                                      TextSpan(
+                                          text: ("Mobile: "),
+                                          style: TextStyle(color: Colors.grey[600])),
+                                      TextSpan(
+                                          text: (address
+                                              .addressData![index].phone ??
+                                              ""),
+                                          style:
+                                          const TextStyle(fontWeight: FontWeight.bold)),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(
+                                height: 10,
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              }),
-        ),
-      ],
-    );
+                      );
+                    }),
+              ),
+            ],
+          ),
+          Visibility(visible: loading, child: const Loader())
+        ],
+      );
+    });
   }
 
   _getFormattedAddress(AddressModel addressModel, int index) {

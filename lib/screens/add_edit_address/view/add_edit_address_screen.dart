@@ -18,7 +18,6 @@ import 'package:collection/collection.dart';
 import '../../../utils/app_constants.dart';
 import '../../../utils/app_global_data.dart';
 import '../../../utils/input_field_validators.dart';
-import '../../../utils/mobikul_theme.dart';
 import '../../../utils/shared_preference_helper.dart';
 import '../../../utils/string_constants.dart';
 import '../../../widgets/common_drop_down_field.dart';
@@ -91,9 +90,7 @@ class _AddNewAddressState extends State<AddNewAddress>
     widget.isEdit
         ? zipCodeController.text = widget.addressModel?.postcode ?? ""
         : "";
-    widget.isEdit
-        ? countryController.text = widget.addressModel?.country ?? ""
-        : "";
+    // widget.isEdit ? countryController.text = widget.addressModel?.country ?? "" : "";
     widget.isEdit
         ? vatIdController.text = widget.addressModel?.vatId ?? ""
         : "";
@@ -145,14 +142,11 @@ class _AddNewAddressState extends State<AddNewAddress>
         if (state is FetchEditAddressState) {
           if (state.status == AddEditStatus.fail) {
             Navigator.of(context).pop();
-            ShowMessage.showNotification(
-                state.error, "", Colors.red, const Icon(Icons.cancel_outlined));
+            ShowMessage.errorNotification(
+                state.error ?? "",context);
           } else if (state.status == AddEditStatus.success) {
-            ShowMessage.showNotification(
-                state.updateAddressModel?.message,
-                "",
-                const Color.fromRGBO(140, 194, 74, 5),
-                const Icon(Icons.check_circle));
+            ShowMessage.successNotification(
+                state.updateAddressModel?.message ?? "",context);
             Navigator.pop(
                 context,
                 AddressData(
@@ -193,11 +187,10 @@ class _AddNewAddressState extends State<AddNewAddress>
         } else if (state is FetchAddAddressState) {
           if (state.status == AddEditStatus.fail) {
             Navigator.of(context).pop();
-            ShowMessage.showNotification(
-                state.error, "", Colors.red, const Icon(Icons.cancel_outlined));
+            ShowMessage.errorNotification(
+                state.error ?? "",context);
           } else if (state.status == AddEditStatus.success) {
-            ShowMessage.showNotification(state.baseModel!.message, "",
-                const Color.fromRGBO(140, 194, 74, 5), const Icon(Icons.check_circle));
+            ShowMessage.successNotification(state.baseModel?.message ?? "",context);
             if (countryCode != null) {
               Future.delayed(const Duration(seconds: 2), () {
                 Navigator.pop(
@@ -253,6 +246,7 @@ class _AddNewAddressState extends State<AddNewAddress>
         countryList = state.countryData!.data;
         if (selectedCountry == null) {
           if (widget.isEdit) {
+            countryController.text = countryList?.firstWhereOrNull((element) => element.code == widget.addressModel?.country)?.name ?? "";
           } else {
             if ((selectedCountry?.states?.length ?? 0) > 0) {
               selectedState = selectedCountry?.states?.first;

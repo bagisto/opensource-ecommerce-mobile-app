@@ -60,7 +60,7 @@ class SubCategoriesGridView extends StatelessWidget {
               borderRadius: BorderRadius.circular(AppSizes.spacingNormal),
             ),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Stack(children: [

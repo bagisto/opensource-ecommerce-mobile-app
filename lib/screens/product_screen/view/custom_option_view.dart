@@ -318,7 +318,6 @@ class _CustomOptionsViewState extends State<CustomOptionsView> {
   _updateCallBack() {
     if (widget.callback != null) {
       Map<String, dynamic> dict = {};
-      print("optionArray updateCallback --> $optionArray");
       dict["superAttribute"] = optionArray;
       widget.callback!(optionArray, _getId());
     }

@@ -2,7 +2,6 @@ import 'package:bagisto_app_demo/utils/index.dart';
 import 'package:flutter/material.dart';
 import '../../../../../../data_model/app_route_arguments.dart';
 import '../../../../../../utils/assets_constants.dart';
-import '../../../../../../utils/string_constants.dart';
 import '../../../../address_list/data_model/address_model.dart';
 
 // ignore: must_be_immutable

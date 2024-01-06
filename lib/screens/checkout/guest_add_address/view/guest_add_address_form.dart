@@ -86,6 +86,7 @@ class _GuestAddAddressFormState extends State<GuestAddAddressForm>
   CountriesData? countryData;
   List<Data>? countryList = [];
   String? countryName;
+  String? countryCode;
   String? state;
   States? selectedState;
 
@@ -379,6 +380,7 @@ class _GuestAddAddressFormState extends State<GuestAddAddressForm>
     if (key == const Key('country')) {
       var country = countryList?.firstWhereOrNull((e) => e.name == item);
       selectedCountry = country;
+      countryCode = selectedCountry?.code;
       countryName = selectedCountry?.name ?? '';
       if ((country?.states?.length ?? 0) > 0) {
         selectedState = country?.states?.first;
@@ -409,7 +411,7 @@ class _GuestAddAddressFormState extends State<GuestAddAddressForm>
       lastNameController.text,
       street1Controller.text,
       emailController.text,
-      countryName,
+      countryCode,
       selectedState?.code ?? stateNameController.text,
       cityController.text,
       zipCodeController.text,
@@ -421,7 +423,7 @@ class _GuestAddAddressFormState extends State<GuestAddAddressForm>
       lastNameController.text,
       street1Controller.text,
       emailController.text,
-      countryName,
+      countryCode,
       selectedState?.code ?? stateNameController.text,
       cityController.text,
       zipCodeController.text,

@@ -25,7 +25,7 @@ class QuantityView extends StatefulWidget {
       this.minimum = 1,
       this.callBack,
       this.showTitle= false,
-      this.title = "Quantity",
+      this.title = StringConstants.quantity,
       this.subTitle,
       this.qty = "1"})
       : super(key: key);
@@ -39,28 +39,34 @@ class QuantityView extends StatefulWidget {
 class _QuantityViewState extends State<QuantityView> {
   TextEditingController controller = TextEditingController();
 
-  _updateQty() {
+  @override
+  void initState() {
     controller.text = widget.qty;
+    super.initState();
   }
+  // _updateQty() {
+  //   setState(() {
+  //     controller.text = widget.qty;
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
-    _updateQty();
+    // _updateQty();
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        if( widget.showTitle == false)
-        SizedBox(
-            child: Text(
+        if(widget.showTitle == false)
+        Text(
           widget.title.localized(),
           maxLines: 2,
           style: const TextStyle(fontWeight: FontWeight.bold),
-        )),
-        if (widget.subTitle != null) widget.subTitle!,
+        ),
+        widget.subTitle ?? const SizedBox.shrink(),
         Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
-            InkWell(
+            GestureDetector(
                 onTap: () {
                   int counter = int.tryParse(controller.text) ?? 1;
                   if (counter > widget.minimum) {
@@ -97,7 +103,7 @@ class _QuantityViewState extends State<QuantityView> {
                   ],
                   decoration: const InputDecoration(border: InputBorder.none),
                 )),
-            InkWell(
+            GestureDetector(
                 onTap: () {
                   int counter = int.tryParse(controller.text) ?? 1;
                   setState(() {

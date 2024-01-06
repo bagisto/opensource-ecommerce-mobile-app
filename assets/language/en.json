@@ -499,7 +499,7 @@
   "productNumber" : "Product Number",
   "totalShipping" : "Total Shipping : ",
   "commission": "Commission",
-  "subtotal" : "Sub Total",
+  "subTotal" : "Sub Total",
   "orderAmount": "Set Minimum Order Amount",
   "GoogleAnalytics": "Google Analytics",
   "minimumAmount": "Minimum Amount",
@@ -587,5 +587,7 @@
   "networkConnectionError": "Network Connection Error",
   "addedToCart" : "Added To Cart Successfully",
   "addReviewImage" : "Please add review image",
-  "couponCode" : "Coupon Code"
+  "couponCode" : "Coupon Code",
+  "noShippingMsg" : "There are no shipping methods available in selected address",
+  "sample" : "Sample"
 }

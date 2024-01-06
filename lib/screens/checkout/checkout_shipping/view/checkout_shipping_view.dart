@@ -18,6 +18,7 @@ import '../../../../utils/mobikul_theme.dart';
 import '../../../../utils/radio_button_group.dart';
 import '../../../../utils/string_constants.dart';
 import '../../../../widgets/common_error_msg.dart';
+import '../../../../widgets/show_message.dart';
 import '../../data_model/checkout_save_address_model.dart';
 import '../bloc/checkout_fetch_shipping_state.dart';
 import '../bloc/checkout_shipping_base_event.dart';
@@ -123,7 +124,14 @@ class _CheckoutShippingPageViewState extends State<CheckoutShippingPageView> {
       shippingId: widget.shippingId,
     ));
     return BlocConsumer<CheckOutShippingBloc, CheckOutShippingBaseState>(
-      listener: (BuildContext context, CheckOutShippingBaseState state) {},
+      listener: (BuildContext context, CheckOutShippingBaseState state) {
+        if(state is CheckOutFetchShippingState){
+          if((state.checkOutSaveAddressModel?.shippingMethods ?? []).isEmpty){
+            ShowMessage.showNotification(StringConstants.failed.localized(), StringConstants.noShippingMsg.localized(),
+                Colors.red, const Icon(Icons.cancel_outlined));
+          }
+        }
+      },
       builder: (BuildContext context, CheckOutShippingBaseState state) {
         return buildUI(context, state);
       },

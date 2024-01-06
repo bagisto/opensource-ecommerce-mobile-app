@@ -11,8 +11,6 @@
 
 import 'package:bagisto_app_demo/screens/cart_screen/cart_index.dart';
 import 'package:bagisto_app_demo/screens/product_screen/view/file_download.dart';
-import 'package:bagisto_app_demo/utils/application_localization.dart';
-import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:carousel_slider/carousel_controller.dart';
 
@@ -67,8 +65,8 @@ class _DownloadProductSampleState extends State<DownloadProductSample> {
                             child: InkWell(
                               onTap: () {
                                 DownloadFile().downloadPersonalData(
-                                    widget.samples?[i].url ?? "",
-                                    widget.samples?[i].fileName ?? "",
+                                    widget.samples?[i].url ?? widget.samples?[i].fileUrl ?? "",
+                                    widget.samples?[i].fileName ?? "sample.jpg",
                                     widget.samples?[i].type ?? "",
                                     context,
                                     widget.scaffoldMessengerKey);

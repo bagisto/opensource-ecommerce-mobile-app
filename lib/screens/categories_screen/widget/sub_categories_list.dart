@@ -14,7 +14,6 @@ import 'package:bagisto_app_demo/widgets/price_widget.dart';
 import 'package:bagisto_app_demo/widgets/wishlist_compare_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../data_model/categories_data_model/categories_product_model.dart';
 import '../../../../utils/app_global_data.dart';
 import '../../../../utils/app_constants.dart';
 import '../../../../utils/string_constants.dart';

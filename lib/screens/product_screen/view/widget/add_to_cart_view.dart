@@ -78,7 +78,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
             bundleParams,
             configurableParams,
             configurableProductId,
-            0,
             ""));
       } else {
         ShowMessage.showNotification(StringConstants.warning.localized(),StringConstants.atLeastOneWarning.localized(),
@@ -100,7 +99,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
               bundleParams,
               configurableParams,
               configurableProductId,
-              0,
               ""));
         } else {
           ShowMessage.showNotification(StringConstants.warning.localized(),StringConstants.atLeastOneWarning.localized(),
@@ -121,7 +119,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
             bundleParams,
             configurableParams,
             configurableProductId,
-            0,
             ""));
       } else {
         ShowMessage.showNotification(StringConstants.warning.localized(), StringConstants.linkRequired.localized(),
@@ -152,7 +149,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
             bundleParams,
             configurableParams,
             id,
-            0,
             ""));
       }
     } else {
@@ -164,7 +160,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
           bundleParams,
           configurableParams,
           configurableProductId,
-          0,
           ""));
     }
   }

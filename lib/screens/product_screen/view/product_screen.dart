@@ -19,9 +19,9 @@ import '../../cart_screen/cart_model/cart_data_model.dart';
 class ProductScreen extends StatefulWidget {
   int? productId;
   String? title;
-  String? sku;
+  String? urlKey;
 
-  ProductScreen({Key? key, this.title, this.productId, this.sku})
+  ProductScreen({Key? key, this.title, this.productId, this.urlKey})
       : super(key: key);
 
   @override
@@ -58,7 +58,7 @@ class _ProductScreenState extends State<ProductScreen> {
     getSharePreferenceCartCount().then((value) {
       myStreamCtrl.sink.add(value);
       productScreenBLoc = context.read<ProductScreenBLoc>();
-      productScreenBLoc?.add(FetchProductEvent(widget.sku ?? ""));
+      productScreenBLoc?.add(FetchProductEvent(widget.urlKey ?? ""));
     });
     super.initState();
   }
@@ -170,7 +170,7 @@ class _ProductScreenState extends State<ProductScreen> {
                       if (value == true) {
                         ProductScreenBLoc productScreenBLoc =
                             context.read<ProductScreenBLoc>();
-                        productScreenBLoc.add(FetchProductEvent(widget.sku ?? ""));
+                        productScreenBLoc.add(FetchProductEvent(widget.urlKey ?? ""));
                       }
                     });
                   } else {
@@ -184,7 +184,7 @@ class _ProductScreenState extends State<ProductScreen> {
       onTap: () {
         Navigator.pushNamed(context, cartScreen).then((value) {
           if (value == true) {
-            productScreenBLoc?.add(FetchProductEvent(widget.sku ?? ""));
+            productScreenBLoc?.add(FetchProductEvent(widget.urlKey ?? ""));
           }
         });
       },
@@ -291,10 +291,9 @@ class _ProductScreenState extends State<ProductScreen> {
       isLoading: isLoading,
       isLoggedIn: isLoggedIn,
       callback: (configurableParams, bundleParams, selectList, selectParam,
-          groupedParams, downloadLinks, qty, configurableProductId,bundleQuantity) {
+          groupedParams, downloadLinks, qty, configurableProductId) {
         this.configurableParams = configurableParams;
         this.bundleParams = bundleParams;
-        bundleQty =  bundleQuantity;
         this.selectList = selectList;
         this.selectParam = selectParam;
         this.groupedParams = groupedParams;
@@ -325,7 +324,6 @@ class _ProductScreenState extends State<ProductScreen> {
             bundleParams,
             configurableParams,
             configurableProductId,
-            0,
             ""));
       } else {
         ShowMessage.warningNotification(StringConstants.atLeastOneWarning.localized(), context);
@@ -347,7 +345,6 @@ class _ProductScreenState extends State<ProductScreen> {
               bundleParams,
               configurableParams,
               configurableProductId,
-              0,
               ""));
         } else {
           ShowMessage.warningNotification(StringConstants.atLeastOneWarning.localized(), context);
@@ -367,7 +364,6 @@ class _ProductScreenState extends State<ProductScreen> {
             bundleParams,
             configurableParams,
             configurableProductId,
-            0,
             ""));
       } else {
         ShowMessage.warningNotification(StringConstants.linkRequired.localized(),context);
@@ -393,7 +389,6 @@ class _ProductScreenState extends State<ProductScreen> {
             bundleParams,
             configurableParams,
             id,
-            0,
             ""));
       }
     } else {
@@ -405,7 +400,6 @@ class _ProductScreenState extends State<ProductScreen> {
           bundleParams,
           configurableParams,
           configurableProductId,
-          0,
           ""));
     }
   }
