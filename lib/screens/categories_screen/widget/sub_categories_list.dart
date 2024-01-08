@@ -112,7 +112,7 @@ class SubCategoriesList extends StatelessWidget {
                                     top: AppSizes.spacingSmall,
                                     child: Container(
                                       decoration: const BoxDecoration(
-                                          color: Colors.black,
+                                          color: Colors.green,
                                           borderRadius: BorderRadius.all(
                                               Radius.circular(
                                                   AppSizes.spacingLarge))),
@@ -231,7 +231,7 @@ class SubCategoriesList extends StatelessWidget {
                               if (isLogin ?? false) {
                                 if (data?.isInWishlist ?? false) {
                                   subCategoryBloc?.add(FetchDeleteItemEvent(
-                                      int.parse(data?.id ?? ""), data));
+                                      data?.id ?? "", data));
                                 } else {
                                   subCategoryBloc?.add(
                                       FetchDeleteAddItemCategoryEvent(
@@ -258,7 +258,7 @@ class SubCategoriesList extends StatelessWidget {
                                   OnClickSubCategoriesLoaderEvent(
                                       isReqToShowLoader: true));
                               subCategoryBloc?.add(AddToCompareSubCategoryEvent(
-                                  data?.productFlats?.firstOrNull?.id ?? "",
+                                  data?.id ?? "",
                                   ""));
                             } else {
                               ShowMessage.warningNotification(StringConstants.pleaseLogin.localized(), context, title: "");

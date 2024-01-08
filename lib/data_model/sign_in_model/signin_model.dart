@@ -52,6 +52,7 @@ class Data {
     this.group,
     this.createdAt,
     this.updatedAt,
+    this.imageUrl
   });
 
   String? id;
@@ -63,6 +64,7 @@ class Data {
   String? dateOfBirth;
   var phone;
   Group? group;
+  String? imageUrl;
   String? createdAt;
   String? updatedAt;
 

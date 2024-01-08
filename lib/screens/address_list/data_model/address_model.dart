@@ -49,6 +49,8 @@ class AddressData {
   String? updatedAt;
   String? address2;
   String? addressType;
+  int? billingAddressId;
+  int? shippingAddressId;
 
   AddressData(
       {this.id,
@@ -66,7 +68,7 @@ class AddressData {
       this.phone,
       this.isDefault,
       this.createdAt,
-      this.updatedAt, this.address2, this.addressType});
+      this.updatedAt, this.address2, this.addressType, this.shippingAddressId, this.billingAddressId});
   factory AddressData.fromJson(Map<String, dynamic> json) =>
       _$AddressDataFromJson(json);
 

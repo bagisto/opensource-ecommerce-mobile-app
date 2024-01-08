@@ -35,8 +35,9 @@ class WishlistItemList extends StatelessWidget {
           shrinkWrap: true,
           physics: const ScrollPhysics(),
           itemCount: model?.data?.length ?? 0,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              childAspectRatio: 0.5, crossAxisCount: 2),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              mainAxisExtent: (MediaQuery.of(context).size.height / 3) + 160,
+              crossAxisCount: 2),
           itemBuilder: (BuildContext context, int index) {
             return GestureDetector(
               onTap: () {
@@ -51,7 +52,7 @@ class WishlistItemList extends StatelessWidget {
                   elevation: 2,
                   margin: const EdgeInsets.all(4),
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Stack(children: [
@@ -100,18 +101,7 @@ class WishlistItemList extends StatelessWidget {
                       const SizedBox(
                         height: 4,
                       ),
-
                       PriceWidgetHtml(priceHtml: model?.data?[index].product?.priceHtml?.priceHtml ?? ""),
-
-                      // Padding(
-                      //   padding: const EdgeInsets.only(
-                      //       top: AppSizes.spacingSmall, left: 10, right: 10),
-                      //   child: Text(
-                      //     model?.data?[index].product?.priceHtml
-                      //             ?.formattedFinalPrice ??
-                      //         "0",
-                      //   ),
-                      // ),
                       Padding(
                         padding: const EdgeInsets.all(8),
                         child: CommonWidgets().appButton(

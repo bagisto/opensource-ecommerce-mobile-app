@@ -32,9 +32,8 @@ class _SignInScreenState extends State<SignInScreen> with EmailValidator {
   SignInModel? _signInModel;
   final _signInFormKey = GlobalKey<FormState>();
   final bool _autoValidate = false;
-  final passwordController = TextEditingController(
-      text: "demo123");
-  final emailController = TextEditingController(text:"demo12@webkul.com");
+  final passwordController = TextEditingController();
+  final emailController = TextEditingController();
   String passwordValue = "";
   String emailValue = "";
   bool showPassword = false;
@@ -99,6 +98,7 @@ class _SignInScreenState extends State<SignInScreen> with EmailValidator {
                     _signInModel?.token ?? "");
                 await SharedPreferenceHelper.setCustomerId(
                     int.parse(_signInModel?.data?.id ?? ""));
+                await SharedPreferenceHelper.setCustomerImage(_signInModel?.data?.imageUrl ?? "");
                 checkFingerprint();
                 Navigator.of(context).pushNamedAndRemoveUntil(
                     home, (Route<dynamic> route) => false);

@@ -3,12 +3,9 @@
 // Application Specific Constants
 const int defaultSplashDelay = 3;
 
-// local instance bagisto 2.0
-// const String baseUrl = "http://192.168.15.151/bagisto/public/graphql";
-
 
 // local instance bagisto 2.0 updated
-const String baseUrl = "http://192.168.15.204/Bagisto2.0/Mobikul/headless_2.0/public/graphql";
+const String baseUrl = "";
 
 const String defaultWebsiteId = "1";
 
@@ -19,7 +16,7 @@ const String defaultChannelId = "1";
 const String defaultStoreCode = "en";
 
 ///default store code
-const String defaultChannelName = "com.webkul.bagisto_mobikul/channel";
+const String defaultChannelName = "";
 
 ///default channel id
 const String defaultCurrencyCode = "";

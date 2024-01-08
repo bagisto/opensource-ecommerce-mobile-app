@@ -85,7 +85,9 @@ class _ProductScreenState extends State<ProductScreen> {
             centerTitle: false,
             automaticallyImplyLeading: false,
             leading: IconButton(onPressed: () {
-              setRecentViewed();
+              if(productData != null){
+                setRecentViewed();
+              }
               Navigator.pop(context);
             },
             icon:const Icon(Icons.arrow_back_ios)),

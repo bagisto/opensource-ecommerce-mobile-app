@@ -240,8 +240,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               if(shippingAddressId != 0) {
                 this.shippingAddressId = shippingAddressId;
               }
-
-            },
+            }
           ),
         )
             : BlocProvider(
@@ -328,6 +327,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 ) {
               shippingId = id;
             },
+              isDownloadable : widget.isDownloadable ?? false,
+            callbackNavigate: (){
+              setState(() {
+                currentIndex = currentIndex+1;
+              });
+            }
           ),
         );
       case 3:
@@ -454,12 +459,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                   }
                                 } else {
                                   setState(() {
-                                    if ((widget.isDownloadable ?? false) &&
-                                        currentIndex == 1) {
-                                      currentIndex = currentIndex + 2;
-                                    } else {
-                                      currentIndex = currentIndex + 1;
-                                    }
+                                    // if ((widget.isDownloadable ?? false) &&
+                                    //     currentIndex == 1) {
+                                    //   currentIndex = currentIndex + 2;
+                                    // } else {
+                                    //   currentIndex = currentIndex + 1;
+                                    // }
+                                    currentIndex = currentIndex + 1;
                                   });
                                 }
                               }

@@ -72,9 +72,8 @@ class _RecentViewState extends State<RecentView> {
   @override
   Widget build(BuildContext context) {
     return ((_recentProductList ?? []).isNotEmpty)
-        ? ConstrainedBox(
-            constraints: BoxConstraints(
-                maxHeight: (MediaQuery.of(context).size.width / 1.5) + 220),
+        ? SizedBox(
+                height: (MediaQuery.of(context).size.width / 1.5) + 220,
             child: NewProductView(
                 title: StringConstants.recentProducts.localized(),
                 isLogin: widget.isLogin,

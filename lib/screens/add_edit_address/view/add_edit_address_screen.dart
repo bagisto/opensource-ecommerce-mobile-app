@@ -163,6 +163,8 @@ class _AddNewAddressState extends State<AddNewAddress>
                     city: cityController.text,
                     phone: phoneController.text,
                     postcode: zipCodeController.text,
+                    billingAddressId: widget.addressModel?.billingAddressId,
+                    shippingAddressId: widget.addressModel?.shippingAddressId,
                     isDefault: isDefault));
             Future.delayed(const Duration(seconds: 2), () {
               Navigator.pop(
@@ -574,7 +576,7 @@ class _AddNewAddressState extends State<AddNewAddress>
 
       widget.isEdit
           ? addEditAddressBloc?.add(FetchEditAddressEvent(
-              addressId: int.parse(widget.addressModel?.id ?? ""),
+              addressId: int.parse(widget.addressModel?.id ?? "0"),
               address: street1Controller.text,
               city: cityController.text,
               country: (widget.isEdit && selectedCountry?.code == null)

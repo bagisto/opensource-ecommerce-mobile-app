@@ -1,3 +1,4 @@
+import 'package:bagisto_app_demo/screens/account/view/account_screen.dart';
 import 'package:bagisto_app_demo/utils/application_localization.dart';
 import 'package:bagisto_app_demo/widgets/price_widget.dart';
 import 'package:bagisto_app_demo/widgets/wishlist_compare_widget.dart';
@@ -234,17 +235,24 @@ class _NewProductViewState extends State<NewProductView> {
                                         checkInternetConnection()
                                             .then((value) {
                                           if (value) {
-                                            homepageBloc?.add(
-                                                OnClickLoaderEvent(
-                                                    isReqToShowLoader: true));
-                                            homepageBloc?.add(
-                                              AddToCompareHomepageEvent(
-                                                widget.model?[index]
-                                                        .id ??
-                                                    widget.model?[index].productId ?? "",
-                                                "",
-                                              ),
-                                            );
+                                            if (widget.isLogin ?? false){
+                                              homepageBloc?.add(
+                                                  OnClickLoaderEvent(
+                                                      isReqToShowLoader: true));
+                                              homepageBloc?.add(
+                                                AddToCompareHomepageEvent(
+                                                  widget.model?[index]
+                                                      .id ??
+                                                      widget.model?[index].productId ?? "",
+                                                  "",
+                                                ),
+                                              );
+                                            }
+                                            else {
+                                              ShowMessage.warningNotification(
+                                                  StringConstants.pleaseLogin.localized(),
+                                                  context);
+                                            }
                                           } else {
                                             ShowMessage.errorNotification(
                                                 StringConstants.internetIssue
