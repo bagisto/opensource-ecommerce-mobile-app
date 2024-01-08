@@ -91,8 +91,7 @@ class _SubCategoriesViewState extends State<SubCategoriesView> {
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: widget.categoriesData?.data?.length ?? 0,
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          mainAxisExtent:
-                          GlobalData.selectedLanguage == "ar" ? (MediaQuery.of(context).size.height / 3) + 160 : (MediaQuery.of(context).size.height / 3) + 165 ,
+                          mainAxisExtent: (MediaQuery.of(context).size.height / 3) + 165,
                           crossAxisCount: 2,),
                         itemBuilder: (BuildContext context, int index) {
                           if (index == widget.categoriesData?.data?.length) {

@@ -4,8 +4,6 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
-	<key>NSCameraUsageDescription</key>
-    <string>For uploading profile image</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
@@ -28,8 +26,21 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>For uploading profile image</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>For recognise voice phrases to search products</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>For customer profile picture</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>We need access to the microphone for searching product.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>remote-notification</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen.storyboard</string>
 	<key>UIMainStoryboardFile</key>
@@ -47,9 +58,5 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-	<key>NSSpeechRecognitionUsageDescription</key>
-    <string>We need access to the microphone for searching product.</string>
-    <key>NSMicrophoneUsageDescription</key>
-    <string>For recognise voice phrases to search products</string>
 </dict>
 </plist>

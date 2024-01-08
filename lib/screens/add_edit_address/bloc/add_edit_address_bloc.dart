@@ -31,7 +31,7 @@ class AddEditAddressBloc
       try {
         UpdateAddressModel? updateAddressModel =
             await repository?.callEditAddressApi(
-                event.addressId ?? 9,
+                event.addressId ?? 0,
                 event.companyName ?? "",
                 event.firstName ?? "",
                 event.lastName ?? "",

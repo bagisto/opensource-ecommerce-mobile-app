@@ -11,7 +11,6 @@
 
 
 import 'package:bagisto_app_demo/data_model/sign_in_model/signin_model.dart';
-import 'package:bagisto_app_demo/data_model/sign_up_model/sign_up_seller_model.dart';
 
 abstract class SignUpBaseState{}
 
@@ -36,23 +35,6 @@ class FetchSignUpState extends SignUpBaseState {
   FetchSignUpState.fail({this.error}) : status = SignUpStatus.fail;
   List<Object> get props => [if (signUpModel !=null) signUpModel! else ""];
 }
-class FetchSellerSignUpState extends SignUpBaseState {
-
-  SignUpStatus? status;
-  String? error;
-  String? successMsg;
-  CreateSeller? signSellerUpModel;
-
-
-  FetchSellerSignUpState.success({this.signSellerUpModel,this.successMsg}) : status = SignUpStatus.success;
-
-  FetchSellerSignUpState.fail({this.error}) : status = SignUpStatus.fail;
-  List<Object> get props => [if (signSellerUpModel !=null) signSellerUpModel! else ""];
-}
-
-
-
-
 
 class FetchSignInState extends SignUpBaseState {
 

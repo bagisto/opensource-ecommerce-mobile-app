@@ -46,10 +46,10 @@ class SaveCheckoutAddresses  extends GraphQlBaseErrorModel{
   String? success;
   String? cartTotal;
   int? cartCount;
-  List<ShippingMethods>? shippingMethods;
-  Payment? paymentMethods;
+  dynamic shippingMethods;
+  dynamic paymentMethods;
   String? jumpToSection;
-  CartModel? cart;
+  dynamic cart;
 
   SaveCheckoutAddresses(
       {this.success,

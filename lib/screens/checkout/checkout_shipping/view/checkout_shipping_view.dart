@@ -51,6 +51,8 @@ class CheckoutShippingPageView extends StatefulWidget {
   int billingId;
   int shippingId;
   ValueChanged<String>? callBack;
+  bool isDownloadable;
+  Function? callbackNavigate;
   CheckoutShippingPageView(
       {Key? key,
       this.billingCompanyName,
@@ -75,7 +77,8 @@ class CheckoutShippingPageView extends StatefulWidget {
       this.shippingCity,
       this.shippingPostCode,
       this.shippingPhone,
-      this.callBack, required this.shippingId, required this.billingId})
+      this.callBack, required this.shippingId, required this.billingId, this.isDownloadable = false,
+      this.callbackNavigate})
       : super(key: key);
 
   @override
@@ -126,9 +129,14 @@ class _CheckoutShippingPageViewState extends State<CheckoutShippingPageView> {
     return BlocConsumer<CheckOutShippingBloc, CheckOutShippingBaseState>(
       listener: (BuildContext context, CheckOutShippingBaseState state) {
         if(state is CheckOutFetchShippingState){
-          if((state.checkOutSaveAddressModel?.shippingMethods ?? []).isEmpty){
+          if((state.checkOutSaveAddressModel?.shippingMethods ?? []).isEmpty && widget.isDownloadable==false){
             ShowMessage.showNotification(StringConstants.failed.localized(), StringConstants.noShippingMsg.localized(),
                 Colors.red, const Icon(Icons.cancel_outlined));
+          }
+        }
+        if(widget.isDownloadable){
+          if (widget.callbackNavigate != null) {
+              widget.callbackNavigate!();
           }
         }
       },

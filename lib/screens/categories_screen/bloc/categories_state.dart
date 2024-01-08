@@ -108,7 +108,7 @@ class RemoveWishlistState extends CategoriesBaseState{
   String? successMsg="";
   String? error="";
   GraphQlBaseModel? response;
-  int? productDeletedId;
+  String? productDeletedId;
   RemoveWishlistState.success({this.response, this.productDeletedId,this.successMsg}):status=CategoriesStatus.success;
   RemoveWishlistState.fail({this.error}):status=CategoriesStatus.fail;
 

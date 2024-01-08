@@ -17,6 +17,7 @@ import 'package:bagisto_app_demo/utils/app_global_data.dart';
 import 'package:bagisto_app_demo/utils/app_navigation.dart';
 import 'package:bagisto_app_demo/utils/application_localization.dart';
 import 'package:bagisto_app_demo/utils/mobikul_theme.dart';
+import 'package:bagisto_app_demo/utils/push_notifications_manager.dart';
 import 'package:bagisto_app_demo/utils/route_constants.dart';
 import 'package:bagisto_app_demo/utils/server_configuration.dart';
 import 'package:bagisto_app_demo/utils/shared_preference_helper.dart';
@@ -135,8 +136,9 @@ class _BagistoAppState extends State<BagistoApp> {
   @override
   void initState() {
     _locale = Locale(GlobalData.locale ?? defaultStoreCode);
-    getToken();
-    getSubscription();
+    PushNotificationsManager.instance.setUpFirebase(context);
+    // getToken();
+    // getSubscription();
     super.initState();
   }
 

@@ -50,7 +50,7 @@ class FetchDeleteAddItemCategoryEvent extends CategoryBaseEvent{
 
 class FetchDeleteItemEvent extends CategoryBaseEvent{
   NewProducts? datum;
-  int productId;
+  String? productId;
   FetchDeleteItemEvent(this.productId,this.datum);
   @override
   List<Object> get props => [];

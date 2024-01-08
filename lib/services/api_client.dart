@@ -122,7 +122,7 @@ class ApiClient {
           mutation.themeCustomizationData(),
         ),
         cacheRereadPolicy: CacheRereadPolicy.mergeOptimistic,
-        fetchPolicy: FetchPolicy.cacheAndNetwork));
+        fetchPolicy: FetchPolicy.networkOnly));
 
     return handleResponse(
       response,

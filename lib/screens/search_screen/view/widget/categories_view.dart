@@ -41,6 +41,7 @@ class CategoriesView extends StatelessWidget {
                               arguments: CategoriesArguments(
                                   metaDescription: data?[index].description,
                                   categorySlug: data?[index].slug ?? "",
+                                  id: data?[index].categoryId.toString(),
                                   title: data?[index].name,
                                   image: data?[index].imageUrl));
                         },

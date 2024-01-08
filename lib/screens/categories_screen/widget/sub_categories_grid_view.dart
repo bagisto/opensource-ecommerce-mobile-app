@@ -60,7 +60,7 @@ class SubCategoriesGridView extends StatelessWidget {
               borderRadius: BorderRadius.circular(AppSizes.spacingNormal),
             ),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Stack(children: [
@@ -149,7 +149,7 @@ class SubCategoriesGridView extends StatelessWidget {
                           if (isLogin ?? false) {
                             if (data?.isInWishlist ?? false) {
                               subCategoryBloc?.add(FetchDeleteItemEvent(
-                                  int.parse(data?.id ?? ""), data));
+                                  data?.id ?? "", data));
                             } else {
                               subCategoryBloc?.add(
                                   FetchDeleteAddItemCategoryEvent(
@@ -174,7 +174,7 @@ class SubCategoriesGridView extends StatelessWidget {
                           subCategoryBloc?.add(OnClickSubCategoriesLoaderEvent(
                               isReqToShowLoader: true));
                           subCategoryBloc?.add(AddToCompareSubCategoryEvent(
-                              data?.productFlats?.firstOrNull?.id ?? "", ""));
+                              data?.id ?? "", ""));
                         } else {
                           ShowMessage.warningNotification(
                               StringConstants.pleaseLogin.localized(), context);

@@ -205,7 +205,7 @@ class _HomePagViewState extends State<HomePagView> {
 
         case "product_carousel":
           if ((widget.allProducts ?? []).isNotEmpty &&
-              productIndex < (widget.allProducts ?? []).length) {
+              productIndex < (widget.allProducts ?? []).length && (widget.allProducts?[productIndex]?.data ?? []).isNotEmpty) {
             homeWidgets.add(SizedBox(
                 height: (MediaQuery.of(context).size.width / 1.5) + 220,
                 child: NewProductView(

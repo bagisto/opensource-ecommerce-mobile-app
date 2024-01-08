@@ -107,10 +107,8 @@ class _CheckoutAddressViewState extends State<CheckoutAddressView> {
     if (state is CheckOutAddressState) {
       if (state.status == CheckOutStatus.success) {
         _addressModel = state.addressModel;
-        billingAddress ??= _addressModel?.addressData
-            ?.firstWhereOrNull((element) => element.isDefault ?? false);
-        shippingAddress ??= _addressModel?.addressData
-            ?.firstWhereOrNull((element) => element.isDefault ?? false);
+        billingAddress ??= _addressModel?.addressData?.firstWhereOrNull((element) => element.isDefault ?? false);
+        shippingAddress ??= _addressModel?.addressData?.firstWhereOrNull((element) => element.isDefault ?? false);
         if (billingAddress == null &&
             (_addressModel?.addressData?.isNotEmpty ?? false)) {
           billingAddress = _addressModel?.addressData?.first;

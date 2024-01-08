@@ -73,7 +73,7 @@ class OrderDetailTile extends StatelessWidget with OrderStatusBGColorHelper {
                               StringConstants.orderWithHash.localized() +
                                   (orderDetailModel?.incrementId ?? ""),
                               style: Theme.of(context).textTheme.headlineSmall),
-                          orderDetailModel?.status == StringConstants.pending
+                          orderDetailModel?.status?.toLowerCase() == StringConstants.pending.localized().toLowerCase()
                               ? ElevatedButton(
                                   style: ButtonStyle(
                                     minimumSize: MaterialStateProperty.all(

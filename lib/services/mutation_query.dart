@@ -2068,6 +2068,7 @@ class MutationsData {
           gender
           dateOfBirth
           email
+          imageUrl
           phone
           password
           token
