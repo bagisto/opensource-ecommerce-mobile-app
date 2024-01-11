@@ -117,7 +117,7 @@ Change the baseUrl  as per your store
 ```sh
 static const String baseUrl = ‘....’;
 ```
-> Note: Add the value of the complete URL ending with the GraphQL API endpoint. E.g - https://example.com/public/graphql 
+> Note: Add the value of the complete URL ending with the GraphQL API endpoint. E.g - https://example.com/graphql 
 
 ### For Theme
 
