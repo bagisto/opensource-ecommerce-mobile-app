@@ -2,6 +2,10 @@
 
 #### This changelog consists the bug & security fixes and new features being included in the releases listed below.
 
+## **v1.0.1 (17th of January 2024)** - *Release*
+
+*  Minor Bug fixes
+
 ## **v1.0.0 (8th of January 2024)** - *Release*
 
 * [Feature] Multi-locale support
