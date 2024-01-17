@@ -2,6 +2,7 @@ import 'package:bagisto_app_demo/screens/sign_up/utils/index.dart';
 
 import '../../../data_model/app_route_arguments.dart';
 import '../cart_index.dart';
+import '../util/check_downlodable.dart';
 
 class GuestCheckoutView extends StatelessWidget {
   final CartModel cartDetailsModel;
@@ -90,6 +91,7 @@ class GuestCheckoutView extends StatelessWidget {
                 color: Theme.of(context).colorScheme.onBackground,
                 textColor: Theme.of(context).colorScheme.background,
                 onPressed: () {
+                  bool downloadable = checkVirtualDownloadable(cartDetailsModel.items);
                   Navigator.pushNamed(context, checkoutScreen,
                       arguments: CartNavigationData(
                           total: cartDetailsModel.formattedPrice?.grandTotal
@@ -97,8 +99,7 @@ class GuestCheckoutView extends StatelessWidget {
                               "0",
                           cartDetailsModel: cartDetailsModel,
                           cartScreenBloc: cartScreenBloc,
-                          isDownloadable:
-                              checkDownloadable(cartDetailsModel.items)));
+                          isDownloadable: downloadable));
                 },
                 child: Text(
                   StringConstants.guestCheckoutLabel.localized().toUpperCase(),
@@ -109,15 +110,5 @@ class GuestCheckoutView extends StatelessWidget {
         ):const SizedBox.shrink(),
       ],
     );
-  }
-
-  bool checkDownloadable(List<Items>? items) {
-    for (Items product in (items ?? [])) {
-      if (product.type?.toLowerCase() != StringConstants.downloadable.toLowerCase() &&
-          (product.type?.toLowerCase() != StringConstants.virtual.toLowerCase())) {
-        return false;
-      }
-    }
-    return true;
   }
 }

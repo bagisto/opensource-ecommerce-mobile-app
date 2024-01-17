@@ -34,38 +34,14 @@ class _BundleOptionsViewState extends State<BundleOptionsView> {
   String? currentId;
   var bundleData = <dynamic, dynamic>{};
   List<BundleData> qtyArray = [];
-  List<String> vals = [];
+  double totalAmount = 0.0;
+  double radioTotal = 0.0;
+  double dropDownTotal = 0.0;
 
-  @override
-  void initState() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      getBundleData();
-    });
-    super.initState();
-  }
-
-  getBundleData() {
-    for (int i = 0; i < (widget.options?.length ?? 0); i++) {
-      for (int j = 0;
-          j < (widget.options?[i].bundleOptionProducts?.length ?? 0);
-          j++) {
-        vals.add(
-            (widget.options?[i].bundleOptionProducts?[j].id ?? '').toString());
-        qtyArray.add(BundleData(
-            bundleOptionId: widget
-                .options?[i].bundleOptionProducts?[j].productBundleOptionId
-                .toString(),
-            bundleOptionProductId: vals.toList()));
-        newData.add(qtyArray[i].toJson());
-      }
-    }
-    if (widget.callBack != null) {
-      widget.callBack!(newData);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
+
     return Container(
         alignment: Alignment.topLeft,
         padding: const EdgeInsets.all(12),
@@ -95,8 +71,16 @@ class _BundleOptionsViewState extends State<BundleOptionsView> {
                     default:
                       break;
                   }
-                  return Container();
-                })
+                  return const SizedBox();
+                }),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(StringConstants.totalAmount.localized(), style: Theme.of(context).textTheme.bodyMedium),
+                Text("${GlobalData.currencySymbol}$totalAmount", style: Theme.of(context).textTheme.titleLarge),
+              ],
+            ),
+            ...getWidgets(),
           ],
         ));
   }
@@ -123,10 +107,18 @@ class _BundleOptionsViewState extends State<BundleOptionsView> {
             RadioButtonGroup(
               key: Key(option?.id?.toString() ?? ''),
               labels: option?.bundleOptionProducts
-                  ?.map((e) => e.product?.productFlats?[0].name ?? '')
+                  ?.map((e) => "${e.product?.sku} + ${e.product?.priceHtml?.formattedFinalPrice}")
                   .toList(),
               onChange: (label, index) {
                 if ((option?.bundleOptionProducts?.length ?? 0) > index) {
+                  totalAmount = totalAmount - radioTotal;
+
+                  var product = option?.bundleOptionProducts?[index];
+                  double selectedAmount = ((product?.qty ?? 1)*double.parse(product?.product?.priceHtml?.finalPrice ?? "0"));
+                  radioTotal = selectedAmount;
+
+                  totalAmount = totalAmount + selectedAmount;
+
                   _updateQtyValue(int.parse(option?.id ?? ''),
                       option?.bundleOptionProducts?[index].qty ?? 0);
                   _updateOptions(
@@ -176,30 +168,22 @@ class _BundleOptionsViewState extends State<BundleOptionsView> {
                   checkColor: Theme.of(context).colorScheme.background,
                   labels: val?.toList(),
                   onChange: (isChecked, label, index, key) {
-                    var product = option?.bundleOptionProducts
-                        ?.firstWhereOrNull((element) {
-                      return element.product?.productFlats?.firstWhereOrNull(
-                              (element) => element.name == label) !=
-                          null;
+
+                    var product = option?.bundleOptionProducts?[index];
+
+                    setState(() {
+                      if (isChecked) {
+                        _updateQtyValue(int.parse(option?.id ?? '0'),
+                            product?.qty?.toString() ?? '1');
+                        _updateOptions(int.parse(option?.id ?? '0'),
+                            int.parse(product?.id ?? '1'), -1, false);
+                        totalAmount = totalAmount + ((product?.qty ?? 1)*double.parse(product?.product?.priceHtml?.finalPrice ?? "0"));
+                      } else {
+                        _updateOptions(int.parse(option?.id ?? ''), -1,
+                            int.parse(product?.id ?? '1'), false);
+                        totalAmount = totalAmount - ((product?.qty ?? 1)*double.parse(product?.product?.priceHtml?.finalPrice ?? "0"));
+                      }
                     });
-                    if (isChecked) {
-                      _updateQtyValue(int.parse(option?.id ?? '0'),
-                          product?.qty?.toString() ?? '1');
-                      _updateOptions(int.parse(option?.id ?? '0'),
-                          int.parse(product?.id ?? '1'), -1, false);
-                    } else {
-                      _updateOptions(int.parse(option?.id ?? ''), -1,
-                          int.parse(product?.id ?? '1'), false);
-                    }
-                  },
-                ),
-                QuantityView(
-                  qty: (bundleData['bundleOptionQuantity']
-                              as Map<String, dynamic>?)?[option?.id.toString()]
-                          ?.toString() ??
-                      '1',
-                  callBack: (qty) {
-                    _updateQtyValue(int.parse(option?.id ?? ''), qty);
                   },
                 ),
               ])
@@ -221,7 +205,7 @@ class _BundleOptionsViewState extends State<BundleOptionsView> {
                   Key(option?.id?.toString() ?? ''),
                   context,
                   option?.bundleOptionProducts
-                          ?.map((e) => e.product?.productFlats?[0].name ?? '')
+                          ?.map((e) => "${e.product?.sku} + ${e.product?.priceHtml?.formattedFinalPrice}")
                           .toList() ??
                       [],
                   option?.translations?.map((e) => e.label).toString(),
@@ -229,13 +213,19 @@ class _BundleOptionsViewState extends State<BundleOptionsView> {
                   null,
                   option?.translations?.map((e) => e.label).toString(),
                   (label, key) {
-                var product = option?.bundleOptionProducts?.firstWhere(
-                    (element) =>
-                        element.product?.productFlats?[0].name == label);
+
+                    totalAmount = totalAmount - dropDownTotal;
+
+                    var product = option?.bundleOptionProducts?.firstWhereOrNull((element) => label.contains(element.product?.sku ?? ""));
+                    double selectedAmount = ((product?.qty ?? 1)*double.parse(product?.product?.priceHtml?.finalPrice ?? "0"));
+                    dropDownTotal = selectedAmount;
+
+                    totalAmount = totalAmount + selectedAmount;
+
                 _updateQtyValue(int.parse(option?.id ?? ''),
                     product?.qty?.toString() ?? '1');
                 _updateOptions(int.parse(option?.id ?? ''),
-                    int.parse(product?.id ?? ''), -1, true);
+                    int.parse(product?.id ?? '1'), -1, true);
               }, false),
             ),
             QuantityView(
@@ -251,6 +241,7 @@ class _BundleOptionsViewState extends State<BundleOptionsView> {
   }
 
   _updateOptions(int id, int productId, int removeId, bool isReplace) {
+
     if (bundleData['bundleOptions'] != null) {
       if (bundleData['bundleOptions'][id.toString()] != null) {
         if (removeId != -1) {}
@@ -273,6 +264,29 @@ class _BundleOptionsViewState extends State<BundleOptionsView> {
         id.toString(): [productId]
       };
     }
+
+    Map<String, List<int>>? map = bundleData["bundleOptions"];
+
+    int i = 0;
+    qtyArray.clear();
+    newData.clear();
+
+    map?.forEach((key, value) {
+      if(value.isNotEmpty){
+        qtyArray.add(BundleData(
+            bundleOptionId: key,
+            bundleOptionProductId: [...value.map((el) => el.toString())]));
+
+        newData.add(qtyArray[i].toJson());
+        i++;
+      }
+    });
+
+    if (widget.callBack != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        widget.callBack!(newData);
+      });
+    }
   }
 
   _updateQtyValue(int id, dynamic qty) {
@@ -282,6 +296,31 @@ class _BundleOptionsViewState extends State<BundleOptionsView> {
     } else {
       bundleData['bundleOptionQuantity'] = {id.toString(): qty};
     }
+  }
+
+  List<Widget> getWidgets() {
+    List<Widget> widgets = [];
+
+    widget.options?.forEach((e) {
+      widgets.add(Text(
+        ApplicationLocalizations.of(context)?.translate(e
+            .translations
+            ?.map((e) => e.label)
+            .toString() ??
+            '') ??
+            '',
+        style: Theme.of(context).textTheme.bodyMedium,
+      ));
+
+      BundleOptions? val = widget.options?.firstWhereOrNull((option) => option.id == e.id);
+      List<int>? list = bundleData["bundleOptions"]?[e.id.toString()];
+      list?.forEach((element) {
+        BundleOptionProducts? temp = val?.bundleOptionProducts?.firstWhereOrNull((product) => product.id == element.toString());
+        widgets.add(Text("${temp?.qty ?? 1} x ${temp?.product?.name}"));
+      });
+    });
+
+    return widgets;
   }
 }
 

@@ -1,8 +1,10 @@
 abstract class DrawerEvent {}
 
 class FetchDrawerPageEvent extends DrawerEvent {
-  List<Map<String, dynamic>>? filters;
-  FetchDrawerPageEvent(this.filters);
+  int? categoryId;
+  FetchDrawerPageEvent(this.categoryId);
 
 }
 class CurrencyLanguageEvent extends DrawerEvent {}
+
+class FetchCMSDataEvent extends DrawerEvent {}

@@ -28,6 +28,19 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>For uploading profile image</string>
+	<key>CFBundleURLTypes</key>
+    	<array>
+    		<dict>
+    		    <key>CFBundleTypeRole</key>
+            	<string>Editor</string>
+    			<key>CFBundleURLName</key>
+    			<string>192.168.15.204</string>
+    			<key>CFBundleURLSchemes</key>
+    			<array>
+    				<string>http</string>
+    			</array>
+    		</dict>
+    	</array>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>For recognise voice phrases to search products</string>
 	<key>NSPhotoLibraryUsageDescription</key>

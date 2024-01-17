@@ -65,32 +65,31 @@ class CartListItem extends StatelessWidget {
                             url: AssetConstants.placeHolder,
                             height: MediaQuery.of(context).size.width / 3.5,
                           ),
-                          StatefulBuilder(builder: (context, changeState) {
-                            return QuantityView(
-                              qty: cartDetailsModel.items?[itemIndex].quantity
-                                  ?.toString() ??
-                                  "",
-                              showTitle: true,
-                              callBack: (val) {
-                                changeState(() {
-                                  cartDetailsModel
-                                      .items?[itemIndex].quantity = val;
-                                  var quantityChanged = true;
-                                  if(callBack != null){
-                                    callBack!(quantityChanged);
-                                  }
-                                });
-                                _itemChange({
-                                  "cartItemId": cartDetailsModel
-                                      .items?[itemIndex].id
-                                      .toString() ?? "",
-                                  "quantity": cartDetailsModel
-                                      .items?[itemIndex].quantity
-                                      .toString() ?? ""
-                                }, true);
-                              },
-                            );
-                          }),
+                          QuantityView(
+                            qty: cartDetailsModel.items?[itemIndex].quantity
+                                ?.toString() ??
+                                "",
+                            showTitle: true,
+                            setQuantity: true,
+                            callBack: (val) {
+                                cartDetailsModel
+                                    .items?[itemIndex].quantity = val;
+                                var quantityChanged = true;
+                                if(callBack != null){
+                                  callBack!(quantityChanged);
+                                }
+                              _itemChange({
+                                "cartItemId": cartDetailsModel
+                                    .items?[itemIndex].id
+                                    .toString() ?? "",
+                                "quantity": cartDetailsModel
+                                    .items?[itemIndex].quantity
+                                    .toString() ?? ""
+                              }, true, cartDetailsModel
+                                  .items?[itemIndex].id
+                                  .toString());
+                            },
+                          ),
                         ],
                       ),
                     ),
@@ -286,7 +285,8 @@ class CartListItem extends StatelessWidget {
     );
   }
 
-  void _itemChange(Map<dynamic, String> itemValue, bool isSelected) {
+  void _itemChange(Map<dynamic, String> itemValue, bool isSelected, String? id) {
+    selectedItems.removeWhere((element) => element["cartItemId"]==id);
     if (isSelected) {
       selectedItems.add(itemValue);
     } else {

@@ -62,9 +62,7 @@ class _SearchScreenState extends State<SearchScreen>
   void initState() {
     activateSpeechRecognizer();
     searchBloc = context.read<SearchBloc>();
-    searchBloc?.add(FetchCategoryPageEvent([
-      {"key": '\"parent_id\"', "value": '\"1\"'}
-    ]));
+    searchBloc?.add(FetchCategoryPageEvent(GlobalData.rootCategoryId));
     super.initState();
   }
 

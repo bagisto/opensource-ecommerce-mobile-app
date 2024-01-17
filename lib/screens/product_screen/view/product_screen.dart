@@ -95,7 +95,7 @@ class _ProductScreenState extends State<ProductScreen> {
               IconButton(
                   onPressed: () async {
                     await FlutterShare.share(
-                        title: productFlats?.name ?? productData?.productFlats?[0].name ?? "",
+                        title: widget.title ?? "",
                         text: '',
                         linkUrl: productData?.shareURL ?? "",
                         chooserTitle: '');
@@ -335,7 +335,6 @@ class _ProductScreenState extends State<ProductScreen> {
         return;
       }
     } else if (productData?.type == StringConstants.bundle) {
-      productData?.bundleOptions?.forEach((element) {
         if (bundleParams.isNotEmpty) {
           print("BundleParams-->$bundleParams");
           list.add(bundleParams);
@@ -355,7 +354,6 @@ class _ProductScreenState extends State<ProductScreen> {
               .add(OnClickProductLoaderEvent(isReqToShowLoader: false));
           return;
         }
-      });
     } else if (productData?.type == StringConstants.downloadable) {
       if (downloadLinks.isNotEmpty) {
         productScreenBLoc.add(AddToCartProductEvent(

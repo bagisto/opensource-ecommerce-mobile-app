@@ -79,7 +79,6 @@ class _CheckboxGroupState extends State<CheckboxGroup> {
 
       Text t =
           Text(widget.labels?.elementAt(i) ?? '', style: widget.labelStyle);
-
       content.add(Row(children: <Widget>[
         cb,
         Expanded(
@@ -91,8 +90,8 @@ class _CheckboxGroupState extends State<CheckboxGroup> {
           child: InkWell(
             onTap: () {
               DownloadFile().downloadPersonalData(
-                  widget.data?[i].url ?? widget.data?[i].sampleFileUrl ?? "",
-                  widget.data?[i].sampleFileName ?? "sample.jpg",
+                  widget.data?[i].sampleUrl ?? widget.data?[i].sampleFileUrl ?? "",
+                  widget.data?[i].sampleFileName ?? "sampleLink$i.jpg",
                   widget.data?[i].type ?? "",
                   context, GlobalKey());
             },

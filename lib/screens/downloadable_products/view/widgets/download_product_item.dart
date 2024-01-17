@@ -78,13 +78,14 @@ class DownloadProductItem extends StatelessWidget {
                       const SizedBox(height: 8),
                       Text((available == 0)
                           ? StringConstants.expired.localized()
-                          : (linkPurchases?.order?.status != StringConstants.pending
+                          : (linkPurchases?.order?.status?.toLowerCase() != StringConstants.pending.toLowerCase()
                               ? StringConstants.available.localized()
                               : StringConstants.pending.localized())),
                       const SizedBox(height: 8),
                       Text("${StringConstants.remainingDownloads.localized()} $available"),
                       const SizedBox(height: AppSizes.spacingLarge),
-                      DownloadButton(
+                      if(linkPurchases?.order?.status?.toLowerCase() != StringConstants.pending.toLowerCase())
+                        DownloadButton(
                         available: available,
                         downloadableProductsBloc: downloadableProductsBloc,
                         linkPurchases: linkPurchases,

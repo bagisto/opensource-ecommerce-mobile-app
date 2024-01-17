@@ -34,8 +34,9 @@ import '../bloc/fetch_add_address_state.dart';
 class AddNewAddress extends StatefulWidget {
   bool isEdit = false;
   AddressData? addressModel;
+  bool? isCheckout;
 
-  AddNewAddress(this.isEdit, this.addressModel, {Key? key}) : super(key: key);
+  AddNewAddress(this.isEdit, this.addressModel, {Key? key,this.isCheckout=false}) : super(key: key);
 
   @override
   State<AddNewAddress> createState() => _AddNewAddressState();
@@ -155,7 +156,7 @@ class _AddNewAddressState extends State<AddNewAddress>
                     lastName: lastNameController.text,
                     companyName: companyController.text,
                     vatId: vatIdController.text,
-                    address1: [street1Controller.text].toString(),
+                    address1: street1Controller.text.toString(),
                     country: selectedCountry?.code ?? countryCode,
                     countryName:
                         selectedCountry?.name ?? countryController.text,
@@ -175,7 +176,7 @@ class _AddNewAddressState extends State<AddNewAddress>
                       lastName: lastNameController.text,
                       companyName: companyController.text,
                       vatId: vatIdController.text,
-                      address1: [street1Controller.text].toString(),
+                      address1: street1Controller.text.toString(),
                       country: selectedCountry?.code ?? countryCode,
                       countryName:
                           selectedCountry?.name ?? countryController.text,
@@ -199,7 +200,7 @@ class _AddNewAddressState extends State<AddNewAddress>
                     context,
                     AddressData(
                       companyName: companyController.text,
-                      address1: [street1Controller.text].toString(),
+                      address1: street1Controller.text.toString(),
                       city: cityController.text,
                       state: selectedState?.code ?? "",
                       country: selectedCountry?.code ?? countryCode,
@@ -217,7 +218,7 @@ class _AddNewAddressState extends State<AddNewAddress>
                   context,
                   AddressData(
                     companyName: companyController.text,
-                    address1: [street1Controller.text].toString(),
+                    address1: street1Controller.text.toString(),
                     city: cityController.text,
                     state: selectedState?.code ?? "",
                     country: selectedCountry?.code ?? countryCode,
@@ -378,10 +379,10 @@ class _AddNewAddressState extends State<AddNewAddress>
                     return null;
                   },
                 ),
-                const SizedBox(height: AppSizes.spacingWide),
-                Text(StringConstants.vatIdNote.localized()),
-                const SizedBox(height: 6),
-                CommonWidgets().getTextField(
+                if(widget.isCheckout==false)const SizedBox(height: AppSizes.spacingWide),
+                if(widget.isCheckout==false)Text(StringConstants.vatIdNote.localized()),
+                if(widget.isCheckout==false)const SizedBox(height: 6),
+                if(widget.isCheckout==false)CommonWidgets().getTextField(
                   context,
                   vatIdController,
                    StringConstants.vatIdHint.localized(),

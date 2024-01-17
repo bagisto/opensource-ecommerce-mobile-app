@@ -38,8 +38,6 @@ class FetchHomeCustomData extends HomePageEvent {}
 
 class CustomerDetailsEvent extends HomePageEvent {}
 
-class FetchCMSDataEvent extends HomePageEvent {}
-
 class FetchHomePageCategoriesEvent extends HomePageEvent {
   List<Map<String, dynamic>>? filters;
   FetchHomePageCategoriesEvent({this.filters});
@@ -49,3 +47,4 @@ class OnClickLoaderEvent extends HomePageEvent {
   final bool? isReqToShowLoader;
   OnClickLoaderEvent({this.isReqToShowLoader});
 }
+

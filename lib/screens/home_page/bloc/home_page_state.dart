@@ -68,16 +68,6 @@ class CustomerDetailsState extends HomePageBaseState {
   CustomerDetailsState.fail({this.error}) : status = Status.fail;
 }
 
-class FetchCMSDataState extends HomePageBaseState {
-  Status? status;
-  String? error;
-  CmsData? cmsData;
-
-  FetchCMSDataState.success({this.cmsData}) : status = Status.success;
-
-  FetchCMSDataState.fail({this.error}) : status = Status.fail;
-}
-
 class FetchAddWishlistHomepageState extends HomePageBaseState {
   Status? status;
   String? successMsg = "";

@@ -51,7 +51,7 @@ class SearchBloc extends Bloc<SearchBaseEvent,SearchBaseState>{
     }
     if (event is FetchCategoryPageEvent) {
       try {
-        GetDrawerCategoriesData? getDrawerCategoriesData = await repository?.getCategoriesList(filters: event.filters);
+        GetDrawerCategoriesData? getDrawerCategoriesData = await repository?.getCategoriesList(id: event.categoryId);
         if (getDrawerCategoriesData?.responseStatus == true) {
           emit (FetchCategoriesPageDataState.success(getCategoriesData: getDrawerCategoriesData));
         } else {

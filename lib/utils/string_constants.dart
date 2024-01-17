@@ -330,6 +330,7 @@ class StringConstants {
   static const String addReviewImage = "addReviewImage";
   static const String noShippingMsg = "noShippingMsg";
   static const String sample = "sample";
+  static const String totalAmount = "totalAmount";
 
 
 }

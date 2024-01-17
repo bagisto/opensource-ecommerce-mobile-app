@@ -1,5 +1,62 @@
 class MutationsData {
-  String homeCategories({List<Map<String, dynamic>>? filters}) {
+  String homeCategories({int id = 1}) {
+    return """
+    query homeCategories {
+    homeCategories(id: $id)
+        {
+        id
+        categoryId
+        position
+        logoPath
+        logoUrl
+        status
+        displayMode
+        Lft
+        Rgt
+        parentId
+        additional
+        bannerPath
+        bannerUrl
+        name
+        slug
+        urlPath
+        description
+        metaTitle
+        metaDescription
+        metaKeywords
+        localeId
+        createdAt
+        updatedAt
+        filterableAttributes {
+            id
+            adminName
+            code
+            type
+            position
+        }
+        children {
+            id
+            name
+            description
+            slug
+            urlPath
+            logoPath
+            logoUrl
+            bannerPath
+            bannerUrl
+            metaTitle
+            metaDescription
+            metaKeywords
+            position
+            status
+            displayMode
+            parentId
+        }
+      }
+    }""";
+  }
+
+  String homeCategoriesFilters({List<Map<String, dynamic>>? filters}) {
     return """
     query homeCategories {
     homeCategories(input: $filters)
@@ -25,7 +82,6 @@ class MutationsData {
         metaDescription
         metaKeywords
         localeId
-        locale
         createdAt
         updatedAt
         filterableAttributes {
@@ -281,8 +337,7 @@ class MutationsData {
         status
         baseUrl
         translations {
-            id
-            themeCustomizationId
+           
             locale
             options {
                 css
@@ -577,6 +632,7 @@ class MutationsData {
                 password
                 token
                 status
+                imageUrl
             }     
         }
     }""";
@@ -1439,56 +1495,7 @@ class MutationsData {
                     formattedRegularPriceTo
                 }
             }
-            configutableData {
-            chooseText
-            attributes {
-                id
-                code
-                label
-                swatchType
-                options {
-                    id
-                    label
-                    swatchType
-                }
-            }
-            index {
-                id
-                attributeOptionIds {
-                    attributeId
-                    attributeCode
-                    attributeOptionId
-                }
-            }
-            variantPrices {
-                id
-                regularPrice {
-                    price
-                    formatedPrice
-                }
-                finalPrice {
-                    price
-                    formatedPrice
-                }
-            }
-            variantImages {
-                id
-                images {
-                    smallImageUrl
-                    mediumImageUrl
-                    largeImageUrl
-                    originalImageUrl
-                }
-            }
-            variantVideos {
-                id
-                videos
-            }
-            regularPrice {
-                formatedPrice
-                price
-            }
-          }
+            
             sku
             parentId
             productFlats {
@@ -1789,6 +1796,8 @@ class MutationsData {
                     productId
                     product {
                      sku
+                     name
+                     id
                      priceHtml {
                             id
                             type
@@ -3673,7 +3682,7 @@ class MutationsData {
         state: "$billingState"
         postcode: "$billingPostCode"
         phone: "$billingPhone"
-        useForShipping: true
+        useForShipping: false
         isSaved: false
     }
     shipping: {

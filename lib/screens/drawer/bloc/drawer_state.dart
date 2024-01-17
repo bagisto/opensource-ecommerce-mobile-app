@@ -1,15 +1,14 @@
-import 'package:equatable/equatable.dart';
 import '../../../data_model/currency_language_model.dart';
+import '../../cms_screen/data_model/cms_model.dart';
 import '../../home_page/data_model/get_categories_drawer_data_model.dart';
 
 // ignore_for_file: must_be_immutable
-abstract class DrawerPageBaseState extends Equatable {}
+abstract class DrawerPageBaseState {}
 
 enum DrawerStatus { success, fail }
 
 class InitialState extends DrawerPageBaseState {
-  @override
-  List<Object> get props => [];
+
 }
 
 class FetchDrawerPageDataState extends DrawerPageBaseState {
@@ -23,9 +22,7 @@ class FetchDrawerPageDataState extends DrawerPageBaseState {
 
   FetchDrawerPageDataState.fail({this.error}) : status = DrawerStatus.fail;
 
-  @override
-  List<Object> get props =>
-      [if (getCategoriesDrawerData != null) getCategoriesDrawerData! else ""];
+
 }
 
 class FetchLanguageCurrencyState extends DrawerPageBaseState {
@@ -38,7 +35,15 @@ class FetchLanguageCurrencyState extends DrawerPageBaseState {
 
   FetchLanguageCurrencyState.fail({this.error}) : status = DrawerStatus.fail;
 
-  @override
-  List<Object> get props =>
-      [if (currencyLanguageList != null) currencyLanguageList! else ""];
+
+}
+
+class FetchCMSDataState extends DrawerPageBaseState {
+  DrawerStatus? status;
+  String? error;
+  CmsData? cmsData;
+
+  FetchCMSDataState.success({this.cmsData}) : status = DrawerStatus.success;
+
+  FetchCMSDataState.fail({this.error}) : status = DrawerStatus.fail;
 }

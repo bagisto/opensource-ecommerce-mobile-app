@@ -69,6 +69,9 @@ import '../screens/dashboard/view/dashboard.dart';
 import '../screens/downloadable_products/bloc/dowbloadable_products_repository.dart';
 import '../screens/downloadable_products/bloc/downloadable_products_bloc.dart';
 import '../screens/downloadable_products/view/downloadable_products.dart';
+import '../screens/drawer_sub_categories/bloc/drawer_sub_categories_bloc.dart';
+import '../screens/drawer_sub_categories/bloc/drawer_sub_categories_repository.dart';
+import '../screens/drawer_sub_categories/drawer_sub_categories.dart';
 import '../screens/home_page/utils/route_argument_helper.dart';
 import '../screens/orders/bloc/order_list_bloc.dart';
 import '../screens/orders/bloc/order_list_repo.dart';
@@ -224,7 +227,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       return MaterialPageRoute(
         builder: (_) => BlocProvider(
           create: (context)=> AddEditAddressBloc(AddEditAddressRepositoryImp()),
-          child: AddNewAddress(data.isEdit ?? false, data.addressModel),
+          child: AddNewAddress(data.isEdit ?? false, data.addressModel, isCheckout: data.isCheckout),
         ),
       );
 
@@ -290,6 +293,14 @@ Route<dynamic> generateRoute(RouteSettings settings) {
               create: (context) => DownloadableProductsBloc(
                   DownloadableProductsRepositoryImp()),
               child: const DownLoadableScreen()));
+
+    case drawerSubCategoryScreen:
+      CategoriesArguments data = settings.arguments as CategoriesArguments;
+      return MaterialPageRoute(
+          builder: (_) => BlocProvider(
+              create: (context) => DrawerSubCategoriesBloc(
+                  DrawerSubCategoryRepo()),
+              child: DrawerSubCategoryView(id: data.id, title: data.title)));
 
     default:
       return MaterialPageRoute(

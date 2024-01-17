@@ -31,7 +31,6 @@ class HomePagView extends StatefulWidget {
   final bool isLoading;
   final bool isLogin;
   final GetDrawerCategoriesData? getCategoriesData;
-  final List<NewProductsModel?>? allProducts;
   final HomePageBloc? homePageBloc;
 
   const HomePagView(
@@ -39,7 +38,6 @@ class HomePagView extends StatefulWidget {
     this.isLoading,
     this.getCategoriesData,
     this.isLogin,
-    this.allProducts,
     this.homePageBloc, {
     Key? key,
   }) : super(key: key);
@@ -50,15 +48,25 @@ class HomePagView extends StatefulWidget {
 
 class _HomePagViewState extends State<HomePagView> {
   final _scrollController = ScrollController();
-  final TextEditingController _searchController = TextEditingController();
   List<double> _htmlHeight = [];
 
   @override
   void initState() {
+    _registerStreamListener();
     _htmlHeight = List.generate(
         widget.customHomeData?.themeCustomization?.length ?? 0, (index) => 1);
     super.initState();
   }
+
+  _registerStreamListener(){
+    if(mounted) {
+      GlobalData.productsStream.stream.listen((event) {
+        setState(() {});
+        GlobalData.allProducts?.add(event);
+      });
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -88,9 +96,9 @@ class _HomePagViewState extends State<HomePagView> {
           ],
         ),
         onRefresh: () {
-          return Future.delayed(const Duration(seconds: 1), () {
-            HomePageBloc homePageBloc = context.read<HomePageBloc>();
-            homePageBloc.add(FetchHomeCustomData());
+          HomePageBloc homePageBloc = context.read<HomePageBloc>();
+          homePageBloc.add(FetchHomeCustomData());
+          return Future.delayed(const Duration(seconds: 4), () {
           });
         },
       ),
@@ -100,7 +108,7 @@ class _HomePagViewState extends State<HomePagView> {
   Widget buildCategories(Size size) {
     return (widget.getCategoriesData?.data ?? []).isNotEmpty ?
      Container(
-      color: Colors.white,
+      color: Theme.of(context).colorScheme.primary,
       width: AppSizes.screenWidth,
       height: AppSizes.screenHeight / 4,
       margin: const EdgeInsets.symmetric(vertical: AppSizes.size12),
@@ -204,15 +212,15 @@ class _HomePagViewState extends State<HomePagView> {
           break;
 
         case "product_carousel":
-          if ((widget.allProducts ?? []).isNotEmpty &&
-              productIndex < (widget.allProducts ?? []).length && (widget.allProducts?[productIndex]?.data ?? []).isNotEmpty) {
+          if ((GlobalData.allProducts ?? []).isNotEmpty &&
+              productIndex < (GlobalData.allProducts ?? []).length && (GlobalData.allProducts?[productIndex]?.data ?? []).isNotEmpty) {
             homeWidgets.add(SizedBox(
                 height: (MediaQuery.of(context).size.width / 1.5) + 220,
                 child: NewProductView(
                   title:
                       element.translations?.firstOrNull?.options?.title ?? "",
                   isLogin: widget.isLogin,
-                  model: widget.allProducts?[productIndex]?.data,
+                  model: GlobalData.allProducts?[productIndex]?.data,
                 )));
             productIndex++;
           }
@@ -229,7 +237,7 @@ class _HomePagViewState extends State<HomePagView> {
         const SizedBox(
           height: AppSizes.spacingNormal,
         ),
-        if (widget.allProducts?.isNotEmpty == true)
+        if (GlobalData.allProducts?.isNotEmpty == true)
           buildReachBottomView(context, _scrollController)
       ],
     ));

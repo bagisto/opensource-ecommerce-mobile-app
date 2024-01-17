@@ -60,9 +60,14 @@ class _CheckoutAddressViewState extends State<CheckoutAddressView> {
   AddressData? shippingAddress;
   String? email;
   bool? isUser;
+  CheckOutBloc? checkOutBloc;
 
   @override
   void initState() {
+    checkOutBloc = context.read<CheckOutBloc>();
+    if (_addressModel == null) {
+      checkOutBloc?.add(CheckOutAddressEvent());
+    }
     getSharePreferenceEmail().then((value) {
       setState(() {
         email = value;
@@ -90,10 +95,6 @@ class _CheckoutAddressViewState extends State<CheckoutAddressView> {
 
   ///ADDRESS BLOC CONTAINER///
   _addressBloc(BuildContext context) {
-    CheckOutBloc checkOutBloc = context.read<CheckOutBloc>();
-    if (_addressModel == null) {
-      checkOutBloc.add(CheckOutAddressEvent());
-    }
     return BlocConsumer<CheckOutBloc, CheckOutBaseState>(
       listener: (BuildContext context, CheckOutBaseState state) {},
       builder: (BuildContext context, CheckOutBaseState state) {
@@ -143,6 +144,7 @@ class _CheckoutAddressViewState extends State<CheckoutAddressView> {
             int.parse(shippingAddress?.id ?? "0")
           );
         }
+
         return _addressList();
       }
 

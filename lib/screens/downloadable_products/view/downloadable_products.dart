@@ -1,3 +1,4 @@
+import 'package:bagisto_app_demo/screens/account/view/account_screen.dart';
 import 'package:bagisto_app_demo/screens/downloadable_products/bloc/downloadable_products_bloc.dart';
 import 'package:bagisto_app_demo/screens/downloadable_products/bloc/downlaodable_products_state.dart';
 import 'package:bagisto_app_demo/screens/downloadable_products/view/widgets/download_product_item.dart';
@@ -95,10 +96,10 @@ class _DownLoadableScreenState extends State<DownLoadableScreen> {
     }
     if (state is DownloadProductState) {
       downloadLink = state.downloadLink;
-      DownloadFile().saveBase64String(
-          downloadLink?.string ?? "",
-          (downloadLink?.download?.name ?? "") +
-              (downloadLink?.download?.fileName ?? "image.jpg"));
+      DownloadFile().downloadPersonalData(
+          downloadLink?.download?.url ?? "",
+          (downloadLink?.download?.name ?? "product"),
+              downloadLink?.download?.type ?? "", context, scaffoldMessengerKey);
     }
     if (state is DownloadableProductsCustomerDataState) {
       productsList = state.productsList;

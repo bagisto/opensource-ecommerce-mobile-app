@@ -15,7 +15,7 @@ import 'package:bagisto_app_demo/screens/cart_screen/cart_index.dart';
 Widget buildReachBottomView(
     BuildContext context, ScrollController scrollController) {
   return Container(
-    color: Colors.white,
+    color: Theme.of(context).colorScheme.primary,
     width: MediaQuery.of(context).size.width,
     padding: const EdgeInsets.only(
       top: AppSizes.size12,
