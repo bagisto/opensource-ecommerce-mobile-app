@@ -274,7 +274,7 @@ class _ChangeEmailAndPasswordState extends State<ChangeEmailAndPassword>
                     _onPressYesDeleteAccount();
                   } else {
                     ShowMessage.warningNotification(
-                        "",context);
+                        StringConstants.validPasswordLabel.localized(),context);
                   }
                 },
                 child: Text(
@@ -291,24 +291,20 @@ class _ChangeEmailAndPasswordState extends State<ChangeEmailAndPassword>
         barrierDismissible: false,
         builder: (BuildContext context) {
           return Dialog(
-            backgroundColor: Colors.transparent,
-            child: Container(
-              color: Colors.transparent,
-              padding: const EdgeInsets.all(AppSizes.spacingWide),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const SizedBox(
-                    height: AppSizes.spacingMedium,
-                  ),
-                  CircularProgressIndicatorClass.circularProgressIndicator(
-                      context),
-                  const SizedBox(height:AppSizes.spacingWide),
-                  const SizedBox(
-                    height: AppSizes.spacingMedium,
-                  ),
-                ],
-              ),
+            backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(
+                  height: AppSizes.spacingMedium,
+                ),
+                CircularProgressIndicatorClass.circularProgressIndicator(
+                    context),
+                const SizedBox(height:AppSizes.spacingWide),
+                const SizedBox(
+                  height: AppSizes.spacingMedium,
+                ),
+              ],
             ),
           );
         });

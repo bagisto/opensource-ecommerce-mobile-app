@@ -260,7 +260,7 @@ class SubCategoriesGridView extends StatelessWidget {
                       MediaQuery.of(context).size.width, () {
                       subCategoryBloc?.add(
                         OnClickSubCategoriesLoaderEvent(isReqToShowLoader: true));
-                    if (data?.type == StringConstants.simple) {
+                    if (data?.type == StringConstants.simple || data?.type == StringConstants.virtual) {
                       var dict = <String, dynamic>{};
                       dict['product_id'] = data?.id ?? '';
                       dict['quantity'] = 1;

@@ -5,10 +5,11 @@ import 'package:bagisto_app_demo/screens/cart_screen/cart_index.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../utils/index.dart';
 
+//ignore: must_be_immutable
 class ProfileImageView extends StatefulWidget {
-  final Function(String? base64string)? callback;
+  Function(String? base64string)? callback;
 
-  const ProfileImageView({Key? key, this.callback}) : super(key: key);
+  ProfileImageView({Key? key, this.callback}) : super(key: key);
 
   @override
   State<ProfileImageView> createState() => _ProfileImageViewState();
@@ -54,7 +55,7 @@ class _ProfileImageViewState extends State<ProfileImageView> {
                 foregroundImage: (image != null)
                     ? FileImage(File(image!.path))
                     : (profileImageEdit.isNotEmpty)
-                        ? NetworkImage(profileImageEdit)
+                        ? NetworkImage('$profileImageEdit?${DateTime.now().millisecondsSinceEpoch.toString()}')
                         : Image.asset(
                                 'assets/images/customer_profile_placeholder.png')
                             .image,

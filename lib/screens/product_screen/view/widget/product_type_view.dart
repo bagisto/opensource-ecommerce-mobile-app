@@ -145,7 +145,7 @@ class _ProductTypeViewState extends State<ProductTypeView> {
           const SizedBox(
             height: 8,
           ),
-        if (widget.productData?.type != StringConstants.grouped && (widget.productData?.type != StringConstants.bundle))
+        if (widget.productData?.type != StringConstants.grouped)
           Card(
             elevation: 2,
             child: StatefulBuilder(builder: (context, changeState) {

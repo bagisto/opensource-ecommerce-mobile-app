@@ -36,7 +36,7 @@ class DownloadButton extends StatelessWidget {
         ),
       ),
       onPressed: (available != 0 &&
-              (linkPurchases?.order?.status == StringConstants.completed))
+              (linkPurchases?.order?.status?.toLowerCase() == StringConstants.completed.toLowerCase()))
           ? () {
               if ((linkPurchases != null)) {
                 int id = int.tryParse(linkPurchases?.id ?? "0") ?? 0;

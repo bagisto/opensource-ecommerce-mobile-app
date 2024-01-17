@@ -8,10 +8,10 @@
  * @link https://store.webkul.com/license.html
  */
 
-// ignore_for_file: empty_catches
 
 import 'dart:convert';
 import 'dart:io';
+import 'package:bagisto_app_demo/utils/server_configuration.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -20,90 +20,70 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
 
+
+
 class DownloadFile {
-  var tag = "DownloadFile";
+  var tag = "DownloadInvoice ";
   String savePath = "";
-  TargetPlatform? platform = TargetPlatform.android;
   String _localPath = "";
   AndroidDeviceInfo? android;
+  TargetPlatform? platform = TargetPlatform.android;
 
-  Future downloadPersonalData(
-      String url,
-      String fileName,
+  Future downloadPersonalData(String url,
+      String fileNames,
       String fileType,
       BuildContext context,
       GlobalKey<ScaffoldMessengerState>? scaffoldMessengerKey) async {
-    if (fileType.isNotEmpty) {
-      try {
-        Dio dio = Dio();
-        if (Platform.isAndroid) {
-          platform = TargetPlatform.android;
-        } else {
-          platform = TargetPlatform.iOS;
-        }
-        var status = await Permission.storage.status;
-        DeviceInfoPlugin plugin = DeviceInfoPlugin();
-        if (Platform.isAndroid) {
-          android = await plugin.androidInfo;
-        }
-        if (((android?.version.sdkInt ?? 30) < 33) || Platform.isIOS) {
-          if (status.isGranted) {
-            getDownload(dio, url, fileName, fileType, context);
-          } else if (status.isDenied) {
-            Permission.storage.request();
+    try {
+      Dio dio = Dio();
+      var status = await Permission.storage.status;
+      if (status.isGranted) {
+        debugPrint("${tag}permission is granted");
+        String fileName = fileNames ?? "product";
+        savePath = await getFilePath(fileName);
+
+        ShowMessage.successNotification(StringConstants.downloading.localized(), context);
+
+        await dio.download(url, savePath,
+            onReceiveProgress: (received, total) {
+              debugPrint("$tag Download started received$received total $total");
+            });
+        const platform = MethodChannel(defaultChannelName);
+        try {
+          if (Platform.isAndroid) {
+            await platform.invokeMethod('fileviewer', savePath);
+          } else {
+            await platform.invokeMethod('fileviewer', fileName);
           }
-        } else {
-          getDownload(dio, url, fileName, fileType, context);
+        } on PlatformException catch (e) {
+          debugPrint("Failed ${e.toString()}");
         }
-      } catch (e) {
-        debugPrint("${tag}exception while downloading invoice $e");
+
+        ShowMessage.successNotification(StringConstants.downloadCompleted.localized(), context);
+
+      } else if (status.isDenied) {
+        Permission.storage.request();
+        debugPrint("${tag}permission is denied ->requesting");
       }
+    } catch (e) {
+      debugPrint("${tag}exception while downloading $e");
     }
   }
 
-  Future<String?> _findLocalPath() async {
-    if (platform == TargetPlatform.android) {
-      return "/sdcard/download";
-    } else {
-      var directory = await getApplicationDocumentsDirectory();
-      return '${directory.path}${Platform.pathSeparator}Download';
-    }
-  }
 
-  Future<void> _prepareSaveDir() async {
-    _localPath = (await _findLocalPath())!;
-    final savedDir = Directory(_localPath);
-    bool hasExisted = await savedDir.exists();
-    if (!hasExisted) {
-      savedDir.create();
-    }
-  }
-
-  void getDownload(
-      Dio dio, String url, String fileName, String fileType, BuildContext context) async {
-    await _prepareSaveDir();
-
-    if(context.mounted) {
-      ShowMessage.successNotification(StringConstants.downloading.localized(), context);
-    }
-
-    await dio.download(url, "$_localPath/$fileName",
-        onReceiveProgress: (received, total) {
-      if (total != -1) {
-        double progress = (received / total) * 100;
-        debugPrint('Rec: $received , Total: $total, $progress%');
-      }
-    });
-
-    if(context.mounted) {
-      ShowMessage.successNotification(StringConstants.downloadCompleted.localized(), context);
-    }
+  Future<String> getFilePath(fileName) async {
+    String path = '';
+    Directory? dir =  Platform.isAndroid
+        ? await getExternalStorageDirectory() //FOR ANDROID
+        : await getApplicationDocumentsDirectory();
+    path = '${dir?.path}/$fileName';
+    return path;
   }
 
   Future saveBase64String(
-    String stringUrl,
-    String fileName,
-  ) async {
+      String stringUrl,
+      String fileName,
+      ) async {
     if (stringUrl.isNotEmpty) {
       try {
         if (Platform.isAndroid) {
@@ -134,11 +114,12 @@ class DownloadFile {
   }
 
   Future<void> _createFileFromString(String stringUrl, String fileName) async {
-    await _prepareSaveDir();
-    String url = stringUrl.substring(22);
+    _localPath = await getFilePath(fileName);
+    String url = stringUrl.substring(23);
     Uint8List bytes = base64.decode(url);
     String dir = _localPath;
-    File file = File("$dir/" + fileName);
+    File file = File("$dir/$fileName");
     await file.writeAsBytes(bytes);
   }
+
 }

@@ -452,7 +452,7 @@
   "sellerCollections" : "Seller Collections",
   "taxAmount": "Tax Amount",
   "taxPercent" : "Tax Percent",
-  "TotalAmount": "Total Amount: ",
+  "totalAmount": "Total Amount: ",
   "TotalEarning": "Total Earning: ",
   "TotalDiscount": "Total Discount: ",
   "adminCommission": "Admin Commission: ",

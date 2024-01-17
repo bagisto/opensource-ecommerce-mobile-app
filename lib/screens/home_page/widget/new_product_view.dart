@@ -47,7 +47,7 @@ class _NewProductViewState extends State<NewProductView> {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: AppSizes.size8),
-      color: Colors.white,
+      color: Theme.of(context).colorScheme.primary,
       padding: const EdgeInsets.all(AppSizes.size8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -176,7 +176,7 @@ class _NewProductViewState extends State<NewProductView> {
                                         : Container(
                                             color: Colors.transparent,
                                           ),
-                                Positioned(
+                                if(widget.isRecentProduct == false) Positioned(
                                   right: AppSizes.spacingNormal,
                                   top: 10,
                                   child: InkWell(
@@ -227,7 +227,7 @@ class _NewProductViewState extends State<NewProductView> {
                                       child: wishlistIcon(context,
                                           widget.model?[index].isInWishlist)),
                                 ),
-                                Positioned(
+                                if(widget.isRecentProduct == false) Positioned(
                                   right: 8.0,
                                   top: 45,
                                   child: InkWell(
@@ -305,7 +305,7 @@ class _NewProductViewState extends State<NewProductView> {
                                                 ?.type) ==
                                             StringConstants.simple ||
                                         widget.model?[index].type ==
-                                            StringConstants.simple) {
+                                            StringConstants.simple || widget.model?[index].type == StringConstants.virtual) {
                                       homepageEvent(
                                           widget.model?[index],
                                           HomePageAction.addToCart,

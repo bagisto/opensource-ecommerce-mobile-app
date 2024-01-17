@@ -18,6 +18,7 @@ class QuantityView extends StatefulWidget {
   String qty;
   Widget? subTitle;
   int minimum;
+  bool setQuantity;
   ValueChanged<int>? callBack;
 
   QuantityView(
@@ -27,7 +28,7 @@ class QuantityView extends StatefulWidget {
       this.showTitle= false,
       this.title = StringConstants.quantity,
       this.subTitle,
-      this.qty = "1"})
+      this.qty = "1", this.setQuantity = false})
       : super(key: key);
 
   @override
@@ -53,6 +54,10 @@ class _QuantityViewState extends State<QuantityView> {
   @override
   Widget build(BuildContext context) {
     // _updateQty();
+    if(widget.setQuantity){
+      controller.text = widget.qty;
+    }
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [

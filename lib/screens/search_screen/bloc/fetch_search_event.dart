@@ -18,9 +18,9 @@ class FetchSearchEvent extends SearchBaseEvent {
 }
 
 class FetchCategoryPageEvent extends SearchBaseEvent {
-  List<Map<String, dynamic>> filters;
+  int? categoryId;
 
-  FetchCategoryPageEvent(this.filters);
+  FetchCategoryPageEvent(this.categoryId);
 }
 
 class CircularBarEvent extends SearchBaseEvent{

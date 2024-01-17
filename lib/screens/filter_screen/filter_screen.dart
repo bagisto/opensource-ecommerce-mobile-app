@@ -160,7 +160,8 @@ class _SubCategoriesFilterScreenState extends State<SubCategoriesFilterScreen> {
                         separatorBuilder: (BuildContext context, int index) {
                           return Container(
                             height: 12.0,
-                            color: Colors.grey.shade200,
+                            color: Theme.of(context).brightness==Brightness.light?Colors.grey.shade200:
+                            Theme.of(context).colorScheme.primary,
                           );
                         },
                       ),
@@ -195,46 +196,50 @@ class _SubCategoriesFilterScreenState extends State<SubCategoriesFilterScreen> {
             ),
           const Divider(),
           title == "Price"
-              ? RangeSlider(
-                min: 0,
-                max: 500,
-                // divisions: 10,
-                activeColor: Theme.of(context).colorScheme.onBackground,
-                inactiveColor: Colors.grey.shade300,
-                labels: RangeLabels(
-                  startPriceValue.toString(),
-                  endPriceValue.toString(),
+              ? SliderTheme(
+                data: const SliderThemeData(
+                    showValueIndicator: ShowValueIndicator.always
                 ),
-                values: RangeValues(startPriceValue, endPriceValue),
-                onChanged: (RangeValues value) {
-                  setState(() {
+                child: RangeSlider(
+                  min: 0,
+                  max: 500,
+                  activeColor: Theme.of(context).colorScheme.onBackground,
+                  inactiveColor: Colors.grey.shade300,
+                  labels: RangeLabels(
+                    startPriceValue.toString(),
+                    endPriceValue.toString(),
+                  ),
+                  values: RangeValues(startPriceValue, endPriceValue),
+                  onChanged: (RangeValues value) {
+                    setState(() {
 
-                    widget.filters.removeWhere((element) => element["key"] == '\"$code\"');
+                      widget.filters.removeWhere((element) => element["key"] == '\"$code\"');
 
-                    widget.filters.add({
-                      "key": '\"$code\"',
-                      "value": '\"${value.start}, ${value.end}\"'
+                      widget.filters.add({
+                        "key": '\"$code\"',
+                        "value": '\"${value.start}, ${value.end}\"'
+                      });
+
+                      temp[code]?.clear();
+                      superAttributes.clear();
+                      startPriceValue = value.start.ceilToDouble();
+                      endPriceValue = value.end.ceilToDouble();
+
+                      temp[code]?.add("\"$startPriceValue\"");
+                      temp[code]?.add("\"$endPriceValue\"");
+                      temp.forEach((key, value) {
+                        if (value.isNotEmpty) {
+                          Map<String, dynamic> colorMap = {
+                            "key": '\"$key\"',
+                            "value": value
+                          };
+                          superAttributes.add(colorMap);
+                        }
+                      });
+                      currentFilter = superAttributes;
                     });
-
-                    temp[code]?.clear();
-                    superAttributes.clear();
-                    startPriceValue = value.start.ceilToDouble();
-                    endPriceValue = value.end.ceilToDouble();
-
-                    temp[code]?.add("\"$startPriceValue\"");
-                    temp[code]?.add("\"$endPriceValue\"");
-                    temp.forEach((key, value) {
-                      if (value.isNotEmpty) {
-                        Map<String, dynamic> colorMap = {
-                          "key": '\"$key\"',
-                          "value": value
-                        };
-                        superAttributes.add(colorMap);
-                      }
-                    });
-                    currentFilter = superAttributes;
-                  });
-                },
+                  },
+                ),
               )
               : const SizedBox(),
           ListView.separated(

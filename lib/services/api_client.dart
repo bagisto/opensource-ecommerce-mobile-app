@@ -87,10 +87,10 @@ class ApiClient {
   }
 
   Future<GetDrawerCategoriesData?> homeCategories(
-      {List<Map<String, dynamic>>? filters}) async {
+      {int? id, List<Map<String, dynamic>>? filters}) async {
     var response = await (client.clientToQuery()).query(QueryOptions(
         document: gql(
-          mutation.homeCategories(filters: filters ?? []),
+          (filters ?? []).isNotEmpty ? mutation.homeCategoriesFilters(filters: filters) : mutation.homeCategories(id: id ?? 1),
         ),
         fetchPolicy: FetchPolicy.networkOnly));
 

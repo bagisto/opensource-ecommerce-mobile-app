@@ -66,7 +66,7 @@ class _DownloadProductSampleState extends State<DownloadProductSample> {
                               onTap: () {
                                 DownloadFile().downloadPersonalData(
                                     widget.samples?[i].url ?? widget.samples?[i].fileUrl ?? "",
-                                    widget.samples?[i].fileName ?? "sample.jpg",
+                                    widget.samples?[i].fileName ?? "sample$i.jpg",
                                     widget.samples?[i].type ?? "",
                                     context,
                                     widget.scaffoldMessengerKey);

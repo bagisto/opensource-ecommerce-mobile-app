@@ -459,12 +459,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                   }
                                 } else {
                                   setState(() {
-                                    // if ((widget.isDownloadable ?? false) &&
-                                    //     currentIndex == 1) {
-                                    //   currentIndex = currentIndex + 2;
-                                    // } else {
-                                    //   currentIndex = currentIndex + 1;
-                                    // }
                                     currentIndex = currentIndex + 1;
                                   });
                                 }

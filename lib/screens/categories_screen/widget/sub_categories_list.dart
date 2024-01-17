@@ -200,7 +200,7 @@ class SubCategoriesList extends StatelessWidget {
                             subCategoryBloc?.add(
                                 OnClickSubCategoriesLoaderEvent(
                                     isReqToShowLoader: true));
-                            if (data?.type == StringConstants.simple) {
+                            if (data?.type == StringConstants.simple || data?.type == StringConstants.virtual) {
                               CategoryBloc subCategories =
                                   context.read<CategoryBloc>();
 

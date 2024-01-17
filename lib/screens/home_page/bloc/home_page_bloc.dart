@@ -14,6 +14,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../data_model/account_models/account_info_details.dart';
 import '../../../data_model/add_to_wishlist_model/add_wishlist_model.dart';
 import '../../../data_model/graphql_base_model.dart';
+import '../../../utils/app_global_data.dart';
 import '../../../utils/string_constants.dart';
 import '../../cart_screen/cart_model/add_to_cart_model.dart';
 import '../../cms_screen/data_model/cms_model.dart';
@@ -133,9 +134,8 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageBaseState> {
       try {
         NewProductsModel? products =
             await repository?.getAllProducts(filters: event.filters);
-        emit(FetchAllProductsState.success(
-          allProducts: products,
-        ));
+        GlobalData.productsStream.sink.add(products);
+        emit(FetchAllProductsState.success(allProducts: products));
       } catch (e) {
         emit(FetchAllProductsState.fail(error: StringConstants.somethingWrong.localized()));
       }
@@ -157,14 +157,6 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageBaseState> {
             accountInfoDetails: accountInfoDetails));
       } catch (e) {
         emit(CustomerDetailsState.fail(error: StringConstants.somethingWrong.localized()));
-      }
-    }
-    if (event is FetchCMSDataEvent) {
-      try {
-        CmsData? cmsData = await repository?.callCmsData("");
-        emit(FetchCMSDataState.success(cmsData: cmsData));
-      } catch (e) {
-        emit(FetchCMSDataState.fail(error: StringConstants.somethingWrong.localized()));
       }
     }
     if (event is FetchHomePageCategoriesEvent) {

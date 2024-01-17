@@ -5,10 +5,10 @@ import '../../../../utils/index.dart';
 import 'profile_image_view.dart';
 import 'change_email_pass_view.dart';
 
+//ignore: must_be_immutable
 class ProfileDetailView extends StatefulWidget {
-  final GlobalKey<FormState> formKey;
-
-  const ProfileDetailView({Key? key, required this.formKey}) : super(key: key);
+  GlobalKey<FormState> formKey;
+  ProfileDetailView({Key? key, required this.formKey}) : super(key: key);
 
   @override
   State<ProfileDetailView> createState() => _ProfileDetailViewState();

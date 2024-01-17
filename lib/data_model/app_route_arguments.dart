@@ -30,8 +30,9 @@ class CmsDataContent {
 class AddressNavigationData {
   bool? isEdit;
   AddressData? addressModel;
+  bool? isCheckout;
 
-  AddressNavigationData({this.isEdit, this.addressModel});
+  AddressNavigationData({this.isEdit, this.addressModel, this.isCheckout});
 }
 
 ///class used to send data on checkout

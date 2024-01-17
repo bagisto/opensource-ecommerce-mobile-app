@@ -50,9 +50,9 @@ class PushNotificationsManager {
   }
 
   Future<StyleInformation?> getNotificationStyle(String? image) async {
-    if (image != null) {
+    if ((image ?? "").isNotEmpty) {
       final ByteData imageData =
-          await NetworkAssetBundle(Uri.parse(image)).load("");
+          await NetworkAssetBundle(Uri.parse(image!)).load("");
       return BigPictureStyleInformation(
           ByteArrayAndroidBitmap(imageData.buffer.asUint8List()));
     } else {
@@ -92,9 +92,9 @@ class PushNotificationsManager {
 
   subscribeToTopic() {
     if (Platform.isIOS) {
-      _firebaseMessaging.subscribeToTopic("Bagisto-iOS");
+      _firebaseMessaging.subscribeToTopic("Bagisto_mobikul");
     } else {
-      _firebaseMessaging.subscribeToTopic("Bagisto-Android");
+      _firebaseMessaging.subscribeToTopic("Bagisto_mobikul");
     }
   }
 
@@ -104,22 +104,26 @@ class PushNotificationsManager {
     createFcmToken();
     subscribeToTopic();
 
-    if (Platform.isIOS) {}
-
     //When app is in Working state
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
       RemoteNotification? notification = message.notification;
       debugPrint('on message ${message.data}');
       debugPrint("onMessageNotification${message.notification?.body}");
-      String? title = notification?.title;
-      String? body = notification?.body;
+      String title = notification?.title ?? "";
+      String body = notification?.body ?? "";
+
+      RegExp exp = RegExp(r"<[^>]*>",multiLine: true,caseSensitive: true);
+      String parsedString = body.replaceAll(exp, ' ').trim();
+
+      body = parsedString;
+
       String? imageUrl = "";
       if (Platform.isAndroid) {
         imageUrl = message.data['attachment'];
       } else {
         imageUrl = message.data['attachment'];
       }
-      showNotification(title!, body!, json.encode(message.data), imageUrl);
+      showNotification(title, body, json.encode(message.data), imageUrl);
     });
 
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {

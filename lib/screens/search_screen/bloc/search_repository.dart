@@ -17,7 +17,7 @@ import '../../home_page/data_model/new_product_data.dart';
 
 abstract class SearchRepository {
   Future<NewProductsModel?> callSearchAPi(List<Map<String, dynamic>>? filters);
-  Future<GetDrawerCategoriesData> getCategoriesList({List<Map<String, dynamic>>? filters});
+  Future<GetDrawerCategoriesData> getCategoriesList({int? id});
 }
 
 class SearchRepositoryImp implements SearchRepository {
@@ -36,10 +36,10 @@ class SearchRepositoryImp implements SearchRepository {
 
   @override
   Future<GetDrawerCategoriesData> getCategoriesList(
-      {List<Map<String, dynamic>>? filters}) async {
+      {int? id}) async {
     GetDrawerCategoriesData? getDrawerCategoriesData;
     try {
-      getDrawerCategoriesData = await ApiClient().homeCategories(filters: filters);
+      getDrawerCategoriesData = await ApiClient().homeCategories(id: id);
     }catch (error, stacktrace) {
       debugPrint("Error --> $error");
       debugPrint("StackTrace --> $stacktrace");

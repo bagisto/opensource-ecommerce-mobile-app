@@ -15,6 +15,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../data_model/currency_language_model.dart';
 import '../../../utils/string_constants.dart';
+import '../../cms_screen/data_model/cms_model.dart';
 import '../../home_page/data_model/get_categories_drawer_data_model.dart';
 import 'drawer_events.dart';
 import 'drawer_repository.dart';
@@ -32,7 +33,7 @@ class DrawerBloc extends Bloc<DrawerEvent, DrawerPageBaseState> {
     if (event is FetchDrawerPageEvent) {
       try {
         GetDrawerCategoriesData? getDrawerCategoriesData =
-        await repository?.getDrawerCategoriesList(event.filters);
+        await repository?.getDrawerCategoriesList(event.categoryId);
         if (getDrawerCategoriesData?.responseStatus == true) {
           emit(FetchDrawerPageDataState.success(
               getCategoriesDrawerData: getDrawerCategoriesData));
@@ -58,6 +59,14 @@ class DrawerBloc extends Bloc<DrawerEvent, DrawerPageBaseState> {
         }
       } catch (e) {
         emit(FetchLanguageCurrencyState.fail(error:StringConstants.somethingWrong.localized()));
+      }
+    }
+    if (event is FetchCMSDataEvent) {
+      try {
+        CmsData? cmsData = await repository?.callCmsData("");
+        emit(FetchCMSDataState.success(cmsData: cmsData));
+      } catch (e) {
+        emit(FetchCMSDataState.fail(error: StringConstants.somethingWrong.localized()));
       }
     }
   }

@@ -37,8 +37,7 @@ import 'package:provider/provider.dart';
 String? token;
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp();
-  debugPrint('Handling a background message ${message.messageId}');
+  debugPrint('Handling a background message ${message.toMap()}');
 }
 
 AndroidNotificationChannel channel = const AndroidNotificationChannel(
@@ -137,23 +136,9 @@ class _BagistoAppState extends State<BagistoApp> {
   void initState() {
     _locale = Locale(GlobalData.locale ?? defaultStoreCode);
     PushNotificationsManager.instance.setUpFirebase(context);
-    // getToken();
-    // getSubscription();
     super.initState();
   }
 
-  getToken() async {
-    String? fcmToken = await FirebaseMessaging.instance.getToken();
-    setState(() {
-      token = fcmToken;
-    });
-    debugPrint("Token===>$fcmToken");
-  }
-
-  getSubscription() async {
-    FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
-        alert: true, badge: true, sound: true);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -163,10 +148,9 @@ class _BagistoAppState extends State<BagistoApp> {
       child: Consumer<ThemeProvider>(
           builder: (context, ThemeProvider themeNotifier, child) {
         return MaterialApp(
-          theme: themeNotifier.isDark == 'true'
-              ? MobikulTheme.darkTheme
-              : MobikulTheme.lightTheme,
+          theme: MobikulTheme.lightTheme,
           themeMode: ThemeMode.system,
+          darkTheme: MobikulTheme.darkTheme,
           initialRoute: appRoot,
           onGenerateRoute: generateRoute,
           title: "Bagisto App",

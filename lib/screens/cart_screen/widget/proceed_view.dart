@@ -2,6 +2,7 @@
 import 'package:bagisto_app_demo/screens/sign_up/utils/index.dart';
 import '../../../data_model/app_route_arguments.dart';
 import '../cart_index.dart';
+import '../util/check_downlodable.dart';
 import 'guest_checkout_view.dart';
 
 class ProceedView extends StatelessWidget {
@@ -71,7 +72,7 @@ class ProceedView extends StatelessWidget {
                                 .toString() ?? "0",
                             cartDetailsModel: cartDetailsModel,
                             cartScreenBloc: cartScreenBloc,
-                            isDownloadable: checkDownloadable(cartDetailsModel.items)));
+                            isDownloadable: checkVirtualDownloadable(cartDetailsModel.items)));
                     }
                   } else {
                     if(context.mounted){
@@ -97,15 +98,5 @@ class ProceedView extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  bool checkDownloadable(List<Items>? items) {
-    for (Items product in (items ?? [])) {
-      if (product.type?.toLowerCase() != StringConstants.downloadable.toLowerCase() &&
-          (product.type?.toLowerCase() != StringConstants.virtual.toLowerCase())) {
-        return false;
-      }
-    }
-    return true;
   }
 }

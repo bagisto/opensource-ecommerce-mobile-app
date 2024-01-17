@@ -452,7 +452,7 @@
   "sellerCollections": "مجموعات البائع",
   "taxAmount": "قيمة الضريبة",
   "taxPercent": "نسبة الضريبة",
-  "TotalAmount": "المبلغ الإجمالي: ",
+  "totalAmount": "المبلغ الإجمالي: ",
   "TotalEarning": "مجموع الأرباح: ",
   "TotalDiscount": "إجمالي الخصم: ",
   "adminCommission": "لجنة المشرف: ",

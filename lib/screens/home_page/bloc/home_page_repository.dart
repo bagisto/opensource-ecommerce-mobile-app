@@ -19,7 +19,6 @@ abstract class HomePageRepository {
   Future<Advertisements?> cartCountApi();
   Future<GraphQlBaseModel?>  removeItemFromWishlist(String? wishListProductId);
   Future<AccountInfoDetails?> callAccountDetailsApi(); //
-  Future<CmsData?> callCmsData(String id);
   Future<NewProductsModel?> getAllProducts(
       {List<Map<String, dynamic>>? filters});
   Future<GetDrawerCategoriesData?> getHomeCategoriesList(
@@ -141,19 +140,6 @@ class HomePageRepositoryImp implements HomePageRepository {
       debugPrint("StackTrace --> $stacktrace");
     }
     return accountInfoDetails;
-  }
-
-  @override
-  Future<CmsData?> callCmsData(String id) async {
-    CmsData? cmsData;
-    try{
-      cmsData=await ApiClient().getCmsPagesData();
-    }
-    catch(error,stacktrace){
-      debugPrint("Error --> $error");
-      debugPrint("StackTrace --> $stacktrace");
-    }
-    return cmsData;
   }
 
   @override

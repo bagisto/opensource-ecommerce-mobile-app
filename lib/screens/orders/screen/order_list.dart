@@ -389,7 +389,7 @@ class _OrdersListState extends State<OrdersList> with OrderStatusBGColorHelper {
                             status: status?[_currentStatus] == StringConstants.all.localized()
                                 ? ""
                                 : status?[_currentStatus],
-                            total: double.tryParse(total.text ?? "0"),
+                            total: double.tryParse(total.text),
                             page: page
                           ));
                           Navigator.pop(context);

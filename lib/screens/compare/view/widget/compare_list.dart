@@ -219,7 +219,8 @@ class CompareList extends StatelessWidget {
                             compareScreenBloc?.add(OnClickCompareLoaderEvent(
                                 isReqToShowLoader: true));
                             if (compareScreenModel
-                                    .data?[index].product?.type == StringConstants.simple) {
+                                    .data?[index].product?.type == StringConstants.simple || compareScreenModel
+                                .data?[index].product?.type == StringConstants.virtual) {
                               compareScreenBloc?.add(AddToCartCompareEvent(
                                   (compareScreenModel.data?[index].product?.id ??
                                       ""),

@@ -109,7 +109,7 @@ class WishlistItemList extends StatelessWidget {
                             StringConstants.addToCart.localized(),
                             MediaQuery.of(context).size.width, () {
                           if (model?.data?[index].product?.type ==
-                              StringConstants.simple) {
+                              StringConstants.simple || model?.data?[index].product?.type == StringConstants.virtual) {
                             wishListBloc?.add(OnClickWishListLoaderEvent(
                                 isReqToShowLoader: true));
 

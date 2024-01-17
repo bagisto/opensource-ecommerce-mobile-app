@@ -9,12 +9,16 @@
  */
 
 import 'dart:async';
+import 'dart:io';
 import 'package:bagisto_app_demo/screens/home_page/utils/fetch_shared_pref_helper.dart';
+import 'package:bagisto_app_demo/screens/home_page/utils/route_argument_helper.dart';
 import 'package:bagisto_app_demo/screens/home_page/widget/home_page_loader_view.dart';
 import 'package:bagisto_app_demo/screens/home_page/widget/home_page_view.dart';
 import 'package:bagisto_app_demo/utils/application_localization.dart';
+import 'package:bagisto_app_demo/utils/route_constants.dart';
 import 'package:bagisto_app_demo/widgets/common_app_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:hive/hive.dart';
@@ -22,6 +26,7 @@ import '../../data_model/account_models/account_info_details.dart';
 import '../../data_model/currency_language_model.dart';
 import '../../services/graph_ql.dart';
 import '../../utils/app_global_data.dart';
+import '../../utils/server_configuration.dart';
 import '../../utils/shared_preference_helper.dart';
 import '../../utils/string_constants.dart';
 import '../../utils/theme_provider.dart';
@@ -70,10 +75,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     _fetchSharedPreferenceData();
     drawerBloc = context.read<DrawerBloc>();
-    drawerBloc?.add(FetchDrawerPageEvent([{
-      "key": '\"parent_id\"',
-      "value": '\"1\"'
-    }]));
+    drawerBloc?.add(FetchDrawerPageEvent(GlobalData.rootCategoryId));
     getSharePreferenceCartCount().then((value) {
       _myStreamCtrl.sink.add(value);
     });
@@ -86,7 +88,6 @@ class _HomeScreenState extends State<HomeScreen> {
     fetchHomepageData();
     fetchOfflineProductData();
     getLanguageCode().then((value) => GlobalData.locale = value);
-    homePageBloc?.add(FetchCMSDataEvent());
     super.initState();
   }
 
@@ -121,6 +122,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    checkForDeepLink().then((value) => debugPrint("data ---> $value"));
     return createClient();
   }
 
@@ -128,7 +130,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Directionality(
       textDirection: GlobalData.contentDirection(),
       child: Scaffold(
-        backgroundColor: Colors.grey.shade200,
+        backgroundColor: Theme.of(context).brightness==Brightness.light?Colors.grey.shade200: Theme.of(context).colorScheme.primary,
         appBar: CommonAppBar(StringConstants.builderAppName.localized()),
         drawer: _drawerData(context),
         body: buildView(context),
@@ -155,11 +157,20 @@ class _HomeScreenState extends State<HomeScreen> {
         }
         if (state is FetchLanguageCurrencyState) {
           if (state.status == DrawerStatus.success) {
+            GlobalData.rootCategoryId = state.currencyLanguageList?.rootCategoryId ?? 1;
             currencyLanguageList = state.currencyLanguageList!;
             GlobalData.languageData = state.currencyLanguageList?.locales;
+            GlobalData.currencySymbol = state.currencyLanguageList?.baseCurrency?.symbol;
           }
-          homePageBloc?.add(FetchCMSDataEvent());
+          drawerBloc?.add(FetchCMSDataEvent());
         }
+        if (state is FetchCMSDataState) {
+          cmsData = state.cmsData;
+          if(isLoggedIn){
+            homePageBloc?.add(CustomerDetailsEvent());
+          }
+        }
+
         return getCategoriesDrawerData != null
             ? DrawerListView(
           getDrawerCategoriesData: getCategoriesDrawerData!,
@@ -171,6 +182,11 @@ class _HomeScreenState extends State<HomeScreen> {
           currencyLanguageList: currencyLanguageList,
           customerDetails: customerDetails,
           customerLanguage: customerLanguage,
+          loginCallback: (isLogged){
+            setState(() {
+              isLoggedIn = isLogged;
+            });
+          },
         )
             : const SizedBox();
       },
@@ -285,42 +301,19 @@ class _HomeScreenState extends State<HomeScreen> {
     if (state is FetchHomeCustomDataState) {
       if (state.status == Status.success) {
         allProducts?.clear();
+        GlobalData.allProducts?.clear();
         customHomeData = state.homepageSliders;
-        (customHomeData?.themeCustomization?.forEach((element) {
-          List<Map<String, dynamic>>? filters = [];
 
-          if(element.type == "category_carousel"){
-            element.translations?.firstOrNull?.options?.filters?.forEach((element) {
-              filters.add({
-                "key": '\"${element.key}\"',
-                "value": '\"${element.value}\"'
-              });
-            });
-            homePageBloc?.add(FetchHomePageCategoriesEvent(filters: filters));
-          }
-          else if(element.type == "product_carousel"){
-            filters.clear();
-            element.translations?.firstOrNull?.options?.filters?.forEach((element) {
-              filters.add({
-                "key": '\"${element.key}\"',
-                "value": '\"${element.value}\"'
-              });
-            });
-            homePageBloc?.add(FetchAllProductsEvent(filters));
-          }
-        }));
+        getHomePageData(customHomeData);
+
       } else if (state.status == Status.fail) {}
-    }
-    if (state is FetchCMSDataState) {
-      cmsData = state.cmsData;
-      if(isLoggedIn){
-        homePageBloc?.add(CustomerDetailsEvent());
-      }
     }
 
     if (state is CustomerDetailsState) {
       if (state.status == Status.success) {
         customerDetails = state.accountInfoDetails;
+          image = customerDetails?.data?.imageUrl;
+          SharedPreferenceHelper.setCustomerImage(image ?? "");
       }
       if (state.status == Status.fail) {}
     }
@@ -339,7 +332,6 @@ class _HomeScreenState extends State<HomeScreen> {
         isLoading,
         getHomeCategoriesData,
         isLoggedIn,
-        allProducts,
         homePageBloc
     );
   }
@@ -368,5 +360,67 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     });
   }
+
+  var methodChannel = const MethodChannel(defaultChannelName);
+
+  Future<String> checkForDeepLink() async {
+    try {
+      if (Platform.isAndroid) {
+        var data = await methodChannel.invokeMethod('initialLink');
+          var splitData = data.toString().split("/");
+          Navigator.of(context).pushNamed(productScreen,
+              arguments: PassProductData(
+                title: splitData.last,
+                urlKey: splitData.last,
+                productId: 1,
+              ));
+        return data;
+      } else if (Platform.isIOS) {
+        var data = await methodChannel.invokeMethod('uni_links/events');
+          var splitData = data.toString().split("/");
+          Navigator.of(context).pushNamed(productScreen,
+              arguments: PassProductData(
+                title: splitData.last,
+                urlKey: splitData.last,
+                productId: 1,
+              ));
+        return data;
+      } else {
+        return 'OS NOT SUPPORTED';
+      }
+    } on PlatformException catch (e) {
+      return "Failed to Invoke: '${e.message}'.";
+    }
+  }
+
+  Future<void> getHomePageData(ThemeCustomDataModel? customHomeData) async {
+    customHomeData?.themeCustomization ??= [];
+    await Future.wait(customHomeData!.themeCustomization!.map((element) async {
+      List<Map<String, dynamic>>? filters = [];
+
+      if(element.type == "category_carousel"){
+        element.translations?.firstOrNull?.options?.filters?.forEach((element) {
+          filters.add({
+            "key": '\"${element.key}\"',
+            "value": '\"${element.value}\"'
+          });
+        });
+        homePageBloc?.add(FetchHomePageCategoriesEvent(filters: filters));
+      }
+      else if(element.type == "product_carousel"){
+        filters.clear();
+        element.translations?.firstOrNull?.options?.filters?.forEach((element) {
+          filters.add({
+            "key": '\"${element.key}\"',
+            "value": '\"${element.value}\"'
+          });
+        });
+        homePageBloc?.add(FetchAllProductsEvent(filters));
+      }
+
+      await Future.delayed(const Duration(milliseconds: 100));
+    }));
+  }
+
 }
 

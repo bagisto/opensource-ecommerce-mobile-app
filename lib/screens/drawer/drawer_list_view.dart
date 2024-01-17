@@ -8,7 +8,6 @@ import '../../data_model/currency_language_model.dart';
 import '../../main.dart';
 import '../../utils/assets_constants.dart';
 import '../../utils/check_internet_connection.dart';
-import '../../widgets/image_view.dart';
 import '../cms_screen/data_model/cms_model.dart';
 import '../cms_screen/widgets/cms_item_list.dart';
 import '../home_page/data_model/get_categories_drawer_data_model.dart';
@@ -28,6 +27,7 @@ class DrawerListView extends StatefulWidget {
   final CurrencyLanguageList? currencyLanguageList;
   final String? customerCurrency;
   final dynamic setupQuickActions;
+  final Function? loginCallback;
 
   DrawerListView({
     Key? key,
@@ -41,6 +41,7 @@ class DrawerListView extends StatefulWidget {
     required this.customerCurrency,
     this.customerDetails,
     this.setupQuickActions,
+    this.loginCallback
   }) : super(key: key);
 
   @override
@@ -246,7 +247,7 @@ class _DrawerListViewState extends State<DrawerListView> {
     widget.isLoggedIn
         ? drawerList.add(LogoutButton(
             customerDetails: widget.customerDetails,
-            fetchSharedPreferenceData: _fetchSharedPreferenceData(),
+            fetchSharedPreferenceData: _fetchSharedPreferenceData,
           ))
         : const SizedBox();
 
@@ -345,6 +346,9 @@ class _DrawerListViewState extends State<DrawerListView> {
 
   _fetchSharedPreferenceData() async {
     getCustomerLoggedInPrefValue().then((isLogged) {
+      if(widget.loginCallback != null){
+        widget.loginCallback!(isLogged);
+      }
       if (isLogged) {
         SharedPreferenceHelper.getCustomerName().then((value) {
           setState(() {

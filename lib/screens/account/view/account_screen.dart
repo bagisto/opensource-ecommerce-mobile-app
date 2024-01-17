@@ -48,6 +48,7 @@ GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
 
 class _AccountScreenState extends State<AccountScreen>
     with EmailValidator, PhoneNumberValidator {
+
   @override
   void initState() {
     isLoad = true;

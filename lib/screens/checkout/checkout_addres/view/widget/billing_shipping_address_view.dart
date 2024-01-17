@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../../../data_model/app_route_arguments.dart';
 import '../../../../../../utils/assets_constants.dart';
 import '../../../../address_list/data_model/address_model.dart';
+import '../../bloc/checkout_bloc.dart';
 
 // ignore: must_be_immutable
 class BillingAndShippingAddressView extends StatefulWidget {
@@ -11,6 +12,7 @@ class BillingAndShippingAddressView extends StatefulWidget {
   AddressData? billingAddress;
   final String? title;
   final AddressModel? addressModel;
+
   Function(
       String? billingCompanyName,
       String? billingFirstName,
@@ -116,7 +118,7 @@ class _BillingAndShippingAddressViewState
                               widget.billingAddress?.lastName,
                               widget.billingAddress?.address1,
                               widget.billingAddress?.address1,
-                              widget.billingAddress?.country,
+                              widget.billingAddress?.countryName,
                               widget.billingAddress?.state,
                               widget.billingAddress?.city,
                               widget.billingAddress?.postcode,
@@ -126,7 +128,7 @@ class _BillingAndShippingAddressViewState
                               widget.shippingAddress?.lastName,
                               widget.shippingAddress?.address1,
                               widget.shippingAddress?.address1,
-                              widget.shippingAddress?.country,
+                              widget.shippingAddress?.countryName,
                               widget.shippingAddress?.state,
                               widget.shippingAddress?.city,
                               widget.shippingAddress?.postcode,
@@ -188,7 +190,7 @@ class _BillingAndShippingAddressViewState
                                       widget.billingAddress?.lastName,
                                       widget.billingAddress?.address1,
                                       widget.billingAddress?.address1,
-                                      widget.billingAddress?.country,
+                                      widget.billingAddress?.countryName,
                                       widget.billingAddress?.state,
                                       widget.billingAddress?.city,
                                       widget.billingAddress?.postcode,
@@ -198,7 +200,7 @@ class _BillingAndShippingAddressViewState
                                       widget.shippingAddress?.lastName,
                                       widget.shippingAddress?.address1,
                                       widget.shippingAddress?.address1,
-                                      widget.shippingAddress?.country,
+                                      widget.shippingAddress?.countryName,
                                       widget.shippingAddress?.state,
                                       widget.shippingAddress?.city,
                                       widget.shippingAddress?.postcode,
@@ -306,75 +308,6 @@ class _BillingAndShippingAddressViewState
                         ),
                       )
                     : const SizedBox(),
-                widget.address != null
-                    ? Expanded(
-                        flex: 1,
-                        child: MaterialButton(
-                          onPressed: () {
-                            Navigator.pushNamed(context, addAddressScreen,
-                                    arguments: AddressNavigationData(
-                                        isEdit: true,
-                                        addressModel: widget.address))
-                                .then((value) {
-                              if (value is AddressData) {
-                                widget.address = value;
-                                if (widget.title == StringConstants.billingAddress) {
-                                  setState(() {
-                                    widget.billingAddress = value;
-                                  });
-                                } else {
-                                  setState(() {
-                                    widget.shippingAddress = value;
-                                  });
-                                }
-                                if (widget.callBack != null) {
-                                  widget.callBack!(
-                                    widget.billingAddress?.companyName,
-                                    widget.billingAddress?.firstName,
-                                    widget.billingAddress?.lastName,
-                                    widget.billingAddress?.address1,
-                                    widget.billingAddress?.address1,
-                                    widget.billingAddress?.country,
-                                    widget.billingAddress?.state,
-                                    widget.billingAddress?.city,
-                                    widget.billingAddress?.postcode,
-                                    widget.billingAddress?.phone,
-                                    widget.shippingAddress?.companyName,
-                                    widget.shippingAddress?.firstName,
-                                    widget.shippingAddress?.lastName,
-                                    widget.shippingAddress?.address1,
-                                    widget.shippingAddress?.address1,
-                                    widget.shippingAddress?.country,
-                                    widget.shippingAddress?.state,
-                                    widget.shippingAddress?.city,
-                                    widget.shippingAddress?.postcode,
-                                    widget.shippingAddress?.phone,
-                                      int.parse(widget.billingAddress?.id ?? "0"),
-                                      int.parse(widget.shippingAddress?.id ?? "0")
-                                  );
-                                }
-                              }
-                            });
-                          },
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.edit,
-                                size: AppSizes.spacingWide,
-                                color: Theme.of(context).colorScheme.onPrimary,
-                              ),
-                              Text(StringConstants.edit.localized(),
-                                style: Theme.of(context).textTheme.bodyMedium,
-                              )
-                            ],
-                          ),
-                        ),
-                      )
-                    : Container(
-                        width: 0,
-                      ),
               ],
             ),
           ]),

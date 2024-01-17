@@ -35,6 +35,7 @@ const String orderListScreen = 'orderListScreen';
 const String addReviewScreen = 'addReviewScreen';
 const String compareScreen = 'compareScreen';
 const String downloadableProductScreen = 'downloadableProductScreen';
+const String drawerSubCategoryScreen = 'drawerSubCategoryScreen';
 
 
 
