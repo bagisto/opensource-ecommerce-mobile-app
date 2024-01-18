@@ -83,6 +83,20 @@ cd <repository-name>
 ```sh
 flutter pub get
 ```
+### Generate Required files
+
+- Navigate to the project's directory
+
+```sh
+cd <repository-name>
+```
+
+- Run the following command to generate the required files
+
+```sh
+flutter pub run build_runner build --delete-conflicting-outputs 
+```
+
 ### Connect a device or emulator
 
 * Physical Device
