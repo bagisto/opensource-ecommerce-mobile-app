@@ -3,8 +3,12 @@
 #### This changelog consists the bug & security fixes and new features being included in the releases listed below.
 
 ## **v1.0.1 (17th of January 2024)** - *Release*
-
-*  Minor Bug fixes
+*  Virtual Product Order Place Issue.
+*  Add Address issue while checkout.
+*  Bundle product price details not updating.
+*  User unable to add virtual product from homepage.
+*  Push notifications issue fixed
+*  User Profile image Update issue.
 
 ## **v1.0.0 (8th of January 2024)** - *Release*
 
