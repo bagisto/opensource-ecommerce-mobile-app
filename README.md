@@ -10,9 +10,9 @@
 # Open Source eCommerce Mobile App
 
 
-[Bagisto](https://bagisto.com/en/) revolutionizes the world of mobile commerce with its open-source eCommerce mobile app solution. This app seamlessly transforms your Bagisto store into a powerful mobile platform, providing real-time synchronization of products and categories. With a user-friendly interface, managing orders becomes a breeze, making it an essential tool for both tech-savvy individuals and those new to eCommerce.
+[Bagisto](https://bagisto.com/en/) revolutionizes the world of mobile commerce with its open-source eCommerce mobile app solution. This open-source mobile ecommerce app seamlessly transforms your Bagisto store into a powerful mobile platform, providing real-time synchronization of products and categories. With a user-friendly interface, managing orders becomes a breeze, making it an essential tool for tech-savvy individuals and those new to eCommerce.
 
-This mobile app, built on the foundation of the Bagisto eCommerce framework and leveraging the robust Laravel stack, offers a plethora of features for a comprehensive and efficient mobile shopping experience. The app ensures easy product information management and accelerates time-to-market for your products, all while giving you complete control over your store.
+This mobile app, built on the foundation of the Bagisto eCommerce framework and leveraging the robust Laravel stack, offers many features for a comprehensive and efficient mobile shopping experience. The app ensures easy product information management and accelerates time-to-market for your products, all while giving you complete control over your store.
 
 ## Features
 
