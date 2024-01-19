@@ -194,8 +194,8 @@ Replace "GoogleService-Info.plist".
 ```
 ### For App Icon
 
-* **Android:** open the Android folder right click app > new > Image Asset set Image.
-* **iOS:** ios/Runner/Assets.xcassets/AppIcon.appiconset
+* **Android:** open the android folder in Android Studio and then right click app > new > Image Asset set Image.
+* **iOS:** Replace the icons over the path > ios/Runner/Assets.xcassets/AppIcon.appiconset
 
 ## API Documentation
 
