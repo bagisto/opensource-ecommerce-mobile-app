@@ -14,35 +14,33 @@
 
 This mobile app, built on the foundation of the Bagisto eCommerce framework and leveraging the robust Laravel stack, offers many features for a comprehensive and efficient mobile shopping experience. The app ensures easy product information management and accelerates time-to-market for your products, all while giving you complete control over your store.
 
-## Features
+# Features
 
-- Multi-locale support
-  
-- Product share
+The opensource ecommerce mobile app comes with an array of features aimed at improving shopping experience for your customers. 
 
-- Product Search
+## All Type Product Supported
 
-- Wishlist
+![enter image description here](https://raw.githubusercontent.com/bagisto/temp-media/master/img2%20(1).png)
 
-- Compare Product
+## Dark Mode and Push Notification
 
-- All Type Product Supported
+![enter image description here](https://raw.githubusercontent.com/bagisto/temp-media/master/img6.png)
 
-- Multi-Currency Support
+## Discount Coupons and Guest Checkout
 
-- Dark Mode Supported
+![enter image description here](https://raw.githubusercontent.com/bagisto/temp-media/master/img5.png)
 
-- Product Review
+## Wishlist and Compare Product 
 
-- Coupons Supported
+![enter image description here](https://raw.githubusercontent.com/bagisto/temp-media/master/img4.png)
 
-- Guest Checkout
+## Share and Product Reviews
 
-- Push Notification
+![enter image description here](https://raw.githubusercontent.com/bagisto/temp-media/master/img3.png)
 
-- Complete Customer end features of the ecommerce app
+## Interactive Home Page and Search
 
-- Compatible with Bagisto v2.0.0
+![enter image description here](https://raw.githubusercontent.com/bagisto/temp-media/master/img1.png)
 
 ## Installation Guide
 
