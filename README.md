@@ -16,7 +16,11 @@ This mobile app, built on the foundation of the Bagisto eCommerce framework and 
 
 # Features
 
-The opensource ecommerce mobile app comes with an array of features aimed at improving shopping experience for your customers. 
+The open-source ecommerce mobile app comes with an array of features to improve your customers' shopping experience. 
+
+## Interactive Home Page and Search
+
+![enter image description here](https://raw.githubusercontent.com/bagisto/temp-media/master/img1.png)
 
 ## All Type Product Supported
 
@@ -37,10 +41,6 @@ The opensource ecommerce mobile app comes with an array of features aimed at imp
 ## Share and Product Reviews
 
 ![enter image description here](https://raw.githubusercontent.com/bagisto/temp-media/master/img3.png)
-
-## Interactive Home Page and Search
-
-![enter image description here](https://raw.githubusercontent.com/bagisto/temp-media/master/img1.png)
 
 ## Installation Guide
 
