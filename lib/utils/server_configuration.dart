@@ -5,7 +5,7 @@ const int defaultSplashDelay = 3;
 
 
 // local instance bagisto 2.0 updated
-const String baseUrl = "";
+const String baseUrl = "http://127.0.0.1/graphql";
 
 const String defaultWebsiteId = "1";
 
