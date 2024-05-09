@@ -53,7 +53,7 @@ dependencies:
   firebase_core: ^2.17.0
   hive: ^2.2.3
   intl: ^0.18.1
-  speech_to_text: ^5.4.3
+  speech_to_text: ^6.1.0
   cached_network_image: ^3.2.1
   url_launcher: ^6.1.12
   google_fonts: ^6.1.0
