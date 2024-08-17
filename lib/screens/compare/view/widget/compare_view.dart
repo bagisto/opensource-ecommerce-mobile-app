@@ -166,7 +166,7 @@ class CompareView extends StatelessWidget {
                                       left: 8.0, top: 8, right: 8),
                                   child: ColorFiltered(
                                     colorFilter: ColorFilter.mode(
-                                      Theme.of(context).colorScheme.onBackground,
+                                      Theme.of(context).colorScheme.onSurface,
                                       BlendMode.srcIn,
                                     ),
                                     child: HtmlWidget(

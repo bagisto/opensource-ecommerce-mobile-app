@@ -401,8 +401,8 @@ class _HomeScreenState extends State<HomeScreen> {
       if(element.type == "category_carousel"){
         element.translations?.firstOrNull?.options?.filters?.forEach((element) {
           filters.add({
-            "key": '\"${element.key}\"',
-            "value": '\"${element.value}\"'
+            "key": '"${element.key}"',
+            "value": '"${element.value}"'
           });
         });
         homePageBloc?.add(FetchHomePageCategoriesEvent(filters: filters));
@@ -411,8 +411,8 @@ class _HomeScreenState extends State<HomeScreen> {
         filters.clear();
         element.translations?.firstOrNull?.options?.filters?.forEach((element) {
           filters.add({
-            "key": '\"${element.key}\"',
-            "value": '\"${element.value}\"'
+            "key": '"${element.key}"',
+            "value": '"${element.value}"'
           });
         });
         homePageBloc?.add(FetchAllProductsEvent(filters));

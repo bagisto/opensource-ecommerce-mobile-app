@@ -309,7 +309,7 @@ class _CompareScreenState extends State<CompareScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Loader(),
+            const Loader(),
             const SizedBox(
               height: AppSizes.spacingNormal,
             ),

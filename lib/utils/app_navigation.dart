@@ -211,7 +211,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
           builder: (_) => BlocProvider(
               create: (context) => ReviewsBloc(
                   repository: ReviewsRepositoryImp(), context: context),
-              child: ReviewsScreen()));
+              child: const ReviewsScreen()));
 
 
     case addressListScreen :

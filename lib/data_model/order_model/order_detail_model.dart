@@ -24,6 +24,7 @@ class OrderDetailModel extends GraphQlBaseModel {
   factory OrderDetailModel.fromJson(Map<String, dynamic> json) =>
       _$OrderDetailModelFromJson(json);
 
+  @override
   Map<String, dynamic> toJson() => _$OrderDetailModelToJson(this);
 }
 
@@ -179,6 +180,7 @@ class OrderDetail extends GraphQlBaseErrorModel {
   factory OrderDetail.fromJson(Map<String, dynamic> json) =>
       _$OrderDetailFromJson(json);
 
+  @override
   Map<String, dynamic> toJson() => _$OrderDetailToJson(this);
 }
 

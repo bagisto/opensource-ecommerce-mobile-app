@@ -211,15 +211,7 @@ class SavedAddressList extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(AppSizes.spacingMedium, 0, 0, 0),
       child: Text(
-        ("${addressModel?.address1!.replaceAll("[", "").replaceAll("]", "") ?? ""}") +
-            "," +
-            (" ${addressModel?.city ?? ""}") +
-            "," +
-            (" ${addressModel?.stateName ?? (addressModel?.state ?? "")}") +
-            "," +
-            (" ${addressModel?.countryName ?? ""}") +
-            "," +
-            (" ${addressModel?.postcode ?? ""}"),
+        "${addressModel?.address1!.replaceAll("[", "").replaceAll("]", "") ?? ""}, ${addressModel?.city ?? ""}, ${addressModel?.stateName ?? (addressModel?.state ?? "")}, ${addressModel?.countryName ?? ""}, ${addressModel?.postcode ?? ""}",
         style: TextStyle(
             fontSize: AppSizes.spacingLarge, color: Colors.grey[600]),
       ),

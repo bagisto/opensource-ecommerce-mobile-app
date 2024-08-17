@@ -123,13 +123,13 @@ class _ProductScreenState extends State<ProductScreen> {
               child: MaterialButton(
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(AppSizes.spacingMedium),
-                    side: BorderSide(color: Theme.of(context).colorScheme.onBackground)
+                    side: BorderSide(color: Theme.of(context).colorScheme.onSurface)
                   ),
                   elevation: AppSizes.spacingSmall,
                   height: AppSizes.buttonHeight,
                   minWidth: MediaQuery.of(context).size.width,
-                  color: Theme.of(context).colorScheme.background,
-                  textColor: Theme.of(context).colorScheme.onBackground,
+                  color: Theme.of(context).colorScheme.surface,
+                  textColor: Theme.of(context).colorScheme.onSurface,
                   onPressed: () {
                     checkInternetConnection().then((value) {
                       if (value) {

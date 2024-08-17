@@ -74,7 +74,7 @@ class _LocationScreenState extends State<LocationScreen> {
                           });
                         },
                       ),
-                      Positioned(
+                      const Positioned(
                           right: 0,
                           top: 0,
                           left: 0,
@@ -131,7 +131,7 @@ class _LocationScreenState extends State<LocationScreen> {
                         ),
                       ),
                     ])
-                  : Loader(),
+                  : const Loader(),
             ),
             GestureDetector(
               onTap: () {
@@ -185,7 +185,7 @@ class _LocationScreenState extends State<LocationScreen> {
   }
 
   void getCurrentLocation() async {
-    var location;
+    location.LocationData location;
     try {
       location = await currentLocation.getLocation();
     } catch (e) {

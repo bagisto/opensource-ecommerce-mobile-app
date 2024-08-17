@@ -66,11 +66,11 @@ class _SubCategoriesFilterScreenState extends State<SubCategoriesFilterScreen> {
           }
           for (var options in data.options!) {
             for (var item in i["value"]) {
-              if ('\"${options.id}\"' == item) {
-                if (showTemp[code]?.contains('\"${options.id}\"') ?? false) {
-                  showTemp[code]?.remove('\"${options.id}\"');
+              if ('"${options.id}"' == item) {
+                if (showTemp[code]?.contains('"${options.id}"') ?? false) {
+                  showTemp[code]?.remove('"${options.id}"');
                 } else {
-                  showTemp[code]?.add('\"${options.id}\"');
+                  showTemp[code]?.add('"${options.id}"');
                 }
               }
             }
@@ -111,8 +111,8 @@ class _SubCategoriesFilterScreenState extends State<SubCategoriesFilterScreen> {
                   setState(() {
                     superAttributes = [];
                     widget.filters.removeWhere((element) =>
-                        element["key"] != '\"category_id\"' ||
-                        element["key"] == '\"sort\"');
+                        element["key"] != '"category_id"' ||
+                        element["key"] == '"sort"');
 
                     widget.subCategoryBloc?.add(FetchSubCategoryEvent(
                       widget.filters,
@@ -203,7 +203,7 @@ class _SubCategoriesFilterScreenState extends State<SubCategoriesFilterScreen> {
                 child: RangeSlider(
                   min: 0,
                   max: 500,
-                  activeColor: Theme.of(context).colorScheme.onBackground,
+                  activeColor: Theme.of(context).colorScheme.onSurface,
                   inactiveColor: Colors.grey.shade300,
                   labels: RangeLabels(
                     startPriceValue.toString(),
@@ -213,11 +213,11 @@ class _SubCategoriesFilterScreenState extends State<SubCategoriesFilterScreen> {
                   onChanged: (RangeValues value) {
                     setState(() {
 
-                      widget.filters.removeWhere((element) => element["key"] == '\"$code\"');
+                      widget.filters.removeWhere((element) => element["key"] == '"$code"');
 
                       widget.filters.add({
-                        "key": '\"$code\"',
-                        "value": '\"${value.start}, ${value.end}\"'
+                        "key": '"$code"',
+                        "value": '"${value.start}, ${value.end}"'
                       });
 
                       temp[code]?.clear();
@@ -230,7 +230,7 @@ class _SubCategoriesFilterScreenState extends State<SubCategoriesFilterScreen> {
                       temp.forEach((key, value) {
                         if (value.isNotEmpty) {
                           Map<String, dynamic> colorMap = {
-                            "key": '\"$key\"',
+                            "key": '"$key"',
                             "value": value
                           };
                           superAttributes.add(colorMap);
@@ -251,24 +251,24 @@ class _SubCategoriesFilterScreenState extends State<SubCategoriesFilterScreen> {
               return CheckboxListTile(
                   dense: true,
                   contentPadding: const EdgeInsets.all(0),
-                  value: showItems.contains(('\"${option?.id}\"')),
+                  value: showItems.contains(('"${option?.id}"')),
                   title: Text(
                     option?.adminName ?? "",
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   onChanged: (isChecked) {
                     widget.filters.removeWhere(
-                        (element) => element["key"] == '\"$code\"');
+                        (element) => element["key"] == '"$code"');
 
                     widget.filters.add(
-                        {"key": '\"$code\"', "value": '\"${option?.id}\"'});
+                        {"key": '"$code"', "value": '"${option?.id}"'});
 
                     setState(() {
                       temp.addAll(showTemp);
-                      if (temp[code]?.contains('\"${option?.id}\"') ?? false) {
-                        temp[code]?.remove('\"${option?.id}\"');
+                      if (temp[code]?.contains('"${option?.id}"') ?? false) {
+                        temp[code]?.remove('"${option?.id}"');
                       } else {
-                        temp[code]?.add('\"${option?.id}\"');
+                        temp[code]?.add('"${option?.id}"');
                       }
 
                       showItems.clear();
@@ -279,7 +279,7 @@ class _SubCategoriesFilterScreenState extends State<SubCategoriesFilterScreen> {
                       temp.forEach((key, value) {
                         if (value.isNotEmpty) {
                           Map<String, dynamic> colorMap = {
-                            "key": '\"$key\"',
+                            "key": '"$key"',
                             "value": value
                           };
                           superAttributes.add(colorMap);

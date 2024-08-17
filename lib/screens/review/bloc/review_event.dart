@@ -31,6 +31,7 @@ class RemoveReviewEvent extends ReviewsBaseEvent {
 
   RemoveReviewEvent(this.productId, this.message);
 
+  @override
   List<Object> get props => [productId ?? "", message ?? ""];
 
 }
@@ -38,6 +39,7 @@ class RemoveAllReviewsEvent extends ReviewsBaseEvent {
 
   RemoveAllReviewsEvent();
 
+  @override
   List<Object> get props => [];
 
 }

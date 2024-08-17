@@ -42,7 +42,7 @@ class ReviewLinearProgressIndicator extends StatelessWidget {
                           ),
                         Text(
                           '(${percentage[0].toString()}%)',
-                          style: TextStyle(
+                          style: const TextStyle(
                               fontSize: 12,
                               color: Colors.black,
                               fontWeight: FontWeight.w500),
@@ -53,7 +53,7 @@ class ReviewLinearProgressIndicator extends StatelessWidget {
                       children: [
                         Text(
                           '4Star'.localized(),
-                          style: TextStyle(
+                          style: const TextStyle(
                               fontSize: 12,
                               color: Colors.black,
                               fontWeight: FontWeight.w500),
@@ -73,7 +73,7 @@ class ReviewLinearProgressIndicator extends StatelessWidget {
                         ),
                         Text(
                           '(${percentage[1] ?? 0}%)',
-                          style: TextStyle(
+                          style: const TextStyle(
                               fontSize: 12,
                               color: Colors.black,
                               fontWeight: FontWeight.w500),
@@ -84,7 +84,7 @@ class ReviewLinearProgressIndicator extends StatelessWidget {
                       children: [
                         Text(
                           '3Star'.localized(),
-                          style: TextStyle(
+                          style: const TextStyle(
                               fontSize: 12,
                               color: Colors.black,
                               fontWeight: FontWeight.w500),

@@ -33,7 +33,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   Widget reviewsScreen = BlocProvider(
       create: (context) =>
           ReviewsBloc(repository: ReviewsRepositoryImp(), context: context),
-      child: ReviewsScreen(
+      child: const ReviewsScreen(
         isFromDashboard: true,
       ));
 
@@ -97,7 +97,7 @@ class _DashboardScreenState extends State<DashboardScreen>
               ),
               Container(
                 height: MediaQuery.of(context).size.height / 2.15,
-                color: Theme.of(context).colorScheme.background,
+                color: Theme.of(context).colorScheme.surface,
                 child: TabBarView(children: [
                   ///orderScreen
                   Column(
@@ -115,9 +115,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                             elevation: 0.0,
                             height: AppSizes.buttonHeight,
                             minWidth: MediaQuery.of(context).size.width,
-                            color: Theme.of(context).colorScheme.onBackground,
+                            color: Theme.of(context).colorScheme.onSurface,
                             textColor:
-                                Theme.of(context).colorScheme.background,
+                                Theme.of(context).colorScheme.surface,
                             onPressed: () {
                               Navigator.pushReplacementNamed(context, home);
                             },
@@ -136,7 +136,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                                   style: Theme.of(context)
                                       .textTheme
                                       .bodyLarge?.copyWith(
-                                    color: Theme.of(context).colorScheme.background
+                                    color: Theme.of(context).colorScheme.surface
                                   ),
                                 ),
                               ],
@@ -163,9 +163,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                             elevation: 0.0,
                             height: AppSizes.buttonHeight,
                             minWidth: MediaQuery.of(context).size.width,
-                            color: Theme.of(context).colorScheme.onBackground,
+                            color: Theme.of(context).colorScheme.onSurface,
                             textColor:
-                                Theme.of(context).colorScheme.background,
+                                Theme.of(context).colorScheme.surface,
                             onPressed: () {
                               addressIsEmpty
                                   ? Navigator.pushNamed(context, addAddressScreen,
@@ -198,7 +198,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                                       .textTheme
                                       .bodyLarge
                                       ?.copyWith(
-                                          color: Theme.of(context).colorScheme.background),
+                                          color: Theme.of(context).colorScheme.surface),
                                 ),
                               ],
                             ),
@@ -224,9 +224,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                             elevation: 0.0,
                             height: AppSizes.buttonHeight,
                             minWidth: MediaQuery.of(context).size.width,
-                            color: Theme.of(context).colorScheme.onBackground,
+                            color: Theme.of(context).colorScheme.onSurface,
                             textColor:
-                                Theme.of(context).colorScheme.background,
+                                Theme.of(context).colorScheme.surface,
                             onPressed: () {
                               Navigator.pushReplacementNamed(context, home);
                             },
@@ -245,7 +245,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                                   style: Theme.of(context)
                                       .textTheme
                                       .bodyLarge?.copyWith(
-                                      color: Theme.of(context).colorScheme.background
+                                      color: Theme.of(context).colorScheme.surface
                                   ),
                                 ),
                               ],

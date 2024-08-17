@@ -195,9 +195,7 @@ class _CheckoutShippingPageViewState extends State<CheckoutShippingPageView> {
                   key: const Key('Shipping'),
                   labels: checkOutSaveAddressModel.shippingMethods
                           ?.map((e) =>
-                              (e.title ?? '') +
-                              '  ' +
-                              (e.methods?.formattedPrice.toString() ?? ''))
+                              '${e.title ?? ''}  ${e.methods?.formattedPrice.toString() ?? ''}')
                           .toList() ??
                       [],
                   onChange: (value, index) {

@@ -27,6 +27,7 @@ class CancelOrderEvent extends OrderDetailBaseEvent {
 
   CancelOrderEvent(this.id, this.message);
 
+  @override
   List<Object> get props => [message ?? ""];
 }
 

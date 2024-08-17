@@ -423,7 +423,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         Expanded(
                           flex: 1,
                           child: MaterialButton(
-                            color: Theme.of(context).colorScheme.onBackground,
+                            color: Theme.of(context).colorScheme.onSurface,
                             elevation: 0.0,
                             textColor: MobikulTheme.primaryColor,
                             shape: RoundedRectangleBorder(
@@ -473,7 +473,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                   ? StringConstants.placeOrder.localized()
                                   : StringConstants.proceed.localized().toUpperCase(),
                               style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                  color: Theme.of(context).colorScheme.background
+                                  color: Theme.of(context).colorScheme.surface
                               ),
                             ),
                           ),
@@ -514,7 +514,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       Expanded(
                         flex: 1,
                         child: MaterialButton(
-                          color: Theme.of(context).colorScheme.onBackground,
+                          color: Theme.of(context).colorScheme.onSurface,
                           elevation: 0.0,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8.0),
@@ -549,7 +549,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                 ? StringConstants.placeOrder.localized()
                                 : StringConstants.proceed.localized().toUpperCase(),
                             style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                color: Theme.of(context).colorScheme.background
+                                color: Theme.of(context).colorScheme.surface
                             ),
                           ),
                         ),

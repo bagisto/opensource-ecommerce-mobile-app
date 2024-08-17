@@ -17,7 +17,6 @@ import '../../../data_model/graphql_base_model.dart';
 import '../../../utils/app_global_data.dart';
 import '../../../utils/string_constants.dart';
 import '../../cart_screen/cart_model/add_to_cart_model.dart';
-import '../../cms_screen/data_model/cms_model.dart';
 import '../data_model/advertisement_data.dart';
 import '../data_model/get_categories_drawer_data_model.dart';
 import '../data_model/new_product_data.dart';

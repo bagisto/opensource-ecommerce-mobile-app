@@ -173,9 +173,9 @@ class _CheckOutSaveOrderState extends State<CheckOutSaveOrder> {
                     height: AppSizes.spacingMedium,
                   ),
                   MaterialButton(
-                    color: Theme.of(context).colorScheme.onBackground,
+                    color: Theme.of(context).colorScheme.onSurface,
                     elevation: 0.0,
-                    textColor: Theme.of(context).colorScheme.background,
+                    textColor: Theme.of(context).colorScheme.surface,
                     onPressed: () {
                       Navigator.pushReplacementNamed(context, home);
                     },
@@ -184,7 +184,7 @@ class _CheckOutSaveOrderState extends State<CheckOutSaveOrder> {
                           .localized()
                           .toUpperCase(),
                       style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.background
+                        color: Theme.of(context).colorScheme.surface
                       ),
                     ),
                   ),

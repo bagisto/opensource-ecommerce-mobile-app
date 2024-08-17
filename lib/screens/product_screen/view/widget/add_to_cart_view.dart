@@ -32,8 +32,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
               elevation: AppSizes.spacingSmall,
               height: AppSizes.buttonHeight,
               minWidth: MediaQuery.of(context).size.width,
-              color: Theme.of(context).colorScheme.background,
-              textColor: Theme.of(context).colorScheme.onBackground,
+              color: Theme.of(context).colorScheme.surface,
+              textColor: Theme.of(context).colorScheme.onSurface,
               onPressed: () {
                 ProductScreenBLoc productBloc =
                 context.read<ProductScreenBLoc>();

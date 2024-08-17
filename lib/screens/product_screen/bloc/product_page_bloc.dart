@@ -25,7 +25,7 @@ class ProductScreenBLoc extends Bloc<ProductScreenBaseEvent, ProductBaseState> {
     if (event is FetchProductEvent) {
       try {
         NewProductsModel? productData = await repository?.getProductDetails([
-          {"key": '\"url_key\"', "value": '\"${event.sku}\"'}
+          {"key": '"url_key"', "value": '"${event.sku}"'}
         ]);
         emit(FetchProductState.success(productData: productData?.data?.firstOrNull));
       } catch (e) {

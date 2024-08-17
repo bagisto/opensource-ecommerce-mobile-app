@@ -1,4 +1,3 @@
-import 'package:bagisto_app_demo/screens/account/view/account_screen.dart';
 import 'package:bagisto_app_demo/utils/application_localization.dart';
 import 'package:bagisto_app_demo/widgets/price_widget.dart';
 import 'package:bagisto_app_demo/widgets/wishlist_compare_widget.dart';

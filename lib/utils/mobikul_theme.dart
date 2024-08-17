@@ -36,9 +36,9 @@ class MobikulTheme {
           )
       ),
       checkboxTheme: CheckboxThemeData(
-        checkColor: MaterialStateProperty.all<Color?>(
+        checkColor: WidgetStateProperty.all<Color?>(
             primaryColor),
-        fillColor: MaterialStateProperty.all<Color?>(
+        fillColor: WidgetStateProperty.all<Color?>(
             accentColor)
       ),
       drawerTheme: const DrawerThemeData(
@@ -47,8 +47,8 @@ class MobikulTheme {
       colorScheme: ColorScheme.light(
         primary: primaryColor,
         onPrimary: accentColor,
-        background: primaryColor,
-        onBackground: accentColor
+        surface: primaryColor,
+        onSurface: accentColor
       ),
       dividerTheme: DividerThemeData(color: Colors.grey.shade300),
       sliderTheme: const SliderThemeData(
@@ -163,13 +163,13 @@ class MobikulTheme {
       colorScheme: ColorScheme.dark(
           primary: accentColor,
           onPrimary: primaryColor,
-          background: accentColor,
-          onBackground: primaryColor
+          surface: accentColor,
+          onSurface: primaryColor
       ),
     checkboxTheme: CheckboxThemeData(
-        checkColor: MaterialStateProperty.all<Color?>(
+        checkColor: WidgetStateProperty.all<Color?>(
             accentColor),
-        fillColor: MaterialStateProperty.all<Color?>(
+        fillColor: WidgetStateProperty.all<Color?>(
             primaryColor)
     ),
     textTheme: TextTheme(

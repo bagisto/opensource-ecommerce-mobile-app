@@ -95,7 +95,7 @@ class _ApplyCouponCodeState extends State<ApplyCouponCode> {
                           right: 3),
                       child: MaterialButton(
                         height: 47,
-                        color: Theme.of(context).colorScheme.onBackground,
+                        color: Theme.of(context).colorScheme.onSurface,
                         textColor: MobikulTheme.primaryColor,
                         elevation: 0.0,
                         shape: RoundedRectangleBorder(

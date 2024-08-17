@@ -257,15 +257,15 @@ class _SignUpScreenState extends State<SignUpScreen> with EmailValidator {
                   elevation: 0.0,
                   height: 48,
                   minWidth: MediaQuery.of(context).size.width,
-                  color: Theme.of(context).colorScheme.onBackground,
-                  textColor: Theme.of(context).colorScheme.background,
+                  color: Theme.of(context).colorScheme.onSurface,
+                  textColor: Theme.of(context).colorScheme.surface,
                   onPressed: () {
                     _onPressCreateAccount();
                   },
                   child: Text(
                     StringConstants.createAccountLabel.localized().toUpperCase(),
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: Theme.of(context).colorScheme.background
+                      color: Theme.of(context).colorScheme.surface
                     ),
                   ),
                 ),

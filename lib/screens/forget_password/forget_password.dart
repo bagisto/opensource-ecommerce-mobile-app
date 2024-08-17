@@ -145,7 +145,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen>
                 elevation: 0.0,
                 height: AppSizes.buttonHeight,
                 minWidth: MediaQuery.of(context).size.width,
-                color: Theme.of(context).colorScheme.onBackground,
+                color: Theme.of(context).colorScheme.onSurface,
                 textColor: Colors.white,
                 onPressed: () {
                   _onPressButton();
@@ -153,7 +153,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen>
                 child: Text(
                   StringConstants.forgetPasswordButton.localized().toUpperCase(),
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.background
+                    color: Theme.of(context).colorScheme.surface
                   ),
                 ),
               ),

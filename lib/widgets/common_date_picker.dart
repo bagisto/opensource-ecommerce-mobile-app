@@ -65,7 +65,7 @@ class _CommonDatePickerState extends State<CommonDatePicker> {
             data: ThemeData(
               primarySwatch: Colors.grey,
               colorScheme: ColorScheme.light(
-                  primary: Theme.of(context).colorScheme.onBackground,
+                  primary: Theme.of(context).colorScheme.onSurface,
                   onPrimary: Colors.white,
                   onSurface: Colors.black,
                   secondary: Colors.black),

@@ -46,10 +46,7 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.webkul.bagisto.mobikul"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
         minSdkVersion 22
         targetSdkVersion 33
         versionCode flutterVersionCode.toInteger()
@@ -58,8 +55,6 @@ android {
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig signingConfigs.debug
         }
     }
@@ -75,17 +70,11 @@ dependencies {
 
     implementation 'com.facebook.android:facebook-android-sdk:8.2.0'
     implementation 'com.google.ar.sceneform.ux:sceneform-ux:1.17.1'
-    //    ML KIT
     api 'com.google.android.gms:play-services-mlkit-text-recognition:18.0.0'
     api 'com.google.mlkit:image-labeling:17.0.7'
-    // Image labeling custom
     api 'com.google.mlkit:image-labeling-custom:17.0.1'
-    //===Ar Core
-    implementation "com.google.ar.sceneform.ux:sceneform-ux:1.17.1"
-    //  implementation "com.google.ar.sceneform:core:1.17.1"
     implementation 'com.google.ar.sceneform:assets:1.17.1'
     implementation "com.google.ar:core:1.30.0"
-    //---------------------------------------//
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
     implementation 'androidx.appcompat:appcompat:1.4.1'
     implementation 'com.github.bumptech.glide:glide:4.12.0'

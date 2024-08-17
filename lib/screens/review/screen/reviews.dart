@@ -10,11 +10,10 @@
 
 import 'dart:async';
 import 'package:bagisto_app_demo/screens/cart_screen/cart_index.dart';
-import 'package:bagisto_app_demo/utils/no_data_found_widget.dart';
 import 'package:bagisto_app_demo/screens/review/utils/index.dart';
 
 class ReviewsScreen extends StatefulWidget {
-  ReviewsScreen({Key? key, this.isFromDashboard}) : super(key: key);
+  const ReviewsScreen({Key? key, this.isFromDashboard}) : super(key: key);
  final  bool? isFromDashboard;
 
   @override
@@ -29,7 +28,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
   ReviewsBloc? reviewsBloc;
 
   Stream get onUpdate => streamController.stream;
-  bool _isVisible = false;
+  final bool _isVisible = false;
 
   @override
   void initState() {
@@ -97,24 +96,24 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
         } else if (state is RemoveReviewState) {
           if (state.status == ReviewStatus.fail) {
             ShowMessage.showNotification(
-                "Failed", state.error, Colors.red, Icon(Icons.cancel_outlined));
+                "Failed", state.error, Colors.red, const Icon(Icons.cancel_outlined));
           } else if (state.status == ReviewStatus.success) {
             ShowMessage.showNotification(
                 "Success",
                 state.baseModel?.message,
-                Color.fromRGBO(140, 194, 74, 5),
-                Icon(Icons.check_circle_outline));
+                const Color.fromRGBO(140, 194, 74, 5),
+                const Icon(Icons.check_circle_outline));
           }
         } else if (state is RemoveAllReviewState) {
           if (state.status == ReviewStatus.fail) {
             ShowMessage.showNotification(
-                "Failed", state.error, Colors.red, Icon(Icons.cancel_outlined));
+                "Failed", state.error, Colors.red, const Icon(Icons.cancel_outlined));
           } else if (state.status == ReviewStatus.success) {
             ShowMessage.showNotification(
                 "Success",
                 state.baseModel?.message,
-                Color.fromRGBO(140, 194, 74, 5),
-                Icon(Icons.check_circle_outline));
+                const Color.fromRGBO(140, 194, 74, 5),
+                const Icon(Icons.check_circle_outline));
           }
         }
       },
@@ -165,34 +164,30 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
 
   ///method use to show review list
   _reviewsList(ReviewModel reviewModel) {
-    if (reviewModel == null) {
-      return const NoDataFound();
+    if ((reviewModel.data ?? []).isEmpty) {
+      streamController.add(false);
+      return const EmptyDataView(
+        assetPath: AssetConstants.emptyReviews,
+        message: "noReview",
+      );
     } else {
-      if ((reviewModel.data ?? []).isEmpty) {
-        streamController.add(false);
-        return const EmptyDataView(
-          assetPath: AssetConstants.emptyReviews,
-          message: "noReview",
-        );
-      } else {
-        streamController.add(true);
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(8.0,8,8,0),
-          child: ListView.builder(
-              itemCount: (widget.isFromDashboard ?? false)
-                  ? ((reviewModel.data?.length ?? 0) > 5)
-                  ? 5
-                  : reviewModel.data?.length ?? 0
-                  : reviewModel.data?.length ?? 0,
-              itemBuilder: (context, index) {
-                return ReviewsList(
-                  reviewData: reviewModel.data?[index],
-                  reviewsBloc:
-                  reviewsBloc, /*callback:  _callBack(int.parse(reviewModel.data?[index].id??"")),*/
-                );
-              }),
-        );
-      }
+      streamController.add(true);
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(8.0,8,8,0),
+        child: ListView.builder(
+            itemCount: (widget.isFromDashboard ?? false)
+                ? ((reviewModel.data?.length ?? 0) > 5)
+                ? 5
+                : reviewModel.data?.length ?? 0
+                : reviewModel.data?.length ?? 0,
+            itemBuilder: (context, index) {
+              return ReviewsList(
+                reviewData: reviewModel.data?[index],
+                reviewsBloc:
+                reviewsBloc, /*callback:  _callBack(int.parse(reviewModel.data?[index].id??"")),*/
+              );
+            }),
+      );
     }
-  }
+    }
 }

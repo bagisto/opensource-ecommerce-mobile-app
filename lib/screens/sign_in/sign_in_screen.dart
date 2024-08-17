@@ -246,7 +246,7 @@ class _SignInScreenState extends State<SignInScreen> with EmailValidator {
                     height: AppSizes.buttonHeight,
                     minWidth: MediaQuery.of(context).size.width,
                     color: MobikulTheme.accentColor,
-                    textColor: Theme.of(context).colorScheme.onBackground,
+                    textColor: Theme.of(context).colorScheme.onSurface,
                     onPressed: () {
                       _onPressSignInButton();
                     },
@@ -266,7 +266,7 @@ class _SignInScreenState extends State<SignInScreen> with EmailValidator {
                     height: AppSizes.buttonHeight,
                     minWidth: MediaQuery.of(context).size.width,
                     color: MobikulTheme.primaryColor,
-                    textColor: Theme.of(context).colorScheme.background,
+                    textColor: Theme.of(context).colorScheme.surface,
                     onPressed: () {
                       Navigator.pushNamed(context, signUp, arguments: false);
                     },

@@ -480,8 +480,8 @@ class _AddNewAddressState extends State<AddNewAddress>
                   elevation: 0.0,
                   height: 48,
                   minWidth: MediaQuery.of(context).size.width,
-                  color: Theme.of(context).colorScheme.background,
-                  textColor: Theme.of(context).colorScheme.onBackground,
+                  color: Theme.of(context).colorScheme.surface,
+                  textColor: Theme.of(context).colorScheme.onSurface,
                   onPressed: () {
                     _onPressSaveButton();
                   },

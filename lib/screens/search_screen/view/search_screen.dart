@@ -84,7 +84,7 @@ class _SearchScreenState extends State<SearchScreen>
         searchBloc?.add(CircularBarEvent(isReqToShowLoader: true));
         searchBloc?.add(SearchBarTextEvent(searchText: transcription));
         searchBloc?.add(FetchSearchEvent([
-          {"key": '\"name\"', "value": '\"$transcription\"'}
+          {"key": '"name"', "value": '"$transcription"'}
         ]));
       }
       stop();
@@ -189,7 +189,7 @@ class _SearchScreenState extends State<SearchScreen>
                     searchBloc?.add(SearchBarTextEvent(searchText: value));
                     searchBloc?.add(CircularBarEvent(isReqToShowLoader: true));
                     searchBloc?.add(FetchSearchEvent([
-                      {"key": '\"name\"', "value": '\"$value\"'}
+                      {"key": '"name"', "value": '"$value"'}
                     ]));
                   }
                 },
@@ -325,7 +325,7 @@ class _SearchScreenState extends State<SearchScreen>
       searchBloc?.add(CircularBarEvent(isReqToShowLoader: true));
       searchBloc?.add(SearchBarTextEvent(searchText: data));
       searchBloc?.add(FetchSearchEvent([
-        {"key": '\"name\"', "value": '\"$data\"'}
+        {"key": '"name"', "value": '"$data"'}
       ]));
       return data;
     } else {

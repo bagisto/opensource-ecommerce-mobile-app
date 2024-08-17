@@ -15,7 +15,6 @@ import 'package:lottie/lottie.dart';
 import 'package:path_provider/path_provider.dart';
 import '../../services/graph_ql.dart';
 import '../../utils/assets_constants.dart';
-import '../../utils/prefetching_helper.dart';
 import '../../utils/route_constants.dart';
 import '../../utils/server_configuration.dart';
 

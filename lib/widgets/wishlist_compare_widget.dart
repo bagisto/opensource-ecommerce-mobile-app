@@ -25,7 +25,7 @@ Widget wishlistIcon(BuildContext context, bool? isInWishlist){
       Icons.favorite,
       color: Theme.of(context)
           .colorScheme
-          .onBackground,
+          .onSurface,
       size: 16,
     )
         : Icon(
@@ -33,7 +33,7 @@ Widget wishlistIcon(BuildContext context, bool? isInWishlist){
       size: 16,
       color: Theme.of(context)
           .colorScheme
-          .onBackground,
+          .onSurface,
     ),
   );
 }
@@ -61,7 +61,7 @@ Widget compareIcon(BuildContext context){
       "assets/images/compare-icon.png",
       height: 18,
       width: 18,
-      color: Theme.of(context).colorScheme.onBackground,
+      color: Theme.of(context).colorScheme.onSurface,
     ),
   );
 }

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../../../../../data_model/app_route_arguments.dart';
 import '../../../../../../utils/assets_constants.dart';
 import '../../../../address_list/data_model/address_model.dart';
-import '../../bloc/checkout_bloc.dart';
 
 // ignore: must_be_immutable
 class BillingAndShippingAddressView extends StatefulWidget {

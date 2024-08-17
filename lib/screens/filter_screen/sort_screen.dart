@@ -93,7 +93,7 @@ class _SortBottomSheetState extends State<SortBottomSheet> {
               ),
               TextButton(
                 onPressed: () async {
-                  widget.filters.removeWhere((element) => element["key"] == '\"sort\"');
+                  widget.filters.removeWhere((element) => element["key"] == '"sort"');
                   widget.subCategoryBloc?.add(FetchSubCategoryEvent(
                       widget.filters, widget.page));
                   widget.subCategoryBloc?.add(
@@ -133,11 +133,11 @@ class _SortBottomSheetState extends State<SortBottomSheet> {
                         SharedPreferenceHelper.setSortName(value ?? "");
                       });
 
-                      widget.filters.removeWhere((element) => element["key"] == '\"sort\"');
+                      widget.filters.removeWhere((element) => element["key"] == '"sort"');
 
                       widget.filters.add({
-                        "key": '\"sort\"',
-                        "value": '\"${data?[index].value}\"'
+                        "key": '"sort"',
+                        "value": '"${data?[index].value}"'
                       });
 
                       widget.subCategoryBloc?.add(FetchSubCategoryEvent(

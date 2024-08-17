@@ -340,7 +340,7 @@ class _GuestAddAddressFormState extends State<GuestAddAddressForm>
                       elevation: 0.0,
                       height: AppSizes.buttonHeight,
                       minWidth: MediaQuery.of(context).size.width,
-                      color: Theme.of(context).colorScheme.onBackground,
+                      color: Theme.of(context).colorScheme.onSurface,
                       textColor: MobikulTheme.primaryColor,
                       onPressed: () {
                         _onPressSaveButton();

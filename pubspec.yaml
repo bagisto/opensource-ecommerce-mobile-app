@@ -77,6 +77,10 @@ dependencies:
 
 
 
+  dio: any
+  retrofit: any
+  collection: any
+  sqflite: any
 dependency_overrides:
   intl: ^0.18.0
 

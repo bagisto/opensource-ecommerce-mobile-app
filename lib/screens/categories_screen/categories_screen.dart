@@ -64,7 +64,7 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
 
   @override
   void initState() {
-    filters.add({"key": '\"category_id\"', "value": '\"${widget.id}\"'});
+    filters.add({"key": '"category_id"', "value": '"${widget.id}"'});
 
     _fetchSharedPreferenceData();
     getSharePreferenceCartCount().then((value) {

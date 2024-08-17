@@ -28,9 +28,9 @@ class _LogoutButtonState extends State<LogoutButton> {
         _onPressedLogout();
       },
       title: MaterialButton(
-        color: Theme.of(context).colorScheme.onBackground,
+        color: Theme.of(context).colorScheme.onSurface,
         elevation: 0.0,
-        textColor: Theme.of(context).colorScheme.background,
+        textColor: Theme.of(context).colorScheme.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
         padding: const EdgeInsets.symmetric(vertical: 12.0),
         onPressed: () {
@@ -45,7 +45,7 @@ class _LogoutButtonState extends State<LogoutButton> {
         child: Text(
           StringConstants.logOutTitle.localized().toUpperCase(),
           style: Theme.of(context).textTheme.labelMedium?.copyWith(
-            color: Theme.of(context).colorScheme.background
+            color: Theme.of(context).colorScheme.surface
           ),
         ),
       ),

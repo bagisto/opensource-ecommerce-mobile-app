@@ -112,7 +112,7 @@ class _WishListScreenState extends State<WishListScreen> {
                       },
                       child: Icon(
                         Icons.delete,
-                        color: Theme.of(context).colorScheme.onBackground,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                   );
@@ -127,7 +127,7 @@ class _WishListScreenState extends State<WishListScreen> {
                     },
                     child: Icon(
                       Icons.delete,
-                      color: Theme.of(context).colorScheme.onBackground,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                 );

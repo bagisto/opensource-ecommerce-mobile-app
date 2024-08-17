@@ -21,7 +21,6 @@ import '../../recent_product/recent_product_view.dart';
 import '../bloc/home_page_bloc.dart';
 import '../bloc/home_page_event.dart';
 import '../data_model/get_categories_drawer_data_model.dart';
-import '../data_model/new_product_data.dart';
 import '../data_model/theme_customization.dart';
 import 'carousal_slider.dart';
 import 'new_product_view.dart';
@@ -246,8 +245,7 @@ class _HomePagViewState extends State<HomePagView> {
   }
 
   String getHtmlView(String html, String css) {
-    css = css +
-        """div {
+    css = """${css}div {
     flex-direction: column;
     column-count: 1 !important;
     width: 100%;

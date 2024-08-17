@@ -125,5 +125,6 @@ class ShareWishlistData extends GraphQlBaseModel {
   factory ShareWishlistData.fromJson(Map<String, dynamic> json) =>
       _$ShareWishlistDataFromJson(json);
 
+  @override
   Map<String, dynamic> toJson() => _$ShareWishlistDataToJson(this);
 }

@@ -32,7 +32,7 @@ class Loader extends StatelessWidget {
           if ((loadingMessage ?? "").isNotEmpty) const SizedBox(height: 24),
           CircularProgressIndicator(
             valueColor: AlwaysStoppedAnimation<Color>(
-              Theme.of(context).colorScheme.onBackground,
+              Theme.of(context).colorScheme.onSurface,
             ),
           ),
         ],

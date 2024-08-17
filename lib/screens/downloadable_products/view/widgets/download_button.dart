@@ -22,14 +22,14 @@ class DownloadButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return ElevatedButton(
       style: ButtonStyle(
-        maximumSize: MaterialStateProperty.all(const Size(270, 104)),
-        foregroundColor: MaterialStateProperty.all<Color>(
-          Theme.of(context).colorScheme.background,
+        maximumSize: WidgetStateProperty.all(const Size(270, 104)),
+        foregroundColor: WidgetStateProperty.all<Color>(
+          Theme.of(context).colorScheme.surface,
         ),
-        backgroundColor: MaterialStateProperty.all<Color>(
-          Theme.of(context).colorScheme.onBackground,
+        backgroundColor: WidgetStateProperty.all<Color>(
+          Theme.of(context).colorScheme.onSurface,
         ),
-        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+        shape: WidgetStateProperty.all<RoundedRectangleBorder>(
           RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8.0),
           ),
@@ -57,7 +57,7 @@ class DownloadButton extends StatelessWidget {
           Icon(
             Icons.download,
             size: 17,
-            color: Theme.of(context).colorScheme.background,
+            color: Theme.of(context).colorScheme.surface,
           ),
           const SizedBox(
             width: 2,
@@ -68,7 +68,7 @@ class DownloadButton extends StatelessWidget {
                 "",
             style: TextStyle(
               fontSize: 14,
-              color: Theme.of(context).colorScheme.background,
+              color: Theme.of(context).colorScheme.surface,
             ),
             overflow: TextOverflow.clip,
             maxLines: 1,

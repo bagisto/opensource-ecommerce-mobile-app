@@ -132,12 +132,12 @@ class ProductReviewSummaryViewState extends State<ProductReviewSummaryView> {
                             8, ((widget.review?.length ?? 0) > 0 ? 8 : 0), 0, 0),
                         child: TextButton(
                             style: ButtonStyle(
-                                padding: MaterialStateProperty.all<EdgeInsets>(
+                                padding: WidgetStateProperty.all<EdgeInsets>(
                                     const EdgeInsets.symmetric(
                                         vertical: 8, horizontal: 15)),
-                                foregroundColor: MaterialStateProperty.all<Color>(
+                                foregroundColor: WidgetStateProperty.all<Color>(
                                     Theme.of(context).colorScheme.onPrimary),
-                                shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                                shape: WidgetStateProperty.all<RoundedRectangleBorder>(
                                     RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(8.0),
                                         side: BorderSide(

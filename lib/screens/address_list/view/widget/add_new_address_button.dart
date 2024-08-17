@@ -34,7 +34,7 @@ class AddNewAddressButton extends StatelessWidget {
               : Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: MaterialButton(
-            color: Theme.of(context).colorScheme.onBackground,
+            color: Theme.of(context).colorScheme.onSurface,
             padding: const EdgeInsets.all(AppSizes.spacingMedium),
             onPressed: () {
                 Navigator.pushNamed(context, addAddressScreen,
@@ -56,7 +56,7 @@ class AddNewAddressButton extends StatelessWidget {
                   ),
                   Text(
                     StringConstants.addNewAddress.localized().toUpperCase(),
-                    style: TextStyle(color: Theme.of(context).colorScheme.background),
+                    style: TextStyle(color: Theme.of(context).colorScheme.surface),
                   )
                 ],
             ),
