@@ -1,27 +1,24 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter/material.dart';
-
 class QuantityView extends StatefulWidget {
-  String title;
-  bool showTitle ;
-  String qty;
-  Widget? subTitle;
-  int minimum;
-  bool setQuantity;
-  ValueChanged<int>? callBack;
+  final String title;
+  final bool showTitle ;
+  final String qty;
+  final Widget? subTitle;
+  final int minimum;
+  final bool setQuantity;
+  final ValueChanged<int>? callBack;
 
-  QuantityView(
+  const QuantityView(
       {Key? key,
       this.minimum = 1,
       this.callBack,
@@ -51,6 +48,13 @@ class _QuantityViewState extends State<QuantityView> {
   //   });
   // }
 
+
+  @override
+  void didUpdateWidget(covariant QuantityView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    controller.text = widget.qty;
+  }
+
   @override
   Widget build(BuildContext context) {
     // _updateQty();
@@ -60,13 +64,17 @@ class _QuantityViewState extends State<QuantityView> {
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        if(widget.showTitle == false)
-        Text(
-          widget.title.localized(),
-          maxLines: 2,
-          style: const TextStyle(fontWeight: FontWeight.bold),
+        if(widget.showTitle == true)
+        Expanded(
+          child: Text(
+            widget.title.localized(),
+            maxLines: 2,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
         ),
+        if(widget.subTitle != null)
         widget.subTitle ?? const SizedBox.shrink(),
         Row(
           crossAxisAlignment: CrossAxisAlignment.center,

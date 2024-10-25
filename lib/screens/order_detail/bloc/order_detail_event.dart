@@ -1,11 +1,11 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 import 'package:equatable/equatable.dart';
@@ -27,6 +27,7 @@ class CancelOrderEvent extends OrderDetailBaseEvent {
 
   CancelOrderEvent(this.id, this.message);
 
+  @override
   List<Object> get props => [message ?? ""];
 }
 
@@ -37,4 +38,13 @@ class OnClickOrderLoadingEvent extends OrderDetailBaseEvent {
 
   @override
   List<Object> get props => [];
+}
+
+class ReOrderEvent extends OrderDetailBaseEvent {
+  final String? id;
+
+  ReOrderEvent(this.id);
+
+  @override
+  List<Object> get props => [id ?? ""];
 }

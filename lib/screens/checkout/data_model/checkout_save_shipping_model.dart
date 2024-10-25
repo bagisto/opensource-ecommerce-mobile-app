@@ -1,12 +1,12 @@
 
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 
@@ -34,8 +34,6 @@ class Data {
 
 @JsonSerializable()
 class PaymentMethods extends GraphQlBaseErrorModel{
-  @override
-  String? success;
   String? cartTotal;
   int? cartCount;
   @JsonKey(name:"paymentMethods")
@@ -43,7 +41,7 @@ class PaymentMethods extends GraphQlBaseErrorModel{
   CartModel? cart;
 
   PaymentMethods(
-      {this.success, this.cartTotal, this.cartCount, this.paymentMethods,});
+      {this.cartTotal, this.cartCount, this.paymentMethods, this.cart});
 
   factory PaymentMethods.fromJson(Map<String, dynamic> json) =>
       _$PaymentMethodsFromJson(json);

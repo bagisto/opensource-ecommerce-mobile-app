@@ -1,25 +1,24 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
-import 'package:flutter/material.dart';
 
-import '../../../data_model/graphql_base_model.dart';
-import '../../../services/api_client.dart';
-import '../../cart_screen/cart_model/add_to_cart_model.dart';
-import '../data_model/wishlist_model.dart';
+import 'package:bagisto_app_demo/screens/wishList/utils/index.dart';
+
+import '../../cart_screen/cart_model/cart_data_model.dart';
 
 abstract class WishListRepository {
   Future<WishListData?> callWishListApi();
-  Future<GraphQlBaseModel?> callWishListDeleteItem(var wishListProductId);
-  Future<AddToCartModel?> callAddToCartAPi(int productId);
-  Future<GraphQlBaseModel?> removeAllWishListProducts();
+  Future<AddToCartModel?> callWishListDeleteItem(var wishListProductId);
+  Future<AddToCartModel?> callAddToCartAPi(int productId, String quantity);
+  Future<BaseModel?> removeAllWishListProducts();
+  Future<CartModel?> cartCountApi();
 }
 
 class WishListRepositoryImp implements WishListRepository {
@@ -36,9 +35,9 @@ class WishListRepositoryImp implements WishListRepository {
   }
 
   @override
-  Future<GraphQlBaseModel?> callWishListDeleteItem(
+  Future<AddToCartModel?> callWishListDeleteItem(
       var wishListProductId) async {
-    GraphQlBaseModel? removeFromWishlist;
+    AddToCartModel? removeFromWishlist;
     try {
       removeFromWishlist =
           await ApiClient().removeFromWishlist(wishListProductId);
@@ -50,11 +49,11 @@ class WishListRepositoryImp implements WishListRepository {
   }
 
   @override
-  Future<AddToCartModel?> callAddToCartAPi(int productId) async {
+  Future<AddToCartModel?> callAddToCartAPi(int productId, String quantity) async {
     AddToCartModel? baseModel;
     try {
       baseModel = await ApiClient().moveFromWishlistToCart(
-        productId,
+        productId, quantity
       );
     } catch (error, stacktrace) {
       debugPrint("Error -->${error.toString()}");
@@ -64,10 +63,22 @@ class WishListRepositoryImp implements WishListRepository {
   }
 
   @override
-  Future<GraphQlBaseModel?> removeAllWishListProducts() async {
-    GraphQlBaseModel? baseModel;
+  Future<BaseModel?> removeAllWishListProducts() async {
+    BaseModel? baseModel;
     baseModel = await ApiClient().removeAllWishlistProducts();
 
     return baseModel;
+  }
+
+  @override
+  Future<CartModel?> cartCountApi() async {
+    CartModel? cartDetails;
+    try {
+      cartDetails = await ApiClient().getCartCount();
+    } catch (error, stacktrace) {
+      debugPrint("Error --> $error");
+      debugPrint("StackTrace --> $stacktrace");
+    }
+    return cartDetails;
   }
 }

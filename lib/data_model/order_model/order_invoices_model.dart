@@ -1,5 +1,16 @@
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
 import 'package:bagisto_app_demo/data_model/graphql_base_model.dart';
 import 'package:json_annotation/json_annotation.dart';
+import '../../screens/cart_screen/cart_model/cart_data_model.dart';
 import 'order_detail_model.dart';
 part 'order_invoices_model.g.dart';
 
@@ -29,22 +40,23 @@ class ViewInvoices {
   String? baseCurrencyCode;
   String? channelCurrencyCode;
   String? orderCurrencyCode;
-  int? subTotal;
-  int? baseSubTotal;
-  int? grandTotal;
-  int? baseGrandTotal;
-  int? shippingAmount;
-  int? baseShippingAmount;
-  int? taxAmount;
-  int? baseTaxAmount;
-  int? discountAmount;
-  int? baseDiscountAmount;
+  double? subTotal;
+  double? baseSubTotal;
+  double? grandTotal;
+  double? baseGrandTotal;
+  double? shippingAmount;
+  double? baseShippingAmount;
+  double? taxAmount;
+  double? baseTaxAmount;
+  double? discountAmount;
+  double? baseDiscountAmount;
   int? orderId;
   int? orderAddressId;
   String? createdAt;
   String? updatedAt;
   dynamic transactionId;
   List<InvoicesItems>? items;
+  FormattedPrice? formattedPrice;
 
   ViewInvoices(
       {this.id,
@@ -70,6 +82,7 @@ class ViewInvoices {
         this.createdAt,
         this.updatedAt,
         this.transactionId,
+        this.formattedPrice,
         this.items});
 
   factory ViewInvoices.fromJson(Map<String, dynamic> json) =>
@@ -86,25 +99,26 @@ class InvoicesItems {
   String? name;
   dynamic description;
   int? qty;
-  int? price;
-  int? basePrice;
-  int? total;
-  int? baseTotal;
-  int? taxAmount;
-  int? baseTaxAmount;
+  double? price;
+  double? basePrice;
+  double? total;
+  double? baseTotal;
+  double? taxAmount;
+  double? baseTaxAmount;
   String? productId;
   String? productType;
   String? orderItemId;
   String? invoiceId;
   dynamic parentId;
-  String? additional;
+  Additional? additional;
   int? discountPercent;
-  int? discountAmount;
-  int? baseDiscountAmount;
+  double? discountAmount;
+  double? baseDiscountAmount;
   String? createdAt;
   String? updatedAt;
   OrderItem? orderItem;
   OrderProduct? product;
+  FormattedPrice? formattedPrice;
 
   InvoicesItems(
       {this.id,
@@ -131,6 +145,7 @@ class InvoicesItems {
         this.createdAt,
         this.updatedAt,
         this.orderItem,
+        this.formattedPrice,
         this.product});
 
   factory InvoicesItems.fromJson(Map<String, dynamic> json) =>
@@ -153,33 +168,33 @@ class OrderItem {
   int? qtyInvoiced;
   int? qtyCanceled;
   int? qtyRefunded;
-  int? price;
-  int? basePrice;
-  int? total;
-  int? baseTotal;
-  int? totalInvoiced;
-  int? baseTotalInvoiced;
-  int? amountRefunded;
-  int? baseAmountRefunded;
+  double? price;
+  double? basePrice;
+  double? total;
+  double? baseTotal;
+  double? totalInvoiced;
+  double? baseTotalInvoiced;
+  double? amountRefunded;
+  double? baseAmountRefunded;
   int? discountPercent;
-  int? discountAmount;
-  int? baseDiscountAmount;
-  int? discountInvoiced;
-  int? baseDiscountInvoiced;
-  int? discountRefunded;
-  int? baseDiscountRefunded;
+  double? discountAmount;
+  double? baseDiscountAmount;
+  double? discountInvoiced;
+  double? baseDiscountInvoiced;
+  double? discountRefunded;
+  double? baseDiscountRefunded;
   int? taxPercent;
-  int? taxAmount;
-  int? baseTaxAmount;
-  int? taxAmountInvoiced;
-  int? baseTaxAmountInvoiced;
-  int? taxAmountRefunded;
-  int? baseTaxAmountRefunded;
+  double? taxAmount;
+  double? baseTaxAmount;
+  double? taxAmountInvoiced;
+  double? baseTaxAmountInvoiced;
+  double? taxAmountRefunded;
+  double? baseTaxAmountRefunded;
   String? productId;
   String? productType;
   String? orderId;
   dynamic parentId;
-  String? additional;
+  Additional? additional;
   String? createdAt;
   String? updatedAt;
 

@@ -1,16 +1,15 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 // ignore_for_file: file_names, prefer_typing_uninitialized_variables
 
-import 'package:bagisto_app_demo/data_model/categories_data_model/categories_product_model.dart';
 import 'package:bagisto_app_demo/data_model/graphql_base_model.dart';
 import 'package:json_annotation/json_annotation.dart';
 part 'review_model.g.dart';
@@ -28,7 +27,22 @@ class ReviewModel extends GraphQlBaseModel {
   @override
   Map<String, dynamic> toJson() => _$ReviewModelToJson(this);
 }
+@JsonSerializable()
+class PaginatorInfo{
+  int?  count;
+  int? currentPage;
+  int? lastPage;
+  int? total;
 
+
+  PaginatorInfo({this.count,this.currentPage,this.lastPage,this.total});
+  factory PaginatorInfo.fromJson(Map<String, dynamic> json) =>
+      _$PaginatorInfoFromJson(json);
+
+  Map<String, dynamic> toJson() =>
+      _$PaginatorInfoToJson(this);
+
+}
 @JsonSerializable()
 class ReviewData {
   String? id;
@@ -40,9 +54,9 @@ class ReviewData {
   String? updatedAt;
   String? productId;
   String? customerId;
-  String? customerName;
+  // String? customerName;
   ProductData? product;
-
+  Customer? customer;
   ReviewData(
       {this.id,
       this.title,
@@ -53,13 +67,34 @@ class ReviewData {
       this.updatedAt,
       this.productId,
       this.customerId,
-      this.customerName,
+      // this.customerName,
       this.product});
 
   factory ReviewData.fromJson(Map<String, dynamic> json) =>
       _$ReviewDataFromJson(json);
 
   Map<String, dynamic> toJson() => _$ReviewDataToJson(this);
+}
+@JsonSerializable()
+class Customer {
+  String? id;
+  String? firstName;
+  String? lastName;
+  String? name;
+  String? gender;
+  String? email;
+  Customer(
+      {this.id,
+        this.firstName,
+        this.lastName,
+        this.name,
+        this.gender,
+        this.email,
+        });
+  factory Customer.fromJson(Map<String, dynamic> json) =>
+      _$CustomerFromJson(json);
+
+  Map<String, dynamic> toJson() => _$CustomerToJson(this);
 }
 
 @JsonSerializable()
@@ -73,6 +108,7 @@ class ProductData {
   String? updatedAt;
   List<ProductFlats>? productFlats;
   List<Images>? images;
+  String? name;
 
   ProductData(
       {this.id,
@@ -81,7 +117,7 @@ class ProductData {
       this.sku,
       this.createdAt,
       this.updatedAt,
-      this.productFlats, this.urlKey, this.images});
+      this.productFlats, this.urlKey, this.images, this.name});
 
   factory ProductData.fromJson(Map<String, dynamic> json) =>
       _$ProductDataFromJson(json);

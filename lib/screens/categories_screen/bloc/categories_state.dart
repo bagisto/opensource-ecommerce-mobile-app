@@ -1,21 +1,17 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 // ignore_for_file: must_be_immutable
 
-import 'package:equatable/equatable.dart';
 import '../../../data_model/add_to_wishlist_model/add_wishlist_model.dart';
-import '../../../data_model/categories_data_model/filter_product_model.dart';
-import '../../../data_model/graphql_base_model.dart';
-import '../../cart_screen/cart_model/add_to_cart_model.dart';
-import '../../home_page/data_model/new_product_data.dart';
+import 'package:bagisto_app_demo/screens/categories_screen/utils/index.dart';
 
 abstract class CategoriesBaseState extends Equatable {}
 
@@ -66,7 +62,7 @@ class AddToCompareSubCategoryState extends CategoriesBaseState{
   CategoriesStatus? status;
   String? error;
   String? successMsg;
-  GraphQlBaseModel? baseModel;
+  BaseModel? baseModel;
   AddToCompareSubCategoryState.success({ this.successMsg,this.baseModel}):status=CategoriesStatus.success;
   AddToCompareSubCategoryState.fail({this.error}):status=CategoriesStatus.fail;
 
@@ -107,7 +103,7 @@ class RemoveWishlistState extends CategoriesBaseState{
   CategoriesStatus? status;
   String? successMsg="";
   String? error="";
-  GraphQlBaseModel? response;
+  AddToCartModel? response;
   String? productDeletedId;
   RemoveWishlistState.success({this.response, this.productDeletedId,this.successMsg}):status=CategoriesStatus.success;
   RemoveWishlistState.fail({this.error}):status=CategoriesStatus.fail;

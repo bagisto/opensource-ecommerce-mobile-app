@@ -1,17 +1,21 @@
-import 'package:bagisto_app_demo/utils/application_localization.dart';
-import 'package:bagisto_app_demo/widgets/loader.dart';
-import 'package:flutter/material.dart';
-import '../../../data_model/account_models/account_info_details.dart';
-import '../../../utils/app_constants.dart';
-import '../../../utils/check_internet_connection.dart';
-import '../../../utils/shared_preference_helper.dart';
-import '../../../utils/string_constants.dart';
-import '../../../widgets/show_message.dart';
-import '../../home_page/bloc/home_page_repository.dart';
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
+
+import 'package:bagisto_app_demo/data_model/account_models/account_info_details.dart';
+import 'package:bagisto_app_demo/screens/drawer/utils/index.dart';
+
 
 // ignore: must_be_immutable
 class LogoutButton extends StatefulWidget {
-  AccountInfoDetails? customerDetails;
+  AccountInfoModel? customerDetails;
   final dynamic fetchSharedPreferenceData;
   LogoutButton({Key? key, this.customerDetails, this.fetchSharedPreferenceData})
       : super(key: key);
@@ -30,7 +34,7 @@ class _LogoutButtonState extends State<LogoutButton> {
       title: MaterialButton(
         color: Theme.of(context).colorScheme.onBackground,
         elevation: 0.0,
-        textColor: Theme.of(context).colorScheme.background,
+        textColor: Theme.of(context).colorScheme.secondaryContainer,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
         padding: const EdgeInsets.symmetric(vertical: 12.0),
         onPressed: () {
@@ -45,7 +49,7 @@ class _LogoutButtonState extends State<LogoutButton> {
         child: Text(
           StringConstants.logOutTitle.localized().toUpperCase(),
           style: Theme.of(context).textTheme.labelMedium?.copyWith(
-            color: Theme.of(context).colorScheme.background
+            color: Theme.of(context).colorScheme.secondaryContainer,
           ),
         ),
       ),
@@ -59,7 +63,7 @@ class _LogoutButtonState extends State<LogoutButton> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+          backgroundColor: Theme.of(context).colorScheme.background,
           title: Text(
             StringConstants.logOutTitle.localized(),
             style: Theme.of(context).textTheme.headlineSmall,
@@ -100,7 +104,7 @@ class _LogoutButtonState extends State<LogoutButton> {
         builder: (BuildContext context) {
           return Dialog(
             child: Container(
-              color: Theme.of(context).appBarTheme.backgroundColor,
+              color: Theme.of(context).colorScheme.background,
               padding: const EdgeInsets.all(AppSizes.spacingWide),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -125,9 +129,9 @@ class _LogoutButtonState extends State<LogoutButton> {
     HomePageRepositoryImp().callLogoutApi().then((response) async {
       Navigator.pop(context);
       Navigator.pop(context);
-      ShowMessage.successNotification(response?.success ?? "", context);
+      ShowMessage.successNotification(response?.message ?? "", context);
       if (true) {
-        await SharedPreferenceHelper.onUserLogout();
+        appStoragePref.onUserLogout();
         widget.fetchSharedPreferenceData();
       }
     });

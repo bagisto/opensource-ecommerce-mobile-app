@@ -1,3 +1,13 @@
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
 import 'package:bagisto_app_demo/utils/shared_preference_helper.dart';
 import 'package:flutter/material.dart';
 
@@ -20,7 +30,7 @@ class ThemeProvider extends ChangeNotifier {
   }
 
   getPreferences() async {
-    _isDark = await appStoragePref.getTheme();
+    _isDark =  appStoragePref.getTheme();
     notifyListeners();
     if (_isDark == "") {
       if (MediaQueryData.fromView(WidgetsBinding.instance.platformDispatcher.views.single).platformBrightness == Brightness.dark) {
@@ -31,7 +41,7 @@ class ThemeProvider extends ChangeNotifier {
         appStoragePref.setTheme("false");
       }
     } else {
-      _isDark = await appStoragePref.getTheme();
+      _isDark =  appStoragePref.getTheme();
       notifyListeners();
     }
   }

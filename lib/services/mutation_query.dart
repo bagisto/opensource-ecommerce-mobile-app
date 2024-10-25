@@ -1,20 +1,33 @@
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
 class MutationsData {
   String homeCategories({int id = 1}) {
     return """
     query homeCategories {
-    homeCategories(id: $id)
+    homeCategories( 
+        input: [
+            {
+                key: "id",
+                value: "$id",
+            }
+        ])
         {
         id
-        categoryId
+       
         position
         logoPath
         logoUrl
         status
         displayMode
-        Lft
-        Rgt
         parentId
-        additional
         bannerPath
         bannerUrl
         name
@@ -62,16 +75,13 @@ class MutationsData {
     homeCategories(input: $filters)
         {
         id
-        categoryId
         position
         logoPath
         logoUrl
         status
         displayMode
-        Lft
-        Rgt
         parentId
-        additional
+
         bannerPath
         bannerUrl
         name
@@ -200,10 +210,7 @@ class MutationsData {
               status
               displayMode
               parentId
-              additional
-              Lft
-              Rgt
-              categoryId
+
               localeId
               createdAt
               updatedAt
@@ -229,7 +236,7 @@ class MutationsData {
           }
           rootCategory {
               id
-              categoryId
+      
               name
               slug
               position
@@ -237,10 +244,9 @@ class MutationsData {
               logoUrl
               status
               displayMode
-              Lft
-              Rgt
+             
               parentId
-              additional
+              
               bannerPath
               bannerUrl
               urlPath
@@ -276,51 +282,8 @@ class MutationsData {
                       }
                   }
               }
-              translations {
-                  id
-                  name
-                  slug
-                  description
-                  metaTitle
-                  metaDescription
-                  metaKeywords
-                  category_id
-                  locale
-                  localeId
-                  urlPath
-              }
+             
           }
-      }
-    }""";
-  }
-
-  String getAdvertisementData() {
-    return """
-    query advertisements {
-    advertisements {
-        advertisementFour {
-          slug
-          image
-        }
-        advertisementThree {
-          slug
-          image
-        }
-        advertisementTwo {
-          slug
-          image
-        }
-        cart {
-            id
-            customerEmail
-            customerFirstName
-            customerLastName
-            shippingMethod
-            couponCode
-            isGift
-            itemsCount
-            itemsQty
-        }
       }
     }""";
   }
@@ -335,10 +298,9 @@ class MutationsData {
         name
         sortOrder
         status
-        baseUrl
+        
         translations {
-           
-            locale
+            localeCode
             options {
                 css
                 html
@@ -475,7 +437,7 @@ class MutationsData {
         # Only use while adding bundled product to cart
         bundleOptions: $bundleParams
       }) {
-        status
+        success
         message
         cart {
             id
@@ -503,7 +465,7 @@ class MutationsData {
             checkoutMethod
             isGuest
             isActive
-            conversionTime
+         
             customerId
             channelId
             appliedCartRuleIds
@@ -519,34 +481,53 @@ class MutationsData {
   }) {
     return """
     mutation addToWishlist {
-        addToWishlist(input: {
+        addToWishlist(
             productId: $id
-        }) {
+        ) {
             success
+           message
         }
     }""";
   }
-
   String removeFromWishlist({
     String? id,
   }) {
     return """
-    mutation removeFromWishlist {
-        removeFromWishlist(input: {
-          productId: $id
-        }) {
-          status
-          success
-        }
-    }""";
+   mutation removeFromWishlist {
+    removeFromWishlist (
+        productId: $id
+    ) {
+        success
+        message
+    }
+}""";
+  }
+  String contactUsApi({
+    String? name,
+    String?  email,
+    String?  phone,
+    String? describe
+  }) {
+    return """
+ mutation contactUs {
+contactUs (input: {
+name: "$name"
+email: "$email"
+contact: "$phone"
+message: "$describe"
+}) {
+success
+message
+}
+}""";
   }
 
   String customerLogout() {
     return """
     mutation customerLogout{
       customerLogout {
-       status
-       success
+     success
+       message
       }
     }""";
   }
@@ -556,70 +537,17 @@ class MutationsData {
   }) {
     return """
     mutation addToCompare {
-      addToCompare(input: {
+      addToCompare(
           productId: $id
-      }) {
-          success
-          compareProduct {
-              id
-              productId
-              customerId
-              createdAt
-              updatedAt
-              customer {
-                  id
-                  firstName
-                  lastName
-                  name
-                  gender
-                  dateOfBirth
-                  email
-                  phone
-                  password
-                  apiToken
-                  customerGroupId
-                  subscribedToNewsLetter
-                  isVerified
-                  token
-                  notes
-                  status
-                  createdAt
-                  updatedAt
-              }
-              cart {
-                  id
-                  customerEmail
-                  customerFirstName
-                  customerLastName
-                  shippingMethod
-                  couponCode
-                  isGift
-                  itemsCount
-                  itemsQty
-              }
-          }
-          cart {
-              id
-              customerEmail
-              customerFirstName
-              customerLastName
-              shippingMethod
-              couponCode
-              isGift
-              itemsCount
-              itemsQty
-          }
-      }
-    }""";
-  }
-
-
-  String getCustomerData() {
-    return """
-    query accountInfo {
-        accountInfo {
-            message
-            status
+      ) {
+        success
+        message
+        compareProduct {
+            id
+            productId
+            customerId
+            createdAt
+            updatedAt
             customer {
                 id
                 firstName
@@ -630,10 +558,77 @@ class MutationsData {
                 email
                 phone
                 password
+                apiToken
+                customerGroupId
+                subscribedToNewsLetter
+                isVerified
                 token
+                notes {
+                    id
+                    customerId
+                    note
+                    customerNotified
+                    createdAt
+                    updatedAt
+                }
                 status
-                imageUrl
-            }     
+                createdAt
+                updatedAt
+            }
+            cart {
+                id
+                customerEmail
+                customerFirstName
+                customerLastName
+                shippingMethod
+                couponCode
+                isGift
+                itemsCount
+                itemsQty
+            }
+        }
+        cart {
+            id
+            customerEmail
+            customerFirstName
+            customerLastName
+            shippingMethod
+            couponCode
+            isGift
+            itemsCount
+            itemsQty
+        }
+    }
+    }""";
+  }
+
+
+  String getCustomerData() {
+    return """
+    query accountInfo {
+        accountInfo {
+                id
+            firstName
+            lastName
+            name
+            gender
+            dateOfBirth
+            email
+            phone
+            image
+            imageUrl
+            status
+            password
+            apiToken
+            customerGroupId
+            channelId
+            subscribedToNewsLetter
+            isVerified
+            isSuspended
+            token
+            rememberToken
+            createdAt
+            updatedAt
         }
     }""";
   }
@@ -742,6 +737,7 @@ class MutationsData {
 
   String cartDetails() {
     return """
+   
     query cartDetail {
         cartDetail {
             id
@@ -769,18 +765,36 @@ class MutationsData {
             checkoutMethod
             isGuest
             isActive
-            conversionTime
+       
             customerId
             channelId
             appliedCartRuleIds
             createdAt
             updatedAt
+            appliedTaxRates {
+            taxName
+            totalAmount
+        }
             items {
+                additional {
+                selectedConfigurableOption
+                superAttribute {
+                attributeId
+                optionId
+                }
+                attributes {
+                optionId
+                optionLabel
+                attributeCode
+                attributeName
+                }
+                }
                 id
                 quantity
                 sku
                 type
                 name
+                appliedTaxRate
                 couponCode
                 weight
                 totalWeight
@@ -811,80 +825,7 @@ class MutationsData {
                     sku
                     urlKey
                     parentId
-                    productFlats {
-                        id
-                        sku
-                        name
-                        description
-                        shortDescription
-                        urlKey
-                        new
-                        featured
-                        status
-                        visibleIndividually
-                        thumbnail
-                        price
-                        cost
-                        specialPrice
-                        specialPriceFrom
-                        specialPriceTo
-                        weight
-                        color
-                        colorLabel
-                        size
-                        sizeLabel
-                        locale
-                        channel
-                        productId
-                        parentId
-                        minPrice
-                        maxPrice
-                        metaTitle
-                        metaKeywords
-                        metaDescription
-                        width
-                        height
-                        depth
-                        variants {
-                            id
-                            sku
-                            name
-                            description
-                            shortDescription
-                            urlKey
-                            new
-                            featured
-                            status
-                            visibleIndividually
-                            thumbnail
-                            price
-                            locale
-                            channel
-                            productId
-                            parentId
-                        }
-                        parent {
-                            id
-                            sku
-                            name
-                            description
-                            shortDescription
-                            urlKey
-                            new
-                            featured
-                            status
-                            visibleIndividually
-                            thumbnail
-                            price
-                            cost
-                            specialPrice
-                            specialPriceFrom
-                            specialPriceTo
-                            weight
-                        }
-                        createdAt
-                        updatedAt
-                    }
+                  
                     variants {
                         id
                         type
@@ -955,13 +896,7 @@ class MutationsData {
                             type
                             position
                         }
-                        translations {
-                            id
-                            name
-                            description
-                            localeId
-                            locale
-                        }
+                       
                         createdAt
                         updatedAt
                     }
@@ -1023,6 +958,7 @@ class MutationsData {
                         associatedProductId
                         associatedProduct {
                             id
+                            name
                             type
                             attributeFamilyId
                             sku
@@ -1120,12 +1056,16 @@ class MutationsData {
                 taxTotal
                 baseTaxTotal
                 discount
+                discountAmount
                 baseDiscount
                 discountedSubTotal
                 baseDiscountedSubTotal
             }
         }
-    }""";
+    }
+   
+   
+   """;
   }
 
   String updateItemToCart({List<Map<dynamic, String>>? items}) {
@@ -1134,7 +1074,7 @@ class MutationsData {
     updateItemToCart(input: {
         qty: $items
     }) {
-        status
+        success
         cart {
             id
             customerEmail
@@ -1161,7 +1101,6 @@ class MutationsData {
             checkoutMethod
             isGuest
             isActive
-            conversionTime
             customerId
             channelId
             appliedCartRuleIds
@@ -1176,51 +1115,6 @@ class MutationsData {
     return """
     mutation removeCartItem {
     removeCartItem(id: $id) {
-        status
-        message
-        cart {
-            id
-            customerEmail
-            customerFirstName
-            customerLastName
-            shippingMethod
-            couponCode
-            isGift
-            itemsCount
-            itemsQty
-            exchangeRate
-            globalCurrencyCode
-            baseCurrencyCode
-            channelCurrencyCode
-            cartCurrencyCode
-            grandTotal
-            baseGrandTotal
-            subTotal
-            baseSubTotal
-            taxTotal
-            baseTaxTotal
-            discountAmount
-            baseDiscountAmount
-            checkoutMethod
-            isGuest
-            isActive
-            conversionTime
-            customerId
-            channelId
-            appliedCartRuleIds
-            createdAt
-            updatedAt 
-        }
-      }
-    }""";
-  }
-
-  String applyCoupon(String coupon) {
-    return """
-    mutation applyCoupon {
-    applyCoupon(input: {
-        code: "$coupon"
-    }) {
         success
         message
         cart {
@@ -1249,136 +1143,26 @@ class MutationsData {
             checkoutMethod
             isGuest
             isActive
-            conversionTime
+       
             customerId
             channelId
             appliedCartRuleIds
             createdAt
-            updatedAt
-            items {
-                id
-                quantity
-                sku
-                type
-                name
-                couponCode
-                weight
-                totalWeight
-                baseTotalWeight
-                price
-                basePrice
-                total
-                baseTotal
-                taxPercent
-                taxAmount
-                baseTaxAmount
-                discountPercent
-                discountAmount
-                baseDiscountAmount
-                parentId
-                productId
-                cartId
-                taxCategoryId
-                customPrice
-                appliedCartRuleIds
-                createdAt
-                updatedAt
-                product {
-                    id
-                    type
-                    attributeFamilyId
-                    sku
-                    parentId
-                }
-            }
-            formattedPrice {
-                grandTotal
-                baseGrandTotal
-                subTotal
-                baseSubTotal
-                taxTotal
-                baseTaxTotal
-                discount
-                baseDiscount
-                discountedSubTotal
-                baseDiscountedSubTotal
-            }
-            shippingAddress {
-                id
-                addressType
-                customerId
-                cartId
-                orderId
-                firstName
-                lastName
-                gender
-                companyName
-                address1
-                address2
-                postcode
-                city
-                state
-                country
-                email
-                phone
-                defaultAddress
-                vatId
-                additional
-                createdAt
-                updatedAt
-            }
-            billingAddress {
-                id
-                addressType
-                customerId
-                cartId
-                orderId
-                firstName
-                lastName
-                gender
-                companyName
-                address1
-                address2
-                postcode
-                city
-                state
-                country
-                email
-                phone
-                defaultAddress
-                vatId
-                additional
-                createdAt
-                updatedAt
-            }
-            selectedShippingRate {
-                id
-                carrier
-                carrierTitle
-                method
-                methodTitle
-                methodDescription
-                price
-                basePrice
-                discountAmount
-                baseDiscountAmount
-                cartAddressId
-                createdAt
-                updatedAt
-                formattedPrice {
-                    price
-                    basePrice
-                }
-            }
-            payment {
-                id
-                method
-                methodTitle
-                cartId
-                createdAt
-                updatedAt
-            }
+            updatedAt 
         }
+      }
+    }""";
+  }
+
+  String applyCoupon(String coupon) {
+    return """
+    mutation applyCoupon {
+    applyCoupon(input: {
+        code: "$coupon"
+    }) {
+        success
+        message
+        
       }
     }""";
   }
@@ -1397,7 +1181,8 @@ class MutationsData {
     return """
     mutation moveToWishlist {
     moveToWishlist(id: $id) {
-        status
+      success
+      message
         cart {
             id
             customerEmail
@@ -1424,7 +1209,7 @@ class MutationsData {
             checkoutMethod
             isGuest
             isActive
-            conversionTime
+            
             customerId
             channelId
             appliedCartRuleIds
@@ -1439,18 +1224,25 @@ class MutationsData {
     return """
     mutation removeAllCartItem {
         removeAllCartItem {
-            status
+            success
             message
         }
     } """;
   }
 
-  String allProductsList({List<Map<String, dynamic>>? filters, int page = 1}) {
+  String allProductsList({List<Map<String, dynamic>>? filters, int page = 1, int limit = 15}) {
+    filters?.add({
+      "key": '"page"',
+      "value": '"$page"'
+    });
+    filters?.add({
+      "key": '"limit"',
+      "value": '"$limit"'
+    });
+
     return """
     query allProducts {
 	  allProducts(
-        page: $page,
-        first: 15,
         input: $filters) { 
         paginatorInfo {
             count
@@ -1461,10 +1253,13 @@ class MutationsData {
             id
             type
             isInWishlist
+            isInSale
+            isSaleable
             attributeFamilyId
             name
             shareURL
             urlKey
+            description
             additionalData {
                 id
                 code
@@ -1495,84 +1290,59 @@ class MutationsData {
                     formattedRegularPriceTo
                 }
             }
-            
+            configutableData {
+            chooseText
+            attributes {
+                id
+                code
+                label
+                swatchType
+                options {
+                    id
+                    label
+                    swatchType
+                    swatchValue
+                }
+            }
+            index {
+                id
+                attributeOptionIds {
+                    attributeId
+                    attributeCode
+                    attributeOptionId
+                }
+            }
+            variantPrices {
+                id
+                regularPrice {
+                    price
+                    formatedPrice
+                }
+                finalPrice {
+                    price
+                    formatedPrice
+                }
+            }
+            variantImages {
+                id
+                images {
+                    smallImageUrl
+                    mediumImageUrl
+                    largeImageUrl
+                    originalImageUrl
+                }
+            }
+            variantVideos {
+                id
+                videos
+            }
+            regularPrice {
+                formatedPrice
+                price
+            }
+          }
             sku
             parentId
-            productFlats {
-                id
-                sku
-                productNumber
-                name
-                description
-                urlKey
-                new
-                featured
-                shortDescription
-                status
-                visibleIndividually
-                thumbnail
-                price
-                cost
-                specialPrice
-                specialPriceFrom
-                specialPriceTo
-                weight
-                color
-                colorLabel
-                size
-                sizeLabel
-                locale
-                channel
-                productId
-                parentId
-                minPrice
-                maxPrice
-                metaTitle
-                metaKeywords
-                metaDescription
-                width
-                height
-                depth
-                variants {
-                    id
-                    sku
-                    name
-                    description
-                    shortDescription
-                    urlKey
-                    new
-                    featured
-                    status
-                    visibleIndividually
-                    thumbnail
-                    price
-                    locale
-                    channel
-                    productId
-                    parentId
-                }
-                parent {
-                    id
-                    sku
-                    name
-                    description
-                    shortDescription
-                    urlKey
-                    new
-                    featured
-                    status
-                    visibleIndividually
-                    thumbnail
-                    price
-                    cost
-                    specialPrice
-                    specialPriceFrom
-                    specialPriceTo
-                    weight
-                }
-                createdAt
-                updatedAt
-            }
             variants {
                 id
                 type
@@ -1642,13 +1412,7 @@ class MutationsData {
                     type
                     position
                 }
-                translations {
-                    id
-                    name
-                    description
-                    localeId
-                    locale
-                }
+                
                 createdAt
                 updatedAt
             }
@@ -1708,7 +1472,7 @@ class MutationsData {
                 status
                 productId
                 customerId
-                customerName
+            
                 createdAt
                 updatedAt
             }
@@ -1720,6 +1484,7 @@ class MutationsData {
                 associatedProductId
                 associatedProduct {
                     id
+                    name
                     type
                     attributeFamilyId
                     sku
@@ -1841,12 +1606,14 @@ class MutationsData {
             }
         }
       }
-    }""";
+    }
+
+    """;
   }
 
   String wishlistData({int page = 1}) {
     return """
-    query wishlists {
+     query wishlists {
     wishlists(input: {
 
     } page: $page) {
@@ -1855,11 +1622,11 @@ class MutationsData {
             channelId
             productId
             customerId
-            itemOptions
-            additional
+            
+            
             movedToCart
             shared
-            timeOfMoving
+            
             createdAt
             updatedAt
             customer {
@@ -1877,12 +1644,13 @@ class MutationsData {
                 subscribedToNewsLetter
                 isVerified
                 token
-                notes
+                
                 status
                 createdAt
                 updatedAt
             }
             product {
+            isSaleable
                 id
                 type
                 attributeFamilyId
@@ -1930,40 +1698,33 @@ class MutationsData {
                 rootCategoryId
                 logoUrl
                 faviconUrl
-                success
+                
             }
-            cart {
-                id
-                customerEmail
-                customerFirstName
-                customerLastName
-                shippingMethod
-                couponCode
-                isGift
-                itemsCount
-                itemsQty
-            }
+         
         }
       }
-    }""";
+    }
+""";
   }
 
-  String moveToCartFromWishlist(int id) {
+  String moveToCartFromWishlist(int id, String quantity) {
     return """
     mutation moveToCart {
-    moveToCart(id: $id) {
-        status
+    moveToCart(id: $id
+        quantity: $quantity
+    ) {
         success
         wishlist {
             id
             channelId
             productId
             customerId
-            itemOptions
-            additional
+              additional {
+                key
+                value
+            }
             movedToCart
             shared
-            timeOfMoving
             createdAt
             updatedAt
             product {
@@ -1975,28 +1736,8 @@ class MutationsData {
                 parentId
                 createdAt
                 updatedAt
-                productFlats {
-                    id
-                    sku
-                    productNumber
-                    name
-                    description
-                    shortDescription
-                    locale
-                    channel
-                }
+              
             }
-        }
-        cart {
-            id
-            customerEmail
-            customerFirstName
-            customerLastName
-            shippingMethod
-            couponCode
-            isGift
-            itemsCount
-            itemsQty
         }
       }
     }""";
@@ -2006,7 +1747,7 @@ class MutationsData {
     return """
     mutation removeAllWishlists {
     removeAllWishlists {
-        status
+    message
         success
       }
     }""";
@@ -2014,10 +1755,10 @@ class MutationsData {
 
   String getSocialLoginResponse(
       {String? phone,
-      String? firstName,
-      String? lastName,
-      String? email,
-      String? signUpType}) {
+        String? firstName,
+        String? lastName,
+        String? email,
+        String? signUpType}) {
     return """
     mutation customerSocialSignUp {
     customerSocialSignUp(input: {
@@ -2066,7 +1807,7 @@ class MutationsData {
       customerLogin(
         input: { email: "$email", password: "$password", remember: $remember }
       ) {
-        status
+        message
         success
         accessToken
         customer {
@@ -2093,19 +1834,21 @@ class MutationsData {
     String? email,
     String? password,
     String? confirmPassword,
+    bool? subscribedToNewsLetter
   }) {
     return """
-    mutation customerRegister {
-     customerRegister(
+    mutation customerSignUp {
+     customerSignUp(
         input: {
           firstName: "$firstName"
           lastName: "$lastName"
           email: "$email"
           password: "$password"
           passwordConfirmation: "$confirmPassword"
+          subscribedToNewsLetter:    $subscribedToNewsLetter
         }
       ) {
-        status
+        message
         success
         accessToken
         tokenType
@@ -2122,10 +1865,9 @@ class MutationsData {
             password
             apiToken
             customerGroupId
-            subscribedToNewsLetter
             isVerified
             token
-            notes
+        
             status
             createdAt
             updatedAt
@@ -2139,11 +1881,13 @@ class MutationsData {
   }) {
     return """
     mutation forgotPassword {
-      forgotPassword(input: { email: "$email" }) {
-        status
+    forgotPassword (
+        email: "$email"
+    ) {
         success
-      }
-    }""";
+        message
+    }
+}""";
   }
 
   String updateAccount({
@@ -2157,6 +1901,7 @@ class MutationsData {
     String? password,
     String? confirmPassword,
     String? avatar,
+    bool? subscribedToNewsLetter
   }) {
     return """
       mutation updateAccount {
@@ -2165,17 +1910,18 @@ class MutationsData {
             firstName: "$firstName"
             lastName: "$lastName"
             email: "$email"
-            gender: "$gender"
+            gender: ${gender?.toUpperCase()}
             uploadType: BASE64
             imageUrl: "data:image/png;base64,$avatar"
             dateOfBirth: "$dateOfBirth"
             phone: "$phone"
-            oldpassword: "$oldPassword"
-            password: "$password"
-            passwordConfirmation: "$confirmPassword"
+            currentPassword: "$oldPassword"
+            newPassword: "$password"
+            newPasswordConfirmation: "$confirmPassword"
+            newsletterSubscriber: $subscribedToNewsLetter
           }
         ) {
-          status
+          success
           message
           customer{
             id
@@ -2192,7 +1938,7 @@ class MutationsData {
             subscribedToNewsLetter
             isVerified
             token
-            notes
+          
             imageUrl
             status
             createdAt
@@ -2207,20 +1953,23 @@ class MutationsData {
   }) {
     return """
     mutation deleteAccount{
-          deleteAccount(input: {
+          deleteAccount(
             password: "$password"
-          }) {
-              status
+          ) {
               success
+              message
           }
       }""";
   }
 
-  String getReviewList() {
+  String getReviewList(int page) {
     return """
     query reviewsList {
       reviewsList(
-        input: {}){
+        input: {}
+        page: $page
+        first: 10
+        ){
         paginatorInfo {
             count
             currentPage
@@ -2237,53 +1986,52 @@ class MutationsData {
             updatedAt
             productId
             customerId
-            customerName
+        
+            customer {
+                id
+                firstName
+                lastName
+                name
+                gender
+                dateOfBirth
+                email
+                phone
+                image
+                imageUrl
+                status
+                password
+                apiToken
+                customerGroupId
+                subscribedToNewsLetter
+                isVerified
+                isSuspended
+                token
+                rememberToken
+                createdAt
+                updatedAt
+                customerGroup {
+                    id
+                    code
+                    name
+                    isUserDefined
+                    createdAt
+                    updatedAt
+                }
+            }
             product {
                 id
                 type
                 attributeFamilyId
                 sku
+                name
                 urlKey
                 parentId
                 createdAt
                 updatedAt
-                productFlats {
-                    id
-                    sku
-                    name
-                    description
-                    shortDescription
-                    urlKey
-                    new
-                    featured
-                    status
-                    visibleIndividually
-                    thumbnail
-                    price
-                    cost
-                    specialPrice
-                    specialPriceFrom
-                    specialPriceTo
-                    weight
-                    color
-                    colorLabel
-                    size
-                    sizeLabel
-                    locale
-                    channel
-                    productId
-                    parentId
-                    minPrice
-                    maxPrice
-                    metaTitle
-                    metaKeywords
-                    metaDescription
-                    width
-                    height
-                    depth
-                    createdAt
-                    updatedAt
+                images{
+                    url
                 }
+               
             }
           }
         }
@@ -2294,214 +2042,9 @@ class MutationsData {
     return """
     mutation cancelCustomerOrder {
       cancelCustomerOrder(id: $id) {
-       status
+       success
         message
-        order {
-            id
-            incrementId
-            status
-            channelName
-            isGuest
-            customerEmail
-            customerFirstName
-            customerLastName
-            customerCompanyName
-            customerVatId
-            shippingMethod
-            shippingTitle
-            shippingDescription
-            couponCode
-            isGift
-            totalItemCount
-            totalQtyOrdered
-            baseCurrencyCode
-            channelCurrencyCode
-            orderCurrencyCode
-            grandTotal
-            baseGrandTotal
-            grandTotalInvoiced
-            baseGrandTotalInvoiced
-            grandTotalRefunded
-            baseGrandTotalRefunded
-            subTotal
-            baseSubTotal
-            subTotalInvoiced
-            baseSubTotalInvoiced
-            subTotalRefunded
-            baseSubTotalRefunded
-            discountPercent
-            discountAmount
-            baseDiscountAmount
-            discountInvoiced
-            baseDiscountInvoiced
-            discountRefunded
-            baseDiscountRefunded
-            taxAmount
-            baseTaxAmount
-            taxAmountInvoiced
-            baseTaxAmountInvoiced
-            taxAmountRefunded
-            baseTaxAmountRefunded
-            shippingAmount
-            baseShippingAmount
-            shippingInvoiced
-            baseShippingInvoiced
-            shippingRefunded
-            baseShippingRefunded
-            customerId
-            customerType
-            channelId
-            channelType
-            cartId
-            appliedCartRuleIds
-            shippingDiscountAmount
-            baseShippingDiscountAmount
-            createdAt
-            updatedAt
-            billingAddress {
-                id
-                customerId
-                cartId
-                orderId
-                firstName
-                lastName
-                gender
-                companyName
-                address1
-                address2
-                postcode
-                city
-                state
-                country
-                email
-                phone
-                vatId
-                defaultAddress
-            }
-            shippingAddress {
-                id
-                customerId
-                cartId
-                orderId
-                firstName
-                lastName
-                gender
-                companyName
-                address1
-                address2
-                postcode
-                city
-                state
-                country
-                email
-                phone
-                vatId
-                defaultAddress
-            }
-            items {
-                id
-                sku
-                type
-                name
-                couponCode
-                weight
-                totalWeight
-                qtyOrdered
-                qtyShipped
-                qtyInvoiced
-                qtyCanceled
-                qtyRefunded
-                price
-                basePrice
-                total
-                baseTotal
-                totalInvoiced
-                baseTotalInvoiced
-                amountRefunded
-                baseAmountRefunded
-                discountPercent
-                discountAmount
-                baseDiscountAmount
-                discountInvoiced
-                baseDiscountInvoiced
-                discountRefunded
-                baseDiscountRefunded
-                taxPercent
-                taxAmount
-                baseTaxAmount
-                taxAmountInvoiced
-                baseTaxAmountInvoiced
-                taxAmountRefunded
-                baseTaxAmountRefunded
-                productId
-                productType
-                orderId
-                parentId
-                additional
-                createdAt
-                updatedAt
-                formattedPrice {
-                    price
-                    basePrice
-                    total
-                    baseTotal
-                    totalInvoiced
-                    baseTotalInvoiced
-                    amountRefunded
-                    baseAmountRefunded
-                    discountAmount
-                    baseDiscountAmount
-                    discountInvoiced
-                    baseDiscountInvoiced
-                    discountRefunded
-                    baseDiscountRefunded
-                    taxAmount
-                    baseTaxAmount
-                    taxAmountInvoiced
-                    baseTaxAmountInvoiced
-                    taxAmountRefunded
-                    baseTaxAmountRefunded
-                    grantTotal
-                    baseGrantTotal
-                }
-            }
-            payment {
-                id
-                method
-                methodTitle
-            }
-            formattedPrice {
-                grandTotal
-                baseGrandTotal
-                grandTotalInvoiced
-                baseGrandTotalInvoiced
-                grandTotalRefunded
-                baseGrandTotalRefunded
-                subTotal
-                baseSubTotal
-                subTotalInvoiced
-                baseSubTotalInvoiced
-                subTotalRefunded
-                discountAmount
-                baseDiscountAmount
-                discountInvoiced
-                baseDiscountInvoiced
-                discountRefunded
-                baseDiscountRefunded
-                taxAmount
-                baseTaxAmount
-                taxAmountInvoiced
-                baseTaxAmountInvoiced
-                taxAmountRefunded
-                baseTaxAmountRefunded
-                shippingAmount
-                baseShippingAmount
-                shippingInvoiced
-                baseShippingInvoiced
-                shippingRefunded
-                baseShippingRefunded
-            }
-        }
+        
       }
     }""";
   }
@@ -2518,8 +2061,7 @@ class MutationsData {
         customerEmail
         customerFirstName
         customerLastName
-        customerCompanyName
-        customerVatId
+     
         shippingMethod
         shippingTitle
         shippingDescription
@@ -2580,8 +2122,7 @@ class MutationsData {
             lastName
             gender
             companyName
-            address1
-            address2
+            address
             postcode
             city
             state
@@ -2600,8 +2141,7 @@ class MutationsData {
             lastName
             gender
             companyName
-            address1
-            address2
+            address
             postcode
             city
             state
@@ -2650,7 +2190,19 @@ class MutationsData {
             productType
             orderId
             parentId
-            additional
+            additional {
+                selectedConfigurableOption
+                superAttribute {
+                attributeId
+                optionId
+                }
+                attributes {
+                optionId
+                optionLabel
+                attributeCode
+                attributeName
+                }
+                }
             createdAt
             updatedAt
             formattedPrice {
@@ -2674,8 +2226,7 @@ class MutationsData {
                 baseTaxAmountInvoiced
                 taxAmountRefunded
                 baseTaxAmountRefunded
-                grantTotal
-                baseGrantTotal
+             
             }
             product {
                 id
@@ -2714,25 +2265,7 @@ class MutationsData {
                 totalInvoiced
                 baseTotalInvoiced
             }
-            invoiceItems {
-                id
-                sku
-                type
-                name
-                description
-                qty
-                price
-                basePrice
-                total
-                baseTotal
-                taxAmount
-                baseTaxAmount
-                productId
-                productType
-                orderItemId
-                invoiceId
-                parentId
-            }
+           
             shipmentItems {
                 id
                 name
@@ -2807,7 +2340,7 @@ class MutationsData {
             discountAmount
             baseDiscountAmount
             orderId
-            orderAddressId
+            
             createdAt
             updatedAt
         }
@@ -2920,24 +2453,31 @@ class MutationsData {
   }
 
   String getOrderList({
-    String? id,
-    String? startDate,
-    String? endDate,
-    String? status,
+    String id = '',
+    String startDate = '',
+    String endDate = '',
+    String? status ='',
     double? total,
-    int? page
+    int? page,
+    bool? isFilterApply
+
   }) {
-    return """
-    query ordersList {
-    ordersList(input: {
-        incrementId: "$id"
-        startOrderDate: "$startDate"
-        endOrderDate: "$endDate"
-        status: "$status"
-        baseGrandTotal: $total
-    }
-    page: $page
-    first: 10
+  final inputString = """ 
+  ${id.isNotEmpty ? 'id: $id,' : ''}
+        ${startDate.isNotEmpty ? 'orderDateFrom: "$startDate",' : ''}
+         ${endDate.isNotEmpty ? 'orderDateTo: "$endDate",' : ''}
+      ${status!.isNotEmpty ? 'status: "$status"' : ''}
+      
+  """;
+   return """
+   
+   query ordersList {
+    ordersList (
+        page: 1
+        first: 10
+        input: {
+         $inputString
+        }
     ) {
         paginatorInfo {
             count
@@ -2954,8 +2494,6 @@ class MutationsData {
             customerEmail
             customerFirstName
             customerLastName
-            customerCompanyName
-            customerVatId
             shippingMethod
             shippingTitle
             shippingDescription
@@ -2997,14 +2535,22 @@ class MutationsData {
             baseShippingInvoiced
             shippingRefunded
             baseShippingRefunded
+            shippingDiscountAmount
+            baseShippingDiscountAmount
+            shippingTaxAmount
+            baseShippingTaxAmount
+            shippingTaxRefunded
+            baseShippingTaxRefunded
+            subTotalInclTax
+            baseSubTotalInclTax
+            shippingAmountInclTax
+            baseShippingAmountInclTax
             customerId
             customerType
             channelId
             channelType
             cartId
             appliedCartRuleIds
-            shippingDiscountAmount
-            baseShippingDiscountAmount
             createdAt
             updatedAt
             billingAddress {
@@ -3016,8 +2562,7 @@ class MutationsData {
                 lastName
                 gender
                 companyName
-                address1
-                address2
+                address
                 postcode
                 city
                 state
@@ -3036,8 +2581,7 @@ class MutationsData {
                 lastName
                 gender
                 companyName
-                address1
-                address2
+                address
                 postcode
                 city
                 state
@@ -3082,11 +2626,27 @@ class MutationsData {
                 baseTaxAmountInvoiced
                 taxAmountRefunded
                 baseTaxAmountRefunded
+                priceInclTax
+                basePriceInclTax
+                totalInclTax
+                baseTotalInclTax
                 productId
                 productType
                 orderId
                 parentId
-                additional
+                             additional {
+                selectedConfigurableOption
+                superAttribute {
+                attributeId
+                optionId
+                }
+                attributes {
+                optionId
+                optionLabel
+                attributeCode
+                attributeName
+                }
+                }
                 createdAt
                 updatedAt
                 product {
@@ -3121,7 +2681,6 @@ class MutationsData {
                 invoiceItems {
                     id
                     sku
-                    type
                     name
                     description
                     qty
@@ -3131,6 +2690,13 @@ class MutationsData {
                     baseTotal
                     taxAmount
                     baseTaxAmount
+                    discountPercent
+                    discountAmount
+                    baseDiscountAmount
+                    priceInclTax
+                    basePriceInclTax
+                    totalInclTax
+                    baseTotalInclTax
                     productId
                     productType
                     orderItemId
@@ -3148,6 +2714,8 @@ class MutationsData {
                     basePrice
                     total
                     baseTotal
+                    priceInclTax
+                    basePriceInclTax
                     productId
                     productType
                     orderItemId
@@ -3168,6 +2736,10 @@ class MutationsData {
                     discountPercent
                     discountAmount
                     baseDiscountAmount
+                    priceInclTax
+                    basePriceInclTax
+                    totalInclTax
+                    baseTotalInclTax
                     productId
                     productType
                     orderItemId
@@ -3226,48 +2798,78 @@ class MutationsData {
                 baseShippingInvoiced
                 shippingRefunded
                 baseShippingRefunded
+                shippingDiscountAmount
+                baseShippingDiscountAmount
+                shippingTaxAmount
+                baseShippingTaxAmount
+                shippingTaxRefunded
+                baseShippingTaxRefunded
+                subTotalInclTax
+                baseSubTotalInclTax
+                shippingAmountInclTax
+                baseShippingAmountInclTax
             }
         }
-      }
-    }""";
+    }
+}
+   
+   
+   """;
   }
 
   String getAddressList(){
+    int first =11;
+    int page =1;
     return """
     query addresses {
-    addresses {
-        status
-        message
-        addresses {
+    addresses (
+        first:$first
+        page: $page
+        input: {
+          
+        }
+    ) {
+        paginatorInfo {
+            count
+            currentPage
+            lastPage
+            total
+        }
+        data { 
             id
+            addressType
+            parentAddressId
             customerId
-            companyName
+            cartId
+            orderId
             firstName
             lastName
-            address1
-            address2
-            countryName
-            country
-            stateName
-            state
+            gender
+            companyName
+            address
             city
+            state
+            stateName
+            country
+            countryName
             postcode
+            email
             phone
             vatId
-            addressType
             defaultAddress
+            useForShipping
             createdAt
             updatedAt
         }
-      }
-    }""";
+    }
+}""";
   }
 
   String deleteAddress(String? id){
     return """
     mutation deleteAddress {
     deleteAddress(id: $id) {
-        status
+        success
         message
       }
     }""";
@@ -3285,16 +2887,20 @@ class MutationsData {
     String? postCode,
     String? phone,
     String? vatId,
+    String? email,
     bool? isDefault,
+
   }){
     return """
     mutation createAddress {
     createAddress(input: {
+     
+        email: "$email",
+       
         companyName: "$companyName"
         firstName: "$firstName"
         lastName: "$lastName"
-        address1: "$address"
-        address2: "$address2"
+        address: "$address $address2"
         country: "$country"
         state: "$state"
         city: "$city"
@@ -3303,27 +2909,8 @@ class MutationsData {
         vatId: "$vatId"
         defaultAddress: $isDefault
     }) {
-      status
+      success
       message
-      addresses{
-            id
-            customerId
-            companyName
-            firstName
-            lastName
-            address1
-            address2
-            country
-            state
-            city
-            postcode
-            phone
-            vatId
-            addressType
-            defaultAddress
-            createdAt
-            updatedAt
-      }
       }
     }""";
   }
@@ -3341,6 +2928,7 @@ class MutationsData {
     String? postCode,
     String? phone,
     String? vatId,
+    String? email
   }){
     return """
     mutation updateAddress {
@@ -3348,36 +2936,18 @@ class MutationsData {
         companyName: "$companyName"
         firstName: "$firstName"
         lastName: "$lastName"
-        address1: "$address"
-        address2: "$address2"
+        address: "$address"
         country: "$country"
         state: "$state"
         city: "$city"
+        email: "$email"
         postcode: "$postCode"
         phone: "$phone"
         vatId: "$vatId"
     }) {
-       status
+       success
        message
-       addresses {
-             id
-        customerId
-            companyName
-            firstName
-            lastName
-            address1
-            address2
-            country
-            state
-            city
-            postcode
-            phone
-            vatId
-            addressType
-            defaultAddress
-            createdAt
-            updatedAt
-       }
+       
       }
     }""";
   }
@@ -3414,11 +2984,12 @@ class MutationsData {
 
   String paymentMethods({String? shippingMethod}){
     return """
-    mutation paymentMethods {
+    query paymentMethods {
     paymentMethods(input: {
         shippingMethod: "$shippingMethod"
     }) {
-        success
+         
+        message
         paymentMethods {
             method
             methodTitle
@@ -3447,11 +3018,10 @@ class MutationsData {
     return """
     mutation savePayment {
     savePayment(input: {
-        payment: {
             method: "$paymentMethod"
-        }
+           
     }) {
-        success
+        
         jumpToSection
         cart {
             id
@@ -3479,15 +3049,20 @@ class MutationsData {
             checkoutMethod
             isGuest
             isActive
-            conversionTime
+            
             customerId
             channelId
             appliedCartRuleIds
             createdAt
             updatedAt
+            appliedTaxRates {
+            taxName
+            totalAmount
+        }
             items {
                 id
                 quantity
+                appliedTaxRate
                 formattedPrice {
                 price
                 total
@@ -3526,6 +3101,9 @@ class MutationsData {
                     attributeFamilyId
                     sku
                     parentId
+                    images {
+                    url
+                  }
                 }
             }
             formattedPrice {
@@ -3536,6 +3114,7 @@ class MutationsData {
                 taxTotal
                 baseTaxTotal
                 discount
+                discountAmount
                 baseDiscount
                 discountedSubTotal
                 baseDiscountedSubTotal
@@ -3550,8 +3129,7 @@ class MutationsData {
                 lastName
                 gender
                 companyName
-                address1
-                address2
+                address
                 postcode
                 city
                 state
@@ -3560,7 +3138,7 @@ class MutationsData {
                 phone
                 defaultAddress
                 vatId
-                additional
+               
                 createdAt
                 updatedAt
             }
@@ -3574,8 +3152,7 @@ class MutationsData {
                 lastName
                 gender
                 companyName
-                address1
-                address2
+                address
                 postcode
                 city
                 state
@@ -3584,7 +3161,7 @@ class MutationsData {
                 phone
                 defaultAddress
                 vatId
-                additional
+              
                 createdAt
                 updatedAt
             }
@@ -3661,49 +3238,45 @@ class MutationsData {
       String? shippingPostCode,
       String? shippingPhone,
       int customerId,
-      {int? billingId = 0, shippingId = 0}
+      {int? billingId = 0, shippingId = 0, bool useForShipping = true}
       ){
     return """
-    mutation saveCheckoutAddresses {
-    saveCheckoutAddresses(input: {
-    billingAddressId: $billingId
-    shippingAddressId: $shippingId
-    billing: {
-        customerId: $customerId
+    mutation saveCheckoutAddresses  {
+    saveCheckoutAddresses (
+            input: {
+        billing: {
         defaultAddress : false
         companyName: "$billingCompanyName"
         firstName: "$billingFirstName"
         lastName: "$billingLastName"
         email: "$billingEmail"
-        address1: "$billingAddress"
-        address2: "$billingAddress2"
+        address: "$billingAddress $billingAddress2"
         city: "$billingCity"
         country: "$billingCountry"
         state: "$billingState"
         postcode: "$billingPostCode"
         phone: "$billingPhone"
-        useForShipping: false
-        isSaved: false
-    }
-    shipping: {
-        customerId: $customerId
+        useForShipping: $useForShipping,
+        defaultAddress: false,
+        saveAddress: false
+        },
+        shipping: {  
         defaultAddress : false
         companyName: "$shippingCompanyName"
         firstName: "$shippingFirstName"
         lastName: "$shippingLastName"
         email: "$shippingEmail"
-        address1: "$shippingAddress"
-        address2: "$shippingAddress2"
+        address: "$shippingAddress $shippingAddress2"
         city: "$shippingCity"
         country: "$shippingCountry"
         state: "$shippingState"
         postcode: "$shippingPostCode"
         phone: "$shippingPhone"
-        isSaved: false
-    }
-    type: "shipping"
-    }) {
-        success
+        }   
+    
+}
+    ) {
+        message
         shippingMethods {
             title
             methods {
@@ -3731,111 +3304,139 @@ class MutationsData {
             isGift
             itemsCount
             itemsQty
+            formattedPrice {
+            grandTotal
+            }
         }
         jumpToSection
-      }
-    }""";
+    }
+}
+    
+    
+    
+    
+    
+    
+    """;
   }
 
   String getCompareProducts({int page = 1}){
     return """
-    query compareProducts {
-    compareProducts(input: {
+   query compareProducts {
+    compareProducts (
         page: $page
-        limit: 10
-    }) {
-        id
-        productId
-        customerId
-        createdAt
-        updatedAt
-        product {
-            id
-            type
-            isInWishlist
-            id
-            sku
-            urlKey
-            name
-            description
-            shortDescription
-            urlKey
-            new
-            featured
-            status
-            visibleIndividually
-            isInSale
-            averageRating
-            images {
-                id
-                type
-                path
-                url
-                productId
-                }
-            priceHtml {
-                id
-                type
-                priceHtml
-                priceWithoutHtml
-                minPrice
-                regularPrice
-                formattedRegularPrice
-                finalPrice
-                formattedFinalPrice
-                currencyCode
-                bundlePrice {
-                    finalPriceFrom
-                    formattedFinalPriceFrom
-                    regularPriceFrom
-                    formattedRegularPriceFrom
-                    finalPriceTo
-                    formattedFinalPriceTo
-                    regularPriceTo
-                    formattedRegularPriceTo
-                }
-            }
+        first: 10
+        input: {
+            
         }
-        customer {
+    ) {
+        paginatorInfo {
+            count
+            currentPage
+            lastPage
+            total
+        }
+        data {
+        
             id
-            firstName
-            lastName
-            name
-            gender
-            dateOfBirth
-            email
-            phone
-            password
-            apiToken
-            customerGroupId
-            subscribedToNewsLetter
-            isVerified
-            token
-            notes
-            status
+            productId
+            customerId
             createdAt
             updatedAt
+            product {
+            images {
+                        id
+                        type
+                        path
+                        url
+                        productId
+                    } 
+                    isSaleable
+                id
+                sku 
+                type
+                isInWishlist
+                id
+                sku
+                name
+                description
+                shortDescription
+                urlKey
+                new
+                featured
+                status
+                visibleIndividually
+                priceHtml {
+                    id
+                    type
+                    priceHtml
+                    priceWithoutHtml
+                    minPrice
+                    regularPrice
+                    formattedRegularPrice
+                    finalPrice
+                    formattedFinalPrice
+                    currencyCode
+                    bundlePrice {
+                        finalPriceFrom
+                        formattedFinalPriceFrom
+                        regularPriceFrom
+                        formattedRegularPriceFrom
+                        finalPriceTo
+                        formattedFinalPriceTo
+                        regularPriceTo
+                        formattedRegularPriceTo
+                    }
+                }
+            }
+            customer {
+                id
+                firstName
+                lastName
+                name
+                gender
+                dateOfBirth
+                email
+                phone
+                password
+                apiToken
+                customerGroupId
+                subscribedToNewsLetter
+                isVerified
+                token
+                notes {
+                    id
+                    customerId
+                    note
+                    customerNotified
+                    createdAt
+                    updatedAt
+                }
+                status
+                createdAt
+                updatedAt
+            }
+            cart {
+                id
+                customerEmail
+                customerFirstName
+                customerLastName
+                shippingMethod
+                couponCode
+                isGift
+                itemsCount
+                itemsQty
+            }
         }
-        cart {
-            id
-            customerEmail
-            customerFirstName
-            customerLastName
-            shippingMethod
-            couponCode
-            isGift
-            itemsCount
-            itemsQty
-        }
-      }
-    }""";
+    }
+}""";
   }
 
   String removeAllCompareProducts() {
     return """
     mutation removeAllCompareProducts {
       removeAllCompareProducts {
-        status
+        message
         success
       }
     }""";
@@ -3846,10 +3447,10 @@ class MutationsData {
   }) {
     return """
     mutation removeFromCompareProduct {
-      removeFromCompareProduct(input: {
+      removeFromCompareProduct(
         productId: $id
-      }) {
-        status
+      ) {
+        message
         success
       }
     }""";
@@ -3865,7 +3466,7 @@ class MutationsData {
         comment: "$comment"
         productId: $productId
         attachments : $attachments
-    }) {
+    }) {message
         success
         review {
             id
@@ -3877,8 +3478,7 @@ class MutationsData {
             updatedAt
             productId
             customerId
-            customerName
-            attachments
+          
             product {
                 id
                 type
@@ -3887,43 +3487,7 @@ class MutationsData {
                 parentId
                 createdAt
                 updatedAt
-                productFlats {
-                    id
-                    sku
-                    name
-                    description
-                    shortDescription
-                    urlKey
-                    new
-                    featured
-                    status
-                    visibleIndividually
-                    thumbnail
-                    price
-                    cost
-                    specialPrice
-                    specialPriceFrom
-                    specialPriceTo
-                    weight
-                    color
-                    colorLabel
-                    size
-                    sizeLabel
-                    locale
-                    channel
-                    productId
-                    parentId
-                    minPrice
-                    maxPrice
-                    metaTitle
-                    metaKeywords
-                    metaDescription
-                    width
-                    height
-                    depth
-                    createdAt
-                    updatedAt
-                }
+               
             }
 
         }
@@ -3931,52 +3495,1119 @@ class MutationsData {
   }""";
   }
 
-  String downloadableProductsCustomer(int page, int limit) {
-    return """
-   query downloadableLinkPurchases {
-    downloadableLinkPurchases(
-      input: {,
-        limit: $limit,
-        page: $page
-        }) {
-          id
-          productName
-          downloadBought
-          downloadUsed
-          orderId
-          createdAt
-          order {
-            id
-            status
-          }
-        }
-      }""";
-  }
+  String downloadableProductsCustomer(int page, int limit,
+  {
+    String title = "",
+    String status = "",
+    String orderId = "",
+    String orderDateFrom = "",
+    String orderDateTo = ""
+  }) {
 
-  String downloadProduct(int id) {
+    final inputString = """ 
+        ${title.isNotEmpty ? 'name: "$title"' : ''}
+        ${orderDateFrom.isNotEmpty ? 'purchaseDateFrom: "$orderDateFrom" ' : ''}
+        ${orderDateTo.isNotEmpty ? 'purchaseDateTo: "$orderDateTo" ' : ''}
+        ${status.isNotEmpty ? 'status: $status' : ''}
+        ${orderId.isNotEmpty ? 'orderId: $orderId' : ''}
+      """;
+
+    return """
+    query downloadableLinkPurchases {
+    downloadableLinkPurchases (
+    page: $page
+    first: $limit
+    input: {
+      $inputString
+    }
+    ) {
+    paginatorInfo {
+    count
+    currentPage
+    lastPage
+    total
+    }
+    data {
+    id
+    productName
+    name
+    url
+    file
+    fileName
+    type
+    downloadBought
+    downloadUsed
+    status
+    customerId
+    orderId
+    orderItemId
+    createdAt
+    updatedAt
+    customer {
+    id
+    firstName
+    lastName
+    name
+    gender
+    dateOfBirth
+    email
+    phone
+    password
+    apiToken
+    customerGroupId
+    subscribedToNewsLetter
+    isVerified
+    token
+    notes {
+    id
+    customerId
+    note
+    customerNotified
+    createdAt
+    updatedAt
+    customer {
+    id
+    }
+    }
+    status
+    }
+    order {
+    id
+    incrementId
+    status
+    channelName
+    isGuest
+    customerEmail
+    customerFirstName
+    customerLastName
+    shippingMethod
+    shippingTitle
+    shippingDescription
+    couponCode
+    isGift
+    totalItemCount
+    totalQtyOrdered
+    baseCurrencyCode
+    channelCurrencyCode
+    orderCurrencyCode
+    grandTotal
+    baseGrandTotal
+    grandTotalInvoiced
+    baseGrandTotalInvoiced
+    grandTotalRefunded
+    baseGrandTotalRefunded
+    subTotal
+    baseSubTotal
+    subTotalInvoiced
+    baseSubTotalInvoiced
+    subTotalRefunded
+    baseSubTotalRefunded
+    discountPercent
+    discountAmount
+    baseDiscountAmount
+    discountInvoiced
+    baseDiscountInvoiced
+    discountRefunded
+    baseDiscountRefunded
+    taxAmount
+    baseTaxAmount
+    taxAmountInvoiced
+    baseTaxAmountInvoiced
+    taxAmountRefunded
+    baseTaxAmountRefunded
+    shippingAmount
+    baseShippingAmount
+    shippingInvoiced
+    baseShippingInvoiced
+    shippingRefunded
+    baseShippingRefunded
+    customerId
+    customerType
+    channelId
+    channelType
+    cartId
+    appliedCartRuleIds
+    shippingDiscountAmount
+    baseShippingDiscountAmount
+    createdAt
+    updatedAt
+    }
+    orderItem {
+    id
+    sku
+    type
+    name
+    couponCode
+    weight
+    totalWeight
+    qtyOrdered
+    qtyShipped
+    qtyInvoiced
+    qtyCanceled
+    qtyRefunded
+    price
+    basePrice
+    total
+    baseTotal
+    product {
+    id
+    sku
+    type
+    name
+    shortDescription
+    description
+    urlKey
+    shareURL
+    new
+    featured
+    status
+    guestCheckout
+    visibleIndividually
+    images {
+    id
+    type
+    path
+    url
+    }
+    cacheGalleryImages {
+    smallImageUrl
+    mediumImageUrl
+    largeImageUrl
+    originalImageUrl
+    }
+    }
+    }
+    }
+    }
+    }
+    """;
+  }
+  String downloadProductQuery(int id) {
     return """
     mutation downloadLink {
-      downloadLink(id: $id) {
-        status
-        string
-        download {
-          id
-          productName
-          name
-          url
-          file
-          fileName
-          type
-          downloadBought
-          downloadUsed
-          status
-          customerId
-          orderId
-          orderItemId
-          createdAt
-          updatedAt
-        }
-      }
+    downloadLink (
+    id: $id
+    ) {
+    success
+    string
+    download {
+    id
+    productName
+    name
+    url
+    file
+    fileName
+    type
+    downloadBought
+    downloadUsed
+    status
+    customerId
+    orderId
+    orderItemId
+    createdAt
+    updatedAt
+    }
+    }
     }""";
   }
+  String downloadProduct(int id) {
+    return """
+    query downloadableLinkPurchase {
+    downloadableLinkPurchase (id: "$id") {
+        id
+        productName
+        name
+        url
+        file
+        fileName
+        type
+        downloadBought
+        downloadUsed
+        status
+        customerId
+        orderId
+        orderItemId
+        createdAt
+        updatedAt
+        customer {
+            id
+            firstName
+            lastName
+            name
+            gender
+            dateOfBirth
+            email
+            phone
+            password
+            apiToken
+            customerGroupId
+            subscribedToNewsLetter
+            isVerified
+            token
+            notes {
+                id
+                customerId
+                note
+                customerNotified
+                createdAt
+                updatedAt
+                customer {
+                    id
+                }
+            }
+            status
+        }
+        order {
+            id
+            incrementId
+            status
+            channelName
+            isGuest
+            customerEmail
+            customerFirstName
+            customerLastName
+            shippingMethod
+            shippingTitle
+            shippingDescription
+            couponCode
+            isGift
+            totalItemCount
+            totalQtyOrdered
+            baseCurrencyCode
+            channelCurrencyCode
+            orderCurrencyCode
+            grandTotal
+            baseGrandTotal
+            grandTotalInvoiced
+            baseGrandTotalInvoiced
+            grandTotalRefunded
+            baseGrandTotalRefunded
+            subTotal
+            baseSubTotal
+            subTotalInvoiced
+            baseSubTotalInvoiced
+            subTotalRefunded
+            baseSubTotalRefunded
+            discountPercent
+            discountAmount
+            baseDiscountAmount
+            discountInvoiced
+            baseDiscountInvoiced
+            discountRefunded
+            baseDiscountRefunded
+            taxAmount
+            baseTaxAmount
+            taxAmountInvoiced
+            baseTaxAmountInvoiced
+            taxAmountRefunded
+            baseTaxAmountRefunded
+            shippingAmount
+            baseShippingAmount
+            shippingInvoiced
+            baseShippingInvoiced
+            shippingRefunded
+            baseShippingRefunded
+            customerId
+            customerType
+            channelId
+            channelType
+            cartId
+            appliedCartRuleIds
+            shippingDiscountAmount
+            baseShippingDiscountAmount
+            createdAt
+            updatedAt
+        }
+        orderItem {
+            id
+            sku
+            type
+            name
+            couponCode
+            weight
+            totalWeight
+            qtyOrdered
+            qtyShipped
+            qtyInvoiced
+            qtyCanceled
+            qtyRefunded
+            price
+            basePrice
+            total
+            baseTotal
+        }
+    }
+}""";
+  }
+  String getInvoicesList(int orderId) {return """
+    query viewInvoices {
+    viewInvoices (
+        page: 1
+        first: 10
+        input: {
+          orderId: $orderId
+        }
+    ) {
+        paginatorInfo {
+            count
+            currentPage
+            lastPage
+            total
+        }
+        data {
+            id
+            incrementId
+            state
+            emailSent
+            totalQty
+            baseCurrencyCode
+            channelCurrencyCode
+            orderCurrencyCode
+            subTotal
+            baseSubTotal
+            grandTotal
+            baseGrandTotal
+            shippingAmount
+            baseShippingAmount
+            taxAmount
+            baseTaxAmount
+            discountAmount
+            baseDiscountAmount
+            shippingTaxAmount
+            baseShippingTaxAmount
+            subTotalInclTax
+            baseSubTotalInclTax
+            shippingAmountInclTax
+            baseShippingAmountInclTax
+            orderId
+            createdAt
+            updatedAt
+            transactionId
+             formattedPrice{
+            subTotal
+            taxAmount
+            grandTotal
+           shippingAmount
+          }
+            items {
+                id
+                sku
+                name
+                description
+                qty
+                price
+                basePrice
+                total
+                baseTotal
+                taxAmount
+                baseTaxAmount
+                productId
+                productType
+                orderItemId
+                invoiceId
+                parentId
+                additional {
+                selectedConfigurableOption
+                superAttribute {
+                attributeId
+                optionId
+                }
+                attributes {
+                optionId
+                optionLabel
+                attributeCode
+                attributeName
+                }
+                }
+                discountPercent
+                discountAmount
+                baseDiscountAmount
+                priceInclTax
+                basePriceInclTax
+                totalInclTax
+                baseTotalInclTax
+                createdAt
+                updatedAt 
+             formattedPrice
+            {
+              total
+              price
+              taxAmount
+              baseTotal
+            }
+
+                orderItem {
+                    id
+                    sku
+                    type
+                    name
+                    couponCode
+                    weight
+                    totalWeight
+                    qtyOrdered
+                    qtyShipped
+                    qtyInvoiced
+                    qtyCanceled
+                    qtyRefunded
+                    price
+                    basePrice
+                    total
+                    baseTotal
+                    totalInvoiced
+                    baseTotalInvoiced
+                    amountRefunded
+                    baseAmountRefunded
+                    discountPercent
+                    discountAmount
+                    baseDiscountAmount
+                    discountInvoiced
+                    baseDiscountInvoiced
+                    discountRefunded
+                    baseDiscountRefunded
+                    taxPercent
+                    taxAmount
+                    baseTaxAmount
+                    taxAmountInvoiced
+                    baseTaxAmountInvoiced
+                    taxAmountRefunded
+                    baseTaxAmountRefunded
+                    priceInclTax
+                    basePriceInclTax
+                    totalInclTax
+                    baseTotalInclTax
+                    productId
+                    productType
+                    orderId
+                    parentId
+                    additional {
+                selectedConfigurableOption
+                superAttribute {
+                attributeId
+                optionId
+                }
+                attributes {
+                optionId
+                optionLabel
+                attributeCode
+                attributeName
+                }
+                }
+                    createdAt
+                    updatedAt
+                }
+                product {
+                    id
+                    type
+                    attributeFamilyId
+                    sku
+                    parentId
+                    createdAt
+                    updatedAt
+                }
+            }
+        }
+    }
+}""";}
+
+  String getShipmentsList(int orderId)
+  {
+    return """
+    
+    query viewShipments {
+    viewShipments (
+        page: 1
+        first: 10
+        input: {
+           orderId: $orderId
+        }
+    ) {
+        paginatorInfo {
+            count
+            currentPage
+            lastPage
+            total
+        }
+        data {
+            id
+            status
+            totalQty
+            totalWeight
+            carrierCode
+            carrierTitle
+            trackNumber
+            emailSent
+            customerId
+            customerType
+            orderId
+            orderAddressId
+            createdAt
+            updatedAt
+            inventorySourceId
+            inventorySourceName
+            order {
+                id
+                incrementId
+                status
+                channelName
+                isGuest
+                customerEmail
+                customerFirstName
+                customerLastName
+                shippingMethod
+                shippingTitle
+                shippingDescription
+                couponCode
+                isGift
+                totalItemCount
+                totalQtyOrdered
+                baseCurrencyCode
+                channelCurrencyCode
+                orderCurrencyCode
+                grandTotal
+                baseGrandTotal
+                grandTotalInvoiced
+                baseGrandTotalInvoiced
+                grandTotalRefunded
+                baseGrandTotalRefunded
+                subTotal
+                baseSubTotal
+                subTotalInvoiced
+                baseSubTotalInvoiced
+                subTotalRefunded
+                baseSubTotalRefunded
+                discountPercent
+                discountAmount
+                baseDiscountAmount
+                discountInvoiced
+                baseDiscountInvoiced
+                discountRefunded
+                baseDiscountRefunded
+                taxAmount
+                baseTaxAmount
+                taxAmountInvoiced
+                baseTaxAmountInvoiced
+                taxAmountRefunded
+                baseTaxAmountRefunded
+                shippingAmount
+                baseShippingAmount
+                shippingInvoiced
+                baseShippingInvoiced
+                shippingRefunded
+                baseShippingRefunded
+                shippingDiscountAmount
+                baseShippingDiscountAmount
+                shippingTaxAmount
+                baseShippingTaxAmount
+                shippingTaxRefunded
+                baseShippingTaxRefunded
+                subTotalInclTax
+                baseSubTotalInclTax
+                shippingAmountInclTax
+                baseShippingAmountInclTax
+                customerId
+                customerType
+                channelId
+                channelType
+                cartId
+                appliedCartRuleIds
+                createdAt
+                updatedAt
+            }
+            items {
+                id
+                name
+                description
+                sku
+                qty
+                weight
+                price
+                basePrice
+                total
+                baseTotal
+                priceInclTax
+                basePriceInclTax
+                productId
+                productType
+                orderItemId
+                shipmentId
+                additional {
+                selectedConfigurableOption
+                superAttribute {
+                attributeId
+                optionId
+                }
+                attributes {
+                optionId
+                optionLabel
+                attributeCode
+                attributeName
+                }
+                }
+                createdAt
+                updatedAt
+            }
+            inventorySource {
+                id
+                code
+                name
+                description
+                contactName
+                contactEmail
+                contactNumber
+                contactFax
+                country
+                state
+                city
+                street
+                postcode
+                priority
+                latitude
+                longitude
+            }
+            customer {
+                id
+                firstName
+                lastName
+                name
+                gender
+                dateOfBirth
+                email
+                phone
+                password
+                apiToken
+                customerGroupId
+                subscribedToNewsLetter
+                isVerified
+                token
+                notes {
+                    id
+                    customerId
+                    note
+                    customerNotified
+                    createdAt
+                    updatedAt
+                    customer {
+                        id
+                    }
+                }
+                status
+                customerGroup {
+                    id
+                    name
+                    code
+                    isUserDefined
+                    createdAt
+                    updatedAt
+                }
+                createdAt
+                updatedAt
+            }
+        }
+    }
 }
+    
+    """;}
+
+  String getRefundList(int orderId)
+  {
+    return """
+    query viewRefunds {
+    viewRefunds(
+        page: 1
+        first: 10
+        input: {
+        # id: 1
+         orderId: $orderId
+        # quantity: 2
+        # adjustmentRefund: 1.22
+        # adjustmentFee: 3.45
+        # shippingAmount: 47.50
+        # taxAmount: 1.13
+        # discountAmount: 1.45
+        # grandTotal: 5.35
+        # baseGrandTotal: 5.35
+        # refundDate: "2021-02-12 20:36:26"
+    }) {
+        paginatorInfo {
+            count
+            currentPage
+            lastPage
+            total
+        }
+        data {
+        id
+        incrementId
+        state
+        emailSent
+        totalQty
+        baseCurrencyCode
+        channelCurrencyCode
+        orderCurrencyCode
+        adjustmentRefund
+        baseAdjustmentRefund
+        adjustmentFee
+        baseAdjustmentFee
+        subTotal
+        baseSubTotal
+        grandTotal
+        baseGrandTotal
+        shippingAmount
+        baseShippingAmount
+        taxAmount
+        baseTaxAmount
+        discountPercent
+        discountAmount
+        baseDiscountAmount
+        orderId
+        createdAt
+        updatedAt
+        formattedPrice
+        {
+          subTotal
+          adjustmentRefund
+          adjustmentFee
+          grandTotal
+          shippingAmount
+        }
+        items {
+            id
+            name
+            description
+            sku
+            qty
+            price
+            basePrice
+            total
+            baseTotal
+            taxAmount
+            baseTaxAmount
+            discountPercent
+            discountAmount
+            baseDiscountAmount
+            productId
+            productType
+            orderItemId
+            refundId
+            parentId
+             additional {
+                selectedConfigurableOption
+                superAttribute {
+                attributeId
+                optionId
+                }
+                attributes {
+                optionId
+                optionLabel
+                attributeCode
+                attributeName
+                }
+                }
+            createdAt
+            updatedAt
+            formattedPrice
+            {
+              total
+              price
+              taxAmount
+              baseTotal
+            }
+        }
+        order {
+            id
+            incrementId
+            status
+            channelName
+            isGuest
+            customerEmail
+            customerFirstName
+            customerLastName
+        
+            shippingMethod
+            shippingTitle
+            shippingDescription
+            couponCode
+            isGift
+            totalItemCount
+            totalQtyOrdered
+            baseCurrencyCode
+            channelCurrencyCode
+            orderCurrencyCode
+            grandTotal
+            baseGrandTotal
+            grandTotalInvoiced
+            baseGrandTotalInvoiced
+            grandTotalRefunded
+            baseGrandTotalRefunded
+            subTotal
+            baseSubTotal
+            subTotalInvoiced
+            baseSubTotalInvoiced
+            subTotalRefunded
+            baseSubTotalRefunded
+            discountPercent
+            discountAmount
+            baseDiscountAmount
+            discountInvoiced
+            baseDiscountInvoiced
+            discountRefunded
+            baseDiscountRefunded
+            taxAmount
+            baseTaxAmount
+            taxAmountInvoiced
+            baseTaxAmountInvoiced
+            taxAmountRefunded
+            baseTaxAmountRefunded
+            shippingAmount
+            baseShippingAmount
+            shippingInvoiced
+            baseShippingInvoiced
+            shippingRefunded
+            baseShippingRefunded
+            customerId
+            customerType
+            channelId
+            channelType
+            cartId
+            appliedCartRuleIds
+            shippingDiscountAmount
+            baseShippingDiscountAmount
+            createdAt
+            updatedAt
+        }
+        }
+    }
+  }""";}
+
+  String reOrderCustomerOrder(String? orderId){
+    return """
+    mutation reorder {
+    reorder (
+        id: $orderId
+    ) {
+        success
+        message
+        cart {
+            id
+            customerEmail
+            customerFirstName
+            customerLastName
+            shippingMethod
+            couponCode
+            isGift
+            itemsCount
+            itemsQty
+            exchangeRate
+            globalCurrencyCode
+            baseCurrencyCode
+            channelCurrencyCode
+            cartCurrencyCode
+            grandTotal
+            baseGrandTotal
+            subTotal
+            baseSubTotal
+            taxTotal
+            baseTaxTotal
+            discountAmount
+            baseDiscountAmount
+            checkoutMethod
+            isGuest
+            isActive
+            appliedCartRuleIds
+            customerId
+            channelId
+            createdAt
+            updatedAt
+            formattedPrice {
+                grandTotal
+                baseGrandTotal
+                subTotal
+                baseSubTotal
+                taxTotal
+                baseTaxTotal
+                discount
+                baseDiscount
+                discountedSubTotal
+                baseDiscountedSubTotal
+            }
+            items {
+                id
+                quantity
+                sku
+                type
+                name
+                couponCode
+                weight
+                totalWeight
+                baseTotalWeight
+                price
+                basePrice
+                customPrice
+                total
+                baseTotal
+                taxPercent
+                taxAmount
+                baseTaxAmount
+                discountPercent
+                discountAmount
+                baseDiscountAmount
+                parentId
+                productId
+                cartId
+                taxCategoryId
+                appliedCartRuleIds
+                createdAt
+                updatedAt
+                formattedPrice {
+                    price
+                    basePrice
+                    customPrice
+                    total
+                    baseTotal
+                    taxAmount
+                    baseTaxAmount
+                    discountAmount
+                    baseDiscountAmount
+                }
+            }
+            allItems  {
+                id
+                quantity
+                sku
+                type
+                name
+                couponCode
+                weight
+                totalWeight
+                baseTotalWeight
+                price
+                basePrice
+                customPrice
+                total
+                baseTotal
+                taxPercent
+                taxAmount
+                baseTaxAmount
+                discountPercent
+                discountAmount
+                baseDiscountAmount
+                parentId
+                productId
+                cartId
+                taxCategoryId
+                appliedCartRuleIds
+                createdAt
+                updatedAt
+                formattedPrice {
+                    price
+                    basePrice
+                    customPrice
+                    total
+                    baseTotal
+                    taxAmount
+                    baseTaxAmount
+                    discountAmount
+                    baseDiscountAmount
+                }
+            }
+            selectedShippingRate {
+                id
+                carrier
+                carrierTitle
+                method
+                methodTitle
+                methodDescription
+                price
+                basePrice
+                discountAmount
+                baseDiscountAmount
+                isCalculateTax
+                cartAddressId
+                createdAt
+                updatedAt
+                shippingAddress {
+                    id
+                }
+                formattedPrice { 
+                    price
+                    basePrice
+                }
+            }
+            payment {
+                id
+                method
+                methodTitle
+                cartId
+                createdAt
+                updatedAt
+            }
+        }
+    }
+}
+    """;
+  }
+
+  String setDefaultAddress(String id){
+    return """
+    mutation setDefaultAddress {
+    setDefaultAddress (
+        id: $id
+    ) {
+        success
+        message
+        address {
+            id
+            addressType
+            parentAddressId
+            customerId
+            cartId
+            orderId
+            firstName
+            lastName
+            gender
+            companyName
+            address
+            city
+            state
+            country
+            postcode
+            email
+            phone
+            vatId
+            defaultAddress
+            useForShipping
+            createdAt
+            updatedAt
+        }
+    }
+}
+    """;
+  }
+
+
+  String subscribeNewsletter(String email){
+    return """
+    mutation subscribe {
+    subscribe (email: "$email") {
+        success
+        message
+    }
+    }
+    """;
+  }
+
+  String downloadSample(String type, String id){
+    return """
+    mutation downloadSample {
+    downloadSample (input: {
+        type: "$type"
+        id: $id
+      }) {
+        success
+        string
+    }
+    }
+    """;
+  }
+
+}
+

@@ -1,10 +1,17 @@
-import 'package:bagisto_app_demo/utils/application_localization.dart';
-import 'package:flutter/material.dart';
-import '../../../../../utils/app_constants.dart';
-import '../../../../../utils/string_constants.dart';
-import '../../../../../widgets/common_widgets.dart';
-import '../../../../../widgets/image_view.dart';
-import '../../../data_model/save_payment_model.dart';
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
+
+
+import 'package:bagisto_app_demo/screens/checkout/data_model/save_payment_model.dart';
+import 'package:bagisto_app_demo/screens/checkout/utils/index.dart';
 
 class OrderSummary extends StatelessWidget {
   final SavePayment savePaymentModel;
@@ -39,7 +46,7 @@ class OrderSummary extends StatelessWidget {
             thickness: 1,
           ),
           const SizedBox(
-            height: 8,
+            height: AppSizes.spacingNormal,
           ),
           ListView.separated(
               shrinkWrap: true,
@@ -55,7 +62,7 @@ class OrderSummary extends StatelessWidget {
                       flex: 1,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            vertical: AppSizes.spacingSmall, horizontal: 6.0),
+                            vertical: AppSizes.spacingSmall, horizontal: AppSizes.spacingNormal),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -95,7 +102,7 @@ class OrderSummary extends StatelessWidget {
                             Wrap(
                               children: [
                                 Text(
-                                  productFlats?.sku ?? "",
+                                  productFlats?.name ?? "",
                                   style: const TextStyle(
                                     fontSize: AppSizes.spacingLarge,
                                   ),

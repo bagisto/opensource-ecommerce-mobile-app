@@ -1,11 +1,11 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 // ignore_for_file: file_names
@@ -84,7 +84,7 @@ class _RadioButtonGroupState extends State<RadioButtonGroup> {
   @override
   Widget build(BuildContext context) {
     //set the selected to the picked (if not null)
-    _selected = widget.picked ?? _selected;
+    // _selected = widget.picked ?? _selected;
 
     List<Widget> content = [];
     for (int i = 0; i < (widget.labels?.length ?? 0); i++) {
@@ -105,14 +105,18 @@ class _RadioButtonGroupState extends State<RadioButtonGroup> {
             : (var index) => setState(() {
                   _selected = widget.labels?.elementAt(i) ?? '';
 
-                  if (widget.onChange != null)
+                  if (widget.onChange != null) {
                     widget.onChange!(widget.labels?.elementAt(i) ?? '', i);
-                  if (widget.onSelected != null)
+                  }
+                  if (widget.onSelected != null) {
                     widget.onSelected!(widget.labels?.elementAt(i) ?? '');
+                  }
                 }),
       );
 
       Text t = Text(widget.labels?.elementAt(i) ?? '',
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
           style: Theme.of(context).textTheme.labelMedium
           );
 
@@ -124,7 +128,7 @@ class _RadioButtonGroupState extends State<RadioButtonGroup> {
         content.add(Row(children: <Widget>[
           const SizedBox(width: 8.0),
           rb,
-          t,
+          Expanded(child: t),
         ]));
 
       }

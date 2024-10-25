@@ -1,15 +1,20 @@
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
 import 'package:bagisto_app_demo/screens/location/utils/index.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:flutter/material.dart';
-import '../../../utils/index.dart';
 
 class PlaceSearch extends StatefulWidget {
   const PlaceSearch({Key? key}) : super(key: key);
 
   @override
-  _PlaceSearchState createState() => _PlaceSearchState();
+  State<PlaceSearch> createState() => _PlaceSearchState();
 }
 
 class _PlaceSearchState extends State<PlaceSearch> {
@@ -35,7 +40,6 @@ class _PlaceSearchState extends State<PlaceSearch> {
           placeModel = state.data;
         } else if (state is SearchPlaceErrorState) {
           isLoading = false;
-          WidgetsBinding.instance.addPostFrameCallback((_) {});
         } else if (state is LocationScreenInitialState) {
           isLoading = false;
           placeModel = null;
@@ -53,7 +57,7 @@ class _PlaceSearchState extends State<PlaceSearch> {
                   (MediaQuery.of(context).size.height /
                       (MediaQuery.of(context).size.height / 20))),
           child: Container(
-            color: MobikulTheme.primaryColor,
+            color: MobiKulTheme.primaryColor,
             padding: EdgeInsets.only(
                 top: MediaQuery.of(context).size.height /
                     (MediaQuery.of(context).size.height / 20)),
@@ -63,7 +67,7 @@ class _PlaceSearchState extends State<PlaceSearch> {
                   SystemChannels.textInput.invokeMethod("TextInput.hide");
                   Navigator.of(context).pop();
                 },
-                icon:  Icon(
+                icon: Icon(
                   Icons.arrow_back,
                   color: Theme.of(context).colorScheme.onPrimary,
                 ),
@@ -82,10 +86,11 @@ class _PlaceSearchState extends State<PlaceSearch> {
                   border: InputBorder.none,
                   hintText: StringConstants.searchScreenTitle.localized(),
                   hintStyle: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.normal, color: Theme.of(context).colorScheme.onPrimary),
+                      fontWeight: FontWeight.normal,
+                      color: Theme.of(context).colorScheme.onPrimary),
                 ),
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color:Theme.of(context).colorScheme.onPrimary,
+                    color: Theme.of(context).colorScheme.onPrimary,
                     fontWeight: FontWeight.w400,
                     fontSize: 16),
                 cursorColor: Theme.of(context).colorScheme.onPrimary,
@@ -100,82 +105,87 @@ class _PlaceSearchState extends State<PlaceSearch> {
                           placeModel = null;
                           _locationScreenBloc?.add(SearchPlaceInitialEvent());
                         },
-                        icon:  Icon(
+                        icon: Icon(
                           Icons.close,
                           color: Theme.of(context).colorScheme.onPrimary,
                         ),
                       )
-                    : Container()
+                    : const SizedBox()
               ],
             ),
           ),
         ),
-        body: Column(
-          children: [
-            ((placeModel != null))
-                ? (placeModel?.results?.isNotEmpty ?? false)
-                    ? Expanded(
-                        child: ListView.builder(
-                            shrinkWrap: true,
-                            itemCount: placeModel?.results?.length ?? 0,
-                            itemBuilder: (context, index) => Card(
-                                  elevation: 5,
-                                  child: ListTile(
-                                    onTap: () {
-                                      Navigator.pop(
-                                          context,
-                                          LatLng(
-                                              placeModel
-                                                      ?.results?[index]
-                                                      .geometry
-                                                      ?.location
-                                                      ?.lat ??
-                                                  0.0,
-                                              placeModel
-                                                      ?.results?[index]
-                                                      .geometry
-                                                      ?.location
-                                                      ?.lng ??
-                                                  0.0));
-                                    },
-                                    title: Text(
-                                      placeModel?.results?[index].name ?? '',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall
-                                          ?.copyWith(color: Theme.of(context).colorScheme.onPrimary),
+        body: SafeArea(
+          child: Column(
+            children: [
+              ((placeModel != null))
+                  ? (placeModel?.results?.isNotEmpty ?? false)
+                      ? Expanded(
+                          child: ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: placeModel?.results?.length ?? 0,
+                              itemBuilder: (context, index) => Card(
+                                    elevation: 5,
+                                    child: ListTile(
+                                      onTap: () {
+                                        Navigator.pop(
+                                            context,
+                                            LatLng(
+                                                placeModel
+                                                        ?.results?[index]
+                                                        .geometry
+                                                        ?.location
+                                                        ?.lat ??
+                                                    0.0,
+                                                placeModel
+                                                        ?.results?[index]
+                                                        .geometry
+                                                        ?.location
+                                                        ?.lng ??
+                                                    0.0));
+                                      },
+                                      title: Text(
+                                        placeModel?.results?[index].name ?? '',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall
+                                            ?.copyWith(
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .onPrimary),
+                                      ),
+                                      subtitle: Text(
+                                        placeModel?.results?[index]
+                                                .formattedAddress ??
+                                            '',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleSmall
+                                            ?.copyWith(color: Colors.grey),
+                                      ),
                                     ),
-                                    subtitle: Text(
-                                      placeModel?.results?[index]
-                                              .formattedAddress ??
-                                          '',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleSmall
-                                          ?.copyWith(color: Colors.grey),
-                                    ),
-                                  ),
-                                )),
-                      )
-                    : Expanded(
-                        child: Center(
-                          child: Text(
-                            StringConstants.noResultFound.localized(),
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleSmall
-                                ?.copyWith(color: Colors.black),
+                                  )),
+                        )
+                      : Expanded(
+                          child: Center(
+                            child: Text(
+                              StringConstants.noResultFound.localized(),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleSmall
+                                  ?.copyWith(color: Colors.black),
+                            ),
                           ),
-                        ),
-                      )
-                : Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.pop(context);
-                      },
-                    ),
-                  )
-          ],
+                        )
+                  : Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.pop(context);
+                        },
+                      ),
+                    )
+            ],
+          ),
         ));
   }
 }

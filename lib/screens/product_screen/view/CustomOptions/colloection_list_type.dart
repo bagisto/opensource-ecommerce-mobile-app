@@ -1,16 +1,16 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 
 import 'package:flutter/material.dart';
-import '../../../cart_screen/cart_model/cart_data_model.dart';
+import '../../../../data_model/product_model/product_screen_model.dart';
 
 //ignore: must_be_immutable
 class CollectionListType extends StatefulWidget {
@@ -80,7 +80,7 @@ class _CollectionListTypeState extends State<CollectionListType> {
     for (var element in (optionArray ?? [])) {
       val = (element["attributeOptionId"].toString() == id.toString());
       if (val) {
-        print(
+        debugPrint(
             "break --> ${id.toString()} * ${(element["attributeOptionId"].toString() == id.toString())} ");
         break;
       }

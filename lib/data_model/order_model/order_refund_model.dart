@@ -1,4 +1,14 @@
 
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
 import 'package:bagisto_app_demo/data_model/graphql_base_model.dart';
 import 'package:json_annotation/json_annotation.dart';
 import '../../screens/cart_screen/cart_model/cart_data_model.dart';
@@ -108,7 +118,7 @@ class RefundItems {
   int? orderItemId;
   int? refundId;
   dynamic parentId;
-  String? additional;
+  Additional? additional;
   String? createdAt;
   String? updatedAt;
   OrderProduct? product;

@@ -1,9 +1,17 @@
 
-import 'package:bagisto_app_demo/screens/sign_up/utils/index.dart';
-import '../../../data_model/app_route_arguments.dart';
-import '../cart_index.dart';
-import '../util/check_downlodable.dart';
-import 'guest_checkout_view.dart';
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
+import 'package:bagisto_app_demo/screens/cart_screen/widget/guest_checkout_view.dart';
+
+import '../utils/cart_index.dart';
 
 class ProceedView extends StatelessWidget {
   final CartModel cartDetailsModel;
@@ -23,8 +31,8 @@ class ProceedView extends StatelessWidget {
       elevation: AppSizes.spacingNormal,
       child: Container(
         padding: const EdgeInsets.symmetric(
-            vertical: AppSizes.spacingNormal, horizontal: 10.0),
-        margin: const EdgeInsets.fromLTRB(0, 4, 0, 0),
+            vertical: AppSizes.spacingNormal, horizontal: AppSizes.spacingNormal),
+        margin: const EdgeInsets.fromLTRB(0, AppSizes.spacingSmall, 0, 0),
         child: Row(
           children: [
             Expanded(
@@ -54,15 +62,16 @@ class ProceedView extends StatelessWidget {
                 elevation: 0.0,
                 textColor: Theme.of(context).colorScheme.background,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(4.0),
+                  borderRadius: BorderRadius.circular(AppSizes.spacingSmall),
                 ),
-                padding: const EdgeInsets.symmetric(vertical: 12.0),
+                padding: const EdgeInsets.symmetric(vertical: AppSizes.spacingMedium),
                 onPressed: () async {
-                  var isUser =
-                      await SharedPreferenceHelper.getCustomerLoggedIn();
+                  var isUser = appStoragePref.getCustomerLoggedIn();
                   if (quantityChanged) {
-                    ShowMessage.warningNotification(
-                        StringConstants.updateCartWarning.localized(),context);
+                    if(context.mounted){
+                      ShowMessage.warningNotification(
+                          StringConstants.updateCartWarning.localized(),context);
+                    }
                   } else if (isUser) {
                     if(context.mounted) {
                       Navigator.pushNamed(context, checkoutScreen,
@@ -89,7 +98,7 @@ class ProceedView extends StatelessWidget {
                 child: Text(
                   StringConstants.proceed.localized().toUpperCase(),
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.primary
+                    color: Theme.of(context).colorScheme.secondaryContainer
                   ),
                 ),
               ),

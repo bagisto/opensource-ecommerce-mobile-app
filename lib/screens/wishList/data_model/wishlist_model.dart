@@ -1,11 +1,11 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 import 'package:json_annotation/json_annotation.dart';
@@ -35,7 +35,7 @@ class WishlistData {
   String? productId;
   String? customerId;
   String? itemOptions;
-  String? additional;
+  dynamic additional;
   String? movedToCart;
   String? timeOfMoving;
   String? createdAt;
@@ -125,5 +125,6 @@ class ShareWishlistData extends GraphQlBaseModel {
   factory ShareWishlistData.fromJson(Map<String, dynamic> json) =>
       _$ShareWishlistDataFromJson(json);
 
+  @override
   Map<String, dynamic> toJson() => _$ShareWishlistDataToJson(this);
 }

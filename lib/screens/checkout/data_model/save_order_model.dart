@@ -1,11 +1,11 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 import 'package:json_annotation/json_annotation.dart';
@@ -15,14 +15,12 @@ part 'save_order_model.g.dart';
 
 
 @JsonSerializable()
-class SaveOrderModel extends GraphQlBaseModel{
+class SaveOrderModel extends BaseModel{
 
-  @override
-  String? success;
   String? redirectUrl;
   String?  selectedMethod;
   Order? order;
-  SaveOrderModel({ this.success,this.redirectUrl,this.selectedMethod,this.order});
+  SaveOrderModel({this.redirectUrl,this.selectedMethod,this.order});
 
   factory SaveOrderModel.fromJson(Map<String, dynamic> json) =>
       _$SaveOrderModelFromJson(json);

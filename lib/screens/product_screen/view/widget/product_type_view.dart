@@ -1,10 +1,16 @@
-import 'package:bagisto_app_demo/widgets/price_widget.dart';
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
 
-import '../../../../utils/status_color_helper.dart';
-import '../group_product.dart';
+
+
 import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
-import 'package:flutter/material.dart';
-import 'package:collection/collection.dart';
 
 
 // ignore: must_be_immutable
@@ -24,7 +30,7 @@ class ProductTypeView extends StatefulWidget {
   )? callback;
   int qty = 1;
   String? price;
-  final scrollController;
+  final ScrollController ? scrollController;
   dynamic configurableProductId;
 
   ProductTypeView({
@@ -52,8 +58,6 @@ class _ProductTypeViewState extends State<ProductTypeView> {
   List selectParam = [];
   @override
   Widget build(BuildContext context) {
-    var productFlats = widget.productData?.productFlats
-        ?.firstWhereOrNull((e) => e.locale == GlobalData.locale);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -69,7 +73,7 @@ class _ProductTypeViewState extends State<ProductTypeView> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    productFlats?.name ?? "",
+                    widget.productData?.name ?? "",
                     maxLines: 2,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
@@ -84,8 +88,7 @@ class _ProductTypeViewState extends State<ProductTypeView> {
                         Container(
                           decoration: BoxDecoration(
                               color: ReviewColorHelper.getColor(double.tryParse(
-                                      widget.productData?.rating.toString() ??
-                                          "0") ??
+                                  widget.productData?.averageRating ?? "0") ??
                                   0),
                               borderRadius: BorderRadius.circular(5)),
                           padding: const EdgeInsets.symmetric(
@@ -97,9 +100,7 @@ class _ProductTypeViewState extends State<ProductTypeView> {
                               if (widget.productData?.reviews?.isNotEmpty ??
                                   true)
                                 Text(
-                                    (widget.productData?.reviews?[0].rating ??
-                                            0)
-                                        .toString(),
+                                    (widget.productData?.averageRating ?? 0).toString(),
                                     style:
                                         const TextStyle(color: Colors.white)),
                               if (widget.productData?.reviews?.isNotEmpty ??
@@ -118,9 +119,9 @@ class _ProductTypeViewState extends State<ProductTypeView> {
                         GestureDetector(
                           onTap: () {
                             ((widget.productData?.reviews?.length ?? 0) > 0)
-                                ? widget.scrollController.animateTo(
-                                    widget.scrollController.position
-                                        .maxScrollExtent,
+                                ? widget.scrollController?.animateTo(
+                                    widget.scrollController?.position
+                                        .maxScrollExtent ?? 0.0,
                                     duration: const Duration(milliseconds: 300),
                                     curve: Curves.ease)
                                 : null;
@@ -208,6 +209,7 @@ class _ProductTypeViewState extends State<ProductTypeView> {
                 ),
                 DownloadProductOptions(
                   options: widget.productData?.downloadableLinks,
+                  scaffoldMessengerKey: widget.scaffoldMessengerKey,
                   callBack: (ids) {
                     downloadLinks = ids;
                     selectList = downloadLinks;
@@ -280,8 +282,9 @@ class _ProductTypeViewState extends State<ProductTypeView> {
   }
 
   String? getConfigurablePrice() {
+
     for (int i = 0;
-        i <= (widget.productData?.configurableData?.variantPrices?.length ?? 0);
+        i < (widget.productData?.configurableData?.variantPrices?.length ?? 0);
         i++) {
       if (widget.configurableProductId ==
           widget.productData?.configurableData?.variantPrices?[i].id) {

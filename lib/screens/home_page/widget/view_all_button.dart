@@ -1,4 +1,14 @@
 
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
 import 'package:bagisto_app_demo/utils/application_localization.dart';
 import 'package:flutter/material.dart';
 import '../../../utils/app_constants.dart';
@@ -30,8 +40,8 @@ Widget viewAllButton(BuildContext context,
                   const EdgeInsets.symmetric(
                       vertical: AppSizes.spacingLarge,
                       horizontal: AppSizes.spacingLarge*2)),
-              side: MaterialStateProperty.all(BorderSide(
-                color: MobikulTheme.accentColor,
+              side: MaterialStateProperty.all(const BorderSide(
+                color: MobiKulTheme.accentColor,
               )),
               shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                   RoundedRectangleBorder(

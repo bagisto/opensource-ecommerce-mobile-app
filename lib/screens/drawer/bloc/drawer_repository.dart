@@ -1,32 +1,30 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 
-import '../../../data_model/currency_language_model.dart';
-import '../../../services/api_client.dart';
+
 import '../../cms_screen/data_model/cms_model.dart';
-import '../../home_page/data_model/get_categories_drawer_data_model.dart';
-import 'package:flutter/material.dart';
+import 'package:bagisto_app_demo/screens/drawer/utils/index.dart';
 
 abstract class DrawerPageRepository {
-  Future<GetDrawerCategoriesData> getDrawerCategoriesList(int? id);
+  Future<GetDrawerCategoriesData> getDrawerCategoriesList(List<Map<String, dynamic>>? filters);
   Future<CurrencyLanguageList> getLanguageCurrencyList();
   Future<CmsData?> callCmsData(String id);
 }
 
 class DrawerPageRepositoryImp implements DrawerPageRepository {
   @override
-  Future<GetDrawerCategoriesData> getDrawerCategoriesList(int? id) async {
+  Future<GetDrawerCategoriesData> getDrawerCategoriesList(List<Map<String, dynamic>>? filters) async {
     GetDrawerCategoriesData? getDrawerCategoriesData;
     try {
-      getDrawerCategoriesData = await ApiClient().homeCategories(id: id);
+      getDrawerCategoriesData = await ApiClient().homeCategories(filters: filters);
     } catch (error, stacktrace) {
       debugPrint("Error --> $error");
       debugPrint("StackTrace --> $stacktrace");

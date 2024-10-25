@@ -1,38 +1,22 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
-import 'package:bagisto_app_demo/screens/add_review/view/widget/add_image_view.dart';
-import 'package:bagisto_app_demo/utils/application_localization.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import '../../../utils/app_constants.dart';
-import '../../../utils/app_global_data.dart';
-import '../../../utils/mobikul_theme.dart';
-import '../../../utils/string_constants.dart';
-import '../../../widgets/common_error_msg.dart';
-import '../../../widgets/common_widgets.dart';
-import '../../../widgets/image_view.dart';
-import '../../../widgets/loader.dart';
-import '../../../widgets/show_message.dart';
-import '../bloc/add_review_base_event.dart';
-import '../bloc/add_review_bloc.dart';
-import '../bloc/add_review_fetch_state.dart';
+import 'package:bagisto_app_demo/screens/add_review/utils/index.dart';
 
-// ignore: must_be_immutable
+
 class AddReview extends StatefulWidget {
-  String? imageUrl;
-  String? productId;
-  String? productName;
+ final String? imageUrl;
+ final String? productId;
+ final String? productName;
 
-  AddReview({Key? key, this.imageUrl, this.productId, this.productName})
+  const AddReview({Key? key, this.imageUrl, this.productId, this.productName})
       : super(key: key);
 
   @override
@@ -44,7 +28,7 @@ class _AddReviewState extends State<AddReview> {
   final _reviewFormKey = GlobalKey<FormState>();
   final titleController = TextEditingController();
   final commentController = TextEditingController();
-  var rating;
+  var rating=0;
   bool isLoading = false;
   final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
       GlobalKey<ScaffoldMessengerState>();
@@ -61,15 +45,12 @@ class _AddReviewState extends State<AddReview> {
   Widget build(BuildContext context) {
     return ScaffoldMessenger(
       key: scaffoldMessengerKey,
-      child: Directionality(
-        textDirection: GlobalData.contentDirection(),
-        child: Scaffold(
-          appBar: AppBar(
-            title: Text(StringConstants.addaReview.localized()),
-            centerTitle: false,
-          ),
-          body: _addReviewBloc(context),
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(StringConstants.addaReview.localized()),
+          centerTitle: false,
         ),
+        body: _addReviewBloc(context),
       ),
     );
   }
@@ -86,7 +67,8 @@ class _AddReviewState extends State<AddReview> {
           } else if (state.status == AddReviewStatus.success) {
             ShowMessage.showNotification(
                 StringConstants.success.localized(),
-                state.addReviewModel!.success ?? StringConstants.updated.localized(),
+                // state.addReviewModel!.success ?? StringConstants.updated.localized(),
+            state.addReviewModel?.message.toString(),
                 const Color.fromRGBO(140, 194, 74, 5),
                 const Icon(Icons.check_circle_outline));
           }
@@ -118,13 +100,13 @@ class _AddReviewState extends State<AddReview> {
       images.clear();
       if(image != null){
         images.add({
-          "uploadType": '\"base64\"',
-          "imageUrl": '\"data:image/png;base64,$image\"'
+          "uploadType": '"base64"',
+          "imageUrl": '"data:image/png;base64,$image"'
         });
       }
       return _reviewForm();
     }
-    return Container();
+    return const SizedBox();
   }
 
   /// review form
@@ -159,12 +141,11 @@ class _AddReviewState extends State<AddReview> {
                     const SizedBox(height: AppSizes.spacingWide),
                     Text(
                       StringConstants.rating.localized(),
-                      style: const TextStyle(fontSize: 16),
+                      style: Theme.of(context).textTheme.labelMedium,
                     ),
                     const SizedBox(height: AppSizes.spacingNormal),
                     RatingBar.builder(
-                      unratedColor: MobikulTheme.appBarBackgroundColor,
-                      itemSize: 30,
+                      itemSize: AppSizes.spacingMedium*2,
                       initialRating: num.tryParse('0.0')?.toDouble() ?? 0.0,
                       minRating: 1,
                       direction: Axis.horizontal,
@@ -207,17 +188,17 @@ class _AddReviewState extends State<AddReview> {
                         labelStyle: Theme.of(context).textTheme.bodyMedium,
                         enabledBorder: OutlineInputBorder(
                             borderRadius:
-                                const BorderRadius.all(Radius.circular(8.0)),
+                                const BorderRadius.all(Radius.circular(AppSizes.spacingSmall)),
                             borderSide:
                                 BorderSide(color: Colors.grey.shade500)),
                         focusedBorder: OutlineInputBorder(
                             borderRadius:
-                                const BorderRadius.all(Radius.circular(8.0)),
+                                const BorderRadius.all(Radius.circular(AppSizes.spacingSmall)),
                             borderSide:
                                 BorderSide(color: Colors.grey.shade500)),
                         errorBorder: OutlineInputBorder(
                             borderRadius:
-                                const BorderRadius.all(Radius.circular(8.0)),
+                                const BorderRadius.all(Radius.circular(AppSizes.spacingSmall)),
                             borderSide: BorderSide(color: Colors.red.shade500)),
                         focusedErrorBorder: OutlineInputBorder(
                           borderRadius: const BorderRadius.all(Radius.zero),
@@ -234,25 +215,24 @@ class _AddReviewState extends State<AddReview> {
                       textInputAction: TextInputAction.next,
                       keyboardType: TextInputType.emailAddress,
                     ),
-                    const SizedBox(height: 30),
+                    const SizedBox(height: AppSizes.spacingMedium*2),
                     AddImageView(addReviewBloc: addReviewBloc),
                     const SizedBox(height: AppSizes.spacingWide),
                     MaterialButton(
                       shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                          side: BorderSide(width: 2)),
+                          borderRadius: BorderRadius.all(Radius.circular(AppSizes.spacingSmall)),
+                          ),
                       elevation: 0.0,
                       height: AppSizes.buttonHeight,
                       minWidth: MediaQuery.of(context).size.width,
                       color: Theme.of(context).colorScheme.onBackground,
-                      textColor: MobikulTheme.primaryColor,
+                      textColor: Theme.of(context).colorScheme.secondaryContainer,
                       onPressed: () {
                         _onPressSubmitButton();
                       },
                       child: Text(
                         StringConstants.submitReview.localized().toUpperCase(),
-                        style:
-                            const TextStyle(fontSize: AppSizes.spacingLarge),
+                        style: TextStyle(fontSize: AppSizes.spacingLarge,color:Theme.of(context).colorScheme.secondaryContainer ),
                       ),
                     ),
                     const SizedBox(height: AppSizes.spacingWide),
@@ -271,7 +251,7 @@ class _AddReviewState extends State<AddReview> {
   _onPressSubmitButton() {
     if (_reviewFormKey.currentState!.validate()) {
       if(images.isNotEmpty){
-        if ((rating ?? 0) > 0) {
+        if ((rating) > 0) {
           showDialog(
               context: context,
               barrierDismissible: false,

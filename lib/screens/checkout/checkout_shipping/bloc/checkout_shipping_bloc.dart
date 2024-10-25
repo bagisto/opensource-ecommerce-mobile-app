@@ -1,22 +1,20 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 
 
 
-import 'package:bagisto_app_demo/screens/cart_screen/cart_index.dart';
-import '../../data_model/checkout_save_address_model.dart';
-import 'checkout_fetch_shipping_state.dart';
-import 'checkout_shipping_base_event.dart';
-import 'checkout_shipping_repository.dart';
 
+
+import 'package:bagisto_app_demo/screens/checkout/data_model/checkout_save_address_model.dart';
+import 'package:bagisto_app_demo/screens/checkout/utils/index.dart';
 class CheckOutShippingBloc extends Bloc<CheckOutShippingBaseEvent, CheckOutShippingBaseState> {
   CheckOutShippingRepository? repository;
 
@@ -28,7 +26,7 @@ class CheckOutShippingBloc extends Bloc<CheckOutShippingBaseEvent, CheckOutShipp
 void mapEventToState(CheckOutShippingBaseEvent event,Emitter<CheckOutShippingBaseState> emit) async {
     if (event is CheckOutFetchShippingEvent) {
       try {
-        int id = await SharedPreferenceHelper.getCustomerId();
+        int id = appStoragePref.getCustomerId();
         SaveCheckoutAddresses? checkOutSaveAddressModel = await repository?.saveCheckOutShipping(
           event.billingCompanyName,
           event.billingFirstName,
@@ -54,7 +52,8 @@ void mapEventToState(CheckOutShippingBaseEvent event,Emitter<CheckOutShippingBas
           event.shippingPhone,
           id,
           billingId: event.billingId,
-          shippingId: event.shippingId
+          shippingId: event.shippingId,
+          useForShipping: event.useForShipping
         );
         if (checkOutSaveAddressModel?.responseStatus == false) {
           emit (CheckOutFetchShippingState.fail(error: checkOutSaveAddressModel?.success));

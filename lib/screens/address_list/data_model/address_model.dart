@@ -1,11 +1,11 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 import 'package:json_annotation/json_annotation.dart';
@@ -16,7 +16,7 @@ part 'address_model.g.dart';
 
 @JsonSerializable()
 class AddressModel extends GraphQlBaseModel {
-  @JsonKey(name: "addresses")
+  @JsonKey(name: "data")
   List<AddressData>? addressData = [];
   CountriesData? countryData;
   AddressModel({this.addressData});
@@ -33,8 +33,10 @@ class AddressData {
   String? id;
   String? firstName;
   String? lastName;
+  String? email;
   String? companyName;
   String? vatId;
+  @JsonKey(name: "address", defaultValue: "")
   String? address1;
   String? country;
   String? countryName;
@@ -47,7 +49,6 @@ class AddressData {
   bool? isDefault;
   String? createdAt;
   String? updatedAt;
-  String? address2;
   String? addressType;
   int? billingAddressId;
   int? shippingAddressId;
@@ -68,7 +69,7 @@ class AddressData {
       this.phone,
       this.isDefault,
       this.createdAt,
-      this.updatedAt, this.address2, this.addressType, this.shippingAddressId, this.billingAddressId});
+      this.updatedAt,this.addressType, this.shippingAddressId, this.billingAddressId, this.email});
   factory AddressData.fromJson(Map<String, dynamic> json) =>
       _$AddressDataFromJson(json);
 

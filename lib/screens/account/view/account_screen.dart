@@ -1,20 +1,15 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 import 'package:bagisto_app_demo/data_model/account_models/account_update_model.dart';
-import 'package:bagisto_app_demo/screens/account/bloc/account_info_bloc.dart';
-import 'package:bagisto_app_demo/screens/account/bloc/account_info_detail_state.dart';
 import 'package:bagisto_app_demo/screens/account/utils/index.dart';
-import 'package:bagisto_app_demo/screens/cart_screen/cart_index.dart';
-import '../../../utils/index.dart';
-import '../../home_page/utils/fetch_shared_pref_helper.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({Key? key}) : super(key: key);
@@ -37,20 +32,21 @@ final deleteAccountPassword = TextEditingController();
 final newPasswordController = TextEditingController();
 final confirmNewPasswordController = TextEditingController();
 final phoneController = TextEditingController();
-AccountInfoDetails? _accountInfoDetails;
+AccountInfoModel? _accountInfoDetails;
 AccountUpdate? _accountUpdate;
 bool isLoad = true;
 String? base64string;
 AccountInfoBloc? accountInfoBloc;
+bool subscribeNewsletter=false;
 
 GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
     GlobalKey<ScaffoldMessengerState>();
 
 class _AccountScreenState extends State<AccountScreen>
     with EmailValidator, PhoneNumberValidator {
-
   @override
   void initState() {
+
     isLoad = true;
     currentPasswordController.text = "";
     newPasswordController.text = "";
@@ -64,35 +60,29 @@ class _AccountScreenState extends State<AccountScreen>
   Widget build(BuildContext context) {
     return ScaffoldMessenger(
       key: scaffoldMessengerKey,
-      child: Directionality(
-        textDirection: GlobalData.contentDirection(),
-        child: Scaffold(
-          appBar: AppBar(
-            centerTitle: false,
-            title: Text(StringConstants.accountInfo.localized()),
-          ),
-          body: _profileBloc(context),
-          bottomNavigationBar: SizedBox(
-            height: 80,
-            child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(vertical: 14.0, horizontal: 12),
-              child: MaterialButton(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.0)),
-                elevation: 2.0,
-                height: AppSizes.buttonHeight,
-                minWidth: MediaQuery.of(context).size.width,
-                color: Theme.of(context).colorScheme.onBackground,
-                onPressed: () {
-                  _onPressSaveButton();
-                },
-                child: Text(StringConstants.save.localized().toUpperCase(),
-                  style: TextStyle(
-                      fontSize: AppSizes.spacingLarge,
-                      color: MobikulTheme.primaryColor),
-                ),
-              ),
+      child: Scaffold(
+        appBar: AppBar(
+          centerTitle: false,
+          title: Text(StringConstants.accountInfo.localized()),
+        ),
+        body: _profileBloc(context),
+        bottomNavigationBar: Padding(
+          padding: const EdgeInsets.symmetric(vertical:AppSizes.spacingMedium, horizontal: AppSizes.spacingMedium),
+          child: MaterialButton(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppSizes.spacingNormal)),
+            elevation: 2.0,
+            height: AppSizes.buttonHeight,
+            minWidth: MediaQuery.of(context).size.width,
+            color: Theme.of(context).colorScheme.onBackground,
+            onPressed: () {
+              _onPressSaveButton();
+            },
+            child: Text(
+              StringConstants.save.localized().toUpperCase(),
+              style: TextStyle(
+                  fontSize: AppSizes.spacingLarge,
+                  color: Theme.of(context).colorScheme.secondaryContainer),
             ),
           ),
         ),
@@ -106,7 +96,8 @@ class _AccountScreenState extends State<AccountScreen>
       listener: (BuildContext context, AccountInfoBaseState state) {
         if (state is AccountInfoUpdateState) {
           if (state.status == AccountStatus.fail) {
-            ShowMessage.errorNotification(StringConstants.invalidData.localized(),context);
+            ShowMessage.errorNotification(
+                StringConstants.invalidData.localized(), context);
           } else if (state.status == AccountStatus.success) {
             if (state.accountUpdate?.status == true) {
               ShowMessage.successNotification(
@@ -119,32 +110,34 @@ class _AccountScreenState extends State<AccountScreen>
             } else {
               Navigator.of(context).pop();
               ShowMessage.errorNotification(
-                  state.accountUpdate?.success ?? "",context);
+                  state.accountUpdate?.graphqlErrors ?? "", context);
             }
           }
         } else if (state is AccountInfoDeleteState) {
           if (state.status == AccountStatus.fail) {
-            ShowMessage.errorNotification(state.successMsg ?? "", context);
+            Navigator.pop(context);
+            ShowMessage.errorNotification(state.error ?? "", context);
           } else if (state.status == AccountStatus.success) {
             if (state.baseModel?.status == true) {
               ShowMessage.successNotification(
-                  state.baseModel?.success ?? "", context);
+                  state.baseModel?.message ?? "", context);
               Navigator.pop(context);
               HomePageRepositoryImp().callLogoutApi().then((response) async {
                 Navigator.pop(context);
                 Future.delayed(const Duration(seconds: 2)).then((value) async {
                   if (true) {
-                    await SharedPreferenceHelper.onUserLogout();
+                    appStoragePref.onUserLogout();
                     _fetchSharedPreferenceData();
                   }
-                  return Navigator.pushReplacementNamed(context, home);
+                  if (!mounted) return;
+                  Navigator.pushReplacementNamed(context, home);
                 });
               });
             } else {
               Navigator.pop(context);
               Navigator.of(context).pop();
               ShowMessage.warningNotification(
-                  state.baseModel?.success ?? "", context);
+                  state.baseModel?.message ?? "", context);
             }
           }
         }
@@ -162,11 +155,12 @@ class _AccountScreenState extends State<AccountScreen>
         if (isLoad) {
           isLoad = false;
           _accountInfoDetails = state.accountInfoDetails;
-          firstNameController.text = _accountInfoDetails?.data?.firstName ?? "";
-          lastNameController.text = _accountInfoDetails?.data?.lastName ?? "";
-          dobController.text = _accountInfoDetails?.data?.dateOfBirth ?? "";
-          phoneController.text = _accountInfoDetails?.data?.phone ?? "";
-          emailController.text = _accountInfoDetails?.data?.email ?? "";
+          firstNameController.text = _accountInfoDetails?.firstName ?? "";
+          lastNameController.text = _accountInfoDetails?.lastName ?? "";
+          dobController.text = _accountInfoDetails?.dateOfBirth.toString() ?? "";
+          phoneController.text = _accountInfoDetails?.phone ?? "";
+          emailController.text = _accountInfoDetails?.email ?? "";
+          subscribeNewsletter = _accountInfoDetails?.subscribedToNewsLetter ?? false;
         }
       }
       if (state.status == AccountStatus.fail) {
@@ -192,27 +186,35 @@ class _AccountScreenState extends State<AccountScreen>
       return const AccountLoaderView();
     }
 
-    return ProfileDetailView(
-      formKey: _formKey,
+    return SafeArea(
+      child: ProfileDetailView(
+        formKey: _formKey,
+        subsNewsLetter: subscribeNewsletter,
+        onChanged: (value) {
+          setState(() {
+            subscribeNewsletter = value; // Update local state
+            // You can perform any additional logic here if needed
+            print("Newsletter subscription status changed: $subscribeNewsletter");
+          });
+        },
+      ),
     );
   }
 
   _fetchSharedPreferenceData() {
-    getCustomerLoggedInPrefValue().then((isLogged) {
+    bool isLogged = appStoragePref.getCustomerLoggedIn();
       if (isLogged) {
-        SharedPreferenceHelper.getCustomerName().then((value) {
+        String value = appStoragePref.getCustomerName();
           setState(() {
             customerUserName = value;
             isLoggedIn = isLogged;
           });
-        });
       } else {
         setState(() {
           customerUserName = StringConstants.welcomeGuest.localized();
           isLoggedIn = isLogged;
         });
       }
-    });
   }
 
   ///this method will call on press save button
@@ -224,7 +226,7 @@ class _AccountScreenState extends State<AccountScreen>
           builder: (BuildContext context) {
             return Dialog(
               child: Container(
-                color: Theme.of(context).appBarTheme.backgroundColor,
+                color: Theme.of(context).colorScheme.background,
                 padding: const EdgeInsets.all(AppSizes.spacingWide),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -262,7 +264,9 @@ class _AccountScreenState extends State<AccountScreen>
           password: newPasswordController.text,
           confirmPassword: confirmNewPasswordController.text,
           oldPassword: currentPasswordController.text,
-          avatar: base64string ?? ""));
+          avatar: base64string ?? "",
+        subscribedToNewsLetter: subscribeNewsletter
+      ));
       Future.delayed(const Duration(seconds: 3)).then((value) {
         Navigator.pop(context);
       });
@@ -270,14 +274,11 @@ class _AccountScreenState extends State<AccountScreen>
   }
 
   ///this method will update the changes in the save shared preference data
-  Future _updateSharedPreferences(AccountUpdate accountUpdate) async {
-    await SharedPreferenceHelper.setCustomerLoggedIn(true);
-    await SharedPreferenceHelper.setCustomerName(
-        accountUpdate.data?.name ?? "");
-    await SharedPreferenceHelper.setCustomerImage(
-        accountUpdate.data?.imageUrl ?? "");
-    await SharedPreferenceHelper.setCustomerEmail(
-        accountUpdate.data?.email ?? "");
+   _updateSharedPreferences(AccountUpdate accountUpdate) {
+    appStoragePref.setCustomerLoggedIn(true);
+    appStoragePref.setCustomerName(accountUpdate.data?.name ?? "");
+    appStoragePref.setCustomerImage(accountUpdate.data?.imageUrl ?? "");
+    appStoragePref.setCustomerEmail(accountUpdate.data?.email ?? "");
     return true;
   }
 }

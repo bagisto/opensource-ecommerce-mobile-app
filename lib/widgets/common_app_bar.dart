@@ -1,6 +1,19 @@
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
 import 'package:bagisto_app_demo/utils/route_constants.dart';
 import 'package:flutter/material.dart';
 import '../utils/app_constants.dart';
+import '../utils/app_global_data.dart';
+import '../utils/badge_helper.dart';
+import '../utils/shared_preference_helper.dart';
 
 
 class CommonAppBar extends StatelessWidget implements PreferredSizeWidget{
@@ -37,12 +50,23 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget{
             icon: const Icon(
               Icons.compare_arrows,
             )),
-        IconButton(
-          icon: const Icon(Icons.shopping_bag_outlined),
-          onPressed: () {
-            if(index != 2){
-              Navigator.pushNamed(context, cartScreen);
-            }
+        StreamBuilder(
+          stream: GlobalData.cartCountController.stream,
+          builder: (BuildContext context, snapshot) {
+            int count = snapshot.data ?? 0;
+
+            appStoragePref.setCartCount(count);
+            return BadgeIcon(
+              badgeCount: count,
+              icon: IconButton(
+                icon: const Icon(Icons.shopping_bag_outlined),
+                onPressed: () {
+                  if(index != 2){
+                    Navigator.pushNamed(context, cartScreen);
+                  }
+                },
+              ),
+            );
           },
         ),
       ],

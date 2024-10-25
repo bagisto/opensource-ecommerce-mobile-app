@@ -1,17 +1,20 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
-
+import 'package:bagisto_app_demo/utils/server_configuration.dart';
 import 'package:bagisto_app_demo/utils/shared_preference_keys.dart';
+import 'package:bagisto_app_demo/utils/string_constants.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
+import '../data_model/account_models/account_info_details.dart';
+import '../screens/home_page/data_model/get_categories_drawer_data_model.dart';
 
 final appStoragePref = SharedPreferenceHelper();
 
@@ -19,201 +22,118 @@ class SharedPreferenceHelper {
   var configurationStorage = GetStorage(
       "configurationStorage"); //-----Use only for user app configuration data
 
-  static Future<String> getDate() async {
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    String? dateNew = sharedPreferences.getString(date);
-
-    return dateNew ?? "";
+  String getDate() {
+    return configurationStorage.read(date) ?? "";
   }
 
-  static setDate(String setDate) async {
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    sharedPreferences.setString(date, setDate);
+  setDate(String setDate) {
+    configurationStorage.write(date, setDate);
   }
 
-  static setLanguageName(String customerLanguage) async {
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    sharedPreferences.setString("Language", customerLanguage);
+  setLanguageName(String customerLanguage) {
+    configurationStorage.write(language, customerLanguage);
   }
 
-  static getLanguageName() async {
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    String? customerLanguage = sharedPreferences.getString("Language");
-    return customerLanguage ?? "English";
+  String getLanguageName() {
+    return configurationStorage.read(language) ?? defaultLanguageName;
   }
 
-  static setSortName(String sort) async {
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    sharedPreferences.setString("sort", sort);
+  setSortName(String selectedSort)  {
+    configurationStorage.write(sort, selectedSort);
   }
 
-  static getSortName() async {
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    String? sort = sharedPreferences.getString("sort");
-    return sort ?? "";
+  String getSortName() {
+    return configurationStorage.read(sort) ?? "";
   }
 
-  static setCurrencyCode(String currencyCode) async {
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    sharedPreferences.setString(configCurrencyCode, currencyCode);
+   setCurrencyLabel(String currencyLabel) {
+    configurationStorage.write(configCurrencyLabel, currencyLabel);
   }
 
-  static getCurrencyCode() async {
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    String ?  currencyCode = sharedPreferences.getString(configCurrencyCode);
-    return currencyCode ?? "USD" ;
+  String getCurrencyLabel() {
+    return configurationStorage.read(configCurrencyLabel) ?? defaultCurrencyName;
   }
 
-  static setCurrencyLabel(String currencyLabel) async {
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    sharedPreferences.setString(configCurrencyLabel, currencyLabel);
+  onUserLogout() {
+    configurationStorage.write(customerLoggedIn, false);
+    configurationStorage.write(customerCartCount, 0);
+    configurationStorage.write(customerName, StringConstants.welcomeGuest);
+    configurationStorage.write(customerEmail, '');
+    configurationStorage.write(customerProfilePicUrl, '');
+    configurationStorage.write(customerBannerPicUrl, '');
+    configurationStorage.write(customerToken, '0');
+    configurationStorage.remove(customerDetails);
   }
 
-  static getCurrencyLabel() async {
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    String? currencyLabel = sharedPreferences.getString(configCurrencyLabel);
-    return currencyLabel;
+  setAddressData(bool isAddressData) {
+    configurationStorage.write(addressData, isAddressData);
   }
 
-  static setCustomerLoggedIn(bool isLoggedIn) async {
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    sharedPreferences.setBool(customerLoggedIn, isLoggedIn);
+  bool getAddressData() {
+     return configurationStorage.read(addressData) ?? false;
   }
 
-  static onUserLogout() async {
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    sharedPreferences.setBool(customerLoggedIn, false);
-    sharedPreferences.setInt(customerCartCount, 0);
-    sharedPreferences.setString(customerName, 'Welcome Guest');
-    sharedPreferences.setString(customerEmail, '');
-    sharedPreferences.setString(customerProfilePicUrl, '');
-    sharedPreferences.setString(customerBannerPicUrl, '');
-    sharedPreferences.setString(customerToken, '0');
-    sharedPreferences.setBool(isApproved, false);
-    await sharedPreferences.clear();
+  setCartCount(int cartCount) {
+    configurationStorage.write(customerCartCount, cartCount);
   }
 
-  static getCustomerLoggedIn() async {
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    bool? isLoggedIn = sharedPreferences.getBool(customerLoggedIn);
-    return isLoggedIn ?? false;
+  int getCartCount() {
+    return configurationStorage.read(customerCartCount) ?? 0;
   }
 
-  static setAddressData(bool isAddressData) async {
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    sharedPreferences.setBool(addressData, isAddressData);
+  setCustomerId(int customerIdNew) {
+    configurationStorage.write(customerId, customerIdNew);
   }
 
-  static getAddressData() async {
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    bool? isAddressData = sharedPreferences.getBool(addressData);
-    return isAddressData ?? false;
+  int getCustomerId() {
+    return configurationStorage.read(customerId) ?? 0;
   }
 
-  static setQuoteId(int quoteId) async {
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    sharedPreferences.setInt(customerQuoteId, quoteId);
+    setCustomerToken(String customerTokenValue) {
+    configurationStorage.write(customerToken, customerTokenValue);
   }
 
-  static getQuoteId() async {
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    int? quoteId = sharedPreferences.getInt(customerQuoteId);
-    return quoteId ?? 0;
+  String getCustomerToken() {
+    return configurationStorage.read(customerToken) ?? "0";
   }
 
-  static setCartCount(int cartCount) async {
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    sharedPreferences.setInt(customerCartCount, cartCount);
+  setCustomerEmail(String customerEmailNew) {
+    configurationStorage.write(customerEmail, customerEmailNew);
   }
 
-  static getCartCount() async {
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    int? quoteId = sharedPreferences.getInt(customerCartCount);
-    return quoteId ?? 0;
+  String getCustomerEmail() {
+    return configurationStorage.read(customerEmail) ?? "";
   }
 
-  static setCustomerToken(String customerTokenValue) async {
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    await sharedPreferences.setString(customerToken, customerTokenValue);
+  setCustomerImage(String customerImageValue) {
+    configurationStorage.write(customerImage, customerImageValue);
   }
 
-  static Future<String> getCustomerToken() async {
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    String? customerTokenNew = sharedPreferences.getString(customerToken);
-
-    return customerTokenNew ?? "0";
+  String getCustomerImage() {
+    return configurationStorage.read(customerImage) ?? "";
   }
 
-  static setCustomerName(String customerNameValue) async {
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    sharedPreferences.setString(customerName, customerNameValue);
+  setCustomerName(String customerNameValue) {
+    configurationStorage.write(customerName, customerNameValue);
   }
 
-  static getCustomerName() async {
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    String? customerNameNew = sharedPreferences.getString(customerName);
-    return customerNameNew ?? "";
+  String getCustomerName() {
+    return configurationStorage.read(customerName) ?? "";
   }
 
-  static setCustomerImage(String customerImageValue) async {
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    sharedPreferences.setString(customerImage, customerImageValue);
+  bool getCustomerLoggedIn() {
+    return configurationStorage.read(customerLoggedIn) ?? false;
   }
 
-  static getCustomerImage() async {
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    String? customerImageNew = sharedPreferences.getString(customerImage);
-    return customerImageNew ?? "";
-  }
-
-  static setCustomerEmail(String customerEmailNew) async {
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    sharedPreferences.setString(customerEmail, customerEmailNew);
-  }
-
-  static getCustomerEmail() async {
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    String? customerEmailNew = sharedPreferences.getString(customerEmail);
-    return customerEmailNew ?? "";
-  }
-
-  static setCustomerId(int customerIdNew) async {
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    sharedPreferences.setInt(customerId, customerIdNew);
-  }
-
-  static getCustomerId() async {
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    int? customerIdNew = sharedPreferences.getInt(customerId);
-    return customerIdNew ?? 0;
-  }
-
-  static setCookie(String cookieData) async {
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    sharedPreferences.setString(cookie, cookieData);
-  }
-
-  static getCookie() async {
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    String? cookieNew = sharedPreferences.getString(cookie);
-    return cookieNew ?? "";
-  }
-
-  static setCustomerLanguage(String languageCode) async {
-    SharedPreferences pref = await SharedPreferences.getInstance();
-    pref.setString(customerLanguage, languageCode);
-  }
-
-  static getCustomerLanguage() async {
-    SharedPreferences pref = await SharedPreferences.getInstance();
-    return pref.get(customerLanguage) ?? 'en';
+  setCustomerLoggedIn(bool isLoggedIn) {
+    configurationStorage.write(customerLoggedIn, isLoggedIn);
   }
 
   setFingerPrintUser(String savedKey) {
     configurationStorage.write(fingerPrintUSer, savedKey);
   }
 
-  String? getFingerPrintUser() {
+  String getFingerPrintUser() {
     return configurationStorage.read(fingerPrintUSer) ?? "";
   }
 
@@ -225,13 +145,59 @@ class SharedPreferenceHelper {
     return configurationStorage.read(fingerPrintPassword) ?? "";
   }
 
-  setTheme(String value) async {
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    sharedPreferences.setString(themeKey, value);
+  setTheme(String value) {
+    configurationStorage.write(themeKey, value);
   }
 
-  getTheme() async {
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    return sharedPreferences.getString(themeKey) ?? "";
+  String getTheme() {
+    return configurationStorage.read(themeKey) ?? "";
+  }
+
+  setCurrencySymbol(String currencySymbol) {
+    configurationStorage.write(configCurrencySymbol, currencySymbol);
+  }
+
+  String getCurrencySymbol() {
+    return configurationStorage.read(configCurrencySymbol) ?? "\$";
+  }
+
+  setCookieGet(String cookieData) {
+    configurationStorage.write(cookie, cookieData);
+  }
+
+  String getCookieGet() {
+    return configurationStorage.read(cookie) ?? "";
+  }
+
+  setCustomerLanguage(String languageCode) {
+    configurationStorage.write(customerLanguage, languageCode);
+  }
+
+  String getCustomerLanguage() {
+    return configurationStorage.read(customerLanguage) ?? defaultStoreCode;
+  }
+
+  setCurrencyCode(String currencyCode) {
+    configurationStorage.write(configCurrencyCode, currencyCode);
+  }
+
+   String getCurrencyCode() {
+     return configurationStorage.read(configCurrencyCode) ?? defaultCurrencyCode;
+  }
+
+  AccountInfoDetails? getCustomerDetails() {
+    return configurationStorage.read(customerDetails);
+  }
+
+   setCustomerDetails(AccountInfoModel? details) {
+    return configurationStorage.write(customerDetails, details);
+  }
+
+  setDrawerCategories(GetDrawerCategoriesData? data) {
+    return configurationStorage.write(drawerCatData, data);
+  }
+
+  GetDrawerCategoriesData? getDrawerCategories() {
+    return configurationStorage.read(drawerCatData);
   }
 }

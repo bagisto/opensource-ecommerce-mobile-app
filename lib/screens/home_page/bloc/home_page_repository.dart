@@ -1,24 +1,30 @@
-import 'package:flutter/material.dart';
-import '../../../data_model/account_models/account_info_details.dart';
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
+
 import '../../../data_model/add_to_wishlist_model/add_wishlist_model.dart';
-import '../../../data_model/graphql_base_model.dart';
-import '../../../services/api_client.dart';
-import '../../cart_screen/cart_model/add_to_cart_model.dart';
+import '../../cart_screen/cart_model/cart_data_model.dart';
 import '../../cms_screen/data_model/cms_model.dart';
-import '../data_model/advertisement_data.dart';
-import '../data_model/get_categories_drawer_data_model.dart';
-import '../data_model/new_product_data.dart';
 import '../data_model/theme_customization.dart';
+import 'package:bagisto_app_demo/screens/home_page/utils/index.dart';
 
 abstract class HomePageRepository {
-  Future<AddToCartModel?> callAddToCartAPi(int productId, int quantity); //
+  Future<AddToCartModel?> callAddToCartAPi(int productId, int quantity);
   Future<AddWishListModel?> addItemToWishlist(String? wishListProductId);
-  Future<GraphQlBaseModel?> callLogoutApi();
-  Future<GraphQlBaseModel?> callAddToCompareListApi(String? productId);
-  Future<ThemeCustomDataModel?> getThemeCustomizationData(); //
-  Future<Advertisements?> cartCountApi();
-  Future<GraphQlBaseModel?>  removeItemFromWishlist(String? wishListProductId);
-  Future<AccountInfoDetails?> callAccountDetailsApi(); //
+  Future<BaseModel?> callLogoutApi();
+  Future<BaseModel?> callAddToCompareListApi(String? productId);
+  Future<ThemeCustomDataModel?> getThemeCustomizationData();
+  Future<CartModel?> cartCountApi();
+  Future<CmsData?> callCmsData(String id);
+  Future<AddToCartModel?>  removeItemFromWishlist(String? wishListProductId);
+  Future<AccountInfoModel?> callAccountDetailsApi();
   Future<NewProductsModel?> getAllProducts(
       {List<Map<String, dynamic>>? filters});
   Future<GetDrawerCategoriesData?> getHomeCategoriesList(
@@ -67,8 +73,8 @@ class HomePageRepositoryImp implements HomePageRepository {
 
   ///Log Out Api
   @override
-  Future<GraphQlBaseModel?> callLogoutApi() async {
-    GraphQlBaseModel? response;
+  Future<BaseModel?> callLogoutApi() async {
+    BaseModel? response;
     try {
       response = await ApiClient().customerLogout();
     } catch (error, stacktrace) {
@@ -79,8 +85,8 @@ class HomePageRepositoryImp implements HomePageRepository {
   }
 
   @override
-  Future<GraphQlBaseModel?> callAddToCompareListApi(String? productId) async {
-    GraphQlBaseModel? baseModel;
+  Future<BaseModel?> callAddToCompareListApi(String? productId) async {
+    BaseModel? baseModel;
     try {
       baseModel = await ApiClient().addToCompare(productId);
     } catch (error, stacktrace) {
@@ -104,22 +110,22 @@ class HomePageRepositoryImp implements HomePageRepository {
   }
 
   @override
-  Future<Advertisements?> cartCountApi() async {
-    Advertisements? advertisementData;
+  Future<CartModel?> cartCountApi() async {
+    CartModel? cartDetails;
     try {
-      advertisementData = await ApiClient().getCartCount();
+      cartDetails = await ApiClient().getCartCount();
     } catch (error, stacktrace) {
       debugPrint("Error --> $error");
       debugPrint("StackTrace --> $stacktrace");
     }
-    return advertisementData;
+    return cartDetails;
   }
 
 
   @override
-  Future<GraphQlBaseModel?> removeItemFromWishlist(String? wishListProductId) async {
+  Future<AddToCartModel?> removeItemFromWishlist(String? wishListProductId) async {
 
-    GraphQlBaseModel? removeFromWishlist;
+    AddToCartModel? removeFromWishlist;
     try{
       removeFromWishlist=await ApiClient().removeFromWishlist(wishListProductId);
 
@@ -130,9 +136,9 @@ class HomePageRepositoryImp implements HomePageRepository {
     return removeFromWishlist;
   }
   @override
-  Future<AccountInfoDetails?> callAccountDetailsApi() async {
+  Future<AccountInfoModel?> callAccountDetailsApi() async {
 
-    AccountInfoDetails? accountInfoDetails;
+    AccountInfoModel? accountInfoDetails;
     try{
       accountInfoDetails = await ApiClient().getCustomerData();
     }catch(error, stacktrace){
@@ -153,5 +159,17 @@ class HomePageRepositoryImp implements HomePageRepository {
       debugPrint("StackTrace --> $stacktrace");
     }
     return newProductsData;
+  }
+  @override
+  Future<CmsData?> callCmsData(String id) async {
+    CmsData? cmsData;
+    try{
+      cmsData=await ApiClient().getCmsPagesData();
+    }
+    catch(error,stacktrace){
+      debugPrint("Error --> $error");
+      debugPrint("StackTrace --> $stacktrace");
+    }
+    return cmsData;
   }
 }

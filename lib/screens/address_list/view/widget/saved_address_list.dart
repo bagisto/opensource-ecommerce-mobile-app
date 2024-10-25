@@ -1,30 +1,23 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
-import 'package:bagisto_app_demo/utils/application_localization.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../data_model/app_route_arguments.dart';
-import '../../../../utils/app_constants.dart';
-import '../../../../utils/route_constants.dart';
-import '../../../../utils/string_constants.dart';
-import '../../bloc/address_bloc.dart';
-import '../../bloc/fetch_address_event.dart';
-import '../../data_model/address_model.dart';
-import 'package:flutter/material.dart';
 
-//ignore: must_be_immutable
+import 'package:bagisto_app_demo/screens/address_list/utils/index.dart';
+
 class SavedAddressList extends StatelessWidget {
-  AddressData? addressModel;
-  VoidCallback? reload;
-  SavedAddressList({Key? key, this.addressModel, this.reload})
-      : super(key: key);
+  final AddressData? addressModel;
+  final VoidCallback? reload;
+  final bool isFromDashboard;
+  final AddressBloc? addressBloc;
+  const SavedAddressList({Key? key, this.addressModel, this.reload, this.isFromDashboard = false,
+    this.addressBloc}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -37,15 +30,43 @@ class SavedAddressList extends StatelessWidget {
           const SizedBox(
             height: AppSizes.spacingNormal,
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(AppSizes.spacingMedium, 0, 0, 0),
-            child: Text(
-              "${addressModel?.firstName ?? ""} ${addressModel?.lastName ?? ""}",
-              style: TextStyle(
-                  color: Colors.grey[600],
-                  fontWeight: FontWeight.bold,
-                  fontSize: AppSizes.spacingLarge),
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(AppSizes.spacingMedium, 0, 0, 0),
+                child: Text(
+                  "${addressModel?.firstName ?? ""} ${addressModel?.lastName ?? ""}",
+                  style: TextStyle(
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.bold,
+                      fontSize: AppSizes.spacingLarge),
+                ),
+              ),
+              if(isFromDashboard == false)
+              GestureDetector(
+                child: Container(
+                  padding: const EdgeInsets.only(left: AppSizes.spacingMedium, right: AppSizes.spacingMedium,
+                  top: 8, bottom: 8),
+                  margin: const EdgeInsets.only(right: AppSizes.spacingMedium),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                        color: Theme.of(context).colorScheme.onPrimary
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    color: (addressModel?.isDefault ?? true) ?
+                    Theme.of(context).brightness==Brightness.light ? AppColors.lightWhiteColor : null : null
+                  ),
+                  child: Text((addressModel?.isDefault ?? true) ? StringConstants.defaultAddress.localized()
+                      : StringConstants.setDefault.localized()),
+                ),
+                onTap: (){
+                  if(addressModel?.isDefault == false){
+                    addressBloc.add(SetDefaultAddressEvent(addressModel?.id ?? "0"));
+                  }
+                },
+              )
+            ],
           ),
           const SizedBox(
             height: AppSizes.spacingLarge,
@@ -72,7 +93,7 @@ class SavedAddressList extends StatelessWidget {
                 ],
               )),
           const SizedBox(
-            height: 10,
+            height: AppSizes.spacingMedium,
           ),
           Divider(
             color: Colors.grey[300],
@@ -94,7 +115,7 @@ class SavedAddressList extends StatelessWidget {
                     onPressed: () {
                       Navigator.pushNamed(context, addAddressScreen,
                               arguments: AddressNavigationData(
-                                  isEdit: true, addressModel: addressModel))
+                                  isEdit: true, addressModel: addressModel, isCheckout: false))
                           .then((value) {
                         if (reload != null) {
                           reload!();
@@ -155,10 +176,7 @@ class SavedAddressList extends StatelessWidget {
                         ),
                         Text(
                           StringConstants.remove.localized(),
-                          style: TextStyle(
-                              color: Theme.of(context).colorScheme.onPrimary,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500),
+                          style:Theme.of(context).textTheme.labelMedium,
                         )
                       ],
                     ),
@@ -178,7 +196,7 @@ class SavedAddressList extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+          backgroundColor: Theme.of(context).colorScheme.background,
           title: Text(
             StringConstants.deleteAddressWarning.localized(),
           ),
@@ -211,15 +229,7 @@ class SavedAddressList extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(AppSizes.spacingMedium, 0, 0, 0),
       child: Text(
-        ("${addressModel?.address1!.replaceAll("[", "").replaceAll("]", "") ?? ""}") +
-            "," +
-            (" ${addressModel?.city ?? ""}") +
-            "," +
-            (" ${addressModel?.stateName ?? (addressModel?.state ?? "")}") +
-            "," +
-            (" ${addressModel?.countryName ?? ""}") +
-            "," +
-            (" ${addressModel?.postcode ?? ""}"),
+        "${addressModel?.address1!.replaceAll("[", "").replaceAll("]", "") ?? ""}, ${addressModel?.city ?? ""}, ${addressModel?.stateName ?? (addressModel?.state ?? "")}, ${addressModel?.countryName ?? (addressModel?.country ?? "")}, ${addressModel?.postcode ?? ""}",
         style: TextStyle(
             fontSize: AppSizes.spacingLarge, color: Colors.grey[600]),
       ),

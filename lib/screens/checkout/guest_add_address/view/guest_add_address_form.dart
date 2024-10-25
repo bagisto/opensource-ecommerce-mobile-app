@@ -1,32 +1,17 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
-import 'package:bagisto_app_demo/utils/application_localization.dart';
-import 'package:bagisto_app_demo/widgets/loader.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:collection/collection.dart';
-import '../../../../utils/app_constants.dart';
-import '../../../../utils/app_global_data.dart';
-import '../../../../utils/input_field_validators.dart';
-import '../../../../utils/mobikul_theme.dart';
-import '../../../../utils/string_constants.dart';
-import '../../../../widgets/common_drop_down_field.dart';
-import '../../../../widgets/common_error_msg.dart';
-import '../../../../widgets/common_widgets.dart';
-import '../../../../widgets/show_message.dart';
-import '../../../address_list/data_model/address_model.dart';
-import '../../../address_list/data_model/country_model.dart';
-import '../bloc/guest_address_base_event.dart';
-import '../bloc/guest_address_bloc.dart';
-import '../bloc/guest_address_country_state.dart';
+
+
+
+import 'package:bagisto_app_demo/screens/checkout/utils/index.dart';
 
 // ignore: must_be_immutable
 class GuestAddAddressForm extends StatefulWidget {
@@ -100,10 +85,7 @@ class _GuestAddAddressFormState extends State<GuestAddAddressForm>
     return ScaffoldMessenger(
       key: scaffoldMessengerKey,
       child: Scaffold(
-          body: Directionality(
-        textDirection: GlobalData.contentDirection(),
-        child: _guestAddressBloc(context),
-      )),
+          body: _guestAddressBloc(context)),
     );
   }
 
@@ -141,7 +123,7 @@ class _GuestAddAddressFormState extends State<GuestAddAddressForm>
       guestAddressBloc.add(GuestAddressCountryEvent());
       return _getAddressForm();
     }
-    return Container();
+    return const SizedBox();
   }
 
   _getAddressForm() {
@@ -157,7 +139,7 @@ class _GuestAddAddressFormState extends State<GuestAddAddressForm>
           children: [
             Container(
               padding:
-                  const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
+                  const EdgeInsets.symmetric(vertical: AppSizes.spacingNormal, horizontal:AppSizes.spacingMedium),
               child: Form(
                 key: _formKey,
                 autovalidateMode: _autoValidate
@@ -336,19 +318,17 @@ class _GuestAddAddressFormState extends State<GuestAddAddressForm>
                     MaterialButton(
                       shape: const RoundedRectangleBorder(
                           borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                          side: BorderSide(width: 2)),
+                          ),
                       elevation: 0.0,
                       height: AppSizes.buttonHeight,
                       minWidth: MediaQuery.of(context).size.width,
                       color: Theme.of(context).colorScheme.onBackground,
-                      textColor: MobikulTheme.primaryColor,
                       onPressed: () {
                         _onPressSaveButton();
                       },
                       child: Text(
                         StringConstants.saveAddress.localized().toUpperCase(),
-                        style:
-                            const TextStyle(fontSize: AppSizes.spacingLarge),
+                        style: TextStyle(fontSize: AppSizes.spacingLarge, color: Theme.of(context).colorScheme.secondaryContainer),
                       ),
                     ),
                     const SizedBox(height: AppSizes.spacingMedium),
@@ -439,7 +419,7 @@ class _GuestAddAddressFormState extends State<GuestAddAddressForm>
           builder: (BuildContext context) {
             return Dialog(
               child: Container(
-                color: Theme.of(context).appBarTheme.backgroundColor,
+                color: Theme.of(context).colorScheme.background,
                 padding: const EdgeInsets.all(AppSizes.spacingWide),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,

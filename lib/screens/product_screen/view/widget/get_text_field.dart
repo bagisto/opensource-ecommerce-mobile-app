@@ -1,20 +1,26 @@
 
-import '../../../cart_screen/cart_model/cart_data_model.dart';
-import '../../../home_page/data_model/new_product_data.dart';
-import 'package:flutter/material.dart';
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
 
-import '../CustomOptions/text_field_type.dart';
+import '../../../../data_model/product_model/product_screen_model.dart';
+import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
 
 
-//ignore: must_be_immutable
 class GetTextField extends StatefulWidget {
   final Attributes? variation;
   final int  index;
   final List optionArray;
-  Function(List, String)? callback;
-  List<Attributes>? customOptions = [];
-  NewProducts? productData;
-  GetTextField({Key? key, this.variation, required this.index, required this.optionArray,this.callback,this.productData,this.customOptions}) : super(key: key);
+  final Function(List, String)? callback;
+  final List<Attributes>? customOptions;
+  final NewProducts? productData;
+  const GetTextField({Key? key, this.variation, required this.index, required this.optionArray,this.callback,this.productData,this.customOptions}) : super(key: key);
 
   @override
   State<GetTextField> createState() => _GetTextFieldState();
@@ -75,7 +81,7 @@ class _GetTextFieldState extends State<GetTextField> {
   _updateCallBack() {
     if (widget.callback != null) {
       Map<String, dynamic> dict = {};
-      print("optionArray updateCallback --> ${widget.optionArray}");
+      debugPrint("optionArray updateCallback --> ${widget.optionArray}");
       dict["superAttribute"] = widget.optionArray;
       widget.callback!(widget.optionArray, _getId());
     }

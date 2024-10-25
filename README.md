@@ -21,41 +21,41 @@ Android: https://play.google.com/store/apps/details?id=com.webkul.bagisto.mobiku
 iOS: https://apps.apple.com/us/app/mobikul-bagisto-laravel-app/id6447519140
 # Features
 
-The open-source ecommerce mobile app comes with an array of features to improve your customers' shopping experience. 
+The open-source ecommerce mobile app comes with an array of features to improve your customers' shopping experience.
 
 ## Interactive Home Page and Search
 
-![enter image description here](https://raw.githubusercontent.com/bagisto/temp-media/master/img1.png)
+![enter image description here](https://raw.githubusercontent.com/bagisto/temp-media/master/interactive-homepage-and-search.png)
 
 ## All Type Product Supported
 
-![enter image description here](https://raw.githubusercontent.com/bagisto/temp-media/master/img2%20(1).png)
+![enter image description here](https://raw.githubusercontent.com/bagisto/temp-media/master/product-details.png)
 
 ## Dark Mode and Push Notification
 
-![enter image description here](https://raw.githubusercontent.com/bagisto/temp-media/master/img6.png)
+![enter image description here](https://raw.githubusercontent.com/bagisto/temp-media/master/dark-theme-and-push-notifications.png)
 
 ## Discount Coupons and Guest Checkout
 
-![enter image description here](https://raw.githubusercontent.com/bagisto/temp-media/master/img5.png)
+![enter image description here](https://raw.githubusercontent.com/bagisto/temp-media/master/coupon-and-guest-checkout.png)
 
-## Wishlist and Compare Product 
+## Wishlist and Product Category
 
-![enter image description here](https://raw.githubusercontent.com/bagisto/temp-media/master/img4.png)
+![enter image description here](https://raw.githubusercontent.com/bagisto/temp-media/master/category%3Dpage-and-wishlist.png)
 
-## Share and Product Reviews
+## Order Details and Product Reviews
 
-![enter image description here](https://raw.githubusercontent.com/bagisto/temp-media/master/img3.png)
+![enter image description here](https://raw.githubusercontent.com/bagisto/temp-media/master/order-details-and-product-reviews.png)
 
 ## Installation Guide
 
 Before beginning with the installation, you will need the following with the mentioned versions
 
-- Bagisto Version - v2.0.0
-- Android Studio Version - Flamingo | 2022.2.1 
-- Flutter Version - 3.10.1
-- Dart - 3.0.1
-- Xcode - 14.3
+- Bagisto Version - v2.2.2
+- Android Studio Version - Flamingo | 2022.2.1
+- Flutter Version - 3.19.2
+- Dart - 3.3.0
+- Xcode - 15.2
 - Swift - 5
 
 Make sure you have installed the API module and set this up properly on your bagisto.
@@ -80,7 +80,7 @@ git clone https://github.com/bagisto/opensource-ecommerce-mobile-app.git
 ```sh
 cd <repository-name>
 ```
-  
+
 - Run the following command to install the required packages
 
 ```sh
@@ -110,7 +110,7 @@ flutter pub run build_runner build --delete-conflicting-outputs
 * Emulator
 
   1. Start an Android or iOS emulator using your preferred IDE or tools.
- 
+
 ### Run the Project
 
 - Use the following command to build and run the project
@@ -120,8 +120,8 @@ flutter run
 ```
 ## Minimum Versions
 
-- Android: 21
-- iOS: 12
+- Android: 22
+- iOS: 14
 
 ## Configurations Steps
 
@@ -134,7 +134,7 @@ Change the baseUrl  as per your store
 ```sh
 static const String baseUrl = ‘....’;
 ```
-> Note: Add the value of the complete URL ending with the GraphQL API endpoint. E.g - https://example.com/graphql 
+> Note: Add the value of the complete URL ending with the GraphQL API endpoint. E.g - https://example.com/graphql
 
 ### For Theme
 
@@ -149,10 +149,10 @@ static const Color accentColor = Color(***********);
 
 ### For Push Notification Service
 
-- Android 
+- Android
 
 Replace "google-services.json".
-- iOS 
+- iOS
 
 Replace "GoogleService-Info.plist".
 
@@ -172,7 +172,7 @@ Replace "GoogleService-Info.plist".
 * iOS
 
   1. Go to the general tab and identity change the display name to your app name
- 
+
 > For Homepage Header Title - Go to ‘assets/language/en.json’
 > (Note: Here, “en” in en.json refers to the languages that would be supported within the application)
 
@@ -186,7 +186,7 @@ Replace "GoogleService-Info.plist".
 ```sh
  static const String splashLottie = "assets/lottie/splash_screen.json";
 ```
- 
+
 * For adding an Image as a Splash Screen
 
   1. **Path:** assets/images/splash.png
@@ -220,6 +220,5 @@ Contributions are welcome! Follow the contribution guidelines to get started.
 ## License
 
 Bagisto is open-sourced software licensed under the MIT license.
-
 
 

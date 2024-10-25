@@ -1,8 +1,16 @@
 
-import 'package:bagisto_app_demo/utils/application_localization.dart';
-import 'package:flutter/material.dart';
-import '../../../utils/string_constants.dart';
-import '../../../widgets/show_message.dart';
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
+
+import 'package:bagisto_app_demo/screens/home_page/utils/index.dart';
 
 ///method will call when there is error on homepage
  homePageError(String error, BuildContext context) {
@@ -10,7 +18,7 @@ import '../../../widgets/show_message.dart';
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+          backgroundColor: Theme.of(context).colorScheme.background,
           title: Text(StringConstants.internetIssue.localized()),
           actions: [
             MaterialButton(

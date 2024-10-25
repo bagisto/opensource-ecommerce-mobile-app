@@ -1,3 +1,13 @@
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
 import 'package:bagisto_app_demo/data_model/graphql_base_model.dart';
 import 'package:json_annotation/json_annotation.dart';
 import '../../../data_model/product_model/product_screen_model.dart';
@@ -29,6 +39,7 @@ class Product {
   String? parentId;
   bool? isInWishlist;
   bool? isInSale;
+  bool? isSaleable;
   @JsonKey(name: "new")
   bool? isNew;
   bool? featured;
@@ -40,7 +51,7 @@ class Product {
   ConfigurableData? configurableData;
   List<ProductFlats>? productFlats;
   List<Variants>? variants;
-  String? parent;
+  dynamic parent;
   AttributeFamily? attributeFamily;
   List<AttributeValues>? attributeValues;
   List<Attributes>? superAttributes;
@@ -72,6 +83,7 @@ class Product {
         this.isInWishlist,
         this.isInSale,
         this.featured,
+        this.isSaleable,
         this.status,
         this.visibleIndividually,
         this.guestCheckout,

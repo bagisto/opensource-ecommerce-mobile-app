@@ -28,8 +28,17 @@ apply plugin: 'kotlin-kapt'
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
 android {
+    signingConfigs {
+        release {
+            storeFile file('jks')
+            storePassword 'admin'
+            keyAlias 'admin'
+            keyPassword 'admin'
+        }
+    }
+
     namespace "com.example.bagisto_app_demo"
-    compileSdkVersion flutter.compileSdkVersion
+    compileSdkVersion 34
     ndkVersion flutter.ndkVersion
 
     compileOptions {
@@ -41,26 +50,33 @@ android {
         jvmTarget = '1.8'
     }
 
+    buildFeatures {
+        dataBinding = true
+    }
+
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.webkul.bagisto.mobikul"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
         minSdkVersion 22
-        targetSdkVersion 33
-        versionCode flutterVersionCode.toInteger()
-        versionName flutterVersionName
+        targetSdkVersion 34
+        versionCode 118
+        versionName "2.2.2"
     }
-
     buildTypes {
-        release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
+        debug {
+            debuggable true
+            minifyEnabled false
             signingConfig signingConfigs.debug
+        }
+        release {
+            signingConfig signingConfigs.release
+            minifyEnabled true
+            shrinkResources true
         }
     }
 }
@@ -72,8 +88,6 @@ flutter {
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation platform('com.google.firebase:firebase-bom:29.1.0')
-
-    implementation 'com.facebook.android:facebook-android-sdk:8.2.0'
     implementation 'com.google.ar.sceneform.ux:sceneform-ux:1.17.1'
     //    ML KIT
     api 'com.google.android.gms:play-services-mlkit-text-recognition:18.0.0'
@@ -82,7 +96,6 @@ dependencies {
     api 'com.google.mlkit:image-labeling-custom:17.0.1'
     //===Ar Core
     implementation "com.google.ar.sceneform.ux:sceneform-ux:1.17.1"
-    //  implementation "com.google.ar.sceneform:core:1.17.1"
     implementation 'com.google.ar.sceneform:assets:1.17.1'
     implementation "com.google.ar:core:1.30.0"
     //---------------------------------------//
@@ -90,5 +103,4 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.4.1'
     implementation 'com.github.bumptech.glide:glide:4.12.0'
     implementation 'com.google.android.material:material:1.5.0'
-    implementation 'androidx.databinding:databinding-runtime:8.1.2'
 }

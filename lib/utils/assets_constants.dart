@@ -1,3 +1,13 @@
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
 class AssetConstants {
 
   //Lottie assets
@@ -16,4 +26,6 @@ class AssetConstants {
   static const String changeIcon = "assets/images/change_icon.png";
   static const String compareIcon = "assets/images/compare-icon.png";
   static const String splashImage = "assets/images/splash.png";
+  static const String customerProfilePlaceholder = "assets/images/customer_profile_placeholder.png";
+  static const String customerBannerPlaceholder = "assets/images/customer_banner_placeholder.png";
 }

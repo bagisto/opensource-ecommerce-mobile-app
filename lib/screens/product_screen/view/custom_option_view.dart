@@ -1,27 +1,24 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 // ignore_for_file: file_names, must_be_immutable, must_call_super
 
 import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
-import 'package:flutter/material.dart';
-import '../../../data_model/categories_data_model/categories_product_model.dart';
-import '../../cart_screen/cart_model/cart_data_model.dart';
-
+import '../../../data_model/product_model/product_screen_model.dart';
 
 class CustomOptionsView extends StatefulWidget {
-  Function(List, String)? callback;
-  List<Attributes>? customOptions = [];
-  List<Variants>? variants = [];
-  NewProducts? productData;
+  final Function(List, String)? callback;
+  final List<Attributes>? customOptions;
+  final List<Variants>? variants;
+  final NewProducts? productData;
 
-  CustomOptionsView(
+  const CustomOptionsView(
       {Key? key,
       this.productData,
       this.customOptions,
@@ -71,7 +68,7 @@ class _CustomOptionsViewState extends State<CustomOptionsView> {
                       );
                   }
               }
-              return Container();
+              return const SizedBox();
             }));
   }
 
@@ -140,8 +137,12 @@ class _CustomOptionsViewState extends State<CustomOptionsView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(variation?.label ?? '',
-              style:TextStyle(color: Colors.grey.shade600, fontWeight: FontWeight.w600,fontSize: AppSizes.spacingLarge),
+            Text(
+              variation?.label ?? '',
+              style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontWeight: FontWeight.w600,
+                  fontSize: AppSizes.spacingLarge),
             ),
             const SizedBox(
               height: 12.0,
@@ -200,9 +201,12 @@ class _CustomOptionsViewState extends State<CustomOptionsView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(variation?.label ?? '', style: TextStyle(
-                color: Colors.grey.shade600,
-                fontWeight: FontWeight.w600,fontSize: AppSizes.spacingLarge),
+            Text(
+              variation?.label ?? '',
+              style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontWeight: FontWeight.w600,
+                  fontSize: AppSizes.spacingLarge),
             ),
             const SizedBox(
               height: 12.0,
@@ -275,7 +279,6 @@ class _CustomOptionsViewState extends State<CustomOptionsView> {
     }
     return [];
   }
-
   _getId() {
     String selectedProductAttributeId = "";
     var mappedKey = true;
@@ -314,7 +317,6 @@ class _CustomOptionsViewState extends State<CustomOptionsView> {
     }
     return selectedProductAttributeId;
   }
-
   _updateCallBack() {
     if (widget.callback != null) {
       Map<String, dynamic> dict = {};

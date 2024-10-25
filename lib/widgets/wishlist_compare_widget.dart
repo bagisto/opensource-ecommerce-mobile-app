@@ -1,12 +1,23 @@
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
 import 'package:flutter/material.dart';
 import '../utils/app_constants.dart';
+import '../utils/assets_constants.dart';
 
 Widget wishlistIcon(BuildContext context, bool? isInWishlist){
   return Container(
     padding: const EdgeInsets.all(AppSizes.spacingNormal),
     decoration: BoxDecoration(
       color: Theme.of(context)
-          .colorScheme.primary,
+          .colorScheme.onBackground,
       borderRadius: const BorderRadius.all(
           Radius.circular(AppSizes.spacingSmall)),
       boxShadow: [
@@ -25,7 +36,7 @@ Widget wishlistIcon(BuildContext context, bool? isInWishlist){
       Icons.favorite,
       color: Theme.of(context)
           .colorScheme
-          .onBackground,
+          .secondaryContainer,
       size: 16,
     )
         : Icon(
@@ -33,7 +44,7 @@ Widget wishlistIcon(BuildContext context, bool? isInWishlist){
       size: 16,
       color: Theme.of(context)
           .colorScheme
-          .onBackground,
+          .secondaryContainer,
     ),
   );
 }
@@ -45,7 +56,7 @@ Widget compareIcon(BuildContext context){
     decoration: BoxDecoration(
       color: Theme.of(context)
           .colorScheme
-          .primary,
+          .onBackground,
       borderRadius: const BorderRadius.all(
           Radius.circular(AppSizes.spacingSmall)),
       boxShadow: [
@@ -57,11 +68,10 @@ Widget compareIcon(BuildContext context){
         ),
       ],
     ),
-    child: Image.asset(
-      "assets/images/compare-icon.png",
+    child: Image.asset(AssetConstants.compareIcon,
       height: 18,
       width: 18,
-      color: Theme.of(context).colorScheme.onBackground,
+      color: Theme.of(context).colorScheme.secondaryContainer,
     ),
   );
 }

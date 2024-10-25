@@ -1,4 +1,14 @@
 
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
 import 'package:bagisto_app_demo/utils/application_localization.dart';
 import 'package:bagisto_app_demo/utils/string_constants.dart';
 import 'package:flutter/material.dart';
@@ -51,14 +61,13 @@ class DialogHelper {
       useRootNavigator: false,
       context: context,
       builder: (ctx) => AlertDialog(
-        // titlePadding: const EdgeInsets.all(AppSizes.spacingLarge),
         title: Text(StringConstants.searchByScanning.localized(),
             style: Theme.of(context)
                 .textTheme
                 .bodyMedium
                 ?.copyWith(color: Colors.grey[500])),
         backgroundColor: Theme.of(context).cardColor,
-        contentPadding: const EdgeInsets.all(AppSizes.spacingNormal),
+        contentPadding: const EdgeInsets.all(AppSizes.spacingLarge*2),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.start,

@@ -1,6 +1,15 @@
 
-import 'package:bagisto_app_demo/data_model/graphql_base_model.dart';
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
 
+import 'package:bagisto_app_demo/data_model/graphql_base_model.dart';
 import 'order_detail_model.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -93,37 +102,37 @@ class Order {
   String? baseCurrencyCode;
   String? channelCurrencyCode;
   String? orderCurrencyCode;
-  int? grandTotal;
-  int? baseGrandTotal;
-  int? grandTotalInvoiced;
-  int? baseGrandTotalInvoiced;
-  int? grandTotalRefunded;
-  int? baseGrandTotalRefunded;
-  int? subTotal;
-  int? baseSubTotal;
-  int? subTotalInvoiced;
-  int? baseSubTotalInvoiced;
-  int? subTotalRefunded;
-  int? baseSubTotalRefunded;
-  int? discountPercent;
-  int? discountAmount;
-  int? baseDiscountAmount;
-  int? discountInvoiced;
-  int? baseDiscountInvoiced;
-  int? discountRefunded;
-  int? baseDiscountRefunded;
-  int? taxAmount;
-  int? baseTaxAmount;
-  int? taxAmountInvoiced;
-  int? baseTaxAmountInvoiced;
-  int? taxAmountRefunded;
-  int? baseTaxAmountRefunded;
-  int? shippingAmount;
-  int? baseShippingAmount;
-  int? shippingInvoiced;
-  int? baseShippingInvoiced;
-  int? shippingRefunded;
-  int? baseShippingRefunded;
+  double? grandTotal;
+  double? baseGrandTotal;
+  double? grandTotalInvoiced;
+  double? baseGrandTotalInvoiced;
+  double? grandTotalRefunded;
+  double? baseGrandTotalRefunded;
+  double? subTotal;
+  double? baseSubTotal;
+  double? subTotalInvoiced;
+  double? baseSubTotalInvoiced;
+  double? subTotalRefunded;
+  double? baseSubTotalRefunded;
+  double? discountPercent;
+  double? discountAmount;
+  double? baseDiscountAmount;
+  double? discountInvoiced;
+  double? baseDiscountInvoiced;
+  double? discountRefunded;
+  double? baseDiscountRefunded;
+  double? taxAmount;
+  double? baseTaxAmount;
+  double? taxAmountInvoiced;
+  double? baseTaxAmountInvoiced;
+  double? taxAmountRefunded;
+  double? baseTaxAmountRefunded;
+  double? shippingAmount;
+  double? baseShippingAmount;
+  double? shippingInvoiced;
+  double? baseShippingInvoiced;
+  double? shippingRefunded;
+  double? baseShippingRefunded;
   int? customerId;
   String? customerType;
   int? channelId;
@@ -212,15 +221,15 @@ class ItemsModel {
   String? sku;
   int? qty;
   int? weight;
-  int? price;
-  int? basePrice;
-  int? total;
-  int? baseTotal;
+  double? price;
+  double? basePrice;
+  double? total;
+  double? baseTotal;
   String? productId;
   String? productType;
   String? orderItemId;
   String? shipmentId;
-  String? additional;
+  Additional? additional;
   String? createdAt;
   String? updatedAt;
   OrderProduct? product;

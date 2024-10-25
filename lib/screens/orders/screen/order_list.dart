@@ -1,20 +1,17 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
-import 'package:bagisto_app_demo/screens/cart_screen/cart_index.dart';
-import 'package:bagisto_app_demo/screens/orders/bloc/order_list_bloc.dart';
-import 'package:bagisto_app_demo/utils/index.dart';
-import 'package:bagisto_app_demo/utils/no_data_found_widget.dart';
-import 'package:bagisto_app_demo/utils/status_color_helper.dart';
-import 'package:bagisto_app_demo/widgets/common_date_picker.dart';
+
+
 import 'package:bagisto_app_demo/screens/orders/utils/index.dart';
+import 'package:bagisto_app_demo/utils/prefetching_helper.dart';
 
 class OrdersList extends StatefulWidget {
   const OrdersList({Key? key, this.isFromDashboard}) : super(key: key);
@@ -59,29 +56,26 @@ class _OrdersListState extends State<OrdersList> with OrderStatusBGColorHelper {
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: GlobalData.contentDirection(),
-      child: Scaffold(
-          appBar: (widget.isFromDashboard ?? false)
-              ? null
-              : AppBar(
-                  centerTitle: false,
-                  title: Text(StringConstants.orders.localized()),
-                  actions: [
-                    IconButton(
-                        onPressed: () {
-                          showModalBottomSheet(
-                              context: context,
-                              builder: (context) => _getOrderFilter());
-                        },
-                        icon: const Icon(
-                          Icons.filter_alt,
-                          size: AppSizes.size24,
-                        ))
-                  ],
-                ),
-          body: _orderList(context)),
-    );
+    return Scaffold(
+        appBar: (widget.isFromDashboard ?? false)
+            ? null
+            : AppBar(
+                centerTitle: false,
+                title: Text(StringConstants.orders.localized()),
+                actions: [
+                  IconButton(
+                      onPressed: () {
+                        showModalBottomSheet(
+                            context: context,
+                            builder: (context) => _getOrderFilter());
+                      },
+                      icon: const Icon(
+                        Icons.filter_alt,
+                        size: AppSizes.spacingLarge*2,
+                      ))
+                ],
+              ),
+        body: _orderList(context));
   }
 
   ///bloc method
@@ -118,12 +112,13 @@ class _OrdersListState extends State<OrdersList> with OrderStatusBGColorHelper {
   }
 
   void paginationFunction() {
+
     if (_scrollController.offset ==
             _scrollController.position.maxScrollExtent &&
-        (ordersListModel?.paginatorInfo?.currentPage ?? 0) <
-            (ordersListModel?.paginatorInfo?.lastPage ?? 0)) {
+        ((ordersListModel?.paginatorInfo?.currentPage ?? 0) <
+            (ordersListModel?.paginatorInfo?.lastPage ?? 0))) {
       page++;
-      orderListBloc?.add(FetchOrderListEvent(page: page));
+      orderListBloc?.add(FetchOrderListEvent(id: "", status: "", startDate: "", endDate: "", total: 0, page: page));
     }
   }
 
@@ -141,19 +136,20 @@ class _OrdersListState extends State<OrdersList> with OrderStatusBGColorHelper {
             orderListBloc?.add(FetchOrderListEvent(id: "", status: "", startDate: "", endDate: "", total: 0, page: 1));
           });
         },
-        child: Container(
+        child: Padding(
           padding: const EdgeInsets.symmetric(vertical: AppSizes.spacingLarge),
           child: ListView.separated(
             shrinkWrap: true,
             controller: _scrollController,
             itemBuilder: (BuildContext context, int itemIndex) {
+              preCacheOrderDetails(ordersListModel.data?[itemIndex].id ?? 0);
               return OrdersListTile(
                 data: ordersListModel.data?[itemIndex],
                 reload: fetchOrder,
               );
             },
             separatorBuilder: (context, index) {
-              return Container();
+              return const SizedBox();
             },
             itemCount: (widget.isFromDashboard ?? false)
                 ? ((ordersListModel.data?.length ?? 0) > 5)
@@ -169,53 +165,54 @@ class _OrdersListState extends State<OrdersList> with OrderStatusBGColorHelper {
   ///Filter view
 
   _getOrderFilter() {
-    return Directionality(
-      textDirection: GlobalData.contentDirection(),
-      child:  Padding(
-          padding:
-              EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-          child: Card(
-            margin: EdgeInsets.zero,
-            child: SingleChildScrollView(
-              child:Column(
-                mainAxisSize: MainAxisSize.min,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        StringConstants.filterBy.localized(),
-                        style: Theme.of(context).textTheme.headlineSmall,
+    return Padding(
+        padding:
+            EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        child: Card(
+          margin: EdgeInsets.zero,
+          child: SingleChildScrollView(
+            child:Column(
+              mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      StringConstants.filterBy.localized(),
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                    MaterialButton(
+                      shape: const RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.all(Radius.circular(5.0))),
+                      elevation: 0.0,
+                      minWidth: AppSizes.buttonHeight,
+                      color: Theme.of(context).colorScheme.onBackground,
+                      textColor: Theme.of(context).colorScheme.background,
+                      onPressed: () {
+                        page = 1;
+                        orderId.clear();
+                        total.clear();
+                        endDateController.clear();
+                        startDateController.clear();
+                        _currentStatus = 0;
+                        orderListBloc?.add(FetchOrderListEvent(id: "", status: "", startDate: "", endDate: "", total: 0, page: 1));
+                        Navigator.pop(context);
+                      },
+                      child: Text(
+                        StringConstants.clear.localized().toUpperCase(),
+                        style: const TextStyle(
+                            fontSize: AppSizes.spacingMedium),
                       ),
-                      MaterialButton(
-                        shape: const RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(5.0))),
-                        elevation: 0.0,
-                        minWidth: AppSizes.itemHeight,
-                        color: Theme.of(context).colorScheme.onBackground,
-                        textColor: Theme.of(context).colorScheme.background,
-                        onPressed: () {
-                          orderId.clear();
-                          total.clear();
-                          endDateController.clear();
-                          startDateController.clear();
-                          _currentStatus = 0;
-                          orderListBloc?.add(FetchOrderListEvent(id: "", status: "", startDate: "", endDate: "", total: 0, page: 1));
-                          Navigator.pop(context);
-                        },
-                        child: Text(
-                          StringConstants.clear.localized().toUpperCase(),
-                          style: const TextStyle(
-                              fontSize: AppSizes.spacingMedium),
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                ExpansionTile(
+              ),
+              Theme(
+                data:Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                child: ExpansionTile(
                   initiallyExpanded: true,
                   iconColor: Colors.grey,
                   title: Text(
@@ -250,8 +247,11 @@ class _OrdersListState extends State<OrdersList> with OrderStatusBGColorHelper {
                     )
                   ],
                 ),
-                const SizedBox(height: AppSizes.spacingWide),
-                ExpansionTile(
+              ),
+              const SizedBox(height: AppSizes.spacingWide),
+              Theme(
+                data:Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                child: ExpansionTile(
                   initiallyExpanded: true,
                   iconColor: Colors.grey,
                   title: Text(
@@ -288,8 +288,11 @@ class _OrdersListState extends State<OrdersList> with OrderStatusBGColorHelper {
                     )
                   ],
                 ),
-                const SizedBox(height: AppSizes.spacingWide),
-                ExpansionTile(
+              ),
+              const SizedBox(height: AppSizes.spacingWide),
+              Theme(
+                data:Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                child: ExpansionTile(
                   initiallyExpanded: true,
                   iconColor: Colors.grey,
                   title: Text(
@@ -341,78 +344,81 @@ class _OrdersListState extends State<OrdersList> with OrderStatusBGColorHelper {
                     )
                   ],
                 ),
-                const SizedBox(height: AppSizes.spacingWide),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    MaterialButton(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.0),
-                            side: BorderSide(
-                                color:
-                                    Theme.of(context).colorScheme.onPrimary)),
-                        elevation: 2.0,
-                        height: AppSizes.buttonHeight,
-                        minWidth: MediaQuery.of(context).size.width / 2.2,
-                        textColor: Theme.of(context).colorScheme.onPrimary,
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              StringConstants.cancel.localized().toUpperCase(),
-                              style: Theme.of(context).textTheme.labelSmall,
-                            ),
-                          ],
-                        )),
-                    MaterialButton(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.0)),
-                        elevation: 2.0,
-                        height: AppSizes.buttonHeight,
-                        minWidth: MediaQuery.of(context).size.width / 2.2,
-                        color: Theme.of(context).colorScheme.onBackground,
-                        textColor: MobikulTheme.primaryColor,
-                        onPressed: () {
-                          String startDate = startDateController.text != ""
-                              ? "${startDateController.text} 00:00:01"
-                              : startDateController.text;
-                          String endDate = endDateController.text != ""
-                              ? "${endDateController.text} 23:59:59"
-                              : endDateController.text;
-                          orderListBloc?.add(FetchOrderListEvent(
-                            id: orderId.text,
-                            startDate: startDate,
-                            endDate: endDate,
-                            status: status?[_currentStatus] == StringConstants.all.localized()
-                                ? ""
-                                : status?[_currentStatus],
-                            total: double.tryParse(total.text),
-                            page: page
-                          ));
-                          Navigator.pop(context);
-                        },
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                                StringConstants.submit
-                                    .localized()
-                                    .toUpperCase(),
-                                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                  color: Theme.of(context).colorScheme.primary
-                                )),
-                          ],
-                        )),
-                  ],
-                ),
-                const SizedBox(
-                  height: AppSizes.spacingWide,
-                )
-              ],
-            ),
+              ),
+              const SizedBox(height: AppSizes.spacingWide),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  MaterialButton(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                          side: BorderSide(
+                              color:
+                                  Theme.of(context).colorScheme.onBackground)),
+                      elevation: 2.0,
+                      height: AppSizes.buttonHeight,
+                      minWidth: MediaQuery.of(context).size.width / 2.2,
+                      textColor: Theme.of(context).colorScheme.onBackground,
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            StringConstants.cancel.localized().toUpperCase(),
+                            style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Theme.of(context).colorScheme.onBackground),
+                          ),
+                        ],
+                      )),
+                  MaterialButton(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.0)),
+                      elevation: 2.0,
+                      height: AppSizes.buttonHeight,
+                      minWidth: MediaQuery.of(context).size.width / 2.2,
+                      color: Theme.of(context).colorScheme.onBackground,
+                      textColor: MobiKulTheme.primaryColor,
+                      onPressed: () {
+
+                        page = 1;
+                        String startDate = startDateController.text != ""
+                            ? "${startDateController.text} 00:00:01"
+                            : startDateController.text;
+                        String endDate = endDateController.text != ""
+                            ? "${endDateController.text} 23:59:59"
+                            : endDateController.text;
+                        orderListBloc?.add(FetchOrderListEvent(
+
+                          id: orderId.text,
+                          startDate: startDate,
+                          endDate: endDate,
+                          status: status?[_currentStatus] == StringConstants.all.localized()
+                              ? ""
+                              : status?[_currentStatus],
+                          total: double.tryParse(total.text),
+                          page: page, isFilterApply: true,
+                        ));
+                        Navigator.pop(context);
+                      },
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                              StringConstants.submit
+                                  .localized()
+                                  .toUpperCase(),
+                              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                color: Theme.of(context).colorScheme.secondaryContainer
+                              )),
+                        ],
+                      )),
+                ],
+              ),
+              const SizedBox(
+                height: AppSizes.spacingWide,
+              )
+            ],
           ),
         ),
       ),

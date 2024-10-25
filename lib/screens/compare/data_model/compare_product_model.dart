@@ -1,3 +1,13 @@
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
 import 'package:bagisto_app_demo/data_model/graphql_base_model.dart';
 import 'package:json_annotation/json_annotation.dart';
 import '../../../data_model/review_model/review_model.dart';
@@ -64,7 +74,6 @@ class Customer {
   bool? subscribedToNewsLetter;
   bool? isVerified;
   String? token;
-  String? notes;
   bool? status;
   String? createdAt;
   String? updatedAt;
@@ -84,7 +93,6 @@ class Customer {
       this.subscribedToNewsLetter,
       this.isVerified,
       this.token,
-      this.notes,
       this.status,
       this.createdAt,
       this.updatedAt});

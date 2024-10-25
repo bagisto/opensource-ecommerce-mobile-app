@@ -1,14 +1,15 @@
 
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
+import 'package:hive/hive.dart';
 import 'package:json_annotation/json_annotation.dart';
 import '../../screens/cart_screen/cart_model/cart_data_model.dart';
 import '../../screens/home_page/data_model/new_product_data.dart';
@@ -291,13 +292,20 @@ class Translations {
       _$TranslationsToJson(this);
 }
 
+@HiveType(typeId: 6)
 @JsonSerializable()
-class Inventories {
+class Inventories extends HiveObject{
+  @HiveField(0)
   String? id;
+  @HiveField(1)
   int? qty;
+  @HiveField(2)
   String? productId;
+  @HiveField(3)
   String? inventorySourceId;
+  @HiveField(4)
   int? vendorId;
+  @HiveField(5)
   InventorySource? inventorySource;
 
   Inventories({this.id, this.qty, this.productId, this.inventorySourceId, this.vendorId, this.inventorySource});
@@ -310,15 +318,24 @@ class Inventories {
       _$InventoriesToJson(this);
 }
 
+@HiveType(typeId: 7)
 @JsonSerializable()
-class InventorySource {
+class InventorySource extends HiveObject{
+  @HiveField(0)
   String? id;
+  @HiveField(1)
   String? code;
+  @HiveField(2)
   String? name;
+  @HiveField(3)
   String? description;
+  @HiveField(4)
   String? contactName;
+  @HiveField(5)
   String? contactEmail;
+  @HiveField(6)
   String? contactNumber;
+  @HiveField(7)
   String? country;
   String? state;
   String? city;
@@ -467,14 +484,21 @@ class ConfigurableData {
 
 @JsonSerializable()
 class Attributes {
+  String? optionId;
+  String? optionLabel;
+  String? attributeCode;
+  String? attributeName;
   String? id;
   String? code;
   String? label;
   String? swatchType;
+  String? swatchValue;
   String? type;
   List<Options>? options;
 
-  Attributes({this.id, this.type,this.code, this.label, this.swatchType, this.options});
+
+  Attributes({this.optionId,this.optionLabel,this.attributeCode,this.attributeName, this.id, this.options, this.type,
+    this.code, this.label, this.swatchType, this.swatchValue});
 
   factory Attributes.fromJson(Map<String, dynamic> json) =>
       _$AttributesFromJson(json);

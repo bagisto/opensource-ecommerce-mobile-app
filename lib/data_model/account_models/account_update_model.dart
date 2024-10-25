@@ -1,11 +1,11 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 
@@ -16,12 +16,11 @@ import '../graphql_base_model.dart';
 part 'account_update_model.g.dart';
 
 @JsonSerializable()
-class AccountUpdate extends GraphQlBaseModel{
-  // String? message;
+class AccountUpdate extends BaseModel{
   @JsonKey(name: "customer")
   Data? data;
 
-  AccountUpdate({/*this.message,*/ this.data});
+  AccountUpdate({this.data});
 
   factory AccountUpdate.fromJson(Map<String, dynamic> json) =>
       _$AccountUpdateFromJson(json);
@@ -43,6 +42,7 @@ class Data {
   String? imageUrl;
   bool? status;
   Group? group;
+  bool? subscribedToNewsLetter;
 
   Data(
       {this.id,
@@ -55,7 +55,8 @@ class Data {
         this.phone,
         this.status,
         this.group,
-        this.imageUrl
+        this.imageUrl,
+        this.subscribedToNewsLetter
      });
 
   factory Data.fromJson(Map<String, dynamic> json) =>

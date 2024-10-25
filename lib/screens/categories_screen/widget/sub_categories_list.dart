@@ -1,32 +1,18 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 
-import 'package:bagisto_app_demo/utils/application_localization.dart';
-import 'package:bagisto_app_demo/widgets/price_widget.dart';
-import 'package:bagisto_app_demo/widgets/wishlist_compare_widget.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../utils/app_global_data.dart';
-import '../../../../utils/app_constants.dart';
-import '../../../../utils/string_constants.dart';
-import '../../../../widgets/common_widgets.dart';
-import '../../../../widgets/image_view.dart';
-import '../../../../widgets/show_message.dart';
-import 'package:collection/collection.dart';
-import '../../../utils/route_constants.dart';
-import '../../../utils/status_color_helper.dart';
-import '../../home_page/data_model/new_product_data.dart';
-import '../../home_page/utils/route_argument_helper.dart';
-import '../bloc/categories_bloc.dart';
-import '../bloc/categories_event.dart';
+
+
+import 'package:bagisto_app_demo/screens/categories_screen/utils/index.dart';
+
 
 //ignore: must_be_immutable
 class SubCategoriesList extends StatelessWidget {
@@ -40,14 +26,12 @@ class SubCategoriesList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var productFlats = data?.productFlats
-        ?.firstWhereOrNull((e) => e.locale == GlobalData.locale);
 
     return InkWell(
       onTap: () {
         Navigator.pushNamed(context, productScreen,
             arguments: PassProductData(
-                title: productFlats?.name ?? data?.productFlats?.firstOrNull?.name ?? "",
+                title: data?.name ?? data?.productFlats?.firstOrNull?.name ?? "",
                 urlKey: data?.urlKey,
                 productId: int.parse(data?.id ?? "")));
       },
@@ -146,7 +130,7 @@ class SubCategoriesList extends StatelessWidget {
                           SizedBox(
                               width: AppSizes.spacingWide * 8,
                               child: Text(
-                                  productFlats?.name ??
+                                  data?.name ??
                                       data?.productFlats?.firstOrNull?.name ??
                                       "",
                                   textAlign: TextAlign.start,
@@ -194,30 +178,33 @@ class SubCategoriesList extends StatelessWidget {
                               ],
                             ),
                           const SizedBox(height:AppSizes.spacingNormal),
-                          CommonWidgets().appButton(
-                              context, StringConstants.addToCart.localized(),
-                              AppSizes.buttonWidth, () {
-                            subCategoryBloc?.add(
-                                OnClickSubCategoriesLoaderEvent(
-                                    isReqToShowLoader: true));
-                            if (data?.type == StringConstants.simple || data?.type == StringConstants.virtual) {
-                              CategoryBloc subCategories =
-                                  context.read<CategoryBloc>();
-
-                              var dict = <String, dynamic>{};
-                              dict['product_id'] = data?.id ?? '';
-                              dict['quantity'] = 1;
-                              subCategories.add(AddToCartSubCategoriesEvent(
-                                  (data?.id ?? ""), 1, ""));
-                            } else {
-                              ShowMessage.warningNotification(
-                                  StringConstants.addOptions.localized(), context,
-                                  title: "");
+                          Opacity(
+                            opacity: (data?.isSaleable ?? false) ? 1 : 0.4,
+                            child: CommonWidgets().appButton(
+                                context, StringConstants.addToCart.localized(),
+                                AppSizes.buttonWidth, (data?.isSaleable ?? false) ? () {
                               subCategoryBloc?.add(
                                   OnClickSubCategoriesLoaderEvent(
-                                      isReqToShowLoader: false));
-                            }
-                          })
+                                      isReqToShowLoader: true));
+                              if (data?.type == StringConstants.simple || data?.type == StringConstants.virtual) {
+                                CategoryBloc subCategories =
+                                    context.read<CategoryBloc>();
+
+                                var dict = <String, dynamic>{};
+                                dict['product_id'] = data?.id ?? '';
+                                dict['quantity'] = 1;
+                                subCategories.add(AddToCartSubCategoriesEvent(
+                                    (data?.id ?? ""), 1, ""));
+                              } else {
+                                ShowMessage.warningNotification(
+                                    StringConstants.addOptions.localized(), context,
+                                    title: "");
+                                subCategoryBloc?.add(
+                                    OnClickSubCategoriesLoaderEvent(
+                                        isReqToShowLoader: false));
+                              }
+                            } : (){}),
+                          )
                         ],
                       ),
                       Positioned(

@@ -1,27 +1,22 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
-import 'package:bagisto_app_demo/utils/application_localization.dart';
-import 'package:flutter/material.dart';
-import 'package:carousel_slider/carousel_slider.dart';
-import 'package:carousel_slider/carousel_controller.dart';
-import '../../../utils/check_box_group.dart';
-import '../../../utils/string_constants.dart';
-import '../../home_page/data_model/new_product_data.dart';
 
-//ignore: must_be_immutable
+import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
+
 class DownloadProductOptions extends StatefulWidget {
-  List<DownloadableLinks>? options;
-  Function(List)? callBack;
+ final List<DownloadableLinks>? options;
+ final Function(List)? callBack;
+ final GlobalKey<ScaffoldMessengerState>? scaffoldMessengerKey;
 
-  DownloadProductOptions({Key? key, this.options, this.callBack})
+  const DownloadProductOptions({Key? key, this.options, this.callBack, this.scaffoldMessengerKey})
       : super(key: key);
 
   @override
@@ -57,6 +52,7 @@ class _DownloadProductOptionsState extends State<DownloadProductOptions> {
                   ),
                   CheckboxGroup(
                     activeColor: Colors.black,
+                    scaffoldMessengerKey: widget.scaffoldMessengerKey,
                     data: widget.options,
                     showText: true,
                     labels: widget.options
@@ -66,9 +62,16 @@ class _DownloadProductOptionsState extends State<DownloadProductOptions> {
                         [],
                     checked: selected,
                     onChange: (isChecked, label, index, key) {
+
                       setState(() {
                         if (isChecked) {
-                          selected.add(label);
+                          if(selected.contains(label)){
+
+                          }else{
+                            selected.add(label);
+
+                          }
+
                         } else {
                           selected.remove(label);
                         }
@@ -89,6 +92,6 @@ class _DownloadProductOptionsState extends State<DownloadProductOptions> {
                   ),
                 ]),
         )
-        : Container();
+        : const SizedBox();
   }
 }

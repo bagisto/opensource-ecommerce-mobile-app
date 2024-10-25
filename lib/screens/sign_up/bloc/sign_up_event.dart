@@ -1,11 +1,11 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 // ignore_for_file: file_names, must_be_immutable
@@ -18,13 +18,16 @@ class FetchSignUpEvent extends SignUpBaseEvent {
   String? lastName;
   String? password;
   String? confirmPassword;
+  bool? newsLetter;
 
   FetchSignUpEvent(
       {this.email,
         this.firstName,
         this.lastName,
         this.password,
-        this.confirmPassword});
+        this.confirmPassword,
+        this.newsLetter
+      });
 
   @override
   List<Object> get props => [];

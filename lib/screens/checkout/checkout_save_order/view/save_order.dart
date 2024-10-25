@@ -1,27 +1,18 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
-import 'package:bagisto_app_demo/utils/application_localization.dart';
-import 'package:bagisto_app_demo/widgets/loader.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../utils/app_constants.dart';
-import '../../../../utils/app_global_data.dart';
-import '../../../../utils/route_constants.dart';
-import '../../../../utils/shared_preference_helper.dart';
-import '../../../../utils/string_constants.dart';
-import '../../../../widgets/common_error_msg.dart';
+
+
+import 'package:bagisto_app_demo/screens/checkout/utils/index.dart';
 import '../../data_model/save_order_model.dart';
-import '../bloc/save_order_base_event.dart';
-import '../bloc/save_order_bloc.dart';
-import '../bloc/save_oredr_fetch_state.dart';
+
 
 class CheckOutSaveOrder extends StatefulWidget {
   const CheckOutSaveOrder({Key? key}) : super(key: key);
@@ -37,24 +28,14 @@ class _CheckOutSaveOrderState extends State<CheckOutSaveOrder> {
   void initState() {
     SaveOrderBloc saveOrderBloc = context.read<SaveOrderBloc>();
     saveOrderBloc.add(SaveOrderFetchDataEvent());
-    checkLoggedIn();
+    isLoggedIn = appStoragePref.getCustomerLoggedIn();
     super.initState();
-  }
-
-  checkLoggedIn(){
-    SharedPreferenceHelper.getCustomerLoggedIn().then((isLogged){
-      setState(() {
-        isLoggedIn = isLogged;
-      });
-    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Directionality(
-            textDirection: GlobalData.contentDirection(),
-            child: _saveOrderBloc(context)));
+        body: _saveOrderBloc(context));
   }
 
   ///SaverOrder BLOC CONTAINER///
@@ -83,7 +64,7 @@ class _CheckOutSaveOrderState extends State<CheckOutSaveOrder> {
       return const Loader();
     }
 
-    return Container();
+    return const SizedBox();
   }
 
   _orderPlacedView(SaveOrderModel saveOrderModel) {
@@ -114,7 +95,6 @@ class _CheckOutSaveOrderState extends State<CheckOutSaveOrder> {
                             .localized()
                             .toUpperCase(),
                         style: const TextStyle(
-                          // color: Colors.grey.shade700,
                           fontSize: AppSizes.spacingLarge,
                         ),
                       )
@@ -162,7 +142,6 @@ class _CheckOutSaveOrderState extends State<CheckOutSaveOrder> {
                       Text(
                         StringConstants.orderConfirmationMsg.localized(),
                         style: const TextStyle(
-                          // color: Colors.grey.shade700,
                           fontSize: AppSizes.spacingLarge,
                         ),
                         textAlign: TextAlign.center,

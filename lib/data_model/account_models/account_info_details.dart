@@ -1,24 +1,22 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 
 import 'package:json_annotation/json_annotation.dart';
-
-import '../../screens/home_page/data_model/new_product_data.dart';
 import '../graphql_base_model.dart';
 part 'account_info_details.g.dart';
 
 @JsonSerializable()
 class AccountInfoDetails extends GraphQlBaseModel{
-  @JsonKey(name: "customer")
-  Data? data;
+  @JsonKey(name: "accountInfo")
+  AccountInfoModel? data;
 
   AccountInfoDetails({this.data});
 
@@ -30,7 +28,7 @@ class AccountInfoDetails extends GraphQlBaseModel{
       _$AccountInfoDetailsToJson(this);
 }
 @JsonSerializable()
-class Data {
+class AccountInfoModel {
   String? id;
   String? email;
   String? firstName;
@@ -42,9 +40,9 @@ class Data {
   String? phone;
   bool? status;
   Group? group;
-  Seller? seller;
+  bool? subscribedToNewsLetter;
 
-  Data(
+  AccountInfoModel(
       {this.id,
         this.email,
         this.firstName,
@@ -56,14 +54,14 @@ class Data {
         this.phone,
         this.status,
         this.group,
-        this.seller
+        this.subscribedToNewsLetter
       });
 
-  factory Data.fromJson(Map<String, dynamic> json) =>
-      _$DataFromJson(json);
+  factory AccountInfoModel.fromJson(Map<String, dynamic> json) =>
+      _$AccountInfoModelFromJson(json);
 
   Map<String, dynamic> toJson() =>
-      _$DataToJson(this);
+      _$AccountInfoModelToJson(this);
 }
 @JsonSerializable()
 class Group {

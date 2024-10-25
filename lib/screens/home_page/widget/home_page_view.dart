@@ -1,159 +1,147 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
-import 'package:bagisto_app_demo/screens/home_page/widget/reach_top.dart';
-import 'package:bagisto_app_demo/utils/app_constants.dart';
-import 'package:bagisto_app_demo/widgets/loader.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../data_model/app_route_arguments.dart';
-import '../../../utils/app_global_data.dart';
-import '../../../utils/route_constants.dart';
-import '../../../widgets/image_view.dart';
-import '../../recent_product/recent_product_view.dart';
-import '../bloc/home_page_bloc.dart';
-import '../bloc/home_page_event.dart';
-import '../data_model/get_categories_drawer_data_model.dart';
-import '../data_model/new_product_data.dart';
-import '../data_model/theme_customization.dart';
-import 'carousal_slider.dart';
-import 'new_product_view.dart';
+import 'package:bagisto_app_demo/screens/home_page/data_model/theme_customization.dart';
+import 'package:bagisto_app_demo/screens/home_page/utils/index.dart';
 
-class HomePagView extends StatefulWidget {
+class HomePageView extends StatefulWidget {
   final ThemeCustomDataModel? customHomeData;
   final bool isLoading;
   final bool isLogin;
   final GetDrawerCategoriesData? getCategoriesData;
   final HomePageBloc? homePageBloc;
+  final bool callPreCache;
 
-  const HomePagView(
+  const HomePageView(
     this.customHomeData,
     this.isLoading,
     this.getCategoriesData,
     this.isLogin,
-    this.homePageBloc, {
+    this.homePageBloc,
+    this.callPreCache, {
     Key? key,
   }) : super(key: key);
 
   @override
-  State<HomePagView> createState() => _HomePagViewState();
+  State<HomePageView> createState() => _HomePageViewState();
 }
 
-class _HomePagViewState extends State<HomePagView> {
+class _HomePageViewState extends State<HomePageView> {
   final _scrollController = ScrollController();
-  List<double> _htmlHeight = [];
+  List<double> htmlHeight = [];
 
   @override
   void initState() {
-    _registerStreamListener();
-    _htmlHeight = List.generate(
+    htmlHeight = List.generate(
         widget.customHomeData?.themeCustomization?.length ?? 0, (index) => 1);
     super.initState();
   }
 
-  _registerStreamListener(){
-    if(mounted) {
-      GlobalData.productsStream.stream.listen((event) {
-        setState(() {});
-        GlobalData.allProducts?.add(event);
-      });
-    }
-  }
-
-
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
-    return Directionality(
-      textDirection: GlobalData.contentDirection(),
-      child: RefreshIndicator(
-        color: Theme.of(context).colorScheme.onPrimary,
-        child: Stack(
-          children: [
-            SingleChildScrollView(
-              controller: _scrollController,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ...getHomepageView(widget.customHomeData, size),
-                ],
-              ),
+    return RefreshIndicator(
+      color: Theme.of(context).colorScheme.onPrimary,
+      child: Stack(
+        children: [
+          SingleChildScrollView(
+            controller: _scrollController,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ...getHomepageView(
+                    widget.customHomeData, MediaQuery.of(context).size),
+              ],
             ),
-            Visibility(
-                visible: widget.isLoading,
-                child: const Align(
-                  alignment: Alignment.center,
-                  child: SizedBox(child: Loader()),
-                ))
-          ],
-        ),
-        onRefresh: () {
-          HomePageBloc homePageBloc = context.read<HomePageBloc>();
-          homePageBloc.add(FetchHomeCustomData());
-          return Future.delayed(const Duration(seconds: 4), () {
-          });
-        },
+          ),
+          Visibility(
+              visible: widget.isLoading,
+              child: const Align(
+                alignment: Alignment.center,
+                child: SizedBox(child: Loader()),
+              ))
+        ],
       ),
+      onRefresh: () {
+        HomePageBloc homePageBloc = context.read<HomePageBloc>();
+        homePageBloc.add(FetchHomeCustomData());
+        return Future.delayed(const Duration(seconds: 4), () {});
+      },
     );
   }
 
   Widget buildCategories(Size size) {
-    return (widget.getCategoriesData?.data ?? []).isNotEmpty ?
-     Container(
-      color: Theme.of(context).colorScheme.primary,
-      width: AppSizes.screenWidth,
-      height: AppSizes.screenHeight / 4,
-      margin: const EdgeInsets.symmetric(vertical: AppSizes.size12),
-      child: ListView.builder(
-          shrinkWrap: true,
-          scrollDirection: Axis.horizontal,
-          itemCount: widget.getCategoriesData?.data?.length ?? 0,
-          itemBuilder: (context, index) {
-            HomeCategories? item = widget.getCategoriesData?.data?[index];
-            return GestureDetector(
-              onTap: () {
-                Navigator.pushNamed(context, categoryScreen,
-                    arguments: CategoriesArguments(
-                        categorySlug: item?.slug, title: item?.name, id: item?.categoryId.toString()));
-              },
-              child: Container(
-                margin: const EdgeInsets.only(top: AppSizes.spacingWide),
-                padding: const EdgeInsets.symmetric(
-                    horizontal: AppSizes.spacingNormal),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SizedBox(
-                      height: 100.0,
-                      width: 100.0,
-                      child: ClipOval(
-                        child: ImageView(
-                          url: item?.logoUrl ?? "",
-                        ),
-                      ),
+
+
+    return (widget.getCategoriesData?.data ?? []).isNotEmpty
+        ? Container(
+            color: Theme.of(context).colorScheme.secondaryContainer,
+            width: AppSizes.screenWidth,
+            height: AppSizes.screenHeight / 4,
+            margin:
+                const EdgeInsets.symmetric(vertical: AppSizes.spacingMedium),
+            child: ListView.builder(
+                shrinkWrap: true,
+                scrollDirection: Axis.horizontal,
+                itemCount: widget.getCategoriesData?.data?.length ?? 0,
+                itemBuilder: (context, index) {
+                   HomeCategories? item = widget.getCategoriesData?.data?[index];
+
+                  return GestureDetector(
+                    onTap: () {
+                      if((item?.children ?? []).isNotEmpty){
+                        Navigator.pushNamed(context, drawerSubCategoryScreen, arguments:
+                        CategoriesArguments(categorySlug: item?.slug,
+                            title: item?.name, id: item?.id.toString(),
+                            image: item?.bannerUrl ?? "", parentId: "1"));
+                      }
+                      else{
+                        Navigator.pushNamed(context, categoryScreen,
+                            arguments: CategoriesArguments(
+                                categorySlug: item?.slug,
+                                title: item?.name,
+                                id: item?.id,
+                                image: item?.bannerUrl));
+                      }
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.only(top: AppSizes.spacingWide),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: AppSizes.spacingNormal),
+                      child: item?.id != "1"? Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SizedBox(
+                            height: AppSizes.spacingWide * 5,
+                            width: AppSizes.spacingWide * 5,
+                            child: ClipOval(
+                              child: ImageView(
+                                url: item?.logoUrl ?? "",
+                              ),
+                            ),
+                          ),
+                          const SizedBox(
+                            height: AppSizes.spacingLarge,
+                          ),
+                          Text(item?.name ?? "",
+                              style: Theme.of(context).textTheme.labelLarge,
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis)
+                        ],
+                      ):Container(),
                     ),
-                    const SizedBox(
-                      height: AppSizes.spacingLarge,
-                    ),
-                    Text(item?.name ?? "",
-                        style: Theme.of(context).textTheme.labelLarge,
-                        textAlign: TextAlign.center,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis)
-                  ],
-                ),
-              ),
-            );
-          }),
-    ) : const SizedBox();
+                  );
+                }),
+          )
+        : const SizedBox();
   }
 
   Widget staticContentView(int index, {required String heading, String? css}) {
@@ -162,7 +150,7 @@ class _HomePagViewState extends State<HomePagView> {
     // String html = getHtmlView(heading, css ?? "");
     //
     // return SizedBox(
-    //     height: _htmlHeight[index],
+    //     height: htmlHeight[index],
     //     width: MediaQuery.of(context).size.width,
     //     child: InAppWebView(
     //       initialData: InAppWebViewInitialData(data: html),
@@ -172,7 +160,7 @@ class _HomePagViewState extends State<HomePagView> {
     //             return;
     //           }
     //           setState(() {
-    //             _htmlHeight[index] = (double.parse('$value')/MediaQuery.of(context).devicePixelRatio);
+    //             htmlHeight[index] = (double.parse('$value')/MediaQuery.of(context).devicePixelRatio);
     //             print("Loaded height --> $value $index");
     //           });
     //         });
@@ -213,15 +201,25 @@ class _HomePagViewState extends State<HomePagView> {
 
         case "product_carousel":
           if ((GlobalData.allProducts ?? []).isNotEmpty &&
-              productIndex < (GlobalData.allProducts ?? []).length && (GlobalData.allProducts?[productIndex]?.data ?? []).isNotEmpty) {
+              productIndex < (GlobalData.allProducts ?? []).length) {
             homeWidgets.add(SizedBox(
-                height: (MediaQuery.of(context).size.width / 1.5) + 220,
-                child: NewProductView(
-                  title:
-                      element.translations?.firstOrNull?.options?.title ?? "",
-                  isLogin: widget.isLogin,
-                  model: GlobalData.allProducts?[productIndex]?.data,
-                )));
+                height:
+                    (GlobalData.allProducts?[productIndex]?.data?.isNotEmpty ??
+                            false)
+                        ? (MediaQuery.of(context).size.width / 1.5) + 220
+                        : 0,
+                child: GlobalData
+                            .allProducts?[productIndex]?.data?.isNotEmpty ??
+                        false
+                    ? NewProductView(
+                        title:
+                            element.translations?.firstOrNull?.options?.title ??
+                                "",
+                        isLogin: widget.isLogin,
+                        model: GlobalData.allProducts?[productIndex]?.data,
+                        callPreCache: widget.callPreCache,
+                      )
+                    : Container()));
             productIndex++;
           }
           break;
@@ -246,8 +244,7 @@ class _HomePagViewState extends State<HomePagView> {
   }
 
   String getHtmlView(String html, String css) {
-    css = css +
-        """div {
+    css = """${css}div {
     flex-direction: column;
     column-count: 1 !important;
     width: 100%;

@@ -1,11 +1,11 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 import 'package:bagisto_app_demo/utils/app_constants.dart';
@@ -59,6 +59,9 @@ class CommonWidgets with EmailValidator {
                     : null,
             hintText: hint,
             isDense: true,
+            errorStyle: const TextStyle(
+              fontSize: 12
+            ),
             floatingLabelBehavior: FloatingLabelBehavior.always,
             prefixIcon: prefixIcon,
             prefixIconColor: Theme.of(context).iconTheme.color,
@@ -119,11 +122,8 @@ class CommonWidgets with EmailValidator {
       ElevatedButton(
         style: ButtonStyle(
           maximumSize: MaterialStateProperty.all(Size(buttonWidth, 60)),
-          foregroundColor: MaterialStateProperty.all<Color>(
-            Theme.of(context).colorScheme.onBackground,
-          ),
           backgroundColor: MaterialStateProperty.all<Color>(
-            Theme.of(context).colorScheme.primary,
+            Theme.of(context).colorScheme.onBackground,
           ),
           shape: MaterialStateProperty.all<RoundedRectangleBorder>(
             RoundedRectangleBorder(
@@ -140,13 +140,13 @@ class CommonWidgets with EmailValidator {
               Icon(
                 Icons.shopping_cart,
                 size: 17,
-                color: Theme.of(context).colorScheme.onBackground,
+                color: Theme.of(context).colorScheme.secondaryContainer,
               ),
             Text(
               title.toUpperCase(),
               style: TextStyle(
                   fontSize: 10,
-                  color: Theme.of(context).colorScheme.onBackground),
+                  color: Theme.of(context).colorScheme.secondaryContainer),
               overflow: TextOverflow.clip,
               maxLines: 1,
             ),
@@ -174,6 +174,7 @@ class CommonWidgets with EmailValidator {
     String? labelText,
     Function(String, Key?)? callBack,
     bool isRequired,
+
   ) {
     return Column(
       children: <Widget>[
@@ -204,6 +205,7 @@ class CommonWidgets with EmailValidator {
               }
             },
             onChanged: (String? newValue) {
+              print(">> $newValue");
               if (callBack != null) {
                 callBack(newValue ?? '', key);
               }

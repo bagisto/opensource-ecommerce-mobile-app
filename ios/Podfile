@@ -1,5 +1,5 @@
 # Uncomment this line to define a global platform for your project
-# platform :ios, '11.0'
+platform :ios, '14.0'
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
@@ -30,15 +30,33 @@ flutter_ios_podfile_setup
 target 'Runner' do
   use_frameworks!
   use_modular_headers!
+  pod 'SwiftKeychainWrapper'
+  pod 'GoogleMLKit/TextRecognition'
+  pod 'GoogleMLKit/ImageLabeling'
+  pod 'GoogleMLKit/ImageLabelingCustom'
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
-#  target 'RunnerTests' do
-#    inherit! :search_paths
-#  end
 end
 
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+        target.build_configurations.each do |config|
+        config_path = config.base_configuration_reference.real_path
+        config = File.read(config_path)
+        config_mod = config.gsub(/DT_TOOLCHAIN_DIR/, "TOOLCHAIN_DIR")
+        File.open(config_path, "w") { |file| file << config_mod }
+        end
+        target.build_configurations.each do |config|
+          config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '12.0'
+
+          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= [
+            '$(inherited)',
+
+            ## dart: PermissionGroup.camera
+            'PERMISSION_CAMERA=1',
+          ]
+
+        end
   end
 end

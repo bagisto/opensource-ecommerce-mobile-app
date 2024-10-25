@@ -1,10 +1,19 @@
-import 'package:bagisto_app_demo/utils/application_localization.dart';
-import 'package:flutter/material.dart';
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
 
-// ignore: must_be_immutable
+
+import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
+
 class ReviewLinearProgressIndicator extends StatelessWidget {
-  dynamic percentage;
-  ReviewLinearProgressIndicator({Key? key, this.percentage}) : super(key: key);
+ final dynamic percentage;
+  const ReviewLinearProgressIndicator({Key? key, this.percentage}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -21,9 +30,9 @@ class ReviewLinearProgressIndicator extends StatelessWidget {
                       children: [
                         Text(
                           '5Star'.localized(),
-                          style: const TextStyle(
+                          style:  TextStyle(
                               fontSize: 12,
-                              color: Colors.black,
+                              color: Theme.of(context).colorScheme.onPrimary,
                               fontWeight: FontWeight.w500),
                         ),
                         const SizedBox(
@@ -32,8 +41,7 @@ class ReviewLinearProgressIndicator extends StatelessWidget {
                         Flexible(
                             child: LinearProgressIndicator(
                           backgroundColor: Colors.grey,
-                          valueColor:
-                              const AlwaysStoppedAnimation<Color>(Colors.black),
+                          valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.onPrimary,),
                           value: (percentage[0] / 100 ?? 0).toDouble(),
                         )),
                         if ((percentage ?? []).isNotEmpty)
@@ -44,7 +52,7 @@ class ReviewLinearProgressIndicator extends StatelessWidget {
                           '(${percentage[0].toString()}%)',
                           style: TextStyle(
                               fontSize: 12,
-                              color: Colors.black,
+                              color: Theme.of(context).colorScheme.onPrimary,
                               fontWeight: FontWeight.w500),
                         )
                       ],
@@ -55,7 +63,7 @@ class ReviewLinearProgressIndicator extends StatelessWidget {
                           '4Star'.localized(),
                           style: TextStyle(
                               fontSize: 12,
-                              color: Colors.black,
+                              color: Theme.of(context).colorScheme.onPrimary,
                               fontWeight: FontWeight.w500),
                         ),
                         const SizedBox(
@@ -64,8 +72,8 @@ class ReviewLinearProgressIndicator extends StatelessWidget {
                         Flexible(
                             child: LinearProgressIndicator(
                                 backgroundColor: Colors.grey,
-                                valueColor: const AlwaysStoppedAnimation<Color>(
-                                    Colors.black),
+                                valueColor:  AlwaysStoppedAnimation<Color>(
+                                  Theme.of(context).colorScheme.onPrimary,),
                                 value: (percentage[1] / 100 ?? 0 / 100)
                                     .toDouble())),
                         SizedBox(
@@ -75,7 +83,7 @@ class ReviewLinearProgressIndicator extends StatelessWidget {
                           '(${percentage[1] ?? 0}%)',
                           style: TextStyle(
                               fontSize: 12,
-                              color: Colors.black,
+                              color: Theme.of(context).colorScheme.onPrimary,
                               fontWeight: FontWeight.w500),
                         )
                       ],
@@ -86,7 +94,7 @@ class ReviewLinearProgressIndicator extends StatelessWidget {
                           '3Star'.localized(),
                           style: TextStyle(
                               fontSize: 12,
-                              color: Colors.black,
+                              color: Theme.of(context).colorScheme.onPrimary,
                               fontWeight: FontWeight.w500),
                         ),
                         const SizedBox(
@@ -95,8 +103,7 @@ class ReviewLinearProgressIndicator extends StatelessWidget {
                         Flexible(
                             child: LinearProgressIndicator(
                           backgroundColor: Colors.grey,
-                          valueColor:
-                              const AlwaysStoppedAnimation<Color>(Colors.black),
+                          valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.onPrimary,),
                           value: (percentage[2] / 100 ?? 0 / 100).toDouble(),
                         )),
                         SizedBox(
@@ -104,9 +111,9 @@ class ReviewLinearProgressIndicator extends StatelessWidget {
                         ),
                         Text(
                           '(${percentage[2] ?? 0}%)',
-                          style: const TextStyle(
+                          style:  TextStyle(
                               fontSize: 12,
-                              color: Colors.black,
+                              color: Theme.of(context).colorScheme.onPrimary,
                               fontWeight: FontWeight.w500),
                         )
                       ],
@@ -115,9 +122,9 @@ class ReviewLinearProgressIndicator extends StatelessWidget {
                       children: [
                         Text(
                           '2Star'.localized(),
-                          style: const TextStyle(
+                          style:  TextStyle(
                               fontSize: 12,
-                              color: Colors.black,
+                              color: Theme.of(context).colorScheme.onPrimary,
                               fontWeight: FontWeight.w500),
                         ),
                         const SizedBox(
@@ -126,17 +133,16 @@ class ReviewLinearProgressIndicator extends StatelessWidget {
                         Flexible(
                             child: LinearProgressIndicator(
                           backgroundColor: Colors.grey,
-                          valueColor:
-                              const AlwaysStoppedAnimation<Color>(Colors.black),
+                          valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.onPrimary,),
                           value: (percentage[3] / 100 ?? 0 / 100).toDouble(),
                         )),
                         SizedBox(
                           width: percentage[3] > 0 ? 8 : 18,
                         ),
                         Text('(${percentage[3] ?? 0}%)',
-                            style: const TextStyle(
+                            style:  TextStyle(
                                 fontSize: 12,
-                                color: Colors.black,
+                                color: Theme.of(context).colorScheme.onPrimary,
                                 fontWeight: FontWeight.w500))
                       ],
                     ),
@@ -144,9 +150,9 @@ class ReviewLinearProgressIndicator extends StatelessWidget {
                       children: [
                         Text(
                           '1Star'.localized(),
-                          style: const TextStyle(
+                          style:  TextStyle(
                               fontSize: 12,
-                              color: Colors.black,
+                              color: Theme.of(context).colorScheme.onPrimary,
                               fontWeight: FontWeight.w500),
                         ),
                         const SizedBox(
@@ -155,8 +161,8 @@ class ReviewLinearProgressIndicator extends StatelessWidget {
                         Flexible(
                             child: LinearProgressIndicator(
                                 backgroundColor: Colors.grey,
-                                valueColor: const AlwaysStoppedAnimation<Color>(
-                                    Colors.black),
+                                valueColor:  AlwaysStoppedAnimation<Color>(
+                                  Theme.of(context).colorScheme.onPrimary,),
                                 value: (percentage[4] / 100 ?? 0 / 100)
                                     .toDouble())),
                         SizedBox(
@@ -164,15 +170,15 @@ class ReviewLinearProgressIndicator extends StatelessWidget {
                         ),
                         Text(
                           '(${percentage[4] ?? 0}%)',
-                          style: const TextStyle(
+                          style:  TextStyle(
                               fontSize: 12,
-                              color: Colors.black,
+                              color: Theme.of(context).colorScheme.onPrimary,
                               fontWeight: FontWeight.w500),
                         )
                       ],
                     ),
                   ]))
-          : Container(),
+          : const SizedBox(),
     );
   }
 }

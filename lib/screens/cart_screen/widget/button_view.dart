@@ -1,6 +1,15 @@
 
-import 'package:bagisto_app_demo/utils/route_constants.dart';
-import '../cart_index.dart';
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
+import '../utils/cart_index.dart';
 
 class ButtonView extends StatelessWidget {
   final CartScreenBloc? cartScreenBloc;
@@ -22,7 +31,7 @@ class ButtonView extends StatelessWidget {
                 borderRadius: const BorderRadius.all(Radius.circular(AppSizes.spacingNormal)),
                 side: BorderSide(
                     width: 1,
-                    color: Theme.of(context).colorScheme.onPrimary),
+                    color: Theme.of(context).colorScheme.onBackground),
               ),
               elevation: 0.0,
               height: AppSizes.buttonHeight,
@@ -39,7 +48,7 @@ class ButtonView extends StatelessWidget {
                    Icon(
                     Icons.arrow_forward,
                     color: Theme.of(context).colorScheme.onBackground,
-                    size: 22,
+                    size: AppSizes.spacingWide,
                   ),
                   const SizedBox(
                     width: AppSizes.spacingLarge,
@@ -57,15 +66,15 @@ class ButtonView extends StatelessWidget {
           ),
         ),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 5.0),
+          padding: const EdgeInsets.symmetric(horizontal: AppSizes.spacingLarge, vertical: AppSizes.spacingSmall),
           child: SizedBox(
-            height: 40,
+            height: AppSizes.buttonHeight,
             child: MaterialButton(
               shape: RoundedRectangleBorder(
                 borderRadius: const BorderRadius.all(Radius.circular(AppSizes.spacingNormal)),
                 side: BorderSide(
                     width: 1,
-                    color: Theme.of(context).colorScheme.onPrimary),
+                    color: Theme.of(context).colorScheme.onBackground),
               ),
               elevation: 0.0,
               height: AppSizes.buttonHeight,
@@ -81,7 +90,7 @@ class ButtonView extends StatelessWidget {
                    Icon(
                     Icons.delete_forever,
                     color:Theme.of(context).colorScheme.onBackground,
-                    size: 22,
+                    size: AppSizes.spacingMedium*2,
                   ),
                   const SizedBox(
                     width: AppSizes.spacingLarge,
@@ -99,15 +108,15 @@ class ButtonView extends StatelessWidget {
           ),
         ),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 5.0),
+          padding: const EdgeInsets.symmetric(horizontal: AppSizes.spacingLarge, vertical: AppSizes.spacingSmall),
           child: SizedBox(
-            height: 40,
+            height: AppSizes.buttonHeight,
             child: MaterialButton(
               shape: RoundedRectangleBorder(
                 borderRadius: const BorderRadius.all(Radius.circular(AppSizes.spacingNormal)),
                 side: BorderSide(
                     width: 1,
-                    color: Theme.of(context).colorScheme.onPrimary),
+                    color: Theme.of(context).colorScheme.onBackground),
               ),
               elevation: 0.0,
               height: AppSizes.buttonHeight,
@@ -124,7 +133,7 @@ class ButtonView extends StatelessWidget {
                    Icon(
                     Icons.update,
                     color:Theme.of(context).colorScheme.onBackground,
-                    size: 22,
+                    size: AppSizes.spacingMedium*2,
                   ),
                   const SizedBox(
                     width: AppSizes.spacingLarge,
@@ -151,7 +160,7 @@ class ButtonView extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+          backgroundColor: Theme.of(context).colorScheme.background,
           title: Text(
             StringConstants.deleteAllItemWarning.localized(),
           ),

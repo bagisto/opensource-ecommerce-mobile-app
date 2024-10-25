@@ -1,19 +1,18 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 // ignore_for_file: file_names, must_be_immutable
 
-import 'package:flutter/material.dart';
+import '../../../../data_model/product_model/product_screen_model.dart';
 import '../../../../utils/extension.dart';
-import '../../../../utils/mobikul_theme.dart';
-import '../../../cart_screen/cart_model/cart_data_model.dart';
+import '../../../../utils/index.dart';
 
 class ColorCollectionType extends StatefulWidget {
   Attributes? variation;
@@ -44,6 +43,7 @@ class _ColorCollectionTypeState extends State<ColorCollectionType> {
         child: Row(
           children: widget.options?.map((item) {
                 bool set = getSet(item.id, widget.optionArray);
+
                 return GestureDetector(
                     onTap: () {
                       item.isSelect = true;
@@ -61,7 +61,7 @@ class _ColorCollectionTypeState extends State<ColorCollectionType> {
                               const BorderRadius.all(Radius.circular(20.0)),
                           border: Border.all(
                             color: (item.isSelect ?? false)
-                                ? MobikulTheme.primaryColor
+                                ? MobiKulTheme.primaryColor
                                 : Colors.white.withAlpha(0),
                             width: set ? 1.5 : 0.0,
                           )),
@@ -94,7 +94,7 @@ class _ColorCollectionTypeState extends State<ColorCollectionType> {
     for (var element in (optionArray ?? [])) {
       val = (element["attributeOptionId"].toString() == id.toString());
       if (val) {
-        print(
+        debugPrint(
             "break --> ${id.toString()} * ${(element["attributeOptionId"].toString() == id.toString())} ");
         break;
       }

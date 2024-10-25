@@ -1,30 +1,31 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 
-import 'package:bagisto_app_demo/screens/cart_screen/cart_index.dart';
+import 'package:bagisto_app_demo/utils/index.dart';
 
 
 Widget buildReachBottomView(
     BuildContext context, ScrollController scrollController) {
   return Container(
-    color: Theme.of(context).colorScheme.primary,
+    color: Theme.of(context).colorScheme.secondaryContainer,
     width: MediaQuery.of(context).size.width,
     padding: const EdgeInsets.only(
-      top: AppSizes.size12,
+      top: AppSizes.spacingMedium,
     ),
     child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Text(StringConstants.youHaveReachedToTheBottomOfThePage.localized()),
+        Text(StringConstants.youHaveReachedToTheBottomOfThePage.localized(),
+            style: Theme.of(context).textTheme.bodySmall),
         TextButton(
             onPressed: () {
               scrollController.animateTo(

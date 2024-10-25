@@ -1,43 +1,27 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
-// ignore_for_file: file_names, must_be_immutable, implementation_imports, deprecated_member_use
 
-import 'dart:async';
-import 'package:bagisto_app_demo/screens/categories_screen/widget/sub_categories_loader_view.dart';
-import 'package:bagisto_app_demo/screens/categories_screen/widget/sub_categories_view.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../data_model/categories_data_model/filter_product_model.dart';
-import '../../utils/app_global_data.dart';
-import '../../utils/assets_constants.dart';
-import '../../utils/shared_preference_helper.dart';
-import '../../utils/string_constants.dart';
-import '../../widgets/common_app_bar.dart';
-import '../../widgets/common_error_msg.dart';
-import '../../widgets/empty_data_view.dart';
-import '../../widgets/show_message.dart';
-import '../cart_screen/cart_model/add_to_cart_model.dart';
-import '../home_page/data_model/new_product_data.dart';
-import 'bloc/categories_bloc.dart';
-import 'bloc/categories_event.dart';
-import 'bloc/categories_state.dart';
+
+
+
+import 'package:bagisto_app_demo/screens/categories_screen/utils/index.dart';
 
 class SubCategoryScreen extends StatefulWidget {
-  String? title;
-  String? image;
-  String? categorySlug;
-  String? id;
-  String? metaDescription;
+  final String? title;
+  final String? image;
+  final String? categorySlug;
+  final String? id;
+  final String? metaDescription;
 
-  SubCategoryScreen(
+  const SubCategoryScreen(
       {Key? key,
       this.title,
       this.image,
@@ -51,7 +35,6 @@ class SubCategoryScreen extends StatefulWidget {
 
 class _SubCategoryScreenState extends State<SubCategoryScreen> {
   bool isLoggedIn = false;
-  final StreamController _myStreamCtrl = StreamController.broadcast();
   NewProductsModel? categoriesData;
   AddToCartModel? addToCartModel;
   bool isLoading = false;
@@ -60,16 +43,14 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
   List<Map<String, dynamic>> filters = [];
   CategoryBloc? subCategoryBloc;
   ScrollController? _scrollController;
-  List<FilterAttribute>? data;
+  GetFilterAttribute? data;
+  bool isPreCatching = true;
 
   @override
   void initState() {
-    filters.add({"key": '\"category_id\"', "value": '\"${widget.id}\"'});
-
-    _fetchSharedPreferenceData();
-    getSharePreferenceCartCount().then((value) {
-      _myStreamCtrl.sink.add(value);
-    });
+    appStoragePref.setSortName("");
+    filters.add({"key": '"category_id"', "value": '"${widget.id}"'});
+    isLoggedIn = appStoragePref.getCustomerLoggedIn();
     _scrollController = ScrollController();
     _scrollController?.addListener(() => _setItemScrollListener());
     subCategoryBloc = context.read<CategoryBloc>();
@@ -77,11 +58,6 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
     super.initState();
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-    _myStreamCtrl.close();
-  }
 
   _setItemScrollListener() {
     if (_scrollController!.hasClients &&
@@ -99,18 +75,13 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
     return (total > (categoriesData?.data?.length ?? 0) && !isLoading);
   }
 
-  Future getSharePreferenceCartCount() async {
-    return await SharedPreferenceHelper.getCartCount();
-  }
+
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: GlobalData.contentDirection(),
-      child: Scaffold(
-          appBar: CommonAppBar(widget.title ?? ""),
-          body: _setSubCategoryData(context)),
-    );
+    return Scaffold(
+        appBar: CommonAppBar(widget.title ?? ""),
+        body: _setSubCategoryData(context));
   }
 
   ///Sub categories bloc method
@@ -128,7 +99,8 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
           if (state.status == CategoriesStatus.fail) {
             ShowMessage.errorNotification(state.error ?? "", context);
           } else if (state.status == CategoriesStatus.success) {
-            ShowMessage.successNotification(state.response?.success ?? "", context);
+            ShowMessage.successNotification(
+                state.response?.message ?? "", context);
           }
         }
         if (state is AddToCompareSubCategoryState) {
@@ -139,15 +111,18 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
           }
         }
         if (state is AddToCartSubCategoriesState) {
+          isPreCatching = false;
           if (state.status == CategoriesStatus.fail) {
             ShowMessage.errorNotification(state.error ?? "", context);
           } else if (state.status == CategoriesStatus.success) {
+            GlobalData.cartCountController.sink.add(state.response?.cart?.itemsQty ?? 0);
             addToCartModel = state.response;
             ShowMessage.successNotification(state.successMsg ?? "", context);
           }
         }
       },
       builder: (BuildContext context, CategoriesBaseState state) {
+        GlobalData.cartCountController.sink.add(appStoragePref.getCartCount());
         return buildContainer(context, state);
       },
     );
@@ -159,19 +134,13 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
       return const SubCategoriesLoader();
     }
     if (state is FetchSubCategoryState) {
+      isPreCatching = true;
       if (state.status == CategoriesStatus.success) {
         if (page > 1) {
           categoriesData?.data?.addAll(state.categoriesData?.data ?? []);
         } else {
           categoriesData = state.categoriesData;
           isLoading = false;
-        }
-
-        if ((categoriesData?.data?.length ?? 0) > 0) {
-          SharedPreferenceHelper.setCartCount(
-              categoriesData?.data?[0].cart?.itemsCount ?? 0);
-          _myStreamCtrl.sink
-              .add(categoriesData?.data?[0].cart?.itemsCount ?? 0);
         }
       }
       if (state.status == CategoriesStatus.fail) {
@@ -180,48 +149,30 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
     }
     if (state is FetchDeleteAddItemCategoryState) {
       isLoading = false;
-      if (state.status == CategoriesStatus.success) {
-        SharedPreferenceHelper.getCartCount().then((value) {
-          _myStreamCtrl.sink.add(value);
-        });
-      }
+      if (state.status == CategoriesStatus.success) {}
     }
     if (state is RemoveWishlistState) {
       isLoading = false;
-      if (state.status == CategoriesStatus.success) {
-        SharedPreferenceHelper.getCartCount().then((value) {
-          _myStreamCtrl.sink.add(value);
-        });
-      }
+      if (state.status == CategoriesStatus.success) {}
     }
     if (state is AddToCartSubCategoriesState) {
       isLoading = false;
       if (state.status == CategoriesStatus.success) {
-        SharedPreferenceHelper.setCartCount(
-            addToCartModel?.cart?.itemsCount ?? 0);
-        _myStreamCtrl.sink.add(addToCartModel?.cart?.itemsCount);
+        GlobalData.cartCountController.sink.add(addToCartModel?.cart?.itemsQty);
       }
     }
     if (state is AddToCompareSubCategoryState) {
       isLoading = false;
-      if (state.status == CategoriesStatus.success) {
-        SharedPreferenceHelper.getCartCount().then((value) {
-          _myStreamCtrl.sink.add(value);
-        });
-      }
+      if (state.status == CategoriesStatus.success) {}
     }
     if (state is OnClickSubCategoriesLoaderState) {
       isLoading = state.isReqToShowLoader ?? false;
-
-      SharedPreferenceHelper.getCartCount().then((value) {
-        _myStreamCtrl.sink.add(value);
-      });
     }
     if (state is FilterFetchState) {
       subCategoryBloc?.add(FetchSubCategoryEvent(
           filters, page));
       if (state.status == CategoriesStatus.success) {
-        data = state.filterModel?.filterAttributes;
+        data = state.filterModel;
       }
       if (state.status == CategoriesStatus.fail) {
         return ErrorMessage.errorMsg(state.error ?? "Error");
@@ -238,13 +189,9 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
   _subCategoriesData(bool isLoading) {
     if (categoriesData?.data == null) {
       return const SubCategoriesLoader();
-    } else if (categoriesData?.data?.isEmpty ?? false) {
-      return const EmptyDataView(
-        assetPath: AssetConstants.emptyCatalog,
-        message: StringConstants.emptyPageGenericLabel,
-      );
-    } else {
-      return SubCategoriesView(
+    }
+    return SafeArea(
+      child: SubCategoriesView(
           isLoading,
           page,
           subCategoryBloc,
@@ -255,29 +202,8 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
           widget.metaDescription,
           categoriesData,
           isLoggedIn,
-          data, filters);
-    }
+          data,
+          filters, isPreCatching),
+    );
   }
-
-  ///fetch data from shared pref
-  _fetchSharedPreferenceData() {
-    getCustomerLoggedInPrefValue().then((isLogged) {
-      if (isLogged) {
-        SharedPreferenceHelper.getCustomerName().then((value) {
-          setState(() {
-            isLoggedIn = isLogged;
-          });
-        });
-      } else {
-        setState(() {
-          isLoggedIn = isLogged;
-        });
-      }
-    });
-  }
-}
-
-///fetch that the user is login or not?
-Future getCustomerLoggedInPrefValue() async {
-  return await SharedPreferenceHelper.getCustomerLoggedIn();
 }

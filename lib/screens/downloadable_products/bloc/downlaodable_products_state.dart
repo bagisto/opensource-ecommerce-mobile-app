@@ -1,28 +1,27 @@
 
-import '../../home_page/data_model/new_product_data.dart';
-import '../data_model/download_product_model.dart';
-import '../data_model/downloadable_product_model.dart';
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
+
+import 'package:bagisto_app_demo/screens/downloadable_products/utils/index.dart';
+
+import '../data_model/download_product_Image_model.dart';
 
 
 abstract class DownloadableProductsBaseState {}
 
 enum DownloadableProductsStatus { success, fail }
 
-class DownloadableProductsInitialState extends DownloadableProductsBaseState {
+class DownloadableProductsInitialState extends DownloadableProductsBaseState {}
 
-}
-
-class DownloadableProductsDataState extends DownloadableProductsBaseState {
-  DownloadableProductsStatus? status;
-  String? error;
-  NewProductsModel? productsModel;
-
-  DownloadableProductsDataState.success({this.productsModel})
-      : status = DownloadableProductsStatus.success;
-
-  DownloadableProductsDataState.fail({this.error}) : status = DownloadableProductsStatus.fail;
-
-}
+class ShowLoaderState extends DownloadableProductsBaseState {}
 
 class DownloadableProductsCustomerDataState extends DownloadableProductsBaseState {
   DownloadableProductsStatus? status;
@@ -39,11 +38,22 @@ class DownloadableProductsCustomerDataState extends DownloadableProductsBaseStat
 class DownloadProductState extends DownloadableProductsBaseState {
   DownloadableProductsStatus? status;
   String? error;
-  DownloadLink? downloadLink;
+  Download? downloadLink;
 
   DownloadProductState.success({this.downloadLink})
       : status = DownloadableProductsStatus.success;
 
   DownloadProductState.fail({this.error}) : status = DownloadableProductsStatus.fail;
+
+}
+class DownloadBase64ProductState extends DownloadableProductsBaseState {
+  DownloadableProductsStatus? status;
+  String? error;
+  DownloadLinkDataModel? downloadLinkProduct;
+
+  DownloadBase64ProductState.success({this.downloadLinkProduct})
+      : status = DownloadableProductsStatus.success;
+
+  DownloadBase64ProductState.fail({this.error}) : status = DownloadableProductsStatus.fail;
 
 }

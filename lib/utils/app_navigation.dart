@@ -1,15 +1,16 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 
 import 'package:bagisto_app_demo/data_model/app_route_arguments.dart';
+import 'package:bagisto_app_demo/data_model/order_model/order_detail_model.dart';
 import 'package:bagisto_app_demo/screens/account/bloc/account_info_bloc.dart';
 import 'package:bagisto_app_demo/screens/account/bloc/account_info_repository.dart';
 import 'package:bagisto_app_demo/screens/account/view/account_screen.dart';
@@ -25,23 +26,24 @@ import 'package:bagisto_app_demo/screens/drawer/bloc/drawer_bloc.dart';
 import 'package:bagisto_app_demo/screens/drawer/bloc/drawer_repository.dart';
 import 'package:bagisto_app_demo/screens/forget_password/bloc/forget_password_bloc.dart';
 import 'package:bagisto_app_demo/screens/forget_password/bloc/forget_password_repository.dart';
-import 'package:bagisto_app_demo/screens/forget_password/forget_password.dart';
+import 'package:bagisto_app_demo/screens/forget_password/view/forget_password.dart';
 import 'package:bagisto_app_demo/screens/home_page/bloc/home_page_bloc.dart';
 import 'package:bagisto_app_demo/screens/home_page/bloc/home_page_repository.dart';
 import 'package:bagisto_app_demo/screens/home_page/home_page.dart';
 import 'package:bagisto_app_demo/screens/order_detail/bloc/order_detail_bloc.dart';
 import 'package:bagisto_app_demo/screens/order_detail/bloc/order_detail_repository.dart';
 import 'package:bagisto_app_demo/screens/order_detail/view/order_detail.dart';
+import 'package:bagisto_app_demo/screens/order_invoices/bloc/order_invoice_bloc.dart';
 import 'package:bagisto_app_demo/screens/review/bloc/review_bloc.dart';
 import 'package:bagisto_app_demo/screens/review/bloc/review_repo.dart';
 import 'package:bagisto_app_demo/screens/review/screen/reviews.dart';
 import 'package:bagisto_app_demo/screens/sign_in/bloc/sign_in_bloc.dart';
 import 'package:bagisto_app_demo/screens/sign_in/bloc/sign_in_repository.dart';
-import 'package:bagisto_app_demo/screens/sign_in/sign_in_screen.dart';
+import 'package:bagisto_app_demo/screens/sign_in/view/sign_in_screen.dart';
 import 'package:bagisto_app_demo/screens/sign_up/bloc/sign_up_bloc.dart';
 import 'package:bagisto_app_demo/screens/sign_up/bloc/sign_up_repository.dart';
-import 'package:bagisto_app_demo/screens/sign_up/sign_up.dart';
-import 'package:bagisto_app_demo/screens/splash_screen/splash_screen.dart';
+import 'package:bagisto_app_demo/screens/sign_up/view/sign_up.dart';
+import 'package:bagisto_app_demo/screens/splash_screen/view/splash_screen.dart';
 import 'package:bagisto_app_demo/utils/route_constants.dart';
 import 'package:flutter/material.dart';
 import '../screens/add_edit_address/view/add_edit_address_screen.dart';
@@ -52,8 +54,8 @@ import '../screens/address_list/data_model/address_model.dart';
 import '../screens/cart_screen/bloc/cart_screen_bloc.dart';
 import '../screens/cart_screen/bloc/cart_screen_repository.dart';
 import '../screens/cart_screen/cart_screen.dart';
-import '../screens/checkout/checkout_addres/bloc/checkout_bloc.dart';
-import '../screens/checkout/checkout_addres/bloc/checkout_repository.dart';
+import '../screens/checkout/checkout_addres/bloc/checkout_address_bloc.dart';
+import '../screens/checkout/checkout_addres/bloc/checkout_address_repository.dart';
 import '../screens/checkout/checkout_addres/view/widget/checkout_address_list.dart';
 import '../screens/checkout/checkout_save_order/bloc/save_order_bloc.dart';
 import '../screens/checkout/checkout_save_order/bloc/save_order_repositroy.dart';
@@ -65,6 +67,10 @@ import '../screens/cms_screen/cms_view.dart';
 import '../screens/compare/bloc/compare_screen_bloc.dart';
 import '../screens/compare/bloc/compare_screen_repository.dart';
 import '../screens/compare/view/compare_screen.dart';
+import '../screens/contact_us/bloc/contact_us_bloc.dart';
+import '../screens/contact_us/bloc/contact_us_repository.dart';
+import '../screens/contact_us/contact_us_view.dart';
+import '../screens/currency/curency_view.dart';
 import '../screens/dashboard/view/dashboard.dart';
 import '../screens/downloadable_products/bloc/dowbloadable_products_repository.dart';
 import '../screens/downloadable_products/bloc/downloadable_products_bloc.dart';
@@ -73,6 +79,15 @@ import '../screens/drawer_sub_categories/bloc/drawer_sub_categories_bloc.dart';
 import '../screens/drawer_sub_categories/bloc/drawer_sub_categories_repository.dart';
 import '../screens/drawer_sub_categories/drawer_sub_categories.dart';
 import '../screens/home_page/utils/route_argument_helper.dart';
+import '../screens/language/language_view.dart';
+import '../screens/order_invoices/bloc/order_invoice_repository.dart';
+import '../screens/order_invoices/view/invoice_details.dart';
+import '../screens/order_refund/bloc/order_refund_bloc.dart';
+import '../screens/order_refund/bloc/order_refund_repository.dart';
+import '../screens/order_refund/order_refund_details.dart';
+import '../screens/order_shipping/bloc/order_shipments_bloc.dart';
+import '../screens/order_shipping/bloc/order_shipments_repository.dart';
+import '../screens/order_shipping/shipments_details.dart';
 import '../screens/orders/bloc/order_list_bloc.dart';
 import '../screens/orders/bloc/order_list_repo.dart';
 import '../screens/orders/screen/order_list.dart';
@@ -211,7 +226,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
           builder: (_) => BlocProvider(
               create: (context) => ReviewsBloc(
                   repository: ReviewsRepositoryImp(), context: context),
-              child: ReviewsScreen()));
+              child: const ReviewsScreen()));
 
 
     case addressListScreen :
@@ -300,7 +315,50 @@ Route<dynamic> generateRoute(RouteSettings settings) {
           builder: (_) => BlocProvider(
               create: (context) => DrawerSubCategoriesBloc(
                   DrawerSubCategoryRepo()),
-              child: DrawerSubCategoryView(id: data.id, title: data.title)));
+              child: DrawerSubCategoryView(id: data.id, title: data.title, image: data.image,
+                categorySlug: data.categorySlug, metaDescription: data.metaDescription,
+              parentId: data.parentId ?? "1",)));
+
+    case invoiceDetails:
+      OrderDetail orderDetailsModel =
+      settings.arguments as OrderDetail;
+      return MaterialPageRoute(
+          builder: (_) => BlocProvider(
+              create: (context) => OrderInvoiceBloc(repository: OrderInvoiceRepositoryImp()),
+              child:  InvoiceScreen(orderDetailsModel:orderDetailsModel ,)));
+
+      case shipmentDetails:
+      OrderDetail orderDetailsModel =
+      settings.arguments as OrderDetail;
+      return MaterialPageRoute(
+          builder: (_) => BlocProvider(
+              create: (context) => OrderShipmentsBloc(repository: OrderShipmentsRepositoryImp()),
+              child:  OrderShipmentsScreen(orderDetailsModel:orderDetailsModel ,)));
+
+      case refundDetails:
+      OrderDetail orderDetailsModel =
+      settings.arguments as OrderDetail;
+      return MaterialPageRoute(
+          builder: (_) => BlocProvider(
+              create: (context) => OrderRefundBloc(repository: OrderRefundRepositoryImp()),
+              child:  OrderRefundScreen(orderDetailsModel:orderDetailsModel ,)));
+
+    case currencyScreen:
+      return MaterialPageRoute(
+          builder: (_) => const CurrencyScreen());
+
+    case languageScreen:
+      return MaterialPageRoute(
+        builder: (_) => const Language(),
+      );
+
+
+    case contactUsScreen:
+      return MaterialPageRoute(
+          builder: (_) => BlocProvider(
+              create: (context) => ContactUsScreenBloc(
+                  ContactUsScreenRepositoryImp()),
+              child: const ContactUsPage()));
 
     default:
       return MaterialPageRoute(

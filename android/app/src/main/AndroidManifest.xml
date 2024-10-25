@@ -1,3 +1,13 @@
+<!--
+  ~   Webkul Software.
+  ~   @package Mobikul Application Code.
+  ~   @Category Mobikul
+  ~   @author Webkul <support@webkul.com>
+  ~   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+  ~   @license https://store.webkul.com/license.html
+  ~   @link https://store.webkul.com/license.html
+  -->
+
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="webkul.bagisto_app_demo">
@@ -16,6 +26,7 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION"/>
 
     <application
@@ -47,22 +58,49 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+
+            <meta-data
+                android:name="io.flutter.app.android.SplashScreenUntilFirstFrame"
+                android:value="true" />
+
+
+            <intent-filter>
+                <action android:name="FLUTTER_NOTIFICATION_CLICK" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data
-                    android:host="192.168.15.204"
-                    android:pathPrefix="/Bagisto2.0"
-                    android:scheme="http" />
+                    android:host=""
+                    android:pathPrefix=""
+                    android:scheme="https" />
 
             </intent-filter>
         </activity>
+
+        <activity android:name="webkul.bagisto_app_demo.mlkit.activities.CameraSearchActivity"
+            android:theme="@style/Theme.AppCompat.DayNight"
+            android:exported="true"/>
+
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaRfDL5pg-OdSNY31ekS9CjVEbk9_pK0j1avU" />
+
+        <meta-data
+            android:name="com.google.ar.core"
+            android:value="optional" />
+
+        <meta-data
+            android:name="com.google.mlkit.vision.DEPENDENCIES"
+            android:value="ica" />
 
         <provider
             android:name="androidx.core.content.FileProvider"

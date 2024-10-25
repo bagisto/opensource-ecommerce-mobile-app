@@ -1,21 +1,20 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
-import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../data_model/graphql_base_model.dart';
-import '../../address_list/data_model/country_model.dart';
+
+
+import 'package:bagisto_app_demo/screens/add_edit_address/utils/index.dart';
+
 import '../../address_list/data_model/update_address_model.dart';
-import 'add_edit_address_repository.dart';
-import 'address_country_event.dart';
-import 'fetch_add_address_state.dart';
+
 
 class AddEditAddressBloc
     extends Bloc<AddEditAddressBaseEvent, AddEditAddressBaseState> {
@@ -42,7 +41,7 @@ class AddEditAddressBloc
                 event.postCode ?? "",
                 event.phone ?? "",
                 event.vatId ?? "",
-                event.isDefault ?? false);
+                event.isDefault ?? false, event.email ?? appStoragePref.getCustomerEmail());
 
         if (updateAddressModel?.status == true) {
           emit(
@@ -53,7 +52,7 @@ class AddEditAddressBloc
         } else {
           emit(
             FetchEditAddressState.fail(
-              error: updateAddressModel?.success ?? "",
+              error: updateAddressModel?.graphqlErrors ?? "",
             ),
           );
         }
@@ -65,7 +64,7 @@ class AddEditAddressBloc
       }
     } else if (event is FetchAddAddressEvent) {
       try {
-        GraphQlBaseModel? baseModel = await repository?.callCreateAddress(
+        BaseModel? baseModel = await repository?.callCreateAddress(
             event.companyName ?? "",
             event.firstName ?? "",
             event.lastName ?? "",
@@ -76,12 +75,12 @@ class AddEditAddressBloc
             event.postCode ?? "",
             event.phone ?? "",
             event.vatId ?? "",
-            event.isDefault ?? false);
+            event.isDefault ?? false, event.email ?? appStoragePref.getCustomerEmail());
 
         if (baseModel?.status == true) {
           emit(FetchAddAddressState.success(baseModel: baseModel));
         } else {
-          emit(FetchAddAddressState.fail(error: baseModel?.success));
+          emit(FetchAddAddressState.fail(error: baseModel?.graphqlErrors));
         }
       } catch (e) {
         emit(FetchAddAddressState.fail(error: e.toString()));

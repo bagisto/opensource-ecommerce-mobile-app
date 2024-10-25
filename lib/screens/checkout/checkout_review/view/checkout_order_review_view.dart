@@ -1,44 +1,30 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 
-import 'package:bagisto_app_demo/screens/checkout/checkout_review/view/widget/apply_coupon_code.dart';
-import 'package:bagisto_app_demo/screens/checkout/checkout_review/view/widget/checkout_order_review_loader_view.dart';
-import 'package:bagisto_app_demo/screens/checkout/checkout_review/view/widget/order_summary.dart';
-import 'package:bagisto_app_demo/utils/application_localization.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../utils/app_constants.dart';
-import '../../../../utils/app_global_data.dart';
-import '../../../../utils/string_constants.dart';
-import '../../../../widgets/common_error_msg.dart';
-import '../../../../widgets/common_widgets.dart';
-import '../../../cart_screen/bloc/cart_screen_bloc.dart';
-import '../../../cart_screen/cart_model/cart_data_model.dart';
-import '../../data_model/save_payment_model.dart';
-import '../bloc/checkout_review_base_event.dart';
-import '../bloc/checkout_review_bloc.dart';
-import '../bloc/checkout_review_save_payment_state.dart';
+
+import 'package:bagisto_app_demo/screens/checkout/utils/index.dart';
+import 'package:bagisto_app_demo/screens/checkout/data_model/save_payment_model.dart';
 
 //ignore: must_be_immutable
 class CheckoutOrderReviewView extends StatefulWidget {
-  String? paymentId;
-  Function(
+  final  String? paymentId;
+  final Function(
     String,
   )? callBack;
 
-  CartScreenBloc? cartScreenBloc;
+  final CartScreenBloc? cartScreenBloc;
 
-  CartModel? cartDetailsModel;
+   CartModel? cartDetailsModel;
 
-  CheckoutOrderReviewView(
+   CheckoutOrderReviewView(
       {Key? key,
       this.paymentId,
       this.callBack,
@@ -64,9 +50,7 @@ class _CheckoutOrderReviewViewState extends State<CheckoutOrderReviewView> {
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-        textDirection: GlobalData.contentDirection(),
-        child: _checkOutReview(context));
+    return _checkOutReview(context);
   }
 
   ///REVIEW BLOC CONTAINER///
@@ -101,7 +85,7 @@ class _CheckoutOrderReviewViewState extends State<CheckoutOrderReviewView> {
       return  const CheckoutOrderReviewLoaderView();
     }
 
-    return Container();
+    return const SizedBox();
   }
 
   _reviewOrder(SavePayment savePaymentModel) {
@@ -133,7 +117,7 @@ class _CheckoutOrderReviewViewState extends State<CheckoutOrderReviewView> {
                         ),
                         CommonWidgets().divider(),
                         savePaymentModel.cart?.billingAddress != null ?_getFormattedBillingAddress(savePaymentModel): const Text('N/A'),
-                        savePaymentModel.cart?.billingAddress != null ?const SizedBox(height: 4): const SizedBox.shrink(),
+                        savePaymentModel.cart?.billingAddress != null ?const SizedBox(height: AppSizes.spacingSmall): const SizedBox.shrink(),
                         savePaymentModel.cart?.billingAddress != null ?Text(
                           StringConstants.contact.localized() +
                               (savePaymentModel.cart?.billingAddress?.phone ??
@@ -157,7 +141,7 @@ class _CheckoutOrderReviewViewState extends State<CheckoutOrderReviewView> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         savePaymentModel.cart?.shippingAddress != null ?_getFormattedShippingAddress(savePaymentModel): const Text('N/A'),
-                        savePaymentModel.cart?.shippingAddress != null ?const SizedBox(height: 4): const SizedBox.shrink(),
+                        savePaymentModel.cart?.shippingAddress != null ?const SizedBox(height: AppSizes.spacingSmall): const SizedBox.shrink(),
                         savePaymentModel.cart?.shippingAddress != null ?Text(
                           StringConstants.contact.localized() +
                               (savePaymentModel.cart?.shippingAddress?.phone ??

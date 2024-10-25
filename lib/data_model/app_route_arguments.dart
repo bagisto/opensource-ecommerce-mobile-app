@@ -1,3 +1,13 @@
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
 import '../screens/address_list/data_model/address_model.dart';
 import '../screens/cart_screen/bloc/cart_screen_bloc.dart';
 import '../screens/cart_screen/cart_model/cart_data_model.dart';
@@ -8,9 +18,10 @@ class CategoriesArguments {
   String? categorySlug;
   String? id;
   String? metaDescription;
+  String? parentId;
 
   CategoriesArguments(
-      {this.title, this.categorySlug, this.image, this.metaDescription, this.id});
+      {this.title, this.categorySlug, this.image, this.metaDescription, this.id, this.parentId});
 }
 
 ///class use to pass data on cms screens

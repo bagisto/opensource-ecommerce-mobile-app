@@ -46,6 +46,24 @@ import QuickLook
                   controller.present(previewController, animated: true, completion: nil)
               }
           }
+          else if call.method == "imageSearch"{
+               let vc = MLKitViewController(nibName: "MLKitViewController", bundle: nil)
+                   vc.detectorType =  .image
+               vc.modalPresentationStyle = .overFullScreen
+               vc.suggestedData = { data in
+                   result(data)
+               }
+               controller.present(vc, animated: true, completion: nil)
+               }
+               else if call.method == "textSearch"{
+                 let vc = MLKitViewController(nibName: "MLKitViewController", bundle: nil)
+                     vc.detectorType = .text
+                 vc.modalPresentationStyle = .overFullScreen
+                 vc.suggestedData = { data in
+                     result(data)
+                 }
+                 controller.present(vc, animated: true, completion: nil)
+                 }
           })
       
       let chargingChannel = FlutterEventChannel(
@@ -62,6 +80,7 @@ import QuickLook
       GeneratedPluginRegistrant.register(with: self)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
+    
     
     func showFileWithPath(_ path: String) -> URL?{
         if let documentsUrl =  FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first{
@@ -86,6 +105,7 @@ import QuickLook
         return true
     }
 }
+
 
 extension AppDelegate: QLPreviewControllerDelegate, QLPreviewControllerDataSource {
     override func application(_ application: UIApplication, willContinueUserActivityWithType userActivityType: String) -> Bool {

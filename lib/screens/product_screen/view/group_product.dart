@@ -1,26 +1,20 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
-import 'package:bagisto_app_demo/screens/product_screen/view/quantity_view.dart';
-import 'package:bagisto_app_demo/utils/app_constants.dart';
-import 'package:bagisto_app_demo/utils/application_localization.dart';
-import 'package:flutter/material.dart';
-import '../../../utils/string_constants.dart';
-import '../../home_page/data_model/new_product_data.dart';
+import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
 
-//ignore: must_be_immutable
 class GroupProduct extends StatefulWidget {
-  List<GroupedProducts>? groupedProducts;
-  Function(List)? callBack;
+ final List<GroupedProducts>? groupedProducts;
+ final  Function(List)? callBack;
 
-  GroupProduct({Key? key, this.groupedProducts, this.callBack})
+  const GroupProduct({Key? key, this.groupedProducts, this.callBack})
       : super(key: key);
 
   @override
@@ -76,17 +70,19 @@ class _GroupProductState extends State<GroupProduct> {
                     );
                     return QuantityView(
                       title:
-                          '${product?.associatedProduct?.sku ?? ' '} + ${product?.associatedProduct?.priceHtml?.formattedFinalPrice ?? ' '}',
+                          '${product?.associatedProduct?.name ?? ' '} + ${product?.associatedProduct?.priceHtml?.formattedFinalPrice ?? ' '}',
                       qty: '${product?.qty ?? ' '}',
                       minimum: 1,
+                      showTitle: true,
                       subTitle: price,
                       callBack: (qty) {
-                          for (var element in newData) {
-                            if (element['productId'] ==
-                                product?.associatedProduct?.id) {
-                              element['quantity'] = qty;
-                            }
+                        product?.qty = qty;
+                        for (var element in newData) {
+                          if (element['productId'] ==
+                              product?.associatedProduct?.id) {
+                            element['quantity'] = qty;
                           }
+                        }
                         if (widget.callBack != null) {
                           widget.callBack!(newData);
                         }

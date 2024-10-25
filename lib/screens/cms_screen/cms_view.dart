@@ -1,15 +1,14 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
-import 'package:skeleton_loader/skeleton_loader.dart';
-import '../../utils/app_global_data.dart';
-import '../../utils/app_constants.dart';
-import '../../widgets/common_error_msg.dart';
-import 'bloc/cms_bloc.dart';
-import 'bloc/cms_event.dart';
-import 'bloc/cms_state.dart';
-import 'data_model/cms_details.dart';
-import 'package:collection/collection.dart';
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
+import 'package:bagisto_app_demo/screens/cms_screen/utils/index.dart';
 
 class CmsContent extends StatefulWidget {
   final String? title;
@@ -31,15 +30,13 @@ class _CmsContentState extends State<CmsContent> {
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-        textDirection: GlobalData.contentDirection(),
-        child: Scaffold(
-          appBar: AppBar(
-            title: Text(widget.title ?? "",style: Theme.of(context).textTheme.titleLarge),
-            centerTitle: false,
-          ),
-          body: _setCmsContent(context),
-        ));
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.title ?? ""),
+        centerTitle: false,
+      ),
+      body: _setCmsContent(context),
+    );
   }
 
   ///cms bloc method
@@ -58,10 +55,10 @@ class _CmsContentState extends State<CmsContent> {
       return SingleChildScrollView(
         child: SkeletonLoader(
           highlightColor: Theme.of(context).highlightColor,
-          baseColor: Theme.of(context).colorScheme.primary,
+          baseColor: Theme.of(context).colorScheme.secondaryContainer,
           builder: Container(
             height: MediaQuery.of(context).size.height,
-            color: Theme.of(context).colorScheme.primary,
+            color: Theme.of(context).colorScheme.secondaryContainer,
           ),
         ),
       );
@@ -81,12 +78,14 @@ class _CmsContentState extends State<CmsContent> {
     var title = cmsData?.translations
         ?.firstWhereOrNull((e) => e.locale == GlobalData.locale);
 
-    return SingleChildScrollView(
-      child: Padding(
-          padding: const EdgeInsets.all(AppSizes.spacingNormal),
-          child: HtmlWidget(
-            title?.htmlContent ?? "",
-          )),
+    return SafeArea(
+      child: SingleChildScrollView(
+        child: Padding(
+            padding: const EdgeInsets.all(AppSizes.spacingNormal),
+            child: HtmlWidget(
+              title?.htmlContent ?? "",
+            )),
+      ),
     );
   }
 }

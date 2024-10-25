@@ -1,40 +1,22 @@
-import 'dart:async';
-import 'package:bagisto_app_demo/utils/application_localization.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../utils/app_constants.dart';
-import '../../../utils/app_global_data.dart';
-import '../../../utils/mobikul_theme.dart';
-import '../../../utils/route_constants.dart';
-import '../../../utils/shared_preference_helper.dart';
-import '../../../utils/string_constants.dart';
-import '../../../widgets/show_message.dart';
-import '../../cart_screen/bloc/cart_screen_bloc.dart';
-import '../../cart_screen/cart_model/cart_data_model.dart';
-import '../checkout_addres/bloc/checkout_bloc.dart';
-import '../checkout_addres/bloc/checkout_repository.dart';
-import '../checkout_addres/view/checkout_address_view.dart';
-import '../checkout_payment/bloc/checkout_payment_bloc.dart';
-import '../checkout_payment/bloc/checkout_payment_repository.dart';
-import '../checkout_payment/view/checkout_payment_view.dart';
-import '../checkout_review/bloc/checkout_review_bloc.dart';
-import '../checkout_review/bloc/checkout_review_repository.dart';
-import '../checkout_review/view/checkout_order_review_view.dart';
-import '../checkout_shipping/bloc/checkout_shipping_bloc.dart';
-import '../checkout_shipping/bloc/checkout_shipping_repository.dart';
-import '../checkout_shipping/view/checkout_shipping_view.dart';
-import '../guest_add_address/bloc/guest_address_bloc.dart';
-import '../guest_add_address/bloc/guest_address_repository.dart';
-import '../guest_add_address/view/guest_add_address_form.dart';
-import 'checkout_header_view.dart';
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
 
-// ignore: must_be_immutable
+
+import 'package:bagisto_app_demo/screens/checkout/utils/index.dart';
+import '../checkout_payment/view/checkout_payment_view.dart';
 class CheckoutScreen extends StatefulWidget {
-  CartScreenBloc? cartScreenBloc;
-  String? total;
-  bool? isDownloadable;
-  CartModel? cartDetailsModel;
-  CheckoutScreen(
+ final  CartScreenBloc? cartScreenBloc;
+ final String? total;
+ final  bool? isDownloadable;
+ final  CartModel? cartDetailsModel;
+  const CheckoutScreen(
       {Key? key,
         this.total,
         this.cartScreenBloc,
@@ -48,6 +30,7 @@ class CheckoutScreen extends StatefulWidget {
 
 class _CheckoutScreenState extends State<CheckoutScreen> {
   int currentIndex = 1;
+  PaymentMethods? paymentMethods;
   Map<String, dynamic>? billing;
   Map<String, dynamic>? shipping;
   String? billingCompanyName;
@@ -77,6 +60,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   int? billingAddressId;
   int? shippingAddressId;
   bool isUser = false;
+  bool useForShipping = true;
   String? email;
   String? updatedPrice;
   final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
@@ -85,17 +69,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Stream get onVariableChanged => _myStreamCtrl.stream;
   @override
   void initState() {
-    _fetchSharedPrefData();
-    getSharePreferenceEmail().then((value) {
-      setState(() {
-        email = value;
-      });
-    });
+    isUser = appStoragePref.getCustomerLoggedIn();
+    email = appStoragePref.getCustomerEmail();
     super.initState();
-  }
-
-  Future getSharePreferenceEmail() async {
-    return await SharedPreferenceHelper.getCustomerEmail();
   }
 
   @override
@@ -108,37 +84,21 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Widget build(BuildContext context) {
     return ScaffoldMessenger(
       key: scaffoldMessengerKey,
-      child: Directionality(
-        textDirection: GlobalData.contentDirection(),
-        child: Scaffold(
-          appBar: AppBar(
-            title: Text(
-              currentIndex == 1
-                  ? StringConstants.addressTitle.localized()
-                  : currentIndex == 2
-                  ? StringConstants.shippingMethods.localized()
-                  : currentIndex == 3
-                  ? StringConstants.paymentMethods.localized()
-                  : StringConstants.reviewAndCheckout.localized(),
-              style: Theme.of(context).textTheme.labelLarge,
-            ),
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(
+            currentIndex == 1
+                ? StringConstants.addressTitle.localized()
+                : currentIndex == 2
+                ? StringConstants.shippingMethods.localized()
+                : currentIndex == 3
+                ? StringConstants.paymentMethods.localized()
+                : StringConstants.reviewAndCheckout.localized(),
           ),
-          body: _buildUI(context),
         ),
+        body: _buildUI(context),
       ),
     );
-  }
-
-  Future getCustomerLoggedInPrefValue() async {
-    return await SharedPreferenceHelper.getCustomerLoggedIn();
-  }
-
-  _fetchSharedPrefData() {
-    getCustomerLoggedInPrefValue().then((value) {
-      setState(() {
-        isUser = value;
-      });
-    });
   }
 
   _getBody() {
@@ -167,78 +127,93 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 shippingState,
                 shippingCity,
                 shippingPostCode,
-                shippingPhone, billingAddressId, shippingAddressId) {
-              if(billingCompanyName != null) {
-                this.billingCompanyName = billingCompanyName;
+                shippingPhone, billingAddressId, shippingAddressId, AddressType addressType, bool isShippingSame) {
+
+              print("address type -->  $addressType");
+              print("address type -->  $billingAddress $billingAddress2");
+              print("address type -->  $shippingAddress $shippingAddress2");
+
+              if(addressType == AddressType.both || isShippingSame){
+                useForShipping = true;
+              }else{
+                useForShipping = false;
               }
-              if(billingFirstName != null) {
-                this.billingFirstName = billingFirstName;
+
+              if(addressType == AddressType.billing || addressType == AddressType.both){
+                if(billingCompanyName != null) {
+                  this.billingCompanyName = billingCompanyName;
+                }
+                if(billingFirstName != null) {
+                  this.billingFirstName = billingFirstName;
+                }
+                if(billingLastName != null) {
+                  this.billingLastName = billingLastName;
+                }
+                if(billingAddress != null) {
+                  this.billingAddress = billingAddress;
+                }
+                if(billingAddress2 != null) {
+                  this.billingAddress2 = billingAddress2;
+                }
+                if(email != null) {
+                  billingEmail = email;
+                }
+                if(billingCountry != null) {
+                  this.billingCountry = billingCountry;
+                }
+                if(billingState != null) {
+                  this.billingState = billingState;
+                }
+                if(billingCity != null) {
+                  this.billingCity = billingCity;
+                }
+                if(billingPostCode != null) {
+                  this.billingPostCode = billingPostCode;
+                }
+                if(billingPhone != null) {
+                  this.billingPhone = billingPhone;
+                }
+                if(billingAddressId != 0) {
+                  this.billingAddressId = billingAddressId;
+                }
               }
-              if(billingLastName != null) {
-                this.billingLastName = billingLastName;
-              }
-              if(billingAddress != null) {
-                this.billingAddress = billingAddress;
-              }
-              if(billingAddress2 != null) {
-                this.billingAddress2 = billingAddress2;
-              }
-              if(email != null) {
-                billingEmail = email;
-              }
-              if(billingCountry != null) {
-                this.billingCountry = billingCountry;
-              }
-              if(billingState != null) {
-                this.billingState = billingState;
-              }
-              if(billingCity != null) {
-                this.billingCity = billingCity;
-              }
-              if(billingPostCode != null) {
-                this.billingPostCode = billingPostCode;
-              }
-              if(billingPhone != null) {
-                this.billingPhone = billingPhone;
-              }
-              if(shippingCompanyName != null) {
-                this.shippingCompanyName = shippingCompanyName;
-              }
-              if(shippingFirstName != null) {
-                this.shippingFirstName = shippingFirstName;
-              }
-              if(shippingLastName != null) {
-                this.shippingLastName = shippingLastName;
-              }
-              if(shippingAddress != null) {
-                this.shippingAddress = shippingAddress;
-              }
-              if(email != null) {
-                shippingEmail = email;
-              }
-              if(shippingAddress2 != null) {
-                this.shippingAddress2 = shippingAddress2;
-              }
-              if(shippingCountry != null) {
-                this.shippingCountry = shippingCountry;
-              }
-              if(shippingState != null) {
-                this.shippingState = shippingState;
-              }
-              if(shippingCity != null) {
-                this.shippingCity = shippingCity;
-              }
-              if(shippingPostCode != null) {
-                this.shippingPostCode = shippingPostCode;
-              }
-              if(shippingPhone != null) {
-                this.shippingPhone = shippingPhone;
-              }
-              if(billingAddressId != 0) {
-                this.billingAddressId = billingAddressId;
-              }
-              if(shippingAddressId != 0) {
-                this.shippingAddressId = shippingAddressId;
+              if(addressType == AddressType.shipping || addressType == AddressType.both){
+                if(shippingCompanyName != null) {
+                  this.shippingCompanyName = shippingCompanyName;
+                }
+                if(shippingFirstName != null) {
+                  this.shippingFirstName = shippingFirstName;
+                }
+                if(shippingLastName != null) {
+                  this.shippingLastName = shippingLastName;
+                }
+                if(shippingAddress != null) {
+                  this.shippingAddress = shippingAddress;
+                }
+                if(email != null) {
+                  shippingEmail = email;
+                }
+                if(shippingAddress2 != null) {
+                  this.shippingAddress2 = shippingAddress2;
+                }
+                if(shippingCountry != null) {
+                  this.shippingCountry = shippingCountry;
+                }
+                if(shippingState != null) {
+                  this.shippingState = shippingState;
+                }
+                if(shippingCity != null) {
+                  this.shippingCity = shippingCity;
+                }
+                if(shippingPostCode != null) {
+                  this.shippingPostCode = shippingPostCode;
+                }
+                if(shippingPhone != null) {
+                  this.shippingPhone = shippingPhone;
+                }
+                if(shippingAddressId != 0) {
+                  this.shippingAddressId = shippingAddressId;
+                }
               }
             }
           ),
@@ -322,6 +297,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             shippingPhone: shippingPhone,
             billingId: billingAddressId ?? 0,
             shippingId: shippingAddressId ?? 0,
+            useForShipping: useForShipping,
             callBack: (
                 id,
                 ) {
@@ -332,7 +308,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               setState(() {
                 currentIndex = currentIndex+1;
               });
-            }
+            },
+            paymentCallback: (PaymentMethods? paymentMethods){
+              this.paymentMethods = paymentMethods;
+              setState(() {
+                currentIndex = currentIndex+1;
+              });
+            },
           ),
         );
       case 3:
@@ -342,6 +324,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           child: CheckoutPaymentView(
             total: widget.total,
             shippingId: shippingId,
+            paymentMethods: paymentMethods,
             callBack: (id) {
               paymentId = id;
             },
@@ -393,7 +376,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Card(
                   elevation: 12,
-                  margin: const EdgeInsets.fromLTRB(0, 4, 0, 4),
+                  margin: const EdgeInsets.fromLTRB(0, AppSizes.spacingSmall, 0, AppSizes.spacingSmall),
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                         vertical: AppSizes.spacingNormal, horizontal: AppSizes.spacingWide),
@@ -425,11 +408,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                           child: MaterialButton(
                             color: Theme.of(context).colorScheme.onBackground,
                             elevation: 0.0,
-                            textColor: MobikulTheme.primaryColor,
+                            textColor: MobiKulTheme.primaryColor,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8.0),
+                              borderRadius: BorderRadius.circular(AppSizes.spacingNormal),
                             ),
-                            padding: const EdgeInsets.symmetric(vertical: 12.0),
+                            padding: const EdgeInsets.symmetric(vertical: AppSizes.spacingMedium),
                             onPressed: () {
                               debugPrint(
                                   "billingAddress -> $currentIndex * $billingAddress");
@@ -485,11 +468,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               }
               return Card(
                 elevation: 12,
-                margin: const EdgeInsets.fromLTRB(0, 4, 0, 4),
+                margin: const EdgeInsets.fromLTRB(0, AppSizes.spacingSmall, 0, AppSizes.spacingSmall),
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                      vertical: AppSizes.spacingNormal, horizontal: 18.0),
-                  margin: const EdgeInsets.fromLTRB(0, 4, 0, 0),
+                      vertical: AppSizes.spacingNormal, horizontal:  AppSizes.spacingLarge),
+                  margin: const EdgeInsets.fromLTRB(0, AppSizes.spacingSmall, 0, 0),
                   child: Row(
                     children: [
                       Expanded(
@@ -517,9 +500,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                           color: Theme.of(context).colorScheme.onBackground,
                           elevation: 0.0,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.0),
+                            borderRadius: BorderRadius.circular(AppSizes.spacingNormal),
                           ),
-                          padding: const EdgeInsets.symmetric(vertical: 12.0),
+                          padding: const EdgeInsets.symmetric(vertical: AppSizes.spacingMedium),
                           onPressed: () {
                             if (currentIndex < 5) {
                               if (currentIndex == 2 && shippingId == '') {

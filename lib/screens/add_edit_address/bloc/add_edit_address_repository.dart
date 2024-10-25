@@ -1,19 +1,18 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 
-import '../../../data_model/graphql_base_model.dart';
-import '../../../services/api_client.dart';
-import '../../address_list/data_model/country_model.dart';
+
+
 import '../../address_list/data_model/update_address_model.dart';
-import 'package:flutter/material.dart';
+import 'package:bagisto_app_demo/screens/add_edit_address/utils/index.dart';
 
 abstract class AddEditAddressRepository {
   Future<UpdateAddressModel?> callEditAddressApi(
@@ -28,9 +27,9 @@ abstract class AddEditAddressRepository {
       String postCode,
       String phone,
       String vatId,
-      bool isDefault);
+      bool isDefault, String email);
 
-  Future<GraphQlBaseModel?> callCreateAddress(
+  Future<BaseModel?> callCreateAddress(
       String companyName,
       String firstName,
       String lastName,
@@ -41,7 +40,7 @@ abstract class AddEditAddressRepository {
       String postCode,
       String phone,
       String vatId,
-      bool isDefault);
+      bool isDefault, String email);
 
   Future<CountriesData?> callCountriesData();
 }
@@ -60,7 +59,7 @@ class AddEditAddressRepositoryImp implements AddEditAddressRepository {
     String postCode,
     String phone,
     String vatId,
-      bool isDefault
+      bool isDefault, String email
   ) async {
     UpdateAddressModel? updateAddressModel;
     try {
@@ -77,6 +76,7 @@ class AddEditAddressRepositoryImp implements AddEditAddressRepository {
         postCode,
         phone,
         vatId,
+          email
       );
     } catch (error, stacktrace) {
       debugPrint("Error --> $error");
@@ -86,7 +86,7 @@ class AddEditAddressRepositoryImp implements AddEditAddressRepository {
   }
 
   @override
-  Future<GraphQlBaseModel> callCreateAddress(
+  Future<BaseModel> callCreateAddress(
       String companyName,
       String firstName,
       String lastName,
@@ -97,8 +97,8 @@ class AddEditAddressRepositoryImp implements AddEditAddressRepository {
       String postCode,
       String phone,
       String vatId,
-      bool isDefault) async {
-    GraphQlBaseModel? baseModel;
+      bool isDefault, String email) async {
+    BaseModel? baseModel;
     try {
       baseModel = await ApiClient().createAddress(
         companyName,
@@ -112,7 +112,7 @@ class AddEditAddressRepositoryImp implements AddEditAddressRepository {
         postCode,
         phone,
         vatId,
-        isDefault
+        isDefault, email
       );
     } catch (error, stacktrace) {
       debugPrint("Error --> $error");

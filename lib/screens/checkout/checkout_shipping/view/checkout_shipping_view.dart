@@ -1,28 +1,18 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
-import 'package:bagisto_app_demo/utils/application_localization.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:skeleton_loader/skeleton_loader.dart';
-import '../../../../utils/app_constants.dart';
-import '../../../../utils/app_global_data.dart';
-import '../../../../utils/mobikul_theme.dart';
-import '../../../../utils/radio_button_group.dart';
-import '../../../../utils/string_constants.dart';
-import '../../../../widgets/common_error_msg.dart';
-import '../../../../widgets/show_message.dart';
+
 import '../../data_model/checkout_save_address_model.dart';
-import '../bloc/checkout_fetch_shipping_state.dart';
-import '../bloc/checkout_shipping_base_event.dart';
-import '../bloc/checkout_shipping_bloc.dart';
+import 'package:bagisto_app_demo/screens/checkout/utils/index.dart';
+
+import '../../data_model/checkout_save_shipping_model.dart';
 
 //ignore: must_be_immutable
 class CheckoutShippingPageView extends StatefulWidget {
@@ -53,6 +43,9 @@ class CheckoutShippingPageView extends StatefulWidget {
   ValueChanged<String>? callBack;
   bool isDownloadable;
   Function? callbackNavigate;
+  bool? useForShipping;
+  Function(PaymentMethods)? paymentCallback;
+
   CheckoutShippingPageView(
       {Key? key,
       this.billingCompanyName,
@@ -78,7 +71,7 @@ class CheckoutShippingPageView extends StatefulWidget {
       this.shippingPostCode,
       this.shippingPhone,
       this.callBack, required this.shippingId, required this.billingId, this.isDownloadable = false,
-      this.callbackNavigate})
+      this.callbackNavigate, this.paymentCallback, this.useForShipping})
       : super(key: key);
 
   @override
@@ -91,9 +84,7 @@ class _CheckoutShippingPageViewState extends State<CheckoutShippingPageView> {
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-        textDirection: GlobalData.contentDirection(),
-        child: _shippingBloc(context));
+    return _shippingBloc(context);
   }
 
   ///ADDRESS BLOC CONTAINER///
@@ -125,20 +116,26 @@ class _CheckoutShippingPageViewState extends State<CheckoutShippingPageView> {
       shippingPhone: widget.shippingPhone,
       billingId: widget.billingId,
       shippingId: widget.shippingId,
+      useForShipping: widget.useForShipping ?? true
     ));
     return BlocConsumer<CheckOutShippingBloc, CheckOutShippingBaseState>(
       listener: (BuildContext context, CheckOutShippingBaseState state) {
         if(state is CheckOutFetchShippingState){
+          if(state.checkOutSaveAddressModel?.jumpToSection == "payment" && widget.paymentCallback != null){
+            PaymentMethods payment = PaymentMethods(paymentMethods: state.checkOutSaveAddressModel?.paymentMethods,
+                cart: state.checkOutSaveAddressModel?.cart);
+            widget.paymentCallback!(payment);
+          }
           if((state.checkOutSaveAddressModel?.shippingMethods ?? []).isEmpty && widget.isDownloadable==false){
             ShowMessage.showNotification(StringConstants.failed.localized(), StringConstants.noShippingMsg.localized(),
                 Colors.red, const Icon(Icons.cancel_outlined));
           }
         }
-        if(widget.isDownloadable){
-          if (widget.callbackNavigate != null) {
-              widget.callbackNavigate!();
-          }
-        }
+        // if(widget.isDownloadable){
+        //   if (widget.callbackNavigate != null) {
+        //       widget.callbackNavigate!();
+        //   }
+        // }
       },
       builder: (BuildContext context, CheckOutShippingBaseState state) {
         return buildUI(context, state);
@@ -161,10 +158,10 @@ class _CheckoutShippingPageViewState extends State<CheckoutShippingPageView> {
     if (state is CheckOutShippingInitialState) {
       return SkeletonLoader(
           highlightColor: Theme.of(context).highlightColor,
-          baseColor: Theme.of(context).appBarTheme.backgroundColor ??
-              MobikulTheme.primaryColor,
+          baseColor: Theme.of(context).scaffoldBackgroundColor,
+
           builder: Container(
-              height: AppSizes.spacingWide * 5,
+              height: 100,
               padding: const EdgeInsets.fromLTRB(0, 12, 0, 0),
               child: const Card(
                 margin: EdgeInsets.zero,
@@ -189,15 +186,13 @@ class _CheckoutShippingPageViewState extends State<CheckoutShippingPageView> {
             ),
             Card(
               elevation: 2,
-              margin: const EdgeInsets.fromLTRB(0, 8, 0, 4),
+              margin: const EdgeInsets.fromLTRB(0, AppSizes.spacingNormal, 0, AppSizes.spacingSmall),
               child: RadioButtonGroup(
                   activeColor: Theme.of(context).colorScheme.onPrimary,
                   key: const Key('Shipping'),
                   labels: checkOutSaveAddressModel.shippingMethods
                           ?.map((e) =>
-                              (e.title ?? '') +
-                              '  ' +
-                              (e.methods?.formattedPrice.toString() ?? ''))
+                              '${e.title ?? ''}  ${e.methods?.formattedPrice.toString() ?? ''}')
                           .toList() ??
                       [],
                   onChange: (value, index) {

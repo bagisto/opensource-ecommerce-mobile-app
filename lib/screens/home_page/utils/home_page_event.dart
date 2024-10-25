@@ -1,10 +1,14 @@
-import 'package:bagisto_app_demo/screens/home_page/bloc/home_page_bloc.dart';
-import 'package:bagisto_app_demo/utils/application_localization.dart';
-import 'package:flutter/material.dart';
-import '../../../utils/string_constants.dart';
-import '../../../widgets/show_message.dart';
-import '../bloc/home_page_event.dart';
-import '../data_model/new_product_data.dart';
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
+import 'package:bagisto_app_demo/screens/home_page/utils/index.dart';
 
 void homepageEvent(NewProducts? data, HomePageAction type, bool? isLogin, HomePageBloc? homepageBloc,
     BuildContext context) {

@@ -1,12 +1,18 @@
-import '../../../data_model/account_models/account_info_details.dart';
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
 import '../../../data_model/add_to_wishlist_model/add_wishlist_model.dart';
-import '../../../data_model/graphql_base_model.dart';
-import '../../cart_screen/cart_model/add_to_cart_model.dart';
+import '../../cart_screen/cart_model/cart_data_model.dart';
 import '../../cms_screen/data_model/cms_model.dart';
-import '../data_model/advertisement_data.dart';
-import '../data_model/get_categories_drawer_data_model.dart';
-import '../data_model/new_product_data.dart';
 import '../data_model/theme_customization.dart';
+import 'package:bagisto_app_demo/screens/home_page/utils/index.dart';
 
 abstract class HomePageBaseState {}
 
@@ -47,10 +53,10 @@ class FetchAllProductsState extends HomePageBaseState {
 class FetchCartCountState extends HomePageBaseState {
   Status? status;
   String? error;
-  Advertisements? advertisementData;
+  CartModel? cartDetails;
 
   FetchCartCountState.success({
-    this.advertisementData,
+    this.cartDetails,
   }) : status = Status.success;
 
   FetchCartCountState.fail({this.error}) : status = Status.fail;
@@ -60,7 +66,7 @@ class CustomerDetailsState extends HomePageBaseState {
   Status? status;
   String? error;
   String? successMsg;
-  AccountInfoDetails? accountInfoDetails;
+  AccountInfoModel? accountInfoDetails;
 
   CustomerDetailsState.success({this.accountInfoDetails, this.successMsg})
       : status = Status.success;
@@ -85,7 +91,7 @@ class RemoveWishlistState extends HomePageBaseState {
   Status? status;
   String? successMsg = "";
   String? error = "";
-  GraphQlBaseModel? response;
+  AddToCartModel? response;
   String? productDeletedId;
 
   RemoveWishlistState.success(
@@ -98,7 +104,7 @@ class AddToCompareHomepageState extends HomePageBaseState {
   Status? status;
   String? error;
   String? successMsg;
-  GraphQlBaseModel? baseModel;
+  BaseModel? baseModel;
 
   AddToCompareHomepageState.success({this.successMsg, this.baseModel})
       : status = Status.success;
@@ -126,4 +132,13 @@ class FetchHomeCategoriesState extends HomePageBaseState {
       : status = Status.success;
 
   FetchHomeCategoriesState.fail({this.error}) : status = Status.fail;
+}
+class FetchCMSDataState extends HomePageBaseState {
+  Status? status;
+  String? error;
+  CmsData? cmsData;
+
+  FetchCMSDataState.success({this.cmsData}) : status = Status.success;
+
+  FetchCMSDataState.fail({this.error}) : status = Status.fail;
 }

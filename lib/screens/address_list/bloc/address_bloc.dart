@@ -1,20 +1,20 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 
-import '../../../data_model/graphql_base_model.dart';
-import '../../cart_screen/cart_index.dart';
-import '../data_model/address_model.dart';
-import 'address_repository.dart';
-import 'ferch_address_state.dart';
-import 'fetch_address_event.dart';
+
+
+
+import 'package:bagisto_app_demo/screens/address_list/utils/index.dart';
+
+import '../data_model/default_address_model.dart';
 
 class AddressBloc extends Bloc<AddressBaseEvent, AddressBaseState> {
   AddressRepository? repository;
@@ -31,12 +31,26 @@ void mapEventToState(AddressBaseEvent event,Emitter<AddressBaseState> emit) asyn
       } catch (e) {
         emit (FetchAddressState.fail(error: e.toString()));
       }
-    }else  if (event is RemoveAddressEvent) {
+    }else if (event is RemoveAddressEvent) {
       try {
-        GraphQlBaseModel? baseModel = await repository?.callRemoveAddressApi(event.id);
+        BaseModel? baseModel = await repository?.callRemoveAddressApi(event.id);
         emit(RemoveAddressState.success(response: baseModel,customerDeletedId: event.id));
       } catch (e) {
         emit(RemoveAddressState.fail(error: e.toString()));
+      }
+    }
+    else if (event is SetDefaultAddressEvent) {
+      emit(ShowLoaderState());
+      try {
+        SetDefaultAddress? baseModel = await repository?.setDefaultAddress(event.id);
+        if(baseModel?.success == true){
+          emit(SetDefaultAddressState.success(addressModel: baseModel));
+        }
+        else{
+          emit(SetDefaultAddressState.fail(message: baseModel?.message ?? baseModel?.graphqlErrors));
+        }
+      } catch (e) {
+        emit(SetDefaultAddressState.fail(message: e.toString()));
       }
     }
 

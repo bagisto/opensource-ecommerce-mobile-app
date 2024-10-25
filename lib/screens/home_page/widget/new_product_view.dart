@@ -1,10 +1,20 @@
-import 'package:bagisto_app_demo/screens/account/view/account_screen.dart';
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
 import 'package:bagisto_app_demo/utils/application_localization.dart';
 import 'package:bagisto_app_demo/widgets/price_widget.dart';
 import 'package:bagisto_app_demo/widgets/wishlist_compare_widget.dart';
 import '../../../utils/app_global_data.dart';
 import '../../../utils/app_constants.dart';
 import '../../../utils/check_internet_connection.dart';
+import '../../../utils/prefetching_helper.dart';
 import '../../../utils/route_constants.dart';
 import '../../../utils/string_constants.dart';
 import '../../../widgets/common_widgets.dart';
@@ -24,9 +34,11 @@ class NewProductView extends StatefulWidget {
   final String title;
   final bool? isLogin;
   final bool isRecentProduct;
+  final bool callPreCache;
 
   const NewProductView(
-      {Key? key, this.model, required this.title, this.isLogin, this.isRecentProduct = false})
+      {Key? key, this.model, required this.title, this.isLogin, this.isRecentProduct = false,
+      this.callPreCache = false})
       : super(key: key);
 
   @override
@@ -46,9 +58,9 @@ class _NewProductViewState extends State<NewProductView> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: AppSizes.size8),
-      color: Theme.of(context).colorScheme.primary,
-      padding: const EdgeInsets.all(AppSizes.size8),
+      margin: const EdgeInsets.symmetric(vertical: AppSizes.spacingNormal),
+      color: Theme.of(context).colorScheme.secondaryContainer,
+      padding: const EdgeInsets.all( AppSizes.spacingNormal),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.start,
@@ -58,11 +70,11 @@ class _NewProductViewState extends State<NewProductView> {
             children: [
               Text(
                 widget.title,
-                style: Theme.of(context).textTheme.headlineLarge,
+                style: Theme.of(context).textTheme.titleMedium,
               ),
             ],
           ),
-          const SizedBox(height: AppSizes.size12),
+          const SizedBox(height:  AppSizes.spacingMedium),
           Expanded(
             child: ListView.builder(
                 scrollDirection: Axis.horizontal,
@@ -71,14 +83,19 @@ class _NewProductViewState extends State<NewProductView> {
                 itemCount: widget.model?.length ?? 0,
                 itemBuilder: (context, index) {
                   NewProducts? val = widget.model?[index];
+
+                  if(widget.callPreCache){
+                    preCacheProductDetails(val?.urlKey ?? "");
+                  }
+
                   return GestureDetector(
                     onTap: () {
                       Navigator.pushNamed(context, productScreen,
                           arguments: PassProductData(
-                              title: widget.model?[index].name ?? "",
-                              urlKey: widget.model?[index].urlKey,
+                              title: val?.name ?? "",
+                              urlKey: val?.urlKey,
                               productId:
-                                  int.parse(widget.model?[index].id ?? "")));
+                                  int.parse(val?.id ?? "")));
                     },
                     child: SizedBox(
                       width: AppSizes.screenWidth / 1.8,
@@ -91,18 +108,18 @@ class _NewProductViewState extends State<NewProductView> {
                           children: [
                             Stack(
                               children: [
-                                (widget.model?[index].url != null ||
-                                        ((widget.model?[index].images
+                                (val?.url != null ||
+                                        ((val?.images
                                                         ?.length ??
                                                     0) >
                                                 0 &&
-                                            (widget.model?[index].images ??
+                                            (val?.images ??
                                                     [])
                                                 .isNotEmpty))
                                     ? ImageView(
-                                        url: widget.model?[index].images?[0]
+                                        url: val?.images?[0]
                                                 .url ??
-                                            widget.model?[index].url ??
+                                            val?.url ??
                                             "",
                                         height: AppSizes.screenHeight * 0.25,
                                         width: AppSizes.screenWidth,
@@ -114,7 +131,7 @@ class _NewProductViewState extends State<NewProductView> {
                                         width: AppSizes.screenWidth,
                                         fit: BoxFit.fill,
                                       ),
-                                (widget.model?[index].isInSale ?? false)
+                                (val?.isInSale ?? false)
                                     ? Positioned(
                                         left: AppSizes.spacingNormal,
                                         top: AppSizes.spacingNormal,
@@ -136,10 +153,10 @@ class _NewProductViewState extends State<NewProductView> {
                                                     color: Colors.white),
                                               )),
                                         ))
-                                    : ((widget.model?[index].productFlats?[0]
+                                    : ((val?.productFlats?[0]
                                                     .isNew ??
                                                 true) ||
-                                            (widget.model?[index].isNew ??
+                                            (val?.isNew ??
                                                 false))
                                         ? Positioned(
                                             left: AppSizes.spacingSmall,
@@ -188,22 +205,22 @@ class _NewProductViewState extends State<NewProductView> {
                                                 OnClickLoaderEvent(
                                                     isReqToShowLoader: true));
                                             if (widget.isLogin ?? false) {
-                                              if (widget.model?[index]
-                                                      .isInWishlist ??
+                                              if (val
+                                                      ?.isInWishlist ??
                                                   false) {
                                                 homepageBloc?.add(
                                                   RemoveWishlistItemEvent(
-                                                    widget.model?[index].id ??
+                                                    val?.id ??
                                                         "",
-                                                    widget.model?[index],
+                                                    val,
                                                   ),
                                                 );
                                               } else {
                                                 homepageBloc?.add(
                                                   FetchAddWishlistHomepageEvent(
-                                                    widget.model?[index].id ??
+                                                    val?.id ??
                                                         "",
-                                                    widget.model?[index],
+                                                    val,
                                                   ),
                                                 );
                                               }
@@ -225,7 +242,7 @@ class _NewProductViewState extends State<NewProductView> {
                                         });
                                       },
                                       child: wishlistIcon(context,
-                                          widget.model?[index].isInWishlist)),
+                                          val?.isInWishlist)),
                                 ),
                                 if(widget.isRecentProduct == false) Positioned(
                                   right: 8.0,
@@ -241,9 +258,9 @@ class _NewProductViewState extends State<NewProductView> {
                                                       isReqToShowLoader: true));
                                               homepageBloc?.add(
                                                 AddToCompareHomepageEvent(
-                                                  widget.model?[index]
-                                                      .id ??
-                                                      widget.model?[index].productId ?? "",
+                                                  val
+                                                      ?.id ??
+                                                      val?.productId ?? "",
                                                   "",
                                                 ),
                                               );
@@ -274,12 +291,12 @@ class _NewProductViewState extends State<NewProductView> {
                                   child: SizedBox(
                                     width: AppSizes.screenWidth / 2,
                                     child: CommonWidgets().getDrawerTileText(
-                                        widget.model?[index].productFlats
+                                        val?.productFlats
                                                 ?.firstWhereOrNull((element) =>
                                                     element.locale ==
                                                     GlobalData.locale)
                                                 ?.name ??
-                                            widget.model?[index].name ??
+                                            val?.name ??
                                             "",
                                         context),
                                   ),
@@ -288,44 +305,47 @@ class _NewProductViewState extends State<NewProductView> {
                             ),
                             const SizedBox(height: AppSizes.spacingLarge),
                             
-                            PriceWidgetHtml(priceHtml: widget.isRecentProduct ? (val?.price ?? "") : val?.priceHtml?.priceHtml ?? ""),
+                            PriceWidgetHtml(priceHtml: val?.priceHtml?.priceHtml ?? ""),
 
                             Padding(
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 6.0),
-                              child: CommonWidgets().appButton(
-                                  context,
-                                  StringConstants.addToCart.localized(),
-                                  MediaQuery.of(context).size.width, () {
-                                checkInternetConnection().then((value) {
-                                  if (value) {
-                                    homepageBloc?.add(OnClickLoaderEvent(
-                                        isReqToShowLoader: true));
-                                    if ((widget.model?[index].priceHtml
-                                                ?.type) ==
-                                            StringConstants.simple ||
-                                        widget.model?[index].type ==
-                                            StringConstants.simple || widget.model?[index].type == StringConstants.virtual) {
-                                      homepageEvent(
-                                          widget.model?[index],
-                                          HomePageAction.addToCart,
-                                          widget.isLogin,
-                                          homepageBloc,
-                                          context);
-                                    } else {
-                                      ShowMessage.warningNotification(
-                                          StringConstants.addOptions
-                                              .localized(),context);
+                              child: Opacity(
+                                opacity: (val?.isSaleable ?? false) ? 1 : 0.3,
+                                child: CommonWidgets().appButton(
+                                    context,
+                                    StringConstants.addToCart.localized(),
+                                    MediaQuery.of(context).size.width, (val?.isSaleable ?? false) ? () {
+                                  checkInternetConnection().then((value) {
+                                    if (value) {
                                       homepageBloc?.add(OnClickLoaderEvent(
-                                          isReqToShowLoader: false));
+                                          isReqToShowLoader: true));
+                                      if ((val?.priceHtml
+                                                  ?.type) ==
+                                              StringConstants.simple ||
+                                          val?.type ==
+                                              StringConstants.simple || val?.type == StringConstants.virtual) {
+                                        homepageEvent(
+                                            val,
+                                            HomePageAction.addToCart,
+                                            widget.isLogin,
+                                            homepageBloc,
+                                            context);
+                                      } else {
+                                        ShowMessage.warningNotification(
+                                            StringConstants.addOptions
+                                                .localized(),context);
+                                        homepageBloc?.add(OnClickLoaderEvent(
+                                            isReqToShowLoader: false));
+                                      }
+                                    } else {
+                                      ShowMessage.errorNotification(
+                                          StringConstants.internetIssue
+                                              .localized(),context);
                                     }
-                                  } else {
-                                    ShowMessage.errorNotification(
-                                        StringConstants.internetIssue
-                                            .localized(),context);
-                                  }
-                                });
-                              }),
+                                  });
+                                } : (){}),
+                              ),
                             )
                           ],
                         ),

@@ -1,15 +1,14 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 import 'package:json_annotation/json_annotation.dart';
-import '../../../data_model/categories_data_model/categories_product_model.dart';
 import '../../../data_model/graphql_base_model.dart';
 
 part 'cms_model.g.dart';
@@ -28,7 +27,22 @@ class CmsData extends GraphQlBaseModel{
   Map<String, dynamic> toJson() =>
       _$CmsDataToJson(this);
 }
+@JsonSerializable()
+class PaginatorInfo{
+  int?  count;
+  int? currentPage;
+  int? lastPage;
+  int? total;
 
+
+  PaginatorInfo({this.count,this.currentPage,this.lastPage,this.total});
+  factory PaginatorInfo.fromJson(Map<String, dynamic> json) =>
+      _$PaginatorInfoFromJson(json);
+
+  Map<String, dynamic> toJson() =>
+      _$PaginatorInfoToJson(this);
+
+}
 
 @JsonSerializable()
 class Data {

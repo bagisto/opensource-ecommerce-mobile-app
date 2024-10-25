@@ -1,21 +1,29 @@
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
 import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 
- // ignore: must_be_immutable
+
  class AddToCartView extends StatelessWidget {
-  List downloadLinks = [];
-  List groupedParams = [];
-  List bundleParams = [];
-  List configurableParams = [];
-  List selectList = [];
-  List selectParam = [];
-  var configurableProductId;
-  String? price;
+  final List ? downloadLinks;
+  final List ? groupedParams;
+  final List ? bundleParams ;
+  final List ?  configurableParams ;
+  final List ? selectList ;
+  final List ? selectParam;
+  final dynamic configurableProductId;
+  final String? price;
   final NewProducts? productData;
-  int qty = 1;
-   AddToCartView({Key? key, this.productData,this.price,required this.configurableParams,required this.bundleParams,required this.selectList,required this.selectParam,required this.groupedParams,required this.downloadLinks,this.configurableProductId,required this.qty}) : super(key: key);
+  final int ? qty;
+   const AddToCartView({Key? key, this.productData,this.price,required this.configurableParams,required this.bundleParams,required this.selectList,required this.selectParam,required this.groupedParams,required this.downloadLinks,this.configurableProductId,required this.qty}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -68,15 +76,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
     ProductScreenBLoc productScreenBLoc = context.read<ProductScreenBLoc>();
     List list = [];
     if (productData?.type == StringConstants.grouped) {
-      if (groupedParams.isNotEmpty) {
+      if ((groupedParams ?? []).isNotEmpty) {
         list.add(groupedParams);
         productScreenBLoc.add(AddToCartProductEvent(
-            qty,
+            qty ?? 1,
             productData?.id ?? "",
-            downloadLinks,
-            groupedParams,
-            bundleParams,
-            configurableParams,
+            downloadLinks ?? [],
+            groupedParams ?? [],
+            bundleParams ?? [],
+            configurableParams ?? [],
             configurableProductId,
             ""));
       } else {
@@ -89,15 +97,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
       }
     } else if (productData?.type == StringConstants.bundle) {
       productData?.bundleOptions?.forEach((element) {
-        if (bundleParams.isNotEmpty) {
+        if ((bundleParams?? []).isNotEmpty) {
           list.add(bundleParams);
           productScreenBLoc.add(AddToCartProductEvent(
-              qty,
+              qty ?? 1,
               productData?.id ?? "",
-              downloadLinks,
-              groupedParams,
-              bundleParams,
-              configurableParams,
+              downloadLinks ?? [],
+              groupedParams ??[],
+              bundleParams ?? [],
+              configurableParams ?? [],
               configurableProductId,
               ""));
         } else {
@@ -110,14 +118,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
         }
       });
     } else if (productData?.type == StringConstants.downloadable) {
-      if (downloadLinks.isNotEmpty) {
+      if ((downloadLinks?? []).isNotEmpty) {
         productScreenBLoc.add(AddToCartProductEvent(
-            qty,
+            qty ?? 1,
             productData?.id ?? "",
-            downloadLinks,
-            groupedParams,
-            bundleParams,
-            configurableParams,
+            downloadLinks ??  [],
+            groupedParams ?? [],
+            bundleParams ?? [],
+            configurableParams ?? [],
             configurableProductId,
             ""));
       } else {
@@ -142,23 +150,23 @@ import 'package:flutter_bloc/flutter_bloc.dart';
             .add(OnClickProductLoaderEvent(isReqToShowLoader: false));
       } else {
         productScreenBLoc.add(AddToCartProductEvent(
-            qty,
+            qty ?? 1,
             productData?.id ?? "",
-            downloadLinks,
-            groupedParams,
-            bundleParams,
-            configurableParams,
+            downloadLinks ?? [],
+            groupedParams ?? [],
+            bundleParams ?? [],
+            configurableParams ?? [],
             id,
             ""));
       }
     } else {
       productScreenBLoc.add(AddToCartProductEvent(
-          qty,
+          qty ?? 1,
           productData?.id ?? "",
-          downloadLinks,
-          groupedParams,
-          bundleParams,
-          configurableParams,
+          downloadLinks ?? [],
+          groupedParams ?? [],
+          bundleParams ?? [],
+          configurableParams ?? [],
           configurableProductId,
           ""));
     }

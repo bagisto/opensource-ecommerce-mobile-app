@@ -1,28 +1,21 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 
-import 'package:bagisto_app_demo/utils/application_localization.dart';
-import 'package:flutter/material.dart';
-import '../../../../data_model/app_route_arguments.dart';
-import '../../../../utils/app_constants.dart';
-import '../../../../utils/assets_constants.dart';
-import '../../../../utils/route_constants.dart';
-import '../../../../utils/string_constants.dart';
-import '../../../../widgets/empty_data_view.dart';
 
-//ignore: must_be_immutable
+import 'package:bagisto_app_demo/screens/address_list/utils/index.dart';
+
 class AddNewAddressButton extends StatelessWidget {
-  VoidCallback? reload;
+  final  VoidCallback? reload;
   final bool? isFromDashboard;
-  AddNewAddressButton({Key? key, this.reload,this.isFromDashboard}) : super(key: key);
+  const AddNewAddressButton({Key? key, this.reload,this.isFromDashboard}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -30,16 +23,16 @@ class AddNewAddressButton extends StatelessWidget {
       child: Column(
         children: [
           (isFromDashboard ?? false)
-              ? Container()
+              ? const SizedBox()
               : Padding(
-                padding: const EdgeInsets.all(8.0),
+                padding: const EdgeInsets.all(AppSizes.spacingNormal),
                 child: MaterialButton(
             color: Theme.of(context).colorScheme.onBackground,
             padding: const EdgeInsets.all(AppSizes.spacingMedium),
             onPressed: () {
                 Navigator.pushNamed(context, addAddressScreen,
                         arguments: AddressNavigationData(
-                            isEdit: false, addressModel: null))
+                            isEdit: false, addressModel: null, isCheckout: false))
                     .then((value) {
                   if (reload != null) {
                     reload!();
@@ -50,9 +43,9 @@ class AddNewAddressButton extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
+                   Icon(
                     Icons.add,
-                    color: Colors.white,
+                    color:Theme.of(context).colorScheme.background,
                   ),
                   Text(
                     StringConstants.addNewAddress.localized().toUpperCase(),

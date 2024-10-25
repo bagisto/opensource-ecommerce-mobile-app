@@ -1,16 +1,26 @@
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
 import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import '../utils/app_constants.dart';
 
 
 class PriceWidgetHtml extends StatelessWidget {
-  String priceHtml;
-  PriceWidgetHtml({Key? key, required this.priceHtml}) : super(key: key);
+  final String priceHtml;
+  const PriceWidgetHtml({Key? key, required this.priceHtml}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(AppSizes.size8),
+      padding: const EdgeInsets.all(AppSizes.spacingNormal),
       child: HtmlWidget(
         priceHtml,
 

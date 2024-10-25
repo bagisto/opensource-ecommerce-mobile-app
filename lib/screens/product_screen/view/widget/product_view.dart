@@ -1,11 +1,15 @@
-import 'package:bagisto_app_demo/widgets/loader.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'about_product_view.dart';
-import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:collection/collection.dart';
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
 
+
+import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
 
 
 //ignore: must_be_immutable
@@ -15,7 +19,7 @@ class ProductView extends StatefulWidget {
   final ProductScreenBLoc? productScreenBLoc;
   int? productId;
   bool isLoggedIn = false;
-  var configurableProductId;
+  dynamic configurableProductId;
   String? price;
   final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey;
   final ScrollController? scrollController;
@@ -201,42 +205,25 @@ class _ProductViewState extends State<ProductView> {
                                         ),
                                       ),
                                       Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 8.0),
-                                        child: SizedBox(
-                                          width: 120,
-                                          child: RatingBar.builder(
-                                            unratedColor: MobikulTheme
-                                                .appBarBackgroundColor,
-                                            itemSize: 16,
-                                            initialRating: num.tryParse(
-                                                        widget.productData
-                                                                ?.reviews?[index]
-                                                                .rating
-                                                                .toString() ??
-                                                            '0.0')
-                                                    ?.toDouble() ??
-                                                0.0,
-                                            minRating: 1,
-                                            direction: Axis.horizontal,
-                                            allowHalfRating: true,
-                                            itemCount: 5,
-                                            itemPadding:
-                                                const EdgeInsets.symmetric(
-                                                    horizontal: 4.0),
-                                            itemBuilder: (context, _) => Icon(
-                                              Icons.star,
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .onPrimary,
-                                            ),
-                                            onRatingUpdate: (rating) {},
-                                          ),
+                                        padding: const EdgeInsets.only(left: AppSizes.spacingMedium),
+                                        child: RatingBar(
+                                          starCount: 5,
+                                          isCenter: false,
+                                          size:AppSizes.spacingLarge,
+                                          color: Theme.of(context).colorScheme.onPrimary,
+                                          rating: num.tryParse(
+                                              widget.productData
+                                                  ?.reviews?[index]
+                                                  .rating
+                                                  .toString() ??
+                                                  '0.0')
+                                              ?.toDouble() ??
+                                              0.0,
                                         ),
                                       ),
                                       Padding(
                                         padding: const EdgeInsets.symmetric(
-                                            horizontal: 16.0, vertical: 4),
+                                            horizontal: AppSizes.spacingLarge, vertical: AppSizes.spacingSmall),
                                         child: Text(widget.productData
                                                 ?.reviews?[index].comment ??
                                             ""),

@@ -6,7 +6,9 @@
 	<string>development</string>
 	<key>com.apple.developer.associated-domains</key>
 	<array>
-		<string>applinks:192.168.15.204</string>
+		<string>applinks:demo.bagisto.com</string>
+		<string>applinks:https://demo.bagisto.com/mobikul-common/</string>
+		<string>applinks:demo.bagisto.com/mobikul-common</string>
 	</array>
 </dict>
 </plist>

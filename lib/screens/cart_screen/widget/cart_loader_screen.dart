@@ -1,6 +1,14 @@
-import 'package:flutter/material.dart';
-import 'package:skeleton_loader/skeleton_loader.dart';
-import '../../../utils/mobikul_theme.dart';
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
+import '../utils/cart_index.dart';
 
 class CartLoaderView extends StatelessWidget {
   const CartLoaderView({Key? key}) : super(key: key);
@@ -18,8 +26,8 @@ class CartLoaderView extends StatelessWidget {
                 ),
                 SkeletonLoader(
                     highlightColor: Theme.of(context).highlightColor,
-                    baseColor: Theme.of(context).appBarTheme.backgroundColor ??
-                        MobikulTheme.primaryColor,
+                    baseColor: Theme.of(context).scaffoldBackgroundColor,
+
                     builder: const SizedBox(
                         height: 270,
                         child: Card(
@@ -30,14 +38,16 @@ class CartLoaderView extends StatelessWidget {
                 ),
                 SkeletonLoader(
                     highlightColor: Theme.of(context).highlightColor,
-                    baseColor: Theme.of(context).appBarTheme.backgroundColor ??
-                        MobikulTheme.primaryColor,
+                    baseColor: Theme.of(context).scaffoldBackgroundColor,
+
                     builder: const SizedBox(
                         height: 125,
                         child: Card(
                           color: Colors.red,
                         ))),
                 SkeletonLoader(
+                    highlightColor: Theme.of(context).highlightColor,
+                    baseColor: Theme.of(context).scaffoldBackgroundColor,
                     items: 3,
                     builder: Container(
                         height: 50,
@@ -50,8 +60,8 @@ class CartLoaderView extends StatelessWidget {
                 ),
                 SkeletonLoader(
                     highlightColor: Theme.of(context).highlightColor,
-                    baseColor: Theme.of(context).appBarTheme.backgroundColor ??
-                        MobikulTheme.primaryColor,
+                    baseColor: Theme.of(context).scaffoldBackgroundColor,
+
                     builder: const SizedBox(
                         height: 170,
                         child: Card(
@@ -61,9 +71,9 @@ class CartLoaderView extends StatelessWidget {
             ),
           ),
         ),
-         SkeletonLoader(
+        SkeletonLoader(
             highlightColor: Theme.of(context).highlightColor,
-            baseColor: Theme.of(context).appBarTheme.backgroundColor ?? MobikulTheme.primaryColor,
+            baseColor: Theme.of(context).scaffoldBackgroundColor,
             builder: const SizedBox(
                 height: 70,
                 child: Card(

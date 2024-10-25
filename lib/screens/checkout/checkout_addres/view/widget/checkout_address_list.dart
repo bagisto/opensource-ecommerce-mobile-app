@@ -1,30 +1,20 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
-import 'package:bagisto_app_demo/screens/cart_screen/cart_index.dart';
-import 'package:bagisto_app_demo/utils/application_localization.dart';
-import 'package:bagisto_app_demo/widgets/loader.dart';
-import 'package:flutter/material.dart';
-import '../../../../../../utils/app_constants.dart';
-import '../../../../../../utils/app_global_data.dart';
-import '../../../../../utils/string_constants.dart';
-import '../../../../address_list/data_model/address_model.dart';
-import '../../bloc/checkout_address_state.dart';
-import '../../bloc/checkout_base_event.dart';
-import '../../bloc/checkout_bloc.dart';
 
-//ignore: must_be_immutable
+import 'package:bagisto_app_demo/screens/checkout/utils/index.dart';
+
 class CheckoutAddressList extends StatefulWidget {
-  AddressModel addressModel;
+  final  AddressModel addressModel;
 
-  CheckoutAddressList({Key? key, required this.addressModel}) : super(key: key);
+  const CheckoutAddressList({Key? key, required this.addressModel}) : super(key: key);
 
   @override
   State<CheckoutAddressList> createState() => _CheckoutAddressListState();
@@ -45,16 +35,13 @@ class _CheckoutAddressListState extends State<CheckoutAddressList> {
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: GlobalData.contentDirection(),
-      child: Scaffold(
-        appBar: AppBar(
-          // leading: IconButton,
-          centerTitle: false,
-          title: Text(StringConstants.address.localized()),
-        ),
-        body: _getAddressList(),
+    return Scaffold(
+      appBar: AppBar(
+        // leading: IconButton,
+        centerTitle: false,
+        title: Text(StringConstants.address.localized()),
       ),
+      body: _getAddressList(),
     );
   }
 
@@ -139,7 +126,7 @@ class _CheckoutAddressListState extends State<CheckoutAddressList> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(AppSizes.spacingMedium, 0, 0, 0),
       child: Text(
-        "${addressModel.addressData?[index].firstName} ${addressModel.addressData?[index].lastName}\n\n${addressModel.addressData![index].address1!.replaceAll("[", "").replaceAll("]", "")},${addressModel.addressData![index].city!},${addressModel.addressData![index].stateName ?? ""}${addressModel.addressData![index].countryName!},${addressModel.addressData![index].postcode!}",
+        "${addressModel.addressData?[index].firstName} ${addressModel.addressData?[index].lastName}\n\n${addressModel.addressData![index].address1!.replaceAll("[", "").replaceAll("]", "")},${addressModel.addressData![index].city!},${addressModel.addressData![index].stateName ?? ""}${addressModel.addressData![index].countryName??''},${addressModel.addressData![index].postcode!}",
         style: const TextStyle(fontSize: AppSizes.spacingLarge),
       ),
     );

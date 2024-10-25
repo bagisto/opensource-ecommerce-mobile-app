@@ -1,9 +1,16 @@
-import 'package:bagisto_app_demo/screens/account/bloc/account_info_bloc.dart';
-import 'package:bagisto_app_demo/screens/account/bloc/account_info_details_event.dart';
-import 'package:bagisto_app_demo/screens/account/view/account_screen.dart';
-import 'package:bagisto_app_demo/screens/cart_screen/cart_index.dart';
+
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
 import 'package:flutter/cupertino.dart';
-import '../../../utils/index.dart';
+import '../utils/index.dart';
 
 class ChangeEmailAndPassword extends StatefulWidget {
   const ChangeEmailAndPassword({Key? key}) : super(key: key);
@@ -32,7 +39,7 @@ class _ChangeEmailAndPasswordState extends State<ChangeEmailAndPassword>
       children: [
         Row(children: [
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(AppSizes.spacingNormal),
             child: GestureDetector(
               onTap: () {
                 setState(() {
@@ -45,7 +52,7 @@ class _ChangeEmailAndPasswordState extends State<ChangeEmailAndPassword>
                     Icons.email,
                   ),
                   const SizedBox(
-                    width: 8,
+                    width: AppSizes.spacingNormal,
                   ),
                   Text(
                     StringConstants.changeEmail.localized(),
@@ -58,7 +65,7 @@ class _ChangeEmailAndPasswordState extends State<ChangeEmailAndPassword>
         ]),
         _changeEmail
             ? Padding(
-                padding: const EdgeInsets.all(8.0),
+                padding: const EdgeInsets.all(AppSizes.spacingNormal),
                 child: CommonWidgets().getTextField(
                   context,
                   emailController,
@@ -80,7 +87,7 @@ class _ChangeEmailAndPasswordState extends State<ChangeEmailAndPassword>
             : const Center(),
         Row(children: [
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(AppSizes.spacingNormal),
             child: GestureDetector(
               onTap: () {
                 setState(() {
@@ -93,7 +100,7 @@ class _ChangeEmailAndPasswordState extends State<ChangeEmailAndPassword>
                     Icons.lock,
                   ),
                   const SizedBox(
-                    width: 8,
+                    width: AppSizes.spacingNormal,
                   ),
                   Text(
                     StringConstants.changePassword.localized(),
@@ -105,7 +112,7 @@ class _ChangeEmailAndPasswordState extends State<ChangeEmailAndPassword>
           ),
         ]),
         Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(AppSizes.spacingNormal),
           child: _isChangePassword
               ? Column(
                   children: [
@@ -116,9 +123,11 @@ class _ChangeEmailAndPasswordState extends State<ChangeEmailAndPassword>
                       label: StringConstants.currentPassword.localized(),
                       validator: (password) {
                         if (password!.trim().isEmpty) {
-                          return StringConstants.fillCurrentPassword.localized();
+                          return StringConstants.fillCurrentPassword
+                              .localized();
                         } else if (password.trim().length < 6) {
-                          return StringConstants.currentPasswordWarning.localized();
+                          return StringConstants.currentPasswordWarning
+                              .localized();
                         }
                         return null;
                       },
@@ -138,7 +147,7 @@ class _ChangeEmailAndPasswordState extends State<ChangeEmailAndPassword>
                         },
                       ),
                     ),
-                    const SizedBox(height: 20.0),
+                    const SizedBox(height: AppSizes.spacingWide),
                     CommonWidgets().getTextField(context, newPasswordController,
                         StringConstants.enterNewPassword.localized(),
                         label: StringConstants.newPassword.localized(),
@@ -150,7 +159,8 @@ class _ChangeEmailAndPasswordState extends State<ChangeEmailAndPassword>
                       }
                       return null;
                     },
-                        validLabel: StringConstants.newPasswordWarning.localized(),
+                        validLabel:
+                            StringConstants.newPasswordWarning.localized(),
                         showPassword: _showNewPassword,
                         suffixIcon: IconButton(
                           icon: Icon(
@@ -165,7 +175,7 @@ class _ChangeEmailAndPasswordState extends State<ChangeEmailAndPassword>
                             });
                           },
                         )),
-                    const SizedBox(height: 20.0),
+                    const SizedBox(height: AppSizes.spacingWide),
                     CommonWidgets().getTextField(
                         context,
                         confirmNewPasswordController,
@@ -183,7 +193,8 @@ class _ChangeEmailAndPasswordState extends State<ChangeEmailAndPassword>
                       }
                       return null;
                     },
-                        validLabel: StringConstants.validPasswordLabel.localized(),
+                        validLabel:
+                            StringConstants.validPasswordLabel.localized(),
                         showPassword: _showConfirmPassword,
                         suffixIcon: IconButton(
                           icon: Icon(
@@ -203,7 +214,7 @@ class _ChangeEmailAndPasswordState extends State<ChangeEmailAndPassword>
               : const Center(),
         ),
         Padding(
-          padding: const EdgeInsets.fromLTRB(8.0, 0.0, 8.0, 8.0),
+          padding: const EdgeInsets.fromLTRB(AppSizes.spacingNormal, 0.0, AppSizes.spacingNormal, AppSizes.spacingNormal),
           child: GestureDetector(
             onTap: () {
               _onPressDeleteAccount();
@@ -215,7 +226,7 @@ class _ChangeEmailAndPasswordState extends State<ChangeEmailAndPassword>
                   color: Colors.red,
                 ),
                 const SizedBox(
-                  width: 8.0,
+                  width: AppSizes.spacingNormal,
                 ),
                 Text(
                   StringConstants.deleteAccount.localized(),
@@ -237,16 +248,12 @@ class _ChangeEmailAndPasswordState extends State<ChangeEmailAndPassword>
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
-          title:
-              Text(
-                StringConstants.deleteAccount.localized()
-          ),
+          backgroundColor: Theme.of(context).colorScheme.background,
+          title: Text(StringConstants.deleteAccount.localized()),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                  StringConstants.deleteAccountMsg.localized()),
+              Text(StringConstants.deleteAccountMsg.localized()),
               const SizedBox(height: AppSizes.spacingWide),
               CommonWidgets().getTextField(
                 context,
@@ -274,11 +281,12 @@ class _ChangeEmailAndPasswordState extends State<ChangeEmailAndPassword>
                     _onPressYesDeleteAccount();
                   } else {
                     ShowMessage.warningNotification(
-                        StringConstants.validPasswordLabel.localized(),context);
+                        StringConstants.validPasswordLabel.localized(),
+                        context);
                   }
                 },
-                child: Text(
-                    StringConstants.yes.localized(),style: Theme.of(context).textTheme.bodyMedium))
+                child: Text(StringConstants.yes.localized(),
+                    style: Theme.of(context).textTheme.bodyMedium))
           ],
         );
       },
@@ -291,7 +299,7 @@ class _ChangeEmailAndPasswordState extends State<ChangeEmailAndPassword>
         barrierDismissible: false,
         builder: (BuildContext context) {
           return Dialog(
-            backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+            backgroundColor: Theme.of(context).colorScheme.background,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -300,7 +308,7 @@ class _ChangeEmailAndPasswordState extends State<ChangeEmailAndPassword>
                 ),
                 CircularProgressIndicatorClass.circularProgressIndicator(
                     context),
-                const SizedBox(height:AppSizes.spacingWide),
+                const SizedBox(height: AppSizes.spacingWide),
                 const SizedBox(
                   height: AppSizes.spacingMedium,
                 ),

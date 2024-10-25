@@ -1,20 +1,16 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 
-import '../../../data_model/graphql_base_model.dart';
-import '../../../services/api_client.dart';
-import '../cart_model/add_to_cart_model.dart';
-import '../cart_model/apply_coupon.dart';
-import '../cart_model/cart_data_model.dart';
-import 'package:flutter/material.dart';
+
+import 'package:bagisto_app_demo/screens/cart_screen/utils/cart_index.dart';
 
 abstract class CartScreenRepository {
   Future<CartModel?> getCartData();
@@ -27,7 +23,7 @@ abstract class CartScreenRepository {
 
   Future<ApplyCoupon?> removeCoupon();
 
-  Future<GraphQlBaseModel?> removeAllCartItem();
+  Future<BaseModel?> removeAllCartItem();
 
   Future<AddToCartModel?> moveToWishlist(int id);
 }
@@ -110,8 +106,8 @@ class CartScreenRepositoryImp implements CartScreenRepository {
   }
 
   @override
-  Future<GraphQlBaseModel?> removeAllCartItem() async {
-    GraphQlBaseModel? removeAllCartProductModel;
+  Future<BaseModel?> removeAllCartItem() async {
+    BaseModel? removeAllCartProductModel;
 
     try {
       removeAllCartProductModel = await ApiClient().removeAllCartItem();

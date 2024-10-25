@@ -1,8 +1,15 @@
-import 'package:bagisto_app_demo/screens/sign_up/utils/index.dart';
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
 
-import '../../../data_model/app_route_arguments.dart';
-import '../cart_index.dart';
-import '../util/check_downlodable.dart';
+
+import '../utils/cart_index.dart';
 
 class GuestCheckoutView extends StatelessWidget {
   final CartModel cartDetailsModel;
@@ -34,10 +41,10 @@ class GuestCheckoutView extends StatelessWidget {
               height: AppSizes.spacingWide*4,
               child: Padding(
                 padding:
-                    const EdgeInsets.symmetric(vertical: 14.0, horizontal: 12),
+                    const EdgeInsets.symmetric(vertical: AppSizes.spacingMedium +2, horizontal: AppSizes.spacingMedium),
                 child: MaterialButton(
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.0)),
+                        borderRadius: BorderRadius.circular(AppSizes.spacingNormal)),
                     elevation: AppSizes.spacingSmall,
                     height: AppSizes.buttonHeight,
                     minWidth: MediaQuery.of(context).size.width / 2.3,
@@ -57,7 +64,7 @@ class GuestCheckoutView extends StatelessWidget {
               height: AppSizes.spacingWide*4,
               child: Padding(
                 padding:
-                    const EdgeInsets.symmetric(vertical: 14.0, horizontal: 12),
+                    const EdgeInsets.symmetric(vertical:AppSizes.spacingMedium +2, horizontal: AppSizes.spacingMedium),
                 child: MaterialButton(
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8.0)),
@@ -81,7 +88,7 @@ class GuestCheckoutView extends StatelessWidget {
         checkDownloadable(cartDetailsModel.items) == false ? SizedBox(
           height: AppSizes.spacingWide*4,
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 14.0, horizontal: 12),
+            padding: const EdgeInsets.symmetric(vertical:AppSizes.spacingMedium +2, horizontal: AppSizes.spacingMedium),
             child: MaterialButton(
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8.0)),

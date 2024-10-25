@@ -1,11 +1,11 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 
@@ -20,7 +20,6 @@ const String addressList = 'addressList';
 const String orderDetailPage = 'orderDetailPage';
 const String reviewList = 'reviewList';
 const String dashboardScreen = 'dashboardScreen';
-
 const String productScreen = 'productScreen';
 const String searchScreen = 'searchScreen';
 const String cartScreen = "cartScreen";
@@ -36,6 +35,14 @@ const String addReviewScreen = 'addReviewScreen';
 const String compareScreen = 'compareScreen';
 const String downloadableProductScreen = 'downloadableProductScreen';
 const String drawerSubCategoryScreen = 'drawerSubCategoryScreen';
+const String invoiceDetails = "InvoiceDetails";
+const String shipmentDetails = "shipmentDetails";
+const String refundDetails = "refundDetails";
+const String currencyScreen = "currencyScreen";
+const String languageScreen = "languageScreen";
+const String contactUsScreen = "contactUsScreen";
+
+
 
 
 

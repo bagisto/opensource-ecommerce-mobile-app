@@ -1,15 +1,19 @@
-import 'dart:convert';
-import 'dart:io';
-import 'dart:typed_data';
-import 'package:bagisto_app_demo/screens/cart_screen/cart_index.dart';
-import 'package:image_picker/image_picker.dart';
-import '../../../../utils/index.dart';
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
 
-//ignore: must_be_immutable
+import 'package:bagisto_app_demo/screens/account/utils/index.dart';
+
 class ProfileImageView extends StatefulWidget {
-  Function(String? base64string)? callback;
+  final Function(String? base64string)? callback;
 
-  ProfileImageView({Key? key, this.callback}) : super(key: key);
+  const ProfileImageView({Key? key, this.callback}) : super(key: key);
 
   @override
   State<ProfileImageView> createState() => _ProfileImageViewState();
@@ -24,22 +28,18 @@ class _ProfileImageViewState extends State<ProfileImageView> {
   @override
   void initState() {
     image = null;
-    SharedPreferenceHelper.getCustomerImage().then((value) {
-      setState(() {
-        profileImageEdit = value;
-      });
-    });
+    profileImageEdit = appStoragePref.getCustomerImage();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.all(8),
+      margin: const EdgeInsets.all(AppSizes.spacingNormal),
       decoration: BoxDecoration(
           shape: BoxShape.circle,
           border: Border.all(color: Colors.grey),
-          color: MobikulTheme.accentColor),
+          color: MobiKulTheme.accentColor),
       child: Stack(
         alignment: AlignmentDirectional.bottomEnd,
         children: [
@@ -48,32 +48,29 @@ class _ProfileImageViewState extends State<ProfileImageView> {
                 _showChoiceBottomSheet(context);
               },
               child: CircleAvatar(
-                radius: MediaQuery.of(context).size.width * 0.13,
-                backgroundImage: const AssetImage(
-                    'assets/images/customer_profile_placeholder.png'),
+                radius: AppSizes.screenWidth * 0.13,
+                backgroundImage: const AssetImage(AssetConstants.customerProfilePlaceholder),
                 backgroundColor: Colors.white,
                 foregroundImage: (image != null)
                     ? FileImage(File(image!.path))
                     : (profileImageEdit.isNotEmpty)
                         ? NetworkImage('$profileImageEdit?${DateTime.now().millisecondsSinceEpoch.toString()}')
-                        : Image.asset(
-                                'assets/images/customer_profile_placeholder.png')
-                            .image,
+                        : Image.asset(AssetConstants.customerProfilePlaceholder).image,
               )),
           GestureDetector(
             onTap: () {
               _showChoiceBottomSheet(context);
             },
             child: Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(AppSizes.spacingNormal),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(18.0),
-                color: MobikulTheme.accentColor,
+                borderRadius: BorderRadius.circular(AppSizes.spacingLarge),
+                color: Theme.of(context).colorScheme.onBackground,
               ),
-              child: Icon(
+              child:  Icon(
                 Icons.camera_alt,
                 size: 18,
-                color: MobikulTheme.primaryColor,
+                color: Theme.of(context).colorScheme.secondaryContainer,
               ),
             ),
           )
@@ -87,16 +84,15 @@ class _ProfileImageViewState extends State<ProfileImageView> {
         backgroundColor: Theme.of(context).cardColor,
         context: context,
         builder: (context) {
-          return Wrap(
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(15, 17, 0, 10),
+                padding: const EdgeInsets.fromLTRB(AppSizes.spacingLarge, AppSizes.spacingLarge, 0, AppSizes.spacingLarge),
                 child: Text(
                   StringConstants.chooseOption.localized(),
-                  style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w500,
-                      color: Theme.of(context).colorScheme.onPrimary),
+                  style: Theme.of(context).textTheme.labelMedium,
                 ),
               ),
               const Divider(
@@ -129,7 +125,6 @@ class _ProfileImageViewState extends State<ProfileImageView> {
             ],
           );
         });
-    //Navigator.pop(context);
   }
 
   void _openCamera(BuildContext context) async {
@@ -147,6 +142,7 @@ class _ProfileImageViewState extends State<ProfileImageView> {
         image = value;
       });
     });
+    if (!context.mounted) return;
     Navigator.pop(context);
   }
 
@@ -165,6 +161,8 @@ class _ProfileImageViewState extends State<ProfileImageView> {
         image = value;
       });
     });
-    Navigator.pop(context);
+    if(context.mounted){
+      Navigator.pop(context);
+    }
   }
 }
