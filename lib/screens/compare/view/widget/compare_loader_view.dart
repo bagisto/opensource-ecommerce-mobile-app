@@ -1,8 +1,15 @@
-import 'package:flutter/material.dart';
-import 'package:skeleton_loader/skeleton_loader.dart';
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
 
-import '../../../../utils/mobikul_theme.dart';
-import '../../../../utils/string_constants.dart';
+
+import 'package:bagisto_app_demo/screens/compare/utils/index.dart';
 
 class CompareLoaderView extends StatelessWidget {
   const CompareLoaderView({Key? key}) : super(key: key);
@@ -16,9 +23,9 @@ class CompareLoaderView extends StatelessWidget {
         children: <Widget>[
           SkeletonLoader(
               highlightColor: Theme.of(context).highlightColor,
-              baseColor: Theme.of(context).appBarTheme.backgroundColor ?? MobikulTheme.primaryColor,
-            direction: SkeletonDirection.ttb,
-            builder:SizedBox(
+              baseColor: Theme.of(context).scaffoldBackgroundColor,
+              direction: SkeletonDirection.ttb,
+              builder:SizedBox(
                 height: MediaQuery.of(context).size.height / 2.1,
                 child: ListView.builder(
                     shrinkWrap: true,
@@ -27,18 +34,18 @@ class CompareLoaderView extends StatelessWidget {
                     itemCount: 5,
                     itemBuilder: (context, index) {
                       return  Container(
-                        padding: const EdgeInsets.only(right: 1),
-                        decoration: const BoxDecoration(
-                            border: Border(
-                              right: BorderSide(
-                                color: Colors.black,
-                                width:1.5,
-                              ),
-                            )),
-                        child: Container(
-                          width: MediaQuery.of(context).size.width / 2.2,
-                          color: Colors.red,
-                        )
+                          padding: const EdgeInsets.only(right: 1),
+                          decoration: const BoxDecoration(
+                              border: Border(
+                                right: BorderSide(
+                                  color: Colors.black,
+                                  width:1.5,
+                                ),
+                              )),
+                          child: Container(
+                            width: MediaQuery.of(context).size.width / 2.2,
+                            color: Colors.red,
+                          )
                       );
                     }),
               )
@@ -53,7 +60,7 @@ class CompareLoaderView extends StatelessWidget {
                 padding:
                 const EdgeInsets.only(left: 12.0, top: 6, bottom: 2),
                 child: Text(
-                  StringConstants.sku,
+                  StringConstants.sku.localized().toUpperCase(),
                   style: TextStyle(
                       color: Colors.grey[500],
                       fontSize: 14,
@@ -64,7 +71,7 @@ class CompareLoaderView extends StatelessWidget {
           ),
           SkeletonLoader(
             highlightColor: Theme.of(context).highlightColor,
-            baseColor: Theme.of(context).appBarTheme.backgroundColor ?? MobikulTheme.primaryColor,
+            baseColor: Theme.of(context).scaffoldBackgroundColor,
             builder: SizedBox(
               height: 33,
               child: ListView.builder(
@@ -100,7 +107,7 @@ class CompareLoaderView extends StatelessWidget {
                 padding:
                 const EdgeInsets.only(left: 12.0, top: 6, bottom: 2),
                 child: Text(
-                  StringConstants.description,
+                  StringConstants.description.localized(),
                   style: TextStyle(
                       color: Colors.grey[500],
                       fontSize: 14,
@@ -111,7 +118,7 @@ class CompareLoaderView extends StatelessWidget {
           ),
           SkeletonLoader(
             highlightColor: Theme.of(context).highlightColor,
-            baseColor: Theme.of(context).appBarTheme.backgroundColor ?? MobikulTheme.primaryColor,
+            baseColor: Theme.of(context).scaffoldBackgroundColor,
             builder: SizedBox(
               height: MediaQuery.of(context).size.height / 2 + 60,
               child: ListView.builder(

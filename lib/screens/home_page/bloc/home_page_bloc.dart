@@ -1,30 +1,21 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 
-import 'package:bagisto_app_demo/utils/application_localization.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../data_model/account_models/account_info_details.dart';
+
+
 import '../../../data_model/add_to_wishlist_model/add_wishlist_model.dart';
-import '../../../data_model/graphql_base_model.dart';
-import '../../../utils/app_global_data.dart';
-import '../../../utils/string_constants.dart';
-import '../../cart_screen/cart_model/add_to_cart_model.dart';
+import '../../cart_screen/cart_model/cart_data_model.dart';
 import '../../cms_screen/data_model/cms_model.dart';
-import '../data_model/advertisement_data.dart';
-import '../data_model/get_categories_drawer_data_model.dart';
-import '../data_model/new_product_data.dart';
 import '../data_model/theme_customization.dart';
-import 'home_page_event.dart';
-import 'home_page_repository.dart';
-import 'home_page_state.dart';
+import 'package:bagisto_app_demo/screens/home_page/utils/index.dart';
 
 class HomePageBloc extends Bloc<HomePageEvent, HomePageBaseState> {
   HomePageRepository? repository;
@@ -38,12 +29,12 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageBaseState> {
       try {
         AddToCartModel? graphQlBaseModel =
             await repository?.callAddToCartAPi(event.productId, event.quantity);
-        if (graphQlBaseModel?.responseStatus == true) {
+        if (graphQlBaseModel?.success == true) {
           emit(AddToCartState.success(
               graphQlBaseModel: graphQlBaseModel,
               successMsg: graphQlBaseModel?.message ?? ""));
         } else {
-          emit(AddToCartState.fail(error: graphQlBaseModel?.message ?? ""));
+          emit(AddToCartState.fail(error: graphQlBaseModel?.graphqlErrors ?? ""));
         }
       } catch (e) {
         emit(AddToCartState.fail(error: StringConstants.somethingWrong.localized()));
@@ -52,7 +43,7 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageBaseState> {
       try {
         AddWishListModel? addWishListModel =
             await repository?.addItemToWishlist(event.productId);
-        if (addWishListModel?.responseStatus == true) {
+        if (addWishListModel?.success == true) {
           if (event.datum != null) {
             if (event.datum?.isInWishlist == true) {
               event.datum?.isInWishlist = false;
@@ -68,7 +59,7 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageBaseState> {
               successMsg: addWishListModel?.message));
         } else {
           emit(FetchAddWishlistHomepageState.fail(
-              error: addWishListModel?.success));
+              error: addWishListModel?.graphqlErrors));
         }
       } catch (e) {
         emit(FetchAddWishlistHomepageState.fail(
@@ -76,7 +67,7 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageBaseState> {
       }
     } else if (event is RemoveWishlistItemEvent) {
       try {
-        GraphQlBaseModel? removeFromWishlist =
+        AddToCartModel? removeFromWishlist =
             await repository?.removeItemFromWishlist(event.productId);
         if (removeFromWishlist?.status == true) {
           if (event.datum != null) {
@@ -90,12 +81,12 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageBaseState> {
           }
           emit(RemoveWishlistState.success(
               productDeletedId: event.productId,
-              successMsg: removeFromWishlist?.success,
+              successMsg: removeFromWishlist?.message,
               response: removeFromWishlist));
         } else {
           emit(RemoveWishlistState.success(
               productDeletedId: event.productId,
-              successMsg: removeFromWishlist?.success,
+              successMsg: removeFromWishlist?.message,
               response: removeFromWishlist));
         }
       } catch (e) {
@@ -105,13 +96,13 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageBaseState> {
       emit(OnClickLoaderState(isReqToShowLoader: event.isReqToShowLoader));
     } else if (event is AddToCompareHomepageEvent) {
       try {
-        GraphQlBaseModel? baseModel =
+        BaseModel? baseModel =
             await repository?.callAddToCompareListApi(event.productId);
-        if (baseModel?.status == true) {
+        if (baseModel?.success == true) {
           emit(AddToCompareHomepageState.success(
-              baseModel: baseModel, successMsg: baseModel?.success));
+              baseModel: baseModel, successMsg: baseModel?.message));
         } else {
-          emit(AddToCompareHomepageState.fail(error: baseModel?.success));
+          emit(AddToCompareHomepageState.fail(error: baseModel?.graphqlErrors));
         }
       } catch (e) {
         emit(AddToCompareHomepageState.fail(
@@ -136,22 +127,23 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageBaseState> {
             await repository?.getAllProducts(filters: event.filters);
         GlobalData.productsStream.sink.add(products);
         emit(FetchAllProductsState.success(allProducts: products));
+        GlobalData.cartCountController.sink.add(products?.data?.firstOrNull?.cart?.itemsQty ?? 0);
       } catch (e) {
         emit(FetchAllProductsState.fail(error: StringConstants.somethingWrong.localized()));
       }
     }
     if (event is CartCountEvent) {
       try {
-        Advertisements? advertisementData = await repository?.cartCountApi();
+        CartModel? cartDetails = await repository?.cartCountApi();
         emit(FetchCartCountState.success(
-          advertisementData: advertisementData,
+          cartDetails: cartDetails,
         ));
       } catch (e) {
         emit(FetchCartCountState.fail(error: StringConstants.somethingWrong.localized()));
       }
     } else if (event is CustomerDetailsEvent) {
       try {
-        AccountInfoDetails? accountInfoDetails =
+        AccountInfoModel? accountInfoDetails =
             await repository?.callAccountDetailsApi();
         emit(CustomerDetailsState.success(
             accountInfoDetails: accountInfoDetails));
@@ -167,6 +159,14 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageBaseState> {
       } catch (e) {
         emit(
             FetchHomeCategoriesState.fail(error: StringConstants.somethingWrong.localized()));
+      }
+    }
+    if (event is FetchCMSDataEvent) {
+      try {
+        CmsData? cmsData = await repository?.callCmsData("");
+        emit(FetchCMSDataState.success(cmsData: cmsData));
+      } catch (e) {
+        emit(FetchCMSDataState.fail(error: StringConstants.somethingWrong.localized()));
       }
     }
   }

@@ -1,20 +1,16 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
-import 'package:bagisto_app_demo/data_model/review_model/review_model.dart';
-import 'package:bagisto_app_demo/screens/review/bloc/review_event.dart';
-import 'package:bagisto_app_demo/screens/review/bloc/review_repo.dart';
-import 'package:bagisto_app_demo/screens/review/bloc/review_state.dart';
-import 'package:bagisto_app_demo/utils/index.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+
+import  'package:bagisto_app_demo/screens/review/utils/index.dart';
+
 
 class ReviewsBloc extends Bloc<ReviewsBaseEvent, ReviewsBaseState> {
   ReviewsRepository? repository;
@@ -29,7 +25,7 @@ class ReviewsBloc extends Bloc<ReviewsBaseEvent, ReviewsBaseState> {
       ReviewsBaseEvent event, Emitter<ReviewsBaseState> emit) async {
     if (event is FetchReviewsEvent) {
       try {
-        ReviewModel reviewModel = await repository!.callReviewApi();
+        ReviewModel reviewModel = await repository!.callReviewApi(event.page);
 
         emit(FetchReviewState.success(reviewModel: reviewModel));
       } catch (e) {

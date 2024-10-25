@@ -1,11 +1,16 @@
 
-import 'package:bagisto_app_demo/utils/route_constants.dart';
-import '../../../widgets/image_view.dart';
-import '../../categories_screen/categories_screen.dart';
-import '../../home_page/utils/route_argument_helper.dart';
-import '../../product_screen/view/quantity_view.dart';
-import '../cart_index.dart';
-import 'package:collection/collection.dart';
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
+
+import '../utils/cart_index.dart';
 
 class CartListItem extends StatelessWidget {
   final CartModel cartDetailsModel;
@@ -28,14 +33,12 @@ class CartListItem extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       itemCount: cartDetailsModel.items?.length ?? 0,
       itemBuilder: (BuildContext context, int itemIndex) {
-        var productFlats = cartDetailsModel
-            .items?[itemIndex].product?.productFlats?.firstWhereOrNull((e) => e.locale == GlobalData.locale);
 
         return InkWell(
           onTap: () {
             Navigator.pushNamed(context, productScreen,
                 arguments: PassProductData(
-                    title: productFlats?.name ?? '',
+                    title: cartDetailsModel.items?[itemIndex].name ?? '',
                     urlKey: cartDetailsModel.items?[itemIndex].product?.urlKey,
                     productId: int.parse(
                         cartDetailsModel.items?[itemIndex].product?.id ?? "")));
@@ -48,7 +51,7 @@ class CartListItem extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(AppSizes.spacingNormal),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -69,7 +72,7 @@ class CartListItem extends StatelessWidget {
                             qty: cartDetailsModel.items?[itemIndex].quantity
                                 ?.toString() ??
                                 "",
-                            showTitle: true,
+                            showTitle: false,
                             setQuantity: true,
                             callBack: (val) {
                                 cartDetailsModel
@@ -104,8 +107,8 @@ class CartListItem extends StatelessWidget {
                             Wrap(
                               children: [
                                 Text(
-                                  productFlats?.name ?? cartDetailsModel
-                                      .items?[itemIndex].product?.productFlats?[0].name ?? "",
+                                  cartDetailsModel.items?[itemIndex].name?? cartDetailsModel
+                                      .items?[itemIndex].name ?? "",
                                   style: Theme.of(context).textTheme.labelSmall,
                                 ),
                               ],
@@ -123,7 +126,7 @@ class CartListItem extends StatelessWidget {
                                         .items?[itemIndex]
                                         .additional
                                         ?.attributes
-                                        ?.length,
+                                        ?.length ?? 0,
                                     itemBuilder:
                                         (BuildContext context, int index) {
                                       return Column(
@@ -152,7 +155,7 @@ class CartListItem extends StatelessWidget {
                                         ],
                                       );
                                     })
-                                : Container(),
+                                : const SizedBox(),
                             const SizedBox(
                               height: AppSizes.spacingNormal,
                             ),
@@ -208,7 +211,7 @@ class CartListItem extends StatelessWidget {
                         child: MaterialButton(
                           elevation: 0.0,
                           onPressed: () {
-                            getCustomerLoggedInPrefValue().then((isLogged) {
+                            bool isLogged = appStoragePref.getCustomerLoggedIn();
                               if (isLogged) {
                                 cartScreenBloc?.add(MoveToCartEvent(int.parse(
                                     cartDetailsModel.items?[itemIndex].id ?? "")));
@@ -216,7 +219,6 @@ class CartListItem extends StatelessWidget {
                                 ShowMessage.warningNotification(
                                     StringConstants.pleaseLogin.localized(),context);
                               }
-                            });
                           },
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
@@ -225,15 +227,18 @@ class CartListItem extends StatelessWidget {
                               Icon(
                                 Icons.favorite_border,
                                 color: Theme.of(context).colorScheme.onPrimary,
-                                size: 18,
+                                size: AppSizes.spacingWide,
                               ),
-                              Padding(
-                                padding: const EdgeInsets.only(left: 8.0),
-                                child: Text(
-                                  StringConstants.moveToWishList.localized(),
-                                  maxLines: 2,
-                                  textAlign: TextAlign.center,
-                                  style: Theme.of(context).textTheme.bodyLarge,
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(left: 8.0),
+                                  child: Text(
+                                    StringConstants.moveToWishList.localized(),
+                                    maxLines: 1,
+                                    textAlign: TextAlign.center,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: Theme.of(context).textTheme.bodyLarge,
+                                  ),
                                 ),
                               )
                             ],
@@ -259,7 +264,7 @@ class CartListItem extends StatelessWidget {
                               Icon(
                                 Icons.delete_forever,
                                 color: Theme.of(context).colorScheme.onPrimary,
-                                size: 18,
+                                size: AppSizes.spacingWide,
                               ),
                               Padding(
                                 padding: const EdgeInsets.only(left: 8.0),
@@ -301,9 +306,10 @@ class CartListItem extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+          backgroundColor: Theme.of(context).colorScheme.background,
           title: Text(
             StringConstants.deleteItemWarning.localized(),
+            style: Theme.of(context).textTheme.labelLarge,
           ),
           actions: <Widget>[
             MaterialButton(

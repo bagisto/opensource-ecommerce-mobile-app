@@ -1,12 +1,12 @@
 
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 import 'package:hive/hive.dart';
@@ -149,9 +149,14 @@ class Children {
   String? description;
   String? slug;
   String? imageUrl;
+  String? logoPath;
+  String? logoUrl;
+  String? bannerPath;
+  String? bannerUrl;
   List<Children>? children;
 
-  Children({this.id, this.name, this.description, this.slug,this.imageUrl, this.children});
+  Children({this.id, this.name, this.description, this.slug,this.imageUrl, this.children,
+  this.bannerPath, this.logoPath});
 
   factory Children.fromJson(Map<String, dynamic> json) =>
       _$ChildrenFromJson(json);

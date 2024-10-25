@@ -1,18 +1,16 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 import 'package:bagisto_app_demo/data_model/graphql_base_model.dart';
 import 'package:json_annotation/json_annotation.dart';
 import '../../screens/cart_screen/cart_model/cart_data_model.dart';
-import '../categories_data_model/categories_product_model.dart';
-
 part 'orders_list_data_model.g.dart';
 
 @JsonSerializable()
@@ -28,7 +26,22 @@ class OrdersListModel extends GraphQlBaseModel {
   @override
   Map<String, dynamic> toJson() => _$OrdersListModelToJson(this);
 }
+@JsonSerializable()
+class PaginatorInfo{
+  int?  count;
+  int? currentPage;
+  int? lastPage;
+  int? total;
 
+
+  PaginatorInfo({this.count,this.currentPage,this.lastPage,this.total});
+  factory PaginatorInfo.fromJson(Map<String, dynamic> json) =>
+      _$PaginatorInfoFromJson(json);
+
+  Map<String, dynamic> toJson() =>
+      _$PaginatorInfoToJson(this);
+
+}
 @JsonSerializable()
 class Data {
   int? id;
@@ -50,66 +63,66 @@ class Data {
   String? baseCurrencyCode;
   String? channelCurrencyCode;
   String? orderCurrencyCode;
-  var grandTotal;
-  var formatedGrandTotal;
-  var baseGrandTotal;
-  var formatedBaseGrandTotal;
-  var grandTotalInvoiced;
-  var formatedGrandTotalInvoiced;
-  var baseGrandTotalInvoiced;
+  dynamic grandTotal;
+  dynamic formatedGrandTotal;
+  dynamic baseGrandTotal;
+  dynamic formatedBaseGrandTotal;
+  dynamic grandTotalInvoiced;
+  dynamic formatedGrandTotalInvoiced;
+  dynamic baseGrandTotalInvoiced;
   int? formatedBaseGrandTotalInvoiced;
   int? grandTotalRefunded;
   int? formatedGrandTotalRefunded;
   int? baseGrandTotalRefunded;
   int? formatedBaseGrandTotalRefunded;
-  var subTotal;
-  var formatedSubTotal;
-  var baseSubTotal;
-  var formatedBaseSubTotal;
-  var subTotalInvoiced;
-  var formatedSubTotalInvoiced;
-  var baseSubTotalInvoiced;
-  var formatedBaseSubTotalInvoiced;
-  int? subTotalRefunded;
-  int? formatedSubTotalRefunded;
+  dynamic subTotal;
+  dynamic formatedSubTotal;
+  dynamic baseSubTotal;
+  dynamic formatedBaseSubTotal;
+  dynamic subTotalInvoiced;
+  dynamic formatedSubTotalInvoiced;
+  dynamic baseSubTotalInvoiced;
+  dynamic formatedBaseSubTotalInvoiced;
+  double? subTotalRefunded;
+  double? formatedSubTotalRefunded;
   int? discountPercent;
-  var discountAmount;
-  var formatedDiscountAmount;
-  var baseDiscountAmount;
-  var formatedBaseDiscountAmount;
-  var discountInvoiced;
-  var formatedDiscountInvoiced;
-  var baseDiscountInvoiced;
-  int? formatedBaseDiscountInvoiced;
-  int? discountRefunded;
-  int? formatedDiscountRefunded;
-  int? baseDiscountRefunded;
-  int? formatedBaseDiscountRefunded;
-  int? taxAmount;
-  int? formatedTaxAmount;
-  int? baseTaxAmount;
-  int? formatedBaseTaxAmount;
-  int? taxAmountInvoiced;
-  int? formatedTaxAmountInvoiced;
-  int? baseTaxAmountInvoiced;
-  int? formatedBaseTaxAmountInvoiced;
-  int? taxAmountRefunded;
-  int? formatedTaxAmountRefunded;
-  int? baseTaxAmountRefunded;
-  int? formatedBaseTaxAmountRefunded;
-  int? shippingAmount;
-  int? formatedShippingAmount;
-  int? baseShippingAmount;
-  int? formatedBaseShippingAmount;
-  int? shippingInvoiced;
-  int? formatedShippingInvoiced;
-  int? baseShippingInvoiced;
-  int? formatedBaseShippingInvoiced;
-  int? shippingRefunded;
-  int? formatedShippingRefunded;
-  int? baseShippingRefunded;
-  int? formatedBaseShippingRefunded;
-  var customerId;
+  dynamic discountAmount;
+  dynamic formatedDiscountAmount;
+  dynamic baseDiscountAmount;
+  dynamic formatedBaseDiscountAmount;
+  dynamic discountInvoiced;
+  dynamic formatedDiscountInvoiced;
+  dynamic baseDiscountInvoiced;
+  double? formatedBaseDiscountInvoiced;
+  double? discountRefunded;
+  double? formatedDiscountRefunded;
+  double? baseDiscountRefunded;
+  double? formatedBaseDiscountRefunded;
+  double? taxAmount;
+  double? formatedTaxAmount;
+  double? baseTaxAmount;
+  double? formatedBaseTaxAmount;
+  double? taxAmountInvoiced;
+  double? formatedTaxAmountInvoiced;
+  double? baseTaxAmountInvoiced;
+  double? formatedBaseTaxAmountInvoiced;
+  double? taxAmountRefunded;
+  double? formatedTaxAmountRefunded;
+  double? baseTaxAmountRefunded;
+  double? formatedBaseTaxAmountRefunded;
+  double? shippingAmount;
+  double? formatedShippingAmount;
+  double? baseShippingAmount;
+  double? formatedBaseShippingAmount;
+  double? shippingInvoiced;
+  double? formatedShippingInvoiced;
+  double? baseShippingInvoiced;
+  double? formatedBaseShippingInvoiced;
+  double? shippingRefunded;
+  double? formatedShippingRefunded;
+  double? baseShippingRefunded;
+  double? formatedBaseShippingRefunded;
+  dynamic customerId;
 
   // Customer? customer;
   // Channel? channel;
@@ -307,11 +320,11 @@ class RootCategory {
 
 @JsonSerializable()
 class ShippingAddress {
-  int? id;
+  String? id;
   String? email;
   String? firstName;
   String? lastName;
-  String? address1;
+  String? address;
   String? country;
   String? countryName;
   String? state;
@@ -324,7 +337,7 @@ class ShippingAddress {
     this.email,
     this.firstName,
     this.lastName,
-    this.address1,
+    this.address,
     this.country,
     this.countryName,
     this.state,
@@ -346,60 +359,60 @@ class Items {
   String? type;
   String? name;
   OrderListProduct? product;
-  var weight;
-  var totalWeight;
+  dynamic weight;
+  dynamic totalWeight;
   int? qtyOrdered;
   int? qtyCanceled;
   int? qtyInvoiced;
   int? qtyShipped;
   int? qtyRefunded;
-  var price;
+  dynamic price;
   String? formatedPrice;
-  var basePrice;
+  dynamic basePrice;
   String? formatedBasePrice;
   String? productId;
-  var total;
-  var formatedTotal;
-  var baseTotal;
-  var formatedBaseTotal;
-  var totalInvoiced;
+  dynamic total;
+  dynamic formatedTotal;
+  dynamic baseTotal;
+  dynamic formatedBaseTotal;
+  dynamic totalInvoiced;
   int? formatedTotalInvoiced;
-  var baseTotalInvoiced;
+  dynamic baseTotalInvoiced;
   int? formatedBaseTotalInvoiced;
   int? amountRefunded;
   int? formatedAmountRefunded;
   int? baseAmountRefunded;
   int? formatedBaseAmountRefunded;
   int? discountPercent;
-  var discountAmount;
-  var formatedDiscountAmount;
-  var baseDiscountAmount;
-  var formatedBaseDiscountAmount;
-  var discountInvoiced;
-  int? formatedDiscountInvoiced;
-  int? baseDiscountInvoiced;
-  int? formatedBaseDiscountInvoiced;
-  int? discountRefunded;
-  int? formatedDiscountRefunded;
-  int? baseDiscountRefunded;
-  int? formatedBaseDiscountRefunded;
-  int? taxPercent;
-  int? taxAmount;
-  int? formatedTaxAmount;
-  int? baseTaxAmount;
-  int? formatedBaseTaxAmount;
-  int? taxAmountInvoiced;
-  int? formatedTaxAmountInvoiced;
-  int? baseTaxAmountInvoiced;
-  int? formatedBaseTaxAmountInvoiced;
-  int? taxAmountRefunded;
-  int? formatedTaxAmountRefunded;
-  int? baseTaxAmountRefunded;
-  int? formatedBaseTaxAmountRefunded;
-  int? grantTotal;
-  int? formatedGrantTotal;
-  int? baseGrantTotal;
-  int? formatedBaseGrantTotal;
+  dynamic discountAmount;
+  dynamic formatedDiscountAmount;
+  dynamic baseDiscountAmount;
+  dynamic formatedBaseDiscountAmount;
+  dynamic discountInvoiced;
+  double? formatedDiscountInvoiced;
+  double? baseDiscountInvoiced;
+  double? formatedBaseDiscountInvoiced;
+  double? discountRefunded;
+  double? formatedDiscountRefunded;
+  double? baseDiscountRefunded;
+  double? formatedBaseDiscountRefunded;
+  double? taxPercent;
+  double? taxAmount;
+  double? formatedTaxAmount;
+  double? baseTaxAmount;
+  double? formatedBaseTaxAmount;
+  double? taxAmountInvoiced;
+  double? formatedTaxAmountInvoiced;
+  double? baseTaxAmountInvoiced;
+  double? formatedBaseTaxAmountInvoiced;
+  double? taxAmountRefunded;
+  double? formatedTaxAmountRefunded;
+  double? baseTaxAmountRefunded;
+  double? formatedBaseTaxAmountRefunded;
+  double? grantTotal;
+  double? formatedGrantTotal;
+  double? baseGrantTotal;
+  double? formatedBaseGrantTotal;
   List<String>? downloadableLinks;
 
   // Additional? additional;
@@ -479,7 +492,7 @@ class OrderListProduct {
   String? type;
   String? name;
   String? urlKey;
-  var price;
+  dynamic price;
   String? formatedPrice;
   String? shortDescription;
   String? description;
@@ -572,27 +585,4 @@ class Reviews {
       _$ReviewsFromJson(json);
 
   Map<String, dynamic> toJson() => _$ReviewsToJson(this);
-}
-
-@JsonSerializable()
-class Additional {
-  var token;
-  String? locale;
-  var quantity;
-  String? channelId;
-  int? productId;
-  String? sToken;
-
-  Additional(
-      {this.token,
-      this.locale,
-      this.quantity,
-      this.channelId,
-      this.productId,
-      this.sToken});
-
-  factory Additional.fromJson(Map<String, dynamic> json) =>
-      _$AdditionalFromJson(json);
-
-  Map<String, dynamic> toJson() => _$AdditionalToJson(this);
 }

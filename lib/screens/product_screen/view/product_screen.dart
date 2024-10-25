@@ -1,27 +1,25 @@
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
 
-import 'dart:async';
-import 'package:bagisto_app_demo/screens/cart_screen/cart_model/add_to_cart_model.dart';
-import 'package:bagisto_app_demo/screens/recent_product/utils/database.dart';
-import 'package:bagisto_app_demo/screens/recent_product/utils/recent_product_entity.dart';
-import 'package:bagisto_app_demo/screens/recent_product/utils/recent_view_controller.dart';
-import 'package:bagisto_app_demo/utils/badge_helper.dart';
-import 'package:bagisto_app_demo/utils/check_internet_connection.dart';
-import 'package:flutter_share/flutter_share.dart';
+import 'package:bagisto_app_demo/screens/cart_screen/utils/cart_index.dart';
 import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:collection/collection.dart';
+import 'package:hive/hive.dart';
 
-import '../../cart_screen/cart_model/cart_data_model.dart';
+import '../data_model/download_sample_model.dart';
 
-
-//ignore: must_be_immutable
 class ProductScreen extends StatefulWidget {
-  int? productId;
-  String? title;
-  String? urlKey;
+  final int? productId;
+  final String? title;
+  final String? urlKey;
 
-  ProductScreen({Key? key, this.title, this.productId, this.urlKey})
+  const ProductScreen({Key? key, this.title, this.productId, this.urlKey})
       : super(key: key);
 
   @override
@@ -42,118 +40,69 @@ class _ProductScreenState extends State<ProductScreen> {
   String? price;
   NewProducts? productData;
   CartModel? cart;
-  final StreamController myStreamCtrl = StreamController.broadcast();
   dynamic productFlats;
-  Stream get onVariableChanged => myStreamCtrl.stream;
   AddToCartModel? addToCartModel;
   final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
       GlobalKey<ScaffoldMessengerState>();
   bool isLoading = false;
   final _scrollController = ScrollController();
   ProductScreenBLoc? productScreenBLoc;
+  DownloadSampleModel? downloadSampleModel;
 
   @override
   void initState() {
-    _fetchSharedPreferenceData();
-    getSharePreferenceCartCount().then((value) {
-      myStreamCtrl.sink.add(value);
-      productScreenBLoc = context.read<ProductScreenBLoc>();
-      productScreenBLoc?.add(FetchProductEvent(widget.urlKey ?? ""));
-    });
+    isLoggedIn = appStoragePref.getCustomerLoggedIn();
+    GlobalData.cartCountController.sink.add(appStoragePref.getCartCount());
+    productScreenBLoc = context.read<ProductScreenBLoc>();
+    productScreenBLoc?.add(FetchProductEvent(widget.urlKey ?? ""));
     super.initState();
   }
 
-  Future getSharePreferenceCartCount() async {
-    return await SharedPreferenceHelper.getCartCount();
-  }
-
-  @override
-  void dispose() {
-    myStreamCtrl.close();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
     return ScaffoldMessenger(
       key: scaffoldMessengerKey,
-      child: Directionality(
-        textDirection: GlobalData.contentDirection(),
-        child: Scaffold(
-          appBar: AppBar(
-            title: Text(widget.title ?? '', style: Theme.of(context).textTheme.labelLarge),
-            centerTitle: false,
-            automaticallyImplyLeading: false,
-            leading: IconButton(onPressed: () {
-              if(productData != null){
-                setRecentViewed();
-              }
-              Navigator.pop(context);
-            },
-            icon:const Icon(Icons.arrow_back_ios)),
-            actions: [
-              IconButton(
-                  onPressed: () async {
-                    await FlutterShare.share(
-                        title: widget.title ?? "",
-                        text: '',
-                        linkUrl: productData?.shareURL ?? "",
-                        chooserTitle: '');
-                  },
-                  icon: const Icon(
-                    Icons.share,
-                  )),
-              StreamBuilder(
-                stream: onVariableChanged,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return _cartButtonValue(0);
-                  }
-                  return _cartButtonValue(
-                      int.tryParse(snapshot.data.toString()) ?? 0);
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(
+            widget.title ?? '',
+          ),
+          centerTitle: false,
+          automaticallyImplyLeading: false,
+          leading: IconButton(
+              onPressed: () {
+                if (productData != null) {
+                  setRecentViewed(productData);
+                }
+                Navigator.pop(context);
+              },
+              icon: const Icon(Icons.arrow_back_ios)),
+          actions: [
+            IconButton(
+                onPressed: () async {
+                  await FlutterShare.share(
+                      title: widget.title ?? "",
+                      text: '',
+                      linkUrl: productData?.shareURL ?? "",
+                      chooserTitle: '');
                 },
-              ),
-            ],
-          ),
-          body: _setProductData(context),
-          bottomNavigationBar: SizedBox(
-            height: AppSizes.spacingWide*4,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 14.0, horizontal: 16),
-              child: MaterialButton(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppSizes.spacingMedium),
-                    side: BorderSide(color: Theme.of(context).colorScheme.onBackground)
-                  ),
-                  elevation: AppSizes.spacingSmall,
-                  height: AppSizes.buttonHeight,
-                  minWidth: MediaQuery.of(context).size.width,
-                  color: Theme.of(context).colorScheme.background,
-                  textColor: Theme.of(context).colorScheme.onBackground,
-                  onPressed: () {
-                    checkInternetConnection().then((value) {
-                      if (value) {
-                        ProductScreenBLoc productBloc =
-                            context.read<ProductScreenBLoc>();
-                        productBloc.add(
-                            OnClickProductLoaderEvent(isReqToShowLoader: true));
-                        _addToCart(context);
-                      } else {
-                        ShowMessage.errorNotification(StringConstants.internetIssue.localized(), context);
-                      }
-                    });
-                  },
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        StringConstants.addToCart.localized().toUpperCase(),
-                        style: Theme.of(context).textTheme.labelMedium),
-                    ],
-                  )),
+                icon: const Icon(
+                  Icons.share,
+                )),
+            StreamBuilder(
+              stream: GlobalData.cartCountController.stream,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return _cartButtonValue(0);
+                }
+                return _cartButtonValue(
+                    int.tryParse(snapshot.data.toString()) ?? 0);
+              },
             ),
-          ),
+          ],
         ),
+        body: _setProductData(context),
       ),
     );
   }
@@ -172,11 +121,13 @@ class _ProductScreenState extends State<ProductScreen> {
                       if (value == true) {
                         ProductScreenBLoc productScreenBLoc =
                             context.read<ProductScreenBLoc>();
-                        productScreenBLoc.add(FetchProductEvent(widget.urlKey ?? ""));
+                        productScreenBLoc
+                            .add(FetchProductEvent(widget.urlKey ?? ""));
                       }
                     });
                   } else {
-                    ShowMessage.errorNotification(StringConstants.internetIssue.localized(), context);
+                    ShowMessage.errorNotification(
+                        StringConstants.internetIssue.localized(), context);
                   }
                 });
               },
@@ -202,8 +153,7 @@ class _ProductScreenState extends State<ProductScreen> {
             ShowMessage.errorNotification(state.error ?? "", context);
           } else if (state.status == ProductStatus.success) {
             addToCartModel = state.response;
-            ShowMessage.successNotification(
-                state.successMsg ?? "", context);
+            ShowMessage.successNotification(state.successMsg ?? "", context);
           }
         }
         if (state is AddToCompareListState) {
@@ -218,13 +168,27 @@ class _ProductScreenState extends State<ProductScreen> {
             ShowMessage.errorNotification(state.error ?? "", context);
           } else if (state.status == ProductStatus.success) {
             ShowMessage.successNotification(
-                StringConstants.success.localized(), context);
+                state.successMsg ??'', context);
           }
         } else if (state is RemoveFromWishlistState) {
           if (state.status == ProductStatus.fail) {
             ShowMessage.errorNotification(state.error ?? "", context);
           } else if (state.status == ProductStatus.success) {
-            ShowMessage.successNotification(StringConstants.success.localized(), context);
+            ShowMessage.successNotification(
+                state.successMsg ??'', context);
+          }
+        }else if (state is DownloadProductSampleState) {
+          downloadSampleModel = state.model ;
+
+          if(state.model?.success == true) {
+
+            DownloadFile().saveBase64String(downloadSampleModel?.string ?? "",
+                 state.fileName ?? "Sample");
+
+          }
+          else{
+            ShowMessage.errorNotification(
+                state.error  ?? "", context);
           }
         }
       },
@@ -242,11 +206,11 @@ class _ProductScreenState extends State<ProductScreen> {
     if (state is FetchProductState) {
       if (state.status == ProductStatus.success) {
         productData = state.productData;
-        productFlats = productData?.productFlats?.firstWhereOrNull((e) => e.locale==GlobalData.locale );
+        productFlats = productData?.productFlats
+            ?.firstWhereOrNull((e) => e.locale == GlobalData.locale);
 
         cart = state.productData?.cart;
-        SharedPreferenceHelper.setCartCount(productData?.cart?.itemsCount ?? 0);
-        myStreamCtrl.sink.add(productData?.cart?.itemsCount ?? 0);
+        GlobalData.cartCountController.sink.add(appStoragePref.getCartCount());
       } else if (state.status == ProductStatus.fail) {
         Future.delayed(Duration.zero).then((value) => const NoInternetError());
         return CommonWidgets().getHeightSpace(0);
@@ -254,61 +218,101 @@ class _ProductScreenState extends State<ProductScreen> {
     }
     if (state is AddToCompareListState) {
       isLoading = false;
-      if (state.status == ProductStatus.success) {
-        getSharePreferenceCartCount().then((value) {
-          myStreamCtrl.sink.add(value);
-        });
-      }
+      if (state.status == ProductStatus.success) {}
     }
     if (state is AddToCartProductState) {
       isLoading = false;
       if (state.status == ProductStatus.success) {
-        SharedPreferenceHelper.setCartCount(
-            addToCartModel?.cart?.itemsCount ?? 0);
-        myStreamCtrl.sink.add(addToCartModel?.cart?.itemsCount ?? 0);
+        GlobalData.cartCountController.sink.add(addToCartModel?.cart?.itemsQty ?? 0);
       }
     }
     if (state is AddToWishListProductState) {
       isLoading = false;
-      if (state.status == ProductStatus.success) {
-        getSharePreferenceCartCount().then((value) {
-          myStreamCtrl.sink.add(value);
-        });
-      }
+      if (state.status == ProductStatus.success) {}
     }
     if (state is OnClickProductLoaderState) {
       isLoading = state.isReqToShowLoader ?? false;
     }
     if (state is RemoveFromWishlistState) {
       isLoading = false;
-      if (state.status == ProductStatus.success) {
-        getSharePreferenceCartCount().then((value) {
-          myStreamCtrl.sink.add(value);
-        });
-      }
+      if (state.status == ProductStatus.success) {}
     }
 
-    return ProductView(
-      productData: productData,
-      isLoading: isLoading,
-      isLoggedIn: isLoggedIn,
-      callback: (configurableParams, bundleParams, selectList, selectParam,
-          groupedParams, downloadLinks, qty, configurableProductId) {
-        this.configurableParams = configurableParams;
-        this.bundleParams = bundleParams;
-        this.selectList = selectList;
-        this.selectParam = selectParam;
-        this.groupedParams = groupedParams;
-        this.downloadLinks = downloadLinks;
-        this.qty = qty;
-        this.configurableProductId = configurableProductId;
-      },
-      scaffoldMessengerKey: scaffoldMessengerKey,
-      productId: widget.productId,
-      price: price,
-      configurableProductId: configurableProductId,
-      productScreenBLoc: productScreenBLoc,
-      scrollController: _scrollController,
+    return Stack(
+      alignment: Alignment.bottomCenter,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: AppSizes.spacingWide * 4),
+          child: ProductView(
+            productData: productData,
+            isLoading: isLoading,
+            isLoggedIn: isLoggedIn,
+            callback: (configurableParams, bundleParams, selectList, selectParam,
+                groupedParams, downloadLinks, qty, configurableProductId) {
+              this.configurableParams = configurableParams;
+              this.bundleParams = bundleParams;
+              this.selectList = selectList;
+              this.selectParam = selectParam;
+              this.groupedParams = groupedParams;
+              this.downloadLinks = downloadLinks;
+              this.qty = qty;
+              this.configurableProductId = configurableProductId;
+            },
+            scaffoldMessengerKey: scaffoldMessengerKey,
+            productId: widget.productId,
+            price: price,
+            configurableProductId: configurableProductId,
+            productScreenBLoc: productScreenBLoc,
+            scrollController: _scrollController,
+          ),
+        ),
+        Opacity(
+          opacity: (productData?.isSaleable ?? false) ? 1 : 0.2,
+          child: Container(
+            height: AppSizes.spacingWide * 4,
+            color: Theme.of(context).scaffoldBackgroundColor,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 14.0, horizontal: 16),
+              child: MaterialButton(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppSizes.spacingMedium),
+                      side: BorderSide(
+                          color: Theme.of(context).colorScheme.onBackground)),
+                  elevation: AppSizes.spacingSmall,
+                  height: AppSizes.buttonHeight,
+                  minWidth: MediaQuery.of(context).size.width,
+                  textColor: Theme.of(context).colorScheme.onBackground,
+                  onPressed: (productData?.isSaleable ?? false) ? () {
+                    checkInternetConnection().then((value) {
+                      if (value) {
+                        ProductScreenBLoc productBloc =
+                        context.read<ProductScreenBLoc>();
+                        productBloc.add(
+                            OnClickProductLoaderEvent(isReqToShowLoader: true));
+                        _addToCart(context);
+                      } else {
+                        ShowMessage.errorNotification(
+                            StringConstants.internetIssue.localized(), context);
+                      }
+                    });
+                  } : null,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(StringConstants.addToCart.localized().toUpperCase(),
+                          style: Theme.of(context)
+                              .textTheme
+                              .labelMedium
+                              ?.copyWith(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onBackground)),
+                    ],
+                  )),
+            ),
+          ),
+        )
+      ],
     );
   }
 
@@ -328,32 +332,36 @@ class _ProductScreenState extends State<ProductScreen> {
             configurableProductId,
             ""));
       } else {
-        ShowMessage.warningNotification(StringConstants.atLeastOneWarning.localized(), context);
+        ShowMessage.warningNotification(
+            StringConstants.atLeastOneWarning.localized(), context);
         productScreenBLoc
             .add(OnClickProductLoaderEvent(isReqToShowLoader: false));
 
         return;
       }
     } else if (productData?.type == StringConstants.bundle) {
-        if (bundleParams.isNotEmpty) {
-          print("BundleParams-->$bundleParams");
-          list.add(bundleParams);
-          productScreenBLoc.add(AddToCartProductEvent(
-              qty,
-              productData?.id ?? "",
-              downloadLinks,
-              groupedParams,
-              bundleParams,
-              configurableParams,
-              configurableProductId,
-              ""));
-        } else {
-          ShowMessage.warningNotification(StringConstants.atLeastOneWarning.localized(), context);
 
-          productScreenBLoc
-              .add(OnClickProductLoaderEvent(isReqToShowLoader: false));
-          return;
-        }
+      if (bundleParams.isNotEmpty) {
+        debugPrint("BundleParams-->$bundleParams");
+        list.add(bundleParams);
+        productScreenBLoc.add(AddToCartProductEvent(
+            qty,
+            productData?.id ?? "",
+            downloadLinks,
+            groupedParams,
+            bundleParams,
+            configurableParams,
+            configurableProductId,
+            ""));
+      } else {
+        debugPrint("BundleParams-->$bundleParams");
+        ShowMessage.warningNotification(
+            StringConstants.atLeastOneWarning.localized(), context);
+
+        productScreenBLoc
+            .add(OnClickProductLoaderEvent(isReqToShowLoader: false));
+        return;
+      }
     } else if (productData?.type == StringConstants.downloadable) {
       if (downloadLinks.isNotEmpty) {
         productScreenBLoc.add(AddToCartProductEvent(
@@ -366,7 +374,8 @@ class _ProductScreenState extends State<ProductScreen> {
             configurableProductId,
             ""));
       } else {
-        ShowMessage.warningNotification(StringConstants.linkRequired.localized(),context);
+        ShowMessage.warningNotification(
+            StringConstants.linkRequired.localized(), context);
         productScreenBLoc
             .add(OnClickProductLoaderEvent(isReqToShowLoader: false));
 
@@ -375,8 +384,9 @@ class _ProductScreenState extends State<ProductScreen> {
     } else if (productData?.type == StringConstants.configurable) {
       String? id = getId(productData, configurableParams);
 
-      if (configurableParams.isEmpty || configurableProductId == null) {
-        ShowMessage.warningNotification(StringConstants.pleaseSelectVariants.localized(), context);
+      if ((configurableParams.isEmpty || configurableProductId == null) || configurableParams.length < (productData?.configurableData?.attributes?.length ?? 0)) {
+        ShowMessage.warningNotification(
+            StringConstants.pleaseSelectVariants.localized(), context);
 
         productScreenBLoc
             .add(OnClickProductLoaderEvent(isReqToShowLoader: false));
@@ -438,57 +448,12 @@ class _ProductScreenState extends State<ProductScreen> {
     return id;
   }
 
-  void setRecentViewed() {
-    AppDatabase.getDatabase().then(
-      (value) => value.recentProductDao
-          .insertRecentProduct(
-            RecentProduct(
-              id: productData?.id,
-              isInWishlist: productData?.isInWishlist,
-              isNew: productData?.productFlats?[0].isNew,
-              isInSale:productData?.isInSale ,
-              name: productFlats?.name ?? productData?.productFlats?[0].name,
-              price: productData?.priceHtml?.priceHtml,
-              specialPrice: productData?.priceHtml?.formattedFinalPrice ,
-              type: productData?.type,
-              urlKey: productData?.urlKey,
-              shortDescription: productData?.productFlats?[0].shortDescription,
-              productId: productData?.productFlats?[0].id,
-              url: (productData?.images ?? []).isNotEmpty
-                  ? (productData?.images?[0].url.toString())
-                  : "",
-              rating: (productData?.reviews ?? []).isNotEmpty
-                  ? (productData?.reviews?[0].rating ?? 0)
-                  : 0,
-            ),
-          )
-          .then(
+  void setRecentViewed(NewProducts? productData) async {
+    Hive.openBox("recentProducts").then((box){
+      box.put(productData?.id, productData).then(
             (value) =>
-                RecentViewController.controller.sink.add(productData?.id),
-          ),
-    );
-  }
-
-  ///fetch data from shared pref
-  _fetchSharedPreferenceData() {
-    getCustomerLoggedInPrefValue().then((isLogged) {
-      if (isLogged) {
-        SharedPreferenceHelper.getCustomerName().then((value) {
-          setState(() {
-            isLoggedIn = isLogged;
-          });
-        });
-      } else {
-        setState(() {
-          isLoggedIn = isLogged;
-        });
-      }
+            RecentViewController.controller.sink.add(productData?.id),
+      );
     });
   }
 }
-
-///fetch that the user is login or not?
-Future getCustomerLoggedInPrefValue() async {
-  return await SharedPreferenceHelper.getCustomerLoggedIn();
-}
-

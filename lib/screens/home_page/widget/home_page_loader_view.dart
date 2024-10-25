@@ -1,8 +1,17 @@
 
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:skeleton_loader/skeleton_loader.dart';
-import '../../../utils/mobikul_theme.dart';
 
 class HomePageLoader extends StatelessWidget {
   const HomePageLoader({Key? key}) : super(key: key);
@@ -15,7 +24,7 @@ class HomePageLoader extends StatelessWidget {
         children: [
           SkeletonLoader(
             highlightColor: Theme.of(context).highlightColor,
-            baseColor: Theme.of(context).appBarTheme.backgroundColor ?? MobikulTheme.primaryColor,
+            baseColor: Theme.of(context).scaffoldBackgroundColor,
             builder: Column(
               children: [
                 CarouselSlider.builder(
@@ -27,15 +36,15 @@ class HomePageLoader extends StatelessWidget {
                     );
                   },
                   options: CarouselOptions(
-                      enlargeCenterPage: true,
-                      autoPlay: true,
-                      aspectRatio: 3.2,
-                      autoPlayCurve: Curves.fastOutSlowIn,
-                      enableInfiniteScroll: true,
-                      viewportFraction: 1.5,
+                    enlargeCenterPage: true,
+                    autoPlay: true,
+                    aspectRatio: 3.2,
+                    autoPlayCurve: Curves.fastOutSlowIn,
+                    enableInfiniteScroll: true,
+                    viewportFraction: 1.5,
                   ),
                 ),
-                 Row(
+                Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: sliders.asMap().entries.map((entry) {
                     return Container(
@@ -58,11 +67,11 @@ class HomePageLoader extends StatelessWidget {
           ),
           SkeletonLoader(
             highlightColor: Theme.of(context).highlightColor,
-            baseColor: Theme.of(context).appBarTheme.backgroundColor ?? MobikulTheme.primaryColor,
+            baseColor: Theme.of(context).scaffoldBackgroundColor,
             builder: SizedBox(
               height: MediaQuery.of(context).size.width / 2.5 + 220,
               child: ListView.builder(
-                shrinkWrap: true,
+                  shrinkWrap: true,
                   scrollDirection: Axis.horizontal,
                   itemCount: 10,
                   itemBuilder: (context, index) {
@@ -81,7 +90,7 @@ class HomePageLoader extends StatelessWidget {
           ),
           SkeletonLoader(
               highlightColor: Theme.of(context).highlightColor,
-              baseColor: Theme.of(context).appBarTheme.backgroundColor ?? MobikulTheme.primaryColor,
+              baseColor: Theme.of(context).scaffoldBackgroundColor,
               items: 3,
               builder: Padding(
                 padding: const EdgeInsets.all(8.0),
@@ -92,7 +101,7 @@ class HomePageLoader extends StatelessWidget {
               )),
           SkeletonLoader(
             highlightColor: Theme.of(context).highlightColor,
-            baseColor: Theme.of(context).appBarTheme.backgroundColor ?? MobikulTheme.primaryColor,
+            baseColor: Theme.of(context).scaffoldBackgroundColor,
             builder: SizedBox(
               height: MediaQuery.of(context).size.width / 2.5 + 220,
               child: ListView.builder(
@@ -115,7 +124,7 @@ class HomePageLoader extends StatelessWidget {
           ),
           SkeletonLoader(
             highlightColor: Theme.of(context).highlightColor,
-            baseColor: Theme.of(context).appBarTheme.backgroundColor ?? MobikulTheme.primaryColor,
+            baseColor: Theme.of(context).scaffoldBackgroundColor,
             builder: SizedBox(
               height: MediaQuery.of(context).size.width / 2.5 + 220,
               child: ListView.builder(

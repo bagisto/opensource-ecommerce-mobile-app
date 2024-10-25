@@ -1,17 +1,17 @@
 
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 import 'package:hive/hive.dart';
 import 'package:json_annotation/json_annotation.dart';
-import '../../../data_model/categories_data_model/categories_product_model.dart';
+import '../../../data_model/product_model/product_screen_model.dart';
 import '../../cart_screen/cart_model/cart_data_model.dart';
 part 'new_product_data.g.dart';
 
@@ -84,14 +84,12 @@ class NewProducts  extends HiveObject {
   List<Images>? images;
   @HiveField(22)
   List<Reviews>? reviews;
-  @HiveField(23)
-  SellerProduct? product;
   @HiveField(24)
   @JsonKey(name:"productFlats")
   List<ProductFlats>? productFlats;
   @HiveField(25)
-  Seller? seller;
   String? attributeFamilyId;
+  @HiveField(29)
   dynamic parentId;
   List<Variants>? variants;
   dynamic parent;
@@ -99,6 +97,9 @@ class NewProducts  extends HiveObject {
   List<AttributeValues>? attributeValues;
   List<SuperAttributes>? superAttributes;
   List<Categories>? categories;
+  @HiveField(30)
+  bool? isSaleable;
+  @HiveField(28)
   List<Inventories>? inventories;
   List<dynamic>? videos;
   List<dynamic>? orderedInventories;
@@ -118,8 +119,8 @@ class NewProducts  extends HiveObject {
 
 
   NewProducts({this.isInSale,this.specialPrice,this.type,this.rating,this.url,this.price,this.isNew,this.id,this.productId,this.totalQty,this.totalQtyOrdered,this.redirectId,this.sku,this.condition,this.name,this.description,this.shortDescription,
-    this.isInWishlist,this.priceHtml, this.images,this.productFlats,this.product,this.isApproved,
-    this.reviews, this.seller,this.isOwner, this.quantity, this.categories, this.imageUrl, this.parentId,
+    this.isInWishlist,this.priceHtml, this.images,this.productFlats,this.isApproved, this.isSaleable,
+    this.reviews,this.isOwner, this.quantity, this.categories, this.imageUrl, this.parentId,
   this.attributeFamily, this.attributeFamilyId, this.attributeValues, this.bundleOptions, this.customerGroupPrices,
   this.downloadableLinks, this.downloadableSamples, this.groupedProducts, this.inventories, this.orderedInventories,
   this.parent, this.superAttributes, this.variants, this.videos, this.additionalData, this.cart, this.shareURL, this.configurableData, this.urlKey, this.averageRating, this.percentageRating});
@@ -129,6 +130,23 @@ class NewProducts  extends HiveObject {
 
   Map<String, dynamic> toJson() => _$NewProductsToJson(this);
 }
+@JsonSerializable()
+class PaginatorInfo{
+  int?  count;
+  int? currentPage;
+  int? lastPage;
+  int? total;
+
+
+  PaginatorInfo({this.count,this.currentPage,this.lastPage,this.total});
+  factory PaginatorInfo.fromJson(Map<String, dynamic> json) =>
+      _$PaginatorInfoFromJson(json);
+
+  Map<String, dynamic> toJson() =>
+      _$PaginatorInfoToJson(this);
+
+}
+
   @HiveType(typeId: 5)
   @JsonSerializable()
   class Reviews  extends HiveObject {
@@ -152,116 +170,6 @@ class NewProducts  extends HiveObject {
 
   Map<String, dynamic> toJson() =>
   _$ReviewsToJson(this);
-  }
- @HiveType(typeId: 8)
-  @JsonSerializable()
-  class Seller  extends HiveObject {
-  String? id;
-  String? url;
-  bool? isApproved;
-  String? shopTitle;
-  String? description;
-  String? banner;
-  String? bannerUrl;
-  String? logo;
-  String? logoUrl;
-  String? taxVat;
-  dynamic metaTitle;
-  String? metaDescription;
-  String? metaKeywords;
-  String? address1;
-  String? address2;
-  String? phone;
-  String? state;
-  String? city;
-  String? country;
-  String? postcode;
-  String? returnPolicy;
-  String? shippingPolicy;
-  String? privacyPolicy;
-  String? twitter;
-  String? facebook;
-  String? youtube;
-  String? instagram;
-  String? skype;
-  String? linkedIn;
-  String? pinterest;
-  String? customerId;
-  String? createdAt;
-  String? updatedAt;
-  bool? commissionEnable;
-  int? commissionPercentage;
-  String? minOrderAmount;
-  String? googleAnalyticsId;
-  String? profileBackground;
-
-  Seller(
-  {this.id,
-  this.url,
-  this.isApproved,
-  this.shopTitle,
-  this.description,
-  this.banner,
-  this.bannerUrl,
-  this.logo,
-  this.logoUrl,
-  this.taxVat,
-  this.metaTitle,
-  this.metaDescription,
-  this.metaKeywords,
-  this.address1,
-  this.address2,
-  this.phone,
-  this.state,
-  this.city,
-  this.country,
-  this.postcode,
-  this.returnPolicy,
-  this.shippingPolicy,
-  this.privacyPolicy,
-  this.twitter,
-  this.facebook,
-  this.youtube,
-  this.instagram,
-  this.skype,
-  this.linkedIn,
-  this.pinterest,
-  this.customerId,
-  this.createdAt,
-  this.updatedAt,
-  this.commissionEnable,
-  this.commissionPercentage,
-  this.minOrderAmount,
-  this.googleAnalyticsId,
-  this.profileBackground,});
-
-  factory Seller.fromJson(Map<String, dynamic> json) =>
-  _$SellerFromJson(json);
-
-  Map<String, dynamic> toJson() => _$SellerToJson(this);
-  }
-@HiveType(typeId: 6)
-  @JsonSerializable()
-  class SellerProduct extends HiveObject {
-  String? id;
-  String? sku;
-  String? type;
-  String? name;
-  String? shortDescription;
-  dynamic attributeFamilyId;
-  bool? isInWishlist;
-  List<Images>? images;
-  @JsonKey(name: "configutableData")
-  ConfigurableData? configurableData ;
-  List<ProductFlats>? productFlats;
-  List<Inventories>? inventories;
-  SellerProduct({this.id,this.attributeFamilyId,this.configurableData,this.isInWishlist,this.sku,this.type,this.name,
-  this.shortDescription,this.productFlats,this.inventories, this.images});
-
-  factory SellerProduct.fromJson(Map<String, dynamic> json) =>
-  _$SellerProductFromJson(json);
-
-  Map<String, dynamic> toJson() => _$SellerProductToJson(this);
   }
 
 @JsonSerializable()
@@ -287,7 +195,8 @@ class NewProducts  extends HiveObject {
   Map<String, dynamic> toJson() =>
   _$DownloadableSamplesToJson(this);
   }
-@HiveType(typeId: 3)
+
+  @HiveType(typeId: 3)
   @JsonSerializable()
   class PriceHtml  extends HiveObject {
   @HiveField(0)
@@ -320,22 +229,30 @@ class NewProducts  extends HiveObject {
   Map<String, dynamic> toJson() =>
   _$PriceHtmlToJson(this);
   }
- @HiveType(typeId: 7)
+
+ @HiveType(typeId: 8)
   @JsonSerializable()
   class ProductFlats  extends HiveObject {
   @HiveField(0)
   String? id;
-  String? sku;
-  String? productNumber;
-  String? name;
-  String? urlKey;
   @HiveField(1)
+  String? sku;
+  @HiveField(2)
+  String? productNumber;
+  @HiveField(3)
+  String? name;
+  @HiveField(4)
+  String? urlKey;
+  @HiveField(5)
   @JsonKey(name:"new")
   bool? isNew;
-  @HiveField(2)
+  @HiveField(6)
   String ? locale;
+  @HiveField(7)
   bool? isWishListed;
+  @HiveField(8)
   String? shortDescription;
+  @HiveField(9)
   String? description;
 
   ProductFlats({this.id,this.locale, this.sku, this.name, this.urlKey,this.isNew,this.isWishListed,
@@ -347,9 +264,10 @@ class NewProducts  extends HiveObject {
   Map<String, dynamic> toJson() =>
   _$ProductFlatsToJson(this);
   }
+
  @HiveType(typeId: 4)
   @JsonSerializable()
-  class Images   extends HiveObject {
+  class Images  extends HiveObject {
   @HiveField(0)
   String? id;
   @HiveField(1)
@@ -646,6 +564,7 @@ class AssociatedProduct {
   String? type;
   String? attributeFamilyId;
   String? sku;
+  String? name;
   PriceHtml? priceHtml;
   dynamic parentId;
 

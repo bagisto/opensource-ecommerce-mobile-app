@@ -1,11 +1,11 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 // must_be_immutable, void_checks
@@ -13,6 +13,7 @@
 import 'dart:io';
 import 'package:bagisto_app_demo/screens/home_page/data_model/get_categories_drawer_data_model.dart';
 import 'package:bagisto_app_demo/screens/home_page/data_model/new_product_data.dart';
+import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
 import 'package:bagisto_app_demo/utils/app_global_data.dart';
 import 'package:bagisto_app_demo/utils/app_navigation.dart';
 import 'package:bagisto_app_demo/utils/application_localization.dart';
@@ -28,11 +29,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'data_model/product_model/product_screen_model.dart';
 
 String? token;
 
@@ -48,15 +51,14 @@ AndroidNotificationChannel channel = const AndroidNotificationChannel(
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 Future<void> main() async {
+  await GetStorage.init("configurationStorage");
   HttpOverrides.global = MyHttpOverrides();
-  String selectedLanguage = "en";
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
-  GlobalData.selectedLanguage =
-      await SharedPreferenceHelper.getCustomerLanguage();
+
   await Firebase.initializeApp();
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   await flutterLocalNotificationsPlugin
@@ -67,7 +69,7 @@ Future<void> main() async {
   hiveRegisterAdapter();
   runApp(
     RestartWidget(
-      child: BagistoApp(GlobalData.locale ?? selectedLanguage),
+      child: BagistoApp(GlobalData.locale),
     ),
   );
 }
@@ -79,9 +81,9 @@ Future<void> hiveRegisterAdapter() async {
   ///Home Page Model
   Hive.registerAdapter(NewProductsModelAdapter());
   Hive.registerAdapter(NewProductsAdapter());
+  Hive.registerAdapter(InventoriesAdapter());
+  Hive.registerAdapter(InventorySourceAdapter());
   Hive.registerAdapter(ReviewsAdapter());
-  Hive.registerAdapter(SellerAdapter());
-  Hive.registerAdapter(SellerProductAdapter());
   Hive.registerAdapter(PriceHtmlAdapter());
   Hive.registerAdapter(ProductFlatsAdapter());
   Hive.registerAdapter(ImagesAdapter());
@@ -134,9 +136,20 @@ class _BagistoAppState extends State<BagistoApp> {
 
   @override
   void initState() {
-    _locale = Locale(GlobalData.locale ?? defaultStoreCode);
+    GlobalData.locale = appStoragePref.getCustomerLanguage();
+    GlobalData.currencyCode = appStoragePref.getCurrencyCode();
+    GlobalData.currencySymbol = appStoragePref.getCurrencySymbol();
+    _locale = Locale(GlobalData.locale);
     PushNotificationsManager.instance.setUpFirebase(context);
+    notification();
     super.initState();
+  }
+  Future<void> notification()async{
+    await Permission.notification.isDenied.then((value) {
+      if (value) {
+        Permission.notification.request();
+      }
+    });
   }
 
 
@@ -148,12 +161,12 @@ class _BagistoAppState extends State<BagistoApp> {
       child: Consumer<ThemeProvider>(
           builder: (context, ThemeProvider themeNotifier, child) {
         return MaterialApp(
-          theme: MobikulTheme.lightTheme,
+          theme: MobiKulTheme.lightTheme,
           themeMode: ThemeMode.system,
-          darkTheme: MobikulTheme.darkTheme,
+          darkTheme: MobiKulTheme.darkTheme,
           initialRoute: appRoot,
           onGenerateRoute: generateRoute,
-          title: "Bagisto App",
+          title: defaultAppTitle,
           debugShowCheckedModeBanner: false,
           supportedLocales: supportedLocale.map((e) => Locale(e)),
           localizationsDelegates: const [

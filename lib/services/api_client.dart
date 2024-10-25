@@ -1,14 +1,15 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 import 'dart:developer';
+import 'package:bagisto_app_demo/data_model/order_model/order_refund_model.dart';
 import 'package:flutter/material.dart';
 import 'package:bagisto_app_demo/data_model/account_models/account_update_model.dart';
 import 'package:bagisto_app_demo/data_model/order_model/order_detail_model.dart';
@@ -22,27 +23,35 @@ import '../data_model/add_to_wishlist_model/add_wishlist_model.dart';
 import '../data_model/categories_data_model/filter_product_model.dart';
 import '../data_model/currency_language_model.dart';
 import '../data_model/graphql_base_model.dart';
+import '../data_model/order_model/order_invoices_model.dart';
+import '../data_model/order_model/shipment_model.dart';
 import '../screens/add_review/data_model/add_review_model.dart';
 import '../screens/address_list/data_model/address_model.dart';
 import '../screens/address_list/data_model/country_model.dart';
+import '../screens/address_list/data_model/default_address_model.dart';
 import '../screens/address_list/data_model/update_address_model.dart';
 import '../screens/cart_screen/cart_model/add_to_cart_model.dart';
 import '../screens/cart_screen/cart_model/apply_coupon.dart';
+import '../screens/categories_screen/utils/index.dart';
 import '../screens/checkout/data_model/checkout_save_address_model.dart';
 import '../screens/checkout/data_model/checkout_save_shipping_model.dart';
 import '../screens/checkout/data_model/save_order_model.dart';
 import '../screens/checkout/data_model/save_payment_model.dart';
+import '../screens/checkout/utils/index.dart';
 import '../screens/cms_screen/data_model/cms_details.dart';
 import '../screens/cms_screen/data_model/cms_model.dart';
 import '../screens/compare/data_model/compare_product_model.dart';
+import '../screens/compare/utils/index.dart';
+import '../screens/downloadable_products/data_model/download_product_Image_model.dart';
 import '../screens/downloadable_products/data_model/download_product_model.dart';
 import '../screens/downloadable_products/data_model/downloadable_product_model.dart';
-import '../screens/home_page/data_model/advertisement_data.dart';
 import '../screens/home_page/data_model/get_categories_drawer_data_model.dart';
 import '../screens/home_page/data_model/new_product_data.dart';
 import '../screens/home_page/data_model/theme_customization.dart';
+import '../screens/product_screen/data_model/download_sample_model.dart';
 import '../screens/wishList/data_model/wishlist_model.dart';
 import '../utils/app_global_data.dart';
+import '../utils/server_configuration.dart';
 import '../utils/shared_preference_helper.dart';
 import 'graph_ql.dart';
 import 'mutation_query.dart';
@@ -60,17 +69,24 @@ class ApiClient {
   ) async {
     log("\nDATA -> ${result.data}\n\n");
     log("\n COOKIE DATA -> ${result.context.entry<HttpLinkResponseContext>()?.headers?['set-cookie']}\n\n");
-    await SharedPreferenceHelper.setCookie(result.context
-            .entry<HttpLinkResponseContext>()
-            ?.headers?['set-cookie'] ??
-        "");
-    GlobalData.cookie = await SharedPreferenceHelper.getCookie();
+
+    String responseCookie = result.context
+        .entry<HttpLinkResponseContext>()
+        ?.headers?['set-cookie'] ?? "";
+
+    GlobalData.cookie = appStoragePref.getCookieGet();
+
+    if(responseCookie.isNotEmpty){
+      appStoragePref.setCookieGet(responseCookie);
+    }
+
+
     log("\nEXCEPTION -> ${result.exception}\n\n");
 
     Map<String, dynamic>? data = {};
     if (result.hasException) {
       data.putIfAbsent(
-        "success",
+        "graphqlErrors",
         () => result.exception?.graphqlErrors.first.message,
       );
       data.putIfAbsent("status", () => false);
@@ -92,7 +108,8 @@ class ApiClient {
         document: gql(
           (filters ?? []).isNotEmpty ? mutation.homeCategoriesFilters(filters: filters) : mutation.homeCategories(id: id ?? 1),
         ),
-        fetchPolicy: FetchPolicy.networkOnly));
+        cacheRereadPolicy: (filters ?? []).isEmpty ? CacheRereadPolicy.mergeOptimistic : null,
+        fetchPolicy: ((filters ?? []).isEmpty && isPreFetchingEnable) ? FetchPolicy.cacheAndNetwork : FetchPolicy.networkOnly));
 
     return handleResponse(
       response,
@@ -107,7 +124,7 @@ class ApiClient {
           mutation.getLanguageCurrencyList(),
         ),
         cacheRereadPolicy: CacheRereadPolicy.mergeOptimistic,
-        fetchPolicy: FetchPolicy.cacheAndNetwork));
+        fetchPolicy: isPreFetchingEnable ? FetchPolicy.cacheAndNetwork : FetchPolicy.networkOnly));
 
     return handleResponse(
       response,
@@ -121,7 +138,6 @@ class ApiClient {
         document: gql(
           mutation.themeCustomizationData(),
         ),
-        cacheRereadPolicy: CacheRereadPolicy.mergeOptimistic,
         fetchPolicy: FetchPolicy.networkOnly));
 
     return handleResponse(
@@ -137,7 +153,7 @@ class ApiClient {
         mutation.getCmsPagesData(),
       ),
       cacheRereadPolicy: CacheRereadPolicy.mergeOptimistic,
-      fetchPolicy: FetchPolicy.cacheAndNetwork,
+      fetchPolicy: isPreFetchingEnable ? FetchPolicy.cacheAndNetwork : FetchPolicy.networkOnly,
     ));
     return handleResponse(
       response,
@@ -190,7 +206,7 @@ class ApiClient {
     );
   }
 
-  Future<GraphQlBaseModel?> customerLogout() async {
+  Future<BaseModel?> customerLogout() async {
     var response = await (client.clientToQuery()).mutate(MutationOptions(
         document: gql(
           mutation.customerLogout(),
@@ -200,11 +216,11 @@ class ApiClient {
     return handleResponse(
       response,
       'customerLogout',
-      (json) => GraphQlBaseModel.fromJson(json),
+      (json) => BaseModel.fromJson(json),
     );
   }
 
-  Future<GraphQlBaseModel?> addToCompare(
+  Future<BaseModel?> addToCompare(
     String? id,
   ) async {
     var response = await (client.clientToQuery()).mutate(MutationOptions(
@@ -217,25 +233,25 @@ class ApiClient {
     return handleResponse(
       response,
       'addToCompare',
-      (json) => GraphQlBaseModel.fromJson(json),
+      (json) => BaseModel.fromJson(json),
     );
   }
 
-  Future<Advertisements?> getCartCount() async {
+  Future<CartModel?> getCartCount() async {
     var response = await (client.clientToQuery()).query(QueryOptions(
         document: gql(
-          mutation.getAdvertisementData(),
+          mutation.cartDetails(),
         ),
         cacheRereadPolicy: CacheRereadPolicy.mergeOptimistic,
         fetchPolicy: FetchPolicy.networkOnly));
     return handleResponse(
       response,
-      'advertisements',
-      (json) => Advertisements.fromJson(json),
+      'cartDetail',
+      (json) => CartModel.fromJson(json),
     );
   }
 
-  Future<GraphQlBaseModel?> removeFromWishlist(
+  Future<AddToCartModel?> removeFromWishlist(
     String? id,
   ) async {
     var response = await (client.clientToQuery()).mutate(MutationOptions(
@@ -248,25 +264,22 @@ class ApiClient {
     return handleResponse(
       response,
       'removeFromWishlist',
-      (json) => GraphQlBaseModel.fromJson(json),
+      (json) => AddToCartModel.fromJson(json),
     );
   }
 
-  Future<AccountInfoDetails?> getCustomerData() async {
+  Future<AccountInfoModel?> getCustomerData() async {
     var response = await (client.clientToQuery()).query(QueryOptions(
       document: gql(
         mutation.getCustomerData(),
       ),
       fetchPolicy: FetchPolicy.networkOnly,
-      parserFn: (json) {
-        return AccountInfoDetails.fromJson(json['accountInfo']);
-      },
     ));
 
     return handleResponse(
       response,
       'accountInfo',
-      (json) => AccountInfoDetails.fromJson(json),
+      (json) => AccountInfoModel.fromJson(json),
     );
   }
 
@@ -276,7 +289,7 @@ class ApiClient {
         mutation.getCmsPageDetails(id),
       ),
       cacheRereadPolicy: CacheRereadPolicy.mergeOptimistic,
-      fetchPolicy: FetchPolicy.cacheAndNetwork,
+      fetchPolicy: isPreFetchingEnable ? FetchPolicy.cacheAndNetwork : FetchPolicy.networkOnly,
     ));
     return handleResponse(
       response,
@@ -300,12 +313,14 @@ class ApiClient {
   }
 
   Future<NewProductsModel?> getAllProducts(
-      {List<Map<String, dynamic>>? filters, int? page}) async {
+      {List<Map<String, dynamic>>? filters, int? page, int limit = 15}) async {
     var response = await (client.clientToQuery()).query(QueryOptions(
         document: gql(
-          mutation.allProductsList(filters: filters ?? [], page: page ?? 1),
+          mutation.allProductsList(filters: filters ?? [], page: page ?? 1,
+          limit: limit),
         ),
-        fetchPolicy: FetchPolicy.networkOnly));
+        cacheRereadPolicy: CacheRereadPolicy.mergeOptimistic,
+        fetchPolicy: isPreFetchingEnable ? FetchPolicy.cacheAndNetwork : FetchPolicy.networkOnly));
     return handleResponse(
       response,
       'allProducts',
@@ -398,7 +413,7 @@ class ApiClient {
     );
   }
 
-  Future<GraphQlBaseModel?> removeAllCartItem() async {
+  Future<BaseModel?> removeAllCartItem() async {
     var response = await (client.clientToQuery()).mutate(MutationOptions(
         document: gql(
           mutation.removeAllCartItem(),
@@ -407,7 +422,7 @@ class ApiClient {
     return handleResponse(
       response,
       'removeAllCartItem',
-      (json) => GraphQlBaseModel.fromJson(json),
+      (json) => BaseModel.fromJson(json),
     );
   }
 
@@ -427,12 +442,12 @@ class ApiClient {
 
   //Move from wishlist to cart
   Future<AddToCartModel?> moveFromWishlistToCart(
-    int id,
+    int id, String quantity
   ) async {
     var response = await (client.clientToQuery()).mutate(MutationOptions(
       document: gql(
         mutation.moveToCartFromWishlist(
-          id,
+          id, quantity
         ),
       ),
     ));
@@ -444,7 +459,7 @@ class ApiClient {
     );
   }
 
-  Future<GraphQlBaseModel?> removeAllWishlistProducts() async {
+  Future<BaseModel?> removeAllWishlistProducts() async {
     var response = await (client.clientToQuery()).mutate(MutationOptions(
         document: gql(
           mutation.removeAllWishlistProducts(),
@@ -454,7 +469,7 @@ class ApiClient {
     return handleResponse(
       response,
       'removeAllWishlists',
-      (json) => GraphQlBaseModel.fromJson(json),
+      (json) => BaseModel.fromJson(json),
     );
   }
 
@@ -472,6 +487,7 @@ class ApiClient {
           ),
           fetchPolicy: FetchPolicy.networkOnly),
     );
+    print("response >>>b $response");
     return handleResponse(
       response,
       'customerSocialSignUp',
@@ -493,6 +509,7 @@ class ApiClient {
         ),
       ),
     ));
+
     return handleResponse(
       response,
       'customerLogin',
@@ -506,6 +523,7 @@ class ApiClient {
     String lastName,
     String password,
     String confirmPassword,
+      bool subscribeNewsletter
   ) async {
     var response = await (client.clientToQuery()).mutate(
       MutationOptions(
@@ -516,13 +534,14 @@ class ApiClient {
               email: email,
               password: password,
               confirmPassword: confirmPassword,
+              subscribedToNewsLetter: subscribeNewsletter
             ),
           ),
           fetchPolicy: FetchPolicy.networkOnly),
     );
     return handleResponse(
       response,
-      'customerRegister',
+      'customerSignUp',
       (json) => SignInModel.fromJson(json),
     );
   }
@@ -538,6 +557,7 @@ class ApiClient {
     String? confirmPassword,
     String? oldpassword,
     String? avatar,
+      bool? subscribedToNewsLetter
   ) async {
     var response = await (client.clientToQuery()).mutate(MutationOptions(
         document: gql(
@@ -551,7 +571,9 @@ class ApiClient {
               oldPassword: oldpassword,
               password: password,
               confirmPassword: confirmPassword,
-              avatar: avatar),
+              avatar: avatar,
+            subscribedToNewsLetter: subscribedToNewsLetter
+          ),
         ),
         fetchPolicy: FetchPolicy.networkOnly));
     return handleResponse(
@@ -577,7 +599,7 @@ class ApiClient {
   }
 
   //delete   Account
-  Future<GraphQlBaseModel?> deleteCustomerAccount(
+  Future<BaseModel?> deleteCustomerAccount(
     String password,
   ) async {
     var response = await (client.clientToQuery()).mutate(MutationOptions(
@@ -587,17 +609,16 @@ class ApiClient {
           ),
         ),
         fetchPolicy: FetchPolicy.networkOnly));
-    print(response);
-    print(response.data);
+
     return handleResponse(
       response,
       'deleteAccount',
-      (json) => GraphQlBaseModel.fromJson(json),
+      (json) => BaseModel.fromJson(json),
     );
   }
 
   //forget Password
-  Future<GraphQlBaseModel?> forgotPassword(
+  Future<BaseModel?> forgotPassword(
     String email,
   ) async {
     var response = await (client.clientToQuery()).mutate(MutationOptions(
@@ -610,14 +631,14 @@ class ApiClient {
     return handleResponse(
       response,
       'forgotPassword',
-      (json) => GraphQlBaseModel.fromJson(json),
+      (json) => BaseModel.fromJson(json),
     );
   }
 
-  Future<ReviewModel?> getReviewList() async {
+  Future<ReviewModel?> getReviewList(int page) async {
     var response = await (client.clientToQuery()).mutate(MutationOptions(
         document: gql(
-          mutation.getReviewList(),
+          mutation.getReviewList(page),
         ),
         fetchPolicy: FetchPolicy.networkOnly));
     debugPrint("$response");
@@ -636,17 +657,22 @@ class ApiClient {
       String? endDate,
       String? status,
       double? total,
-      int? page
+      int? page,
+      bool ? isFilterApply
+
       ) async {
+
     var response = await (client.clientToQuery()).query(QueryOptions(
         document: gql(
           mutation.getOrderList(
-              id: id,
-              startDate: startDate,
-              endDate: endDate,
-              total: total,
-              status: status,
-              page: page),
+              id: id ??'',
+              startDate: startDate ??'',
+              endDate: endDate??'',
+              total: total ??0.0,
+              status: status ??'',
+              page: page,
+              isFilterApply: isFilterApply
+          ),
         ),
         fetchPolicy: FetchPolicy.networkOnly));
 
@@ -664,7 +690,7 @@ class ApiClient {
           mutation.getOrderDetail(id),
         ),
         cacheRereadPolicy: CacheRereadPolicy.mergeOptimistic,
-        fetchPolicy: FetchPolicy.cacheAndNetwork));
+        fetchPolicy: isPreFetchingEnable ? FetchPolicy.cacheAndNetwork : FetchPolicy.networkOnly));
 
     return handleResponse(
       response,
@@ -674,18 +700,17 @@ class ApiClient {
   }
 
   //cancelOrder
-  Future<GraphQlBaseModel?> cancelOrder(int id) async {
+  Future<BaseModel?> cancelOrder(int id) async {
     var response = await (client.clientToQuery()).mutate(MutationOptions(
         document: gql(
           mutation.cancelOrder(id),
         ),
         fetchPolicy: FetchPolicy.networkOnly));
-    debugPrint("$response");
-    debugPrint("${response.data}");
+
     return handleResponse(
       response,
       'cancelCustomerOrder',
-      (json) => GraphQlBaseModel.fromJson(json),
+      (json) => BaseModel.fromJson(json),
     );
   }
 
@@ -724,7 +749,7 @@ class ApiClient {
     );
   }
 
-  Future<GraphQlBaseModel?> deleteAddress(
+  Future<BaseModel?> deleteAddress(
     String? id,
   ) async {
     var response = await (client.clientToQuery()).mutate(MutationOptions(
@@ -738,11 +763,11 @@ class ApiClient {
     return handleResponse(
       response,
       'deleteAddress',
-      (json) => GraphQlBaseModel.fromJson(json),
+      (json) => BaseModel.fromJson(json),
     );
   }
 
-  Future<GraphQlBaseModel?> createAddress(
+  Future<BaseModel?> createAddress(
     String companyName,
     String firstName,
     String lastName,
@@ -753,8 +778,10 @@ class ApiClient {
     String city,
     String postCode,
     String phone,
+
     String vatId,
     bool? isDefault,
+      String email
   ) async {
     var response = await (client.clientToQuery()).mutate(MutationOptions(
         document: gql(
@@ -767,6 +794,7 @@ class ApiClient {
               country: country,
               state: state,
               city: city,
+              email: email,
               postCode: postCode,
               phone: phone,
               vatId: vatId,
@@ -777,7 +805,7 @@ class ApiClient {
     return handleResponse(
       response,
       'createAddress',
-      (json) => GraphQlBaseModel.fromJson(json),
+      (json) => BaseModel.fromJson(json),
     );
   }
 
@@ -795,6 +823,7 @@ class ApiClient {
     String postCode,
     String phone,
     String vatId,
+      String email,
   ) async {
     var response = await (client.clientToQuery()).mutate(MutationOptions(
         document: gql(
@@ -808,6 +837,7 @@ class ApiClient {
               country: country,
               state: state,
               city: city,
+              email: email,
               postCode: postCode,
               phone: phone,
               vatId: vatId),
@@ -906,7 +936,7 @@ class ApiClient {
       String? shippingPhone,
       int id, {
         int? billingId,
-        int? shippingId}
+        int? shippingId, bool useForShipping = true}
       ) async {
     var response = await (client.clientToQuery()).mutate(MutationOptions(
         document: gql(
@@ -935,7 +965,8 @@ class ApiClient {
             shippingPhone,
             id,
             billingId: billingId ?? 0,
-            shippingId: shippingId ?? 0
+            shippingId: shippingId ?? 0,
+            useForShipping: useForShipping
           ),
         ),
         fetchPolicy: FetchPolicy.networkOnly));
@@ -960,7 +991,7 @@ class ApiClient {
     );
   }
 
-  Future<GraphQlBaseModel?> removeFromCompare(
+  Future<BaseModel?> removeFromCompare(
       int id,
       ) async {
     var response = await (client.clientToQuery()).mutate(MutationOptions(
@@ -974,11 +1005,11 @@ class ApiClient {
     return handleResponse(
       response,
       'removeFromCompareProduct',
-          (json) => GraphQlBaseModel.fromJson(json),
+          (json) => BaseModel.fromJson(json),
     );
   }
 
-  Future<GraphQlBaseModel?> removeAllCompareProducts() async {
+  Future<BaseModel?> removeAllCompareProducts() async {
     var response = await (client.clientToQuery()).mutate(MutationOptions(
         document: gql(
           mutation.removeAllCompareProducts(),
@@ -988,7 +1019,7 @@ class ApiClient {
     return handleResponse(
       response,
       'removeAllCompareProducts',
-          (json) => GraphQlBaseModel.fromJson(json),
+          (json) => BaseModel.fromJson(json),
     );
   }
 
@@ -1019,11 +1050,20 @@ class ApiClient {
   }
 
   Future<DownloadableProductModel?> getCustomerDownloadableProducts(
-      int page, int limit) async {
+      int page, int limit, {
+        String? title,
+        String? status,
+        String? orderId,
+        String? orderDateFrom,
+        String? orderDateTo
+      }) async {
     var response = await (client.clientToQuery()).query(QueryOptions(
         document: gql(
-          mutation.downloadableProductsCustomer(page, limit),
+          mutation.downloadableProductsCustomer(page, limit,
+          title: title ?? "", status: status ?? "", orderId: orderId ?? "",
+          orderDateFrom: orderDateFrom ?? "", orderDateTo: orderDateTo ?? ""),
         ),
+        cacheRereadPolicy: CacheRereadPolicy.mergeOptimistic,
         fetchPolicy: FetchPolicy.networkOnly));
 
     return handleResponse(
@@ -1032,8 +1072,20 @@ class ApiClient {
           (json) => DownloadableProductModel.fromJson(json),
     );
   }
+  Future<DownloadLinkDataModel?> downloadLinksProductAPI(int id) async {
+    var response = await (client.clientToQuery()).query(QueryOptions(
+        document: gql(
+          mutation.downloadProductQuery(id),
+        ),
+        fetchPolicy: FetchPolicy.networkOnly));
 
-  Future<DownloadLink?> downloadLinksProduct(int id) async {
+    return handleResponse(
+      response,
+      'downloadLink',
+          (json) => DownloadLinkDataModel.fromJson(json),
+    );
+  }
+  Future<Download?> downloadLinksProduct(int id) async {
     var response = await (client.clientToQuery()).query(QueryOptions(
         document: gql(
           mutation.downloadProduct(id),
@@ -1042,8 +1094,107 @@ class ApiClient {
 
     return handleResponse(
       response,
-      'downloadLink',
-          (json) => DownloadLink.fromJson(json),
+      'downloadableLinkPurchase',
+          (json) => Download.fromJson(json),
     );
   }
+  Future<InvoicesModel?> getInvoicesList(int orderId) async {
+    var response = await (client.clientToQuery()).query(QueryOptions(
+        document: gql(
+          mutation.getInvoicesList(orderId),
+        ),
+        fetchPolicy: FetchPolicy.networkOnly));
+
+    return handleResponse(
+      response,
+      'viewInvoices',
+          (json) => InvoicesModel.fromJson(json),
+    );
+  }
+  Future<ShipmentModel?> getShipmentsList(int orderId) async {
+    var response = await (client.clientToQuery()).query(QueryOptions(
+        document: gql(
+          mutation.getShipmentsList(orderId),
+        ),
+        fetchPolicy: FetchPolicy.networkOnly));
+
+    return handleResponse(
+      response,
+      'viewShipments',
+          (json) => ShipmentModel.fromJson(json),
+    );
+  }
+  Future<OrderRefundModel?> getRefundList(int orderId) async {
+    var response = await (client.clientToQuery()).query(QueryOptions(
+        document: gql(
+          mutation.getRefundList(orderId),
+        ),
+        fetchPolicy: FetchPolicy.networkOnly));
+
+    return handleResponse(
+      response,
+      'viewRefunds',
+          (json) => OrderRefundModel.fromJson(json),
+    );
+  }
+
+  Future<AddToCartModel?> reOrderCustomerOrder(String? orderId) async {
+    var response = await (client.clientToQuery()).mutate(MutationOptions(
+        document: gql(
+          mutation.reOrderCustomerOrder(orderId),
+        ),
+        fetchPolicy: FetchPolicy.networkOnly));
+    return handleResponse(
+      response,
+      'reorder',
+          (json) => AddToCartModel.fromJson(json),
+    );
+  }
+
+  Future<BaseModel?> contactUsApiClient(String name,
+      String?  email,
+      String?  phone,
+      String? describe) async {
+    var response = await (client.clientToQuery()).mutate(MutationOptions(
+        document: gql(
+           mutation.contactUsApi(name: name, email: email,phone: phone,describe: describe),
+
+        ),
+        fetchPolicy: FetchPolicy.networkOnly));
+    return handleResponse(
+      response,
+      'contactUs',
+          (json) => BaseModel.fromJson(json),
+    );
+  }
+
+  Future<SetDefaultAddress?> setDefaultAddress(String id) async {
+    var response = await (client.clientToQuery()).mutate(MutationOptions(
+        document: gql(
+          mutation.setDefaultAddress(id),
+        ),
+        fetchPolicy: FetchPolicy.networkOnly));
+
+    return handleResponse(
+      response,
+      'setDefaultAddress',
+          (json) => SetDefaultAddress.fromJson(json),
+    );
+  }
+
+  Future<DownloadSampleModel?> downloadSample(String type, String id) async {
+    var response = await (client.clientToQuery()).mutate(MutationOptions(
+        document: gql(
+          mutation.downloadSample(type, id),
+        ),
+        fetchPolicy: FetchPolicy.networkOnly));
+
+    return handleResponse(
+      response,
+      'downloadSample',
+          (json) => DownloadSampleModel.fromJson(json),
+    );
+  }
+
+
 }

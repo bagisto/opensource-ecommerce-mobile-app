@@ -1,6 +1,15 @@
-import '../../../data_model/currency_language_model.dart';
-import '../../cms_screen/data_model/cms_model.dart';
-import '../../home_page/data_model/get_categories_drawer_data_model.dart';
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
+
+import 'package:bagisto_app_demo/screens/drawer/utils/index.dart';
 
 // ignore_for_file: must_be_immutable
 abstract class DrawerPageBaseState {}
@@ -36,14 +45,4 @@ class FetchLanguageCurrencyState extends DrawerPageBaseState {
   FetchLanguageCurrencyState.fail({this.error}) : status = DrawerStatus.fail;
 
 
-}
-
-class FetchCMSDataState extends DrawerPageBaseState {
-  DrawerStatus? status;
-  String? error;
-  CmsData? cmsData;
-
-  FetchCMSDataState.success({this.cmsData}) : status = DrawerStatus.success;
-
-  FetchCMSDataState.fail({this.error}) : status = DrawerStatus.fail;
 }

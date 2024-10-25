@@ -1,38 +1,28 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 
-import 'package:bagisto_app_demo/screens/product_screen/view/widget/review_linear_progress_indicator.dart';
-import 'package:bagisto_app_demo/utils/application_localization.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'dart:convert';
-import '../../../data_model/app_route_arguments.dart';
-import '../../../utils/app_constants.dart';
-import '../../../utils/mobikul_theme.dart';
-import '../../../utils/route_constants.dart';
-import '../../../utils/string_constants.dart';
-import '../../home_page/data_model/new_product_data.dart';
-import 'package:flutter/material.dart';
+
+import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
 
 
-//ignore: must_be_immutable
 class ProductReviewSummaryView extends StatefulWidget {
-  List<Reviews>? review;
-  String? productId;
-  String? averageRating;
-  dynamic percentage;
-  String? productName;
-  String? productImage;
-  bool? isLogin;
+  final List<Reviews>? review;
+  final String? productId;
+  final String? averageRating;
+  final dynamic percentage;
+  final String? productName;
+  final String? productImage;
+  final bool? isLogin;
 
-  ProductReviewSummaryView(
+  const ProductReviewSummaryView(
       {Key? key,
       this.review,
       this.productName,
@@ -50,7 +40,7 @@ class ProductReviewSummaryView extends StatefulWidget {
 }
 
 class ProductReviewSummaryViewState extends State<ProductReviewSummaryView> {
-  var percentage;
+  dynamic percentage;
 
   @override
   void initState() {
@@ -84,9 +74,10 @@ class ProductReviewSummaryViewState extends State<ProductReviewSummaryView> {
                     if ((widget.review?.length ?? 0) > 0)
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           SizedBox(
-                            width: 200,
+                            width: 250,
                             child: Column(children: [
                               Text(
                                   "${widget.averageRating?.toString() ?? ''} ${StringConstants.star.localized()}",
@@ -95,25 +86,12 @@ class ProductReviewSummaryViewState extends State<ProductReviewSummaryView> {
                                       color: Colors.grey[800],
                                       fontWeight: FontWeight.bold)),
                               const SizedBox(height: 6),
-                              RatingBar.builder(
-                                unratedColor: MobikulTheme.appBarBackgroundColor,
-                                itemSize: 16,
-                                initialRating:
-                                    num.tryParse(widget.averageRating.toString())
-                                            ?.toDouble() ??
-                                        0.0,
-                                minRating: 1,
-                                direction: Axis.horizontal,
-                                allowHalfRating: true,
-                                itemCount: 5,
-                                itemPadding:
-                                    const EdgeInsets.symmetric(horizontal: 4.0),
-                                itemBuilder: (context, _) => const Icon(
-                                  Icons.star,
-                                  color: Colors.black,
-                                ),
-                                onRatingUpdate: (rating) {},
+                              RatingBar(
+                                starCount: 5,
+                                color: Theme.of(context).colorScheme.onPrimary,
+                                rating: num.tryParse(widget.averageRating.toString())?.toDouble() ??0.0,
                               ),
+
                               const SizedBox(height: 6),
                               Text(
                                   "${widget.averageRating?.toString() ?? ''} Rating & "
@@ -136,14 +114,14 @@ class ProductReviewSummaryViewState extends State<ProductReviewSummaryView> {
                                     const EdgeInsets.symmetric(
                                         vertical: 8, horizontal: 15)),
                                 foregroundColor: MaterialStateProperty.all<Color>(
-                                    Theme.of(context).colorScheme.onPrimary),
+                                    Theme.of(context).colorScheme.onBackground),
                                 shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                                     RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(8.0),
                                         side: BorderSide(
                                             color: Theme.of(context)
                                                 .colorScheme
-                                                .onPrimary)))),
+                                                .onBackground)))),
                             onPressed: () {
                               widget.isLogin ?? false
                                   ? Navigator.pushNamed(context, addReviewScreen,

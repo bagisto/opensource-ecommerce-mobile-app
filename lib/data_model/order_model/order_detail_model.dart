@@ -1,42 +1,18 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 import 'package:bagisto_app_demo/data_model/graphql_base_error_model.dart';
-import 'package:bagisto_app_demo/data_model/graphql_base_model.dart';
 import 'package:json_annotation/json_annotation.dart';
 import '../../screens/cart_screen/cart_model/cart_data_model.dart';
 import '../product_model/product_screen_model.dart';
 part 'order_detail_model.g.dart';
-
-@JsonSerializable()
-class OrderDetailModel extends GraphQlBaseModel {
-  Data? data;
-
-  OrderDetailModel({this.data});
-
-  factory OrderDetailModel.fromJson(Map<String, dynamic> json) =>
-      _$OrderDetailModelFromJson(json);
-
-  Map<String, dynamic> toJson() => _$OrderDetailModelToJson(this);
-}
-
-@JsonSerializable()
-class Data {
-  OrderDetail? orderDetail;
-
-  Data({this.orderDetail});
-
-  factory Data.fromJson(Map<String, dynamic> json) => _$DataFromJson(json);
-
-  Map<String, dynamic> toJson() => _$DataToJson(this);
-}
 
 @JsonSerializable()
 class OrderDetail extends GraphQlBaseErrorModel {
@@ -61,38 +37,38 @@ class OrderDetail extends GraphQlBaseErrorModel {
   String? baseCurrencyCode;
   String? channelCurrencyCode;
   String? orderCurrencyCode;
-  var grandTotal;
-  var baseGrandTotal;
-  var grandTotalInvoiced;
-  var baseGrandTotalInvoiced;
-  var grandTotalRefunded;
-  var baseGrandTotalRefunded;
-  var subTotal;
-  var baseSubTotal;
-  var subTotalInvoiced;
-  var baseSubTotalInvoiced;
-  var subTotalRefunded;
-  var baseSubTotalRefunded;
-  var discountPercent;
-  var discountAmount;
-  var baseDiscountAmount;
-  var discountInvoiced;
-  var baseDiscountInvoiced;
-  var discountRefunded;
-  var baseDiscountRefunded;
-  var taxAmount;
-  var baseTaxAmount;
-  var taxAmountInvoiced;
-  var baseTaxAmountInvoiced;
-  var taxAmountRefunded;
-  var baseTaxAmountRefunded;
-  var shippingAmount;
-  var baseShippingAmount;
-  var shippingInvoiced;
-  var baseShippingInvoiced;
-  var shippingRefunded;
-  var baseShippingRefunded;
-  var customerId;
+  dynamic grandTotal;
+  dynamic baseGrandTotal;
+  dynamic grandTotalInvoiced;
+  dynamic baseGrandTotalInvoiced;
+  dynamic grandTotalRefunded;
+  dynamic baseGrandTotalRefunded;
+  dynamic subTotal;
+  dynamic baseSubTotal;
+  dynamic subTotalInvoiced;
+  dynamic baseSubTotalInvoiced;
+  dynamic subTotalRefunded;
+  dynamic baseSubTotalRefunded;
+  dynamic discountPercent;
+  dynamic discountAmount;
+  dynamic baseDiscountAmount;
+  dynamic discountInvoiced;
+  dynamic baseDiscountInvoiced;
+  dynamic discountRefunded;
+  dynamic baseDiscountRefunded;
+  dynamic taxAmount;
+  dynamic baseTaxAmount;
+  dynamic taxAmountInvoiced;
+  dynamic baseTaxAmountInvoiced;
+  dynamic taxAmountRefunded;
+  dynamic baseTaxAmountRefunded;
+  dynamic shippingAmount;
+  dynamic baseShippingAmount;
+  dynamic shippingInvoiced;
+  dynamic baseShippingInvoiced;
+  dynamic shippingRefunded;
+  dynamic baseShippingRefunded;
+  dynamic customerId;
   String? customerType;
   int? channelId;
   String? channelType;
@@ -106,6 +82,7 @@ class OrderDetail extends GraphQlBaseErrorModel {
   BillingAddress? shippingAddress;
   List<Items>? items;
   Payment? payment;
+
 
   // List<String>? shipments;
 
@@ -179,6 +156,7 @@ class OrderDetail extends GraphQlBaseErrorModel {
   factory OrderDetail.fromJson(Map<String, dynamic> json) =>
       _$OrderDetailFromJson(json);
 
+  @override
   Map<String, dynamic> toJson() => _$OrderDetailToJson(this);
 }
 
@@ -198,14 +176,15 @@ class Payment {
 
 @JsonSerializable()
 class BillingAddress {
-  int? id;
+  String? id;
   String? customerId;
   String? cartId;
-  int? orderId;
+  String ? orderId;
   String? firstName;
   String? lastName;
   String? gender;
   String? companyName;
+  @JsonKey(name: "address")
   String? address1;
   String? address2;
   String? postcode;
@@ -215,7 +194,7 @@ class BillingAddress {
   String? email;
   String? phone;
   String? vatId;
-  int? defaultAddress;
+  bool? defaultAddress;
 
   BillingAddress(
       {this.id,
@@ -226,7 +205,8 @@ class BillingAddress {
       this.lastName,
       this.gender,
       this.companyName,
-      this.address1,
+        @JsonKey(name: "address")
+        this.address1,
       this.address2,
       this.postcode,
       this.city,
@@ -258,28 +238,28 @@ class Items {
   int? qtyCanceled;
   int? qtyRefunded;
   int? quantity;
-  var price;
-  var basePrice;
-  var total;
-  var baseTotal;
-  var totalInvoiced;
-  var baseTotalInvoiced;
-  var amountRefunded;
-  var baseAmountRefunded;
-  var discountPercent;
-  var discountAmount;
-  var baseDiscountAmount;
-  var discountInvoiced;
-  var baseDiscountInvoiced;
-  var discountRefunded;
-  var baseDiscountRefunded;
-  var taxPercent;
-  var taxAmount;
-  var baseTaxAmount;
-  var taxAmountInvoiced;
-  var baseTaxAmountInvoiced;
-  var taxAmountRefunded;
-  var baseTaxAmountRefunded;
+  dynamic price;
+  dynamic basePrice;
+  dynamic total;
+  dynamic baseTotal;
+  dynamic totalInvoiced;
+  dynamic baseTotalInvoiced;
+  dynamic amountRefunded;
+  dynamic baseAmountRefunded;
+  dynamic discountPercent;
+  dynamic discountAmount;
+  dynamic baseDiscountAmount;
+  dynamic discountInvoiced;
+  dynamic baseDiscountInvoiced;
+  dynamic discountRefunded;
+  dynamic baseDiscountRefunded;
+  dynamic taxPercent;
+  dynamic taxAmount;
+  dynamic baseTaxAmount;
+  dynamic taxAmountInvoiced;
+  dynamic baseTaxAmountInvoiced;
+  dynamic taxAmountRefunded;
+  dynamic baseTaxAmountRefunded;
   String? productId;
   String? productType;
   String? orderId;
@@ -288,7 +268,7 @@ class Items {
   String? updatedAt;
   OrderProduct? product;
   FormattedPrice? formattedPrice;
-
+  Additional? additional;
   // List<String>? invoiceItems;
   // List<String>? shipmentItems;
   // List<String>? refundItems;
@@ -336,6 +316,7 @@ class Items {
     this.createdAt,
     this.updatedAt,
     this.product,
+    this.additional
   });
 
   factory Items.fromJson(Map<String, dynamic> json) => _$ItemsFromJson(json);
@@ -347,7 +328,7 @@ class Items {
 class OrderProduct {
   String? id;
   String? type;
-  var attributeFamilyId;
+  dynamic attributeFamilyId;
   String? sku;
   String? name;
   String? parentId;
@@ -436,3 +417,54 @@ class Child {
 
   Map<String, dynamic> toJson() => _$ChildToJson(this);
 }
+
+
+@JsonSerializable()
+class Additional{
+  bool? isBuyNow;
+  String? productId;
+  int? quantity;
+  String? selectedConfigurableOption;
+  SuperAttributes? superAttributes;
+  List<Attributes>? attributes;
+
+  Additional({this.isBuyNow,this.productId,this.quantity,this.selectedConfigurableOption,this.superAttributes,this.attributes});
+  factory Additional.fromJson(Map<String, dynamic> json) {
+    return _$AdditionalFromJson(json);
+  }
+  Map<String, dynamic> toJson() => _$AdditionalToJson(this);
+
+}
+
+@JsonSerializable()
+class SuperAttributes{
+  int? attributeId;
+  int? optionId;
+
+  SuperAttributes({this.attributeId,this.optionId});
+  factory SuperAttributes.fromJson(Map<String, dynamic> json) {
+    return _$SuperAttributesFromJson(json);
+  }
+  Map<String, dynamic> toJson() => _$SuperAttributesToJson(this);
+
+}
+
+
+@JsonSerializable()
+class Options {
+  String? id;
+  String? label;
+  String? swatchType;
+  String? swatchValue;
+  bool? isSelect = false;
+
+  Options({this.id, this.label, this.swatchType,this.isSelect,this.swatchValue});
+
+
+  factory Options.fromJson(Map<String, dynamic> json) =>
+      _$OptionsFromJson(json);
+
+  Map<String, dynamic> toJson() =>
+      _$OptionsToJson(this);
+}
+

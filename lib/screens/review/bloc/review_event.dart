@@ -1,11 +1,11 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 // ignore_for_file: file_names
@@ -17,8 +17,8 @@ import 'package:equatable/equatable.dart';
 abstract class ReviewsBaseEvent extends Equatable{}
 
 class FetchReviewsEvent extends ReviewsBaseEvent {
-
-  FetchReviewsEvent();
+  final int page;
+  FetchReviewsEvent(this.page);
   @override
   List<Object> get props => [];
 }
@@ -31,6 +31,7 @@ class RemoveReviewEvent extends ReviewsBaseEvent {
 
   RemoveReviewEvent(this.productId, this.message);
 
+  @override
   List<Object> get props => [productId ?? "", message ?? ""];
 
 }
@@ -38,6 +39,7 @@ class RemoveAllReviewsEvent extends ReviewsBaseEvent {
 
   RemoveAllReviewsEvent();
 
+  @override
   List<Object> get props => [];
 
 }

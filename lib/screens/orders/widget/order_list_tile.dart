@@ -1,22 +1,18 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
-import 'package:bagisto_app_demo/screens/cart_screen/cart_index.dart';
-import 'package:bagisto_app_demo/utils/status_color_helper.dart';
-import '../../../utils/index.dart';
-import '../../../data_model/order_model/orders_list_data_model.dart';
+import 'package:bagisto_app_demo/screens/orders/utils/index.dart';
 
-//ignore: must_be_immutable
 class OrdersListTile extends StatelessWidget with OrderStatusBGColorHelper {
-  Data? data;
-  VoidCallback? reload;
+ final Data? data;
+ final VoidCallback? reload;
 
   String capitalize(String str) => str[0].toUpperCase() + str.substring(1);
 

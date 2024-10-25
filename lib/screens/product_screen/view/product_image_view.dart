@@ -1,33 +1,25 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
-import 'package:bagisto_app_demo/screens/product_screen/view/image_zoom_view.dart';
-import 'package:bagisto_app_demo/utils/application_localization.dart';
-import 'package:flutter/material.dart';
-import 'package:carousel_slider/carousel_slider.dart';
-import '../../../utils/app_constants.dart';
-import '../../../utils/assets_constants.dart';
-import '../../../utils/check_internet_connection.dart';
-import '../../../utils/string_constants.dart';
-import '../../../widgets/image_view.dart';
-import '../../../widgets/show_message.dart';
-import '../../home_page/data_model/new_product_data.dart';
 
-//ignore: must_be_immutable
+
+
+import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
+
 class ProductImageView extends StatefulWidget {
   final List<String>? imgList;
-  ValueChanged<String>? callBack;
-  NewProducts? productData;
-  ProductFlats? product;
+  final ValueChanged<String>? callBack;
+  final NewProducts? productData;
+  final ProductFlats? product;
 
-  ProductImageView(
+  const ProductImageView(
       {Key? key, this.imgList, this.callBack, this.productData, this.product})
       : super(key: key);
 
@@ -66,7 +58,7 @@ class ProductImageViewState extends State<ProductImageView> {
                   enlargeCenterPage: true,
                   viewportFraction: 1.0,
                   enableInfiniteScroll: false,
-                  height: MediaQuery.of(context).size.width/2,
+                  height: MediaQuery.of(context).size.width/1.1,
                   onPageChanged: (index, reason) {
                     setState(() {
                       _current = index;
@@ -78,7 +70,7 @@ class ProductImageViewState extends State<ProductImageView> {
                       url: item,
                       width: MediaQuery.of(context).size.width,
                       height: MediaQuery.of(context).size.width,
-                    fit: BoxFit.cover,
+                    fit: BoxFit.fill,
                   ))).toList(),
             ) : ImageView(
               url: "",
@@ -143,8 +135,7 @@ class ProductImageViewState extends State<ProductImageView> {
             child: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  // color: Theme.of(context).colorScheme.onBackground,
-                  color: Colors.black,
+                  color: Theme.of(context).colorScheme.onBackground,
                   borderRadius: const BorderRadius.all(Radius.circular(20)),
                   boxShadow: [
                     BoxShadow(
@@ -156,13 +147,13 @@ class ProductImageViewState extends State<ProductImageView> {
                   ],
                 ),
                 child: widget.productData?.isInWishlist ?? false
-                    ? const Icon(
+                    ?  Icon(
                   Icons.favorite,
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.secondaryContainer,
                 )
-                    : const Icon(
+                    : Icon(
                   Icons.favorite_outline_rounded,
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.secondaryContainer,
                 )),
           )),
       Positioned(
@@ -184,7 +175,7 @@ class ProductImageViewState extends State<ProductImageView> {
           child: Container(
               padding: const EdgeInsets.all(9),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary,
+                color: Theme.of(context).colorScheme.onBackground,
                 borderRadius: const BorderRadius.all(Radius.circular(18)),
                 boxShadow: [
                   BoxShadow(
@@ -195,9 +186,11 @@ class ProductImageViewState extends State<ProductImageView> {
                   ),
                 ],
               ),
-              child: Image.asset(AssetConstants.compareIcon,
+              child: Image.asset(
+                AssetConstants.compareIcon,
                 height: AppSizes.spacingWide,
                 width: AppSizes.spacingWide,
+                color:Theme.of(context).colorScheme.secondaryContainer,
               )),
         ),
       ),

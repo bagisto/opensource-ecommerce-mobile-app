@@ -1,6 +1,14 @@
-import 'package:bagisto_app_demo/screens/cart_screen/cart_index.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import '../../../utils/index.dart';
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
+import 'package:bagisto_app_demo/screens/dashboard/utils/index.dart';
 
 class DashboardHeaderView extends StatefulWidget {
   const DashboardHeaderView({Key? key}) : super(key: key);
@@ -16,17 +24,9 @@ class _DashboardHeaderViewState extends State<DashboardHeaderView> {
 
   @override
   void initState() {
-    SharedPreferenceHelper.getCustomerName().then((value) {
-      SharedPreferenceHelper.getCustomerEmail().then((email) {
-        SharedPreferenceHelper.getCustomerImage().then((img) {
-          setState(() {
-            name = value;
-            customerEmail = email;
-            image = img;
-          });
-        });
-      });
-    });
+    name = appStoragePref.getCustomerName();
+    customerEmail = appStoragePref.getCustomerEmail();
+    image = appStoragePref.getCustomerImage();
     super.initState();
   }
 
@@ -41,7 +41,7 @@ class _DashboardHeaderViewState extends State<DashboardHeaderView> {
           child: Stack(
             children: [
               Image.asset(
-                "assets/images/customer_banner_placeholder.png",
+                AssetConstants.customerBannerPlaceholder,
                 width: MediaQuery.of(context).size.width,
               ),
               Container(
@@ -58,20 +58,25 @@ class _DashboardHeaderViewState extends State<DashboardHeaderView> {
                     Stack(
                       children: [
                         Container(
-                            height: 80,
-                            width: 80,
+                            height: AppSizes.spacingWide * 4,
+                            width: AppSizes.spacingWide * 4,
                             decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                    color: MobikulTheme.accentColor,
+                                    color: MobiKulTheme.accentColor,
                                     width: 1.0)),
                             child: ClipRRect(
-                                borderRadius: BorderRadius.circular(100.0),
-                                child:CachedNetworkImage(
+                                borderRadius: BorderRadius.circular(
+                                    AppSizes.spacingWide * 5),
+                                child: CachedNetworkImage(
                                   fit: BoxFit.cover,
                                   imageUrl: image ?? "",
-                                  placeholder: (context, url) => Image.asset('assets/images/customer_profile_placeholder.png'),
-                                  errorWidget: (context, url, error) => Image.asset('assets/images/customer_profile_placeholder.png'),
+                                  placeholder: (context, url) => Image.asset(
+                                      AssetConstants
+                                          .customerProfilePlaceholder),
+                                  errorWidget: (context, url, error) =>
+                                      Image.asset(AssetConstants
+                                          .customerProfilePlaceholder),
                                 ))),
                       ],
                     ),
@@ -85,8 +90,7 @@ class _DashboardHeaderViewState extends State<DashboardHeaderView> {
                               style: Theme.of(context)
                                   .textTheme
                                   .labelMedium
-                                  ?.copyWith(
-                                      color: Colors.white),
+                                  ?.copyWith(color: Colors.white),
                             ),
                             const SizedBox(
                               height: AppSizes.spacingSmall,
@@ -110,20 +114,11 @@ class _DashboardHeaderViewState extends State<DashboardHeaderView> {
                                 Navigator.of(context)
                                     .pushNamed(accountInfo)
                                     .then((value) {
-                                  SharedPreferenceHelper.getCustomerName()
-                                      .then((value) {
-                                    SharedPreferenceHelper.getCustomerEmail()
-                                        .then((email) {
-                                      SharedPreferenceHelper.getCustomerImage()
-                                          .then((img) {
-                                        setState(() {
-                                          name = value;
-                                          customerEmail = email;
-                                          image = img;
-                                        });
-                                      });
+                                    setState(() {
+                                      name = appStoragePref.getCustomerName();
+                                      customerEmail = appStoragePref.getCustomerEmail();
+                                      image = appStoragePref.getCustomerImage();
                                     });
-                                  });
                                 });
                               },
                               child: Container(
@@ -138,12 +133,13 @@ class _DashboardHeaderViewState extends State<DashboardHeaderView> {
                                       horizontal: AppSizes.spacingMedium,
                                     ),
                                     child: Text(
-                                      StringConstants.editInfo.localized().toUpperCase(),
+                                      StringConstants.editInfo
+                                          .localized()
+                                          .toUpperCase(),
                                       style: Theme.of(context)
                                           .textTheme
                                           .labelMedium
-                                          ?.copyWith(
-                                              color: Colors.white),
+                                          ?.copyWith(color: Colors.white),
                                     ),
                                   )),
                             ),

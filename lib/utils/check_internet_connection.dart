@@ -1,9 +1,17 @@
-import 'package:connectivity_plus/connectivity_plus.dart';
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
 
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 
   Future<bool> checkInternetConnection() async {
-    var connectivityResult = await Connectivity().checkConnectivity();
-    return (connectivityResult == ConnectivityResult.wifi ||
-        connectivityResult == ConnectivityResult.mobile);
+    bool result = await InternetConnectionChecker().hasConnection;
+    return result;
   }
 

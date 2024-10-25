@@ -1,18 +1,19 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 
 import '../../../data_model/add_to_wishlist_model/add_wishlist_model.dart';
-import '../../../data_model/graphql_base_model.dart';
-import '../../cart_screen/cart_model/add_to_cart_model.dart';
-import '../../home_page/data_model/new_product_data.dart';
+import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
+
+import '../data_model/download_sample_model.dart';
+
 
 abstract class ProductBaseState {}
 
@@ -47,13 +48,24 @@ class AddToWishListProductState extends ProductBaseState{
 
 }
 
+class DownloadProductSampleState extends ProductBaseState {
+  ProductStatus? status;
+  String? error;
+  DownloadSampleModel? model;
+  String? fileName;
+
+  DownloadProductSampleState.success({this.model,this.fileName}) : status = ProductStatus.success;
+
+  DownloadProductSampleState.fail({this.error}) : status = ProductStatus.fail;
+}
+
 
 
 class RemoveFromWishlistState extends ProductBaseState{
   ProductStatus? status;
   String? successMsg="";
   String? error="";
-  GraphQlBaseModel? response;
+  AddToCartModel? response;
   String? productDeletedId;
   RemoveFromWishlistState.success({this.response, this.productDeletedId,this.successMsg}):status=ProductStatus.success;
   RemoveFromWishlistState.fail({this.error}):status=ProductStatus.fail;
@@ -64,7 +76,7 @@ class AddToCompareListState extends ProductBaseState{
   ProductStatus? status;
   String? error;
   String? successMsg;
-  GraphQlBaseModel? baseModel;
+  BaseModel? baseModel;
   AddToCompareListState.success({ this.successMsg,this.baseModel}):status=ProductStatus.success;
   AddToCompareListState.fail({this.error}):status=ProductStatus.fail;
 }

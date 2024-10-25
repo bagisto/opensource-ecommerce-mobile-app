@@ -1,12 +1,22 @@
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
 import 'package:dio/dio.dart';
 import 'package:retrofit/retrofit.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'google_place_model.g.dart';
 
-@RestApi(baseUrl:"https://maps.googleapis.com/maps/api/" )
+@RestApi(baseUrl:"https://maps.googleapis.com/maps/api/")
  abstract class GooglePlaceApiClient {
-  factory GooglePlaceApiClient(Dio dio )= _GooglePlaceApiClient;
+  factory GooglePlaceApiClient(Dio dio,{String? baseUrl})= _GooglePlaceApiClient;
   @GET('place/textsearch/json?query={endPoint}')
   Future<GooglePlaceModel> getGooglePlace(
       @Path() String endPoint);
@@ -25,6 +35,8 @@ class GooglePlaceModel{
 
   factory GooglePlaceModel.fromJson(Map<String, dynamic> json) =>
       _$GooglePlaceModelFromJson(json);
+
+  Map<String, dynamic> toJson() => _$GooglePlaceModelToJson(this);
 
 }
 
@@ -47,6 +59,8 @@ class Results{
   Results({this.name, this.icon, this.formattedAddress, this.geometry, this.iconBackgroundColor, this.iconMaskBaseUri, this.photos, this.placeId,this.reference, });
   factory Results.fromJson(Map<String, dynamic> json) =>
       _$ResultsFromJson(json);
+
+  Map<String, dynamic> toJson() => _$ResultsToJson(this);
 }
 
 
@@ -58,6 +72,8 @@ class Geometry{
   Geometry({this.location, this.viewPort});
   factory Geometry.fromJson(Map<String, dynamic> json) =>
       _$GeometryFromJson(json);
+
+  Map<String, dynamic> toJson() => _$GeometryToJson(this);
 }
 
 @JsonSerializable()
@@ -67,6 +83,8 @@ class Location{
   Location({this.lat,this.lng});
   factory Location.fromJson(Map<String, dynamic> json) =>
       _$LocationFromJson(json);
+
+  Map<String, dynamic> toJson() => _$LocationToJson(this);
 }
 
 
@@ -78,6 +96,7 @@ class ViewPort{
   ViewPort({this.southwest, this.northeast});
   factory ViewPort.fromJson(Map<String, dynamic> json) =>
       _$ViewPortFromJson(json);
+  Map<String, dynamic> toJson() => _$ViewPortToJson(this);
 }
 
 @JsonSerializable()
@@ -89,5 +108,6 @@ class Photos{
   Photos({this.reference, this.placeId});
   factory Photos.fromJson(Map<String, dynamic> json) =>
       _$PhotosFromJson(json);
+  Map<String, dynamic> toJson() => _$PhotosToJson(this);
 }
 

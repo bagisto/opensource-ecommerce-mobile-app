@@ -1,18 +1,30 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
+import 'dart:async';
+import 'dart:io';
+
+import 'package:bagisto_app_demo/screens/account/utils/index.dart';
 import 'package:bagisto_app_demo/utils/application_localization.dart';
 import 'package:bagisto_app_demo/utils/string_constants.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:open_file/open_file.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../screens/home_page/data_model/new_product_data.dart';
+
+import '../screens/product_screen/bloc/product_page_bloc.dart';
+import '../screens/product_screen/bloc/product_page_event.dart';
 import '../screens/product_screen/view/file_download.dart';
 
 class CheckboxGroup extends StatefulWidget {
@@ -29,10 +41,11 @@ class CheckboxGroup extends StatefulWidget {
   final EdgeInsetsGeometry margin;
   final List<DownloadableLinks>? data;
   final bool showText;
+  final GlobalKey<ScaffoldMessengerState>? scaffoldMessengerKey;
 
-  const CheckboxGroup({
+  CheckboxGroup({
     Key? key,
-    @required this.labels,
+    required this.labels,
     this.checked,
     this.onChange,
     this.onSelected,
@@ -42,58 +55,73 @@ class CheckboxGroup extends StatefulWidget {
     this.triState = false,
     this.padding = const EdgeInsets.all(0.0),
     this.margin = const EdgeInsets.all(0.0),
-    this.data, this.showText = false
+    this.data, this.showText = false, this.scaffoldMessengerKey
   }) : super(key: key);
 
   @override
-  _CheckboxGroupState createState() => _CheckboxGroupState();
+  State<CheckboxGroup> createState() => _CheckboxGroupState();
 }
 
 class _CheckboxGroupState extends State<CheckboxGroup> {
   List<String> _selected = [];
+  var loadData = 0.0;
+  ProductScreenBLoc? productScreenBLoc;
+  final StreamController<double> _downloadProgressController = StreamController<double>.broadcast();
+  bool showLoader = false;
 
   @override
   void initState() {
     super.initState();
+    productScreenBLoc  = context.read<ProductScreenBLoc>();
     _selected = widget.checked ?? [];
   }
 
   @override
   Widget build(BuildContext context) {
-    if (widget.checked != null) {
-      _selected = [];
-      _selected.addAll(widget.checked!); //use add all to prevent a shallow copy
-    }
+    // if (widget.checked != null) {
+    //   _selected = [];
+    //   _selected.addAll(widget.checked!); //use add all to prevent a shallow copy
+    // }
 
 
     List<Widget> content = [];
 
-    for (int i = 0; i < (widget.labels?.length ?? 0); i++) {
-      Checkbox cb = Checkbox(
-        value: _selected.contains(widget.labels?.elementAt(i)),
-        onChanged: (bool? isChecked) => onChanged(isChecked ?? false, i),
+    for (int label = 0; label < (widget.labels?.length ?? 0); label++) {
+      Checkbox checkBox = Checkbox(
+        value: _selected.contains(widget.labels?.elementAt(label)),
+        onChanged: (bool? isChecked) => onChanged(isChecked ?? false, label),
         checkColor: Theme.of(context).colorScheme.background,
         activeColor: Theme.of(context).colorScheme.onBackground,
         tristate: widget.triState,
       );
 
-      Text t =
-          Text(widget.labels?.elementAt(i) ?? '', style: widget.labelStyle);
-      content.add(Row(children: <Widget>[
-        cb,
+      Text textWidget =
+          Text(widget.labels?.elementAt(label) ?? '', style: widget.labelStyle);
+      content.add(Row(children: [
+        checkBox,
         Expanded(
           flex: 1,
-          child: t,
+          child: textWidget,
         ),
-        if(widget.showText && (widget.data?[i].sampleFileUrl ?? "").isNotEmpty)Expanded(
+        if(widget.showText && (widget.data?[label].sampleFileUrl ?? "").isNotEmpty)Expanded(
           flex: 1,
           child: InkWell(
             onTap: () {
-              DownloadFile().downloadPersonalData(
-                  widget.data?[i].sampleUrl ?? widget.data?[i].sampleFileUrl ?? "",
-                  widget.data?[i].sampleFileName ?? "sampleLink$i.jpg",
-                  widget.data?[i].type ?? "",
-                  context, GlobalKey());
+              // DownloadFile().downloadPersonalData(
+              //     widget.data?[label].type == "file" ? (widget.data?[label].sampleFileUrl ?? "")
+              //         : widget.data?[label].sampleUrl ?? "",
+              //     widget.data?[label].sampleFileName ?? "sampleLink$label.jpg",
+              //     widget.data?[label].type ?? "",
+              //     context, GlobalKey());
+
+              // downloadFile(
+              //     widget.data?[label].type == "file" ? (widget.data?[label].sampleFileUrl ?? "")
+              //         : widget.data?[label].sampleUrl ?? "",
+              //     widget.data?[label].sampleFileName ?? "sampleLink$label.jpg");
+
+              productScreenBLoc?.add(DownloadProductSampleEvent("link", widget.data?[label].id,widget.data?[label].sampleFileName));
+              print("DownloadProductSampleEvent is clicked with id ${widget.data?[label].id} and ${widget.data?[label].fileUrl}");
+
             },
             child: Text(StringConstants.sample.localized(),
               style: const TextStyle(color: Colors.blue),
@@ -110,21 +138,132 @@ class _CheckboxGroupState extends State<CheckboxGroup> {
     );
   }
 
-  void onChanged(bool isChecked, int i) {
-    bool isAlreadyContained = _selected.contains(widget.labels?.elementAt(i));
+  void onChanged(bool isChecked, int index) {
+    bool isAlreadyContained = _selected.contains(widget.labels?.elementAt(index));
     if (mounted) {
       setState(() {
         if (!isChecked && isAlreadyContained) {
-          _selected.remove(widget.labels?.elementAt(i));
+          _selected.remove(widget.labels?.elementAt(index));
         } else if (isChecked && !isAlreadyContained) {
-          _selected.add(widget.labels?.elementAt(i) ?? '');
+          _selected.add(widget.labels?.elementAt(index) ?? '');
         }
         if (widget.onChange != null) {
           widget.onChange!(
-              isChecked, widget.labels?.elementAt(i) ?? '', i, widget.key);
+              isChecked, widget.labels?.elementAt(index) ?? '', index, widget.key);
           if (widget.onSelected != null) widget.onSelected!(_selected);
         }
       });
     }
   }
+
+  Future<void> downloadFile(String url, [String? filename]) async {
+    print("file name url --> $url, $filename");
+    if (url.isEmpty) {
+      debugPrint("Mobikul Download error: URL is empty");
+      return;
+    }
+
+    try {
+      final plugin = DeviceInfoPlugin();
+      var hasStoragePermission = true;
+      if (Platform.isAndroid) {
+        final android = await plugin.androidInfo;
+        hasStoragePermission = android.version.sdkInt < 33
+            ? await Permission.storage.isGranted
+            : true;
+      }
+
+      if (Platform.isIOS) {
+        hasStoragePermission = await Permission.storage.isGranted;
+      }
+
+      if (!hasStoragePermission) {
+        final status = await Permission.storage.request();
+        hasStoragePermission = status.isGranted;
+      }
+      if (hasStoragePermission) {
+        try {
+
+          final cookieManager = CookieManager.instance();
+          final cookies = await cookieManager.getCookies(url: (Uri.parse(url)));
+          final cookieHeader = cookies.map((cookie) => "${cookie.name}=${cookie.value}").join("; ");
+          final directory = Platform.isIOS
+              ? await getApplicationDocumentsDirectory()
+              : await getTemporaryDirectory();
+          final savedDir = directory.path;
+
+
+          Dio dio = Dio();
+          String savePath = "$savedDir/${DateTime
+              .now()
+              .microsecondsSinceEpoch
+              .toString()}_${filename ?? 'downloaded_file'}";
+          await dio.download(
+            url,
+            savePath,
+            options: Options(headers: {HttpHeaders.cookieHeader: cookieHeader}),
+            onReceiveProgress: (received, total) {
+              if (total != -1) {
+                double progress = received / total;
+                _downloadProgressController.add(progress);
+                setState(() {
+                  loadData = progress;
+                });
+              }
+            },
+          );
+          _showSnackbar('${StringConstants.downloadComplete.localized()}!', savePath);
+          setState(() {
+            loadData = 1;
+            showLoader = false;
+          });
+        } catch (e, stacktrace) {
+          debugPrint("Mobikul Download error 1 : $e");
+          debugPrint("Mobikul Download stack trace 1 : $stacktrace");
+        }
+      }
+    } catch (e, stacktrace) {
+      debugPrint("Mobikul Download error 2 : $e");
+      debugPrint("Mobikul Download stack trace 2 : $stacktrace");
+    }
+  }
+
+  void _showSnackbar(String message, String? filePath) {
+    print('SHOW SNACKBAR FILE DOWNLOAD - $message * $filePath');
+    widget.scaffoldMessengerKey?.currentState?.hideCurrentSnackBar();
+    final snackBar = SnackBar(
+      content: StreamBuilder<double>(
+        stream: _downloadProgressController.stream,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            double progress = snapshot.data!;
+            return Text('${StringConstants.downloadProgress.localized()}: ${(progress * 100).toStringAsFixed(0)}%');
+          } else {
+            return Text(message);
+          }
+        },
+      ),
+      duration: const Duration(days: 1),
+      action: filePath != null
+          ? SnackBarAction(
+        label: StringConstants.open.localized(),
+        textColor: Theme.of(context).scaffoldBackgroundColor,
+        onPressed: () {
+          openDownloadedFile(filePath);
+        },
+      )
+          : null,
+    );
+
+    widget.scaffoldMessengerKey?.currentState?.showSnackBar(snackBar);
+  }
+
+  void openDownloadedFile(String filePath) {
+    OpenFile.open(filePath).then((result) {
+      if (result.type == ResultType.error) {
+        _showSnackbar('Failed to open the file.', null);
+      }
+    });
+  }
+
 }

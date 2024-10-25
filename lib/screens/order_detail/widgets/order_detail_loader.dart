@@ -1,7 +1,16 @@
-import 'package:flutter/material.dart';
-import 'package:skeleton_loader/skeleton_loader.dart';
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
 
-import '../../../../utils/index.dart';
+import 'package:bagisto_app_demo/screens/order_detail/utils/index.dart';
+
+
 
 class OrderDetailLoader extends StatelessWidget {
   const OrderDetailLoader({Key? key}) : super(key: key);
@@ -13,8 +22,8 @@ class OrderDetailLoader extends StatelessWidget {
         children: [
           SkeletonLoader(
               highlightColor: Theme.of(context).highlightColor,
-              baseColor: Theme.of(context).appBarTheme.backgroundColor ??
-                  MobikulTheme.primaryColor,
+              baseColor: Theme.of(context).scaffoldBackgroundColor,
+
               builder: Container(
                 margin: const EdgeInsets.only(bottom: 1),
                 color: Colors.red,
@@ -22,8 +31,8 @@ class OrderDetailLoader extends StatelessWidget {
               )),
           SkeletonLoader(
               highlightColor: Theme.of(context).highlightColor,
-              baseColor: Theme.of(context).appBarTheme.backgroundColor ??
-                  MobikulTheme.primaryColor,
+              baseColor: Theme.of(context).scaffoldBackgroundColor,
+
               builder: Container(
                 margin: const EdgeInsets.only(bottom: 1),
                 color: Colors.red,
@@ -31,8 +40,8 @@ class OrderDetailLoader extends StatelessWidget {
               )),
           SkeletonLoader(
               highlightColor: Theme.of(context).highlightColor,
-              baseColor: Theme.of(context).appBarTheme.backgroundColor ??
-                  MobikulTheme.primaryColor,
+              baseColor: Theme.of(context).scaffoldBackgroundColor,
+
               builder: Container(
                 margin: const EdgeInsets.only(bottom: 1),
                 color: Colors.red,
@@ -40,8 +49,7 @@ class OrderDetailLoader extends StatelessWidget {
               )),
           SkeletonLoader(
               highlightColor: Theme.of(context).highlightColor,
-              baseColor: Theme.of(context).appBarTheme.backgroundColor ??
-                  MobikulTheme.primaryColor,
+              baseColor: Theme.of(context).scaffoldBackgroundColor,
               builder: Container(
                 margin: const EdgeInsets.only(bottom: 1),
                 color: Colors.red,
@@ -49,8 +57,8 @@ class OrderDetailLoader extends StatelessWidget {
               )),
           SkeletonLoader(
               highlightColor: Theme.of(context).highlightColor,
-              baseColor: Theme.of(context).appBarTheme.backgroundColor ??
-                  MobikulTheme.primaryColor,
+              baseColor: Theme.of(context).scaffoldBackgroundColor,
+
               builder: Container(
                 margin: const EdgeInsets.only(bottom: 1),
                 color: Colors.red,

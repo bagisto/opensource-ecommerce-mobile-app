@@ -1,14 +1,17 @@
 
-import 'package:bagisto_app_demo/screens/recent_product/utils/recent_product_entity.dart';
-import 'package:bagisto_app_demo/screens/recent_product/utils/recent_view_controller.dart';
-import 'package:bagisto_app_demo/utils/application_localization.dart';
-import 'package:flutter/material.dart';
-import '../../utils/app_constants.dart';
-import '../../utils/string_constants.dart';
-import '../home_page/data_model/new_product_data.dart';
-import '../home_page/widget/new_product_view.dart';
-import 'utils/database.dart';
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
 
+
+import 'package:bagisto_app_demo/screens/recent_product/utils/index.dart';
+import 'package:hive/hive.dart';
 class RecentView extends StatefulWidget {
   final bool? isLogin;
 
@@ -39,26 +42,13 @@ class _RecentViewState extends State<RecentView> {
   }
 
   void fetchRecentProducts() async {
-    List<RecentProduct> recentProducts =
-        await (await AppDatabase.getDatabase()).recentProductDao.getProducts();
+    Box box = await Hive.openBox("recentProducts");
     List<NewProducts> mRecentProducts = [];
 
-    for (var i = recentProducts.length - 1; i >= 0; i--) {
+    for (var i = box.length - 1; i >= 0; i--) {
       if (mRecentProducts.length < 5) {
-        mRecentProducts.add(NewProducts(
-          id: recentProducts[i].id,
-          type: recentProducts[i].type,
-          productId: recentProducts[i].productId,
-          name: recentProducts[i].name,
-          isInWishlist: recentProducts[i].isInWishlist,
-          rating: recentProducts[i].rating.toString(),
-          price: recentProducts[i].price,
-          specialPrice: recentProducts[i].specialPrice,
-          isNew: recentProducts[i].isNew,
-          isInSale: recentProducts[i].isInSale,
-          url: recentProducts[i].url,
-          urlKey: recentProducts[i].urlKey
-        ));
+        var product = box.getAt(i) as NewProducts;
+        mRecentProducts.add(product);
       }
     }
 

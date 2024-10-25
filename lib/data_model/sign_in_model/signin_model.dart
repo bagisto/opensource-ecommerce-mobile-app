@@ -1,11 +1,11 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 
@@ -15,7 +15,7 @@ import 'package:json_annotation/json_annotation.dart';
 part 'signin_model.g.dart';
 
 @JsonSerializable()
-class SignInModel extends GraphQlBaseModel {
+class SignInModel extends BaseModel {
   SignInModel({
     /*  this.error,*/
     this.token,
@@ -62,7 +62,7 @@ class Data {
   String? name;
   String? gender;
   String? dateOfBirth;
-  var phone;
+  dynamic phone;
   Group? group;
   String? imageUrl;
   String? createdAt;

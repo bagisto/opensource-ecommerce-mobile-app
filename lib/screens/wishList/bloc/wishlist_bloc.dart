@@ -1,24 +1,19 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 
 
-import 'package:bagisto_app_demo/screens/wishList/bloc/wishlist_repository.dart';
-import 'package:bagisto_app_demo/utils/application_localization.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../data_model/graphql_base_model.dart';
-import '../../../utils/string_constants.dart';
-import '../../cart_screen/cart_model/add_to_cart_model.dart';
-import '../data_model/wishlist_model.dart';
-import 'fetch_wishlist_event.dart';
-import 'fetch_wishlist_state.dart';
+
+import 'package:bagisto_app_demo/screens/wishList/utils/index.dart';
+
+import '../../cart_screen/cart_model/cart_data_model.dart';
 
 
 class WishListBloc extends Bloc<WishListBaseEvent, WishListBaseState> {
@@ -43,9 +38,9 @@ class WishListBloc extends Bloc<WishListBaseEvent, WishListBaseState> {
     }
     else if (event is FetchDeleteAddItemEvent) {
       try {
-        GraphQlBaseModel? removeFromWishlist =
+        AddToCartModel? removeFromWishlist =
             await repository?.callWishListDeleteItem(event.productId);
-          emit (FetchDeleteAddItemState.success(response: removeFromWishlist, producDeletedId: event.productId,
+          emit (FetchDeleteAddItemState.success(response: removeFromWishlist, productDeletedId: event.productId,
               successMsg: StringConstants.deletedSuccess.localized()));
       } catch (e) {
         emit (FetchDeleteAddItemState.fail(error: (StringConstants.somethingWrong).localized()));
@@ -54,7 +49,7 @@ class WishListBloc extends Bloc<WishListBaseEvent, WishListBaseState> {
     else if (event is AddToCartWishlistEvent) {
       try {
         AddToCartModel? addToCartModel =
-        await repository!.callAddToCartAPi(int.parse(event.productId));
+        await repository!.callAddToCartAPi(int.parse(event.productId), event.quantity);
         if (addToCartModel?.status == true) {
         emit (AddToCartWishlistState.success(
             response: addToCartModel,
@@ -62,7 +57,7 @@ class WishListBloc extends Bloc<WishListBaseEvent, WishListBaseState> {
             successMsg: StringConstants.addedToCart.localized())
         );
       } else {
-          emit(AddToCartWishlistState.fail(error: addToCartModel?.success));}
+          emit(AddToCartWishlistState.fail(error: addToCartModel?.graphqlErrors));}
         }catch (e) {
         emit (AddToCartWishlistState.fail(
             error: StringConstants.somethingWrong.localized()));
@@ -73,17 +68,25 @@ class WishListBloc extends Bloc<WishListBaseEvent, WishListBaseState> {
     }
     else if (event is RemoveAllWishlistEvent) {
       try {
-        GraphQlBaseModel? baseModel = await repository?.removeAllWishListProducts();
-        if (baseModel?.status == true) {
+        BaseModel? baseModel = await repository?.removeAllWishListProducts();
+        if (baseModel?.success == true) {
           emit(RemoveAllWishlistProductState.success(
               baseModel: baseModel,
-              successMsg: baseModel?.success));
+              successMsg: baseModel?.message));
         } else {
-          emit(RemoveAllWishlistProductState.fail(error: baseModel?.success));
+          emit(RemoveAllWishlistProductState.fail(error: baseModel?.graphqlErrors));
         }
       } catch (e) {
         emit(RemoveAllWishlistProductState.fail(
             error: StringConstants.somethingWrong.localized()));
+      }
+    }
+    else if (event is GetCartCountEvent) {
+      try {
+        CartModel? cartDetails = await repository?.cartCountApi();
+        emit(FetchCartCountState.success(cartDetails: cartDetails));
+      } catch (e) {
+        emit(FetchCartCountState.fail(error: StringConstants.somethingWrong.localized()));
       }
     }
   }

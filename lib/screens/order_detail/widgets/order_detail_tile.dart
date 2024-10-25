@@ -1,25 +1,23 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
-import 'package:bagisto_app_demo/screens/cart_screen/cart_index.dart';
-import 'package:bagisto_app_demo/utils/no_data_found_widget.dart';
-import 'package:bagisto_app_demo/utils/status_color_helper.dart';
-import 'package:bagisto_app_demo/widgets/image_view.dart';
+import 'package:bagisto_app_demo/screens/account/utils/index.dart';
 import 'package:bagisto_app_demo/screens/order_detail/utils/index.dart';
-import '../../../../utils/index.dart';
+import 'package:bagisto_app_demo/screens/order_detail/widgets/shipping_payment_info.dart';
+
 
 class OrderDetailTile extends StatelessWidget with OrderStatusBGColorHelper {
-  OrderDetail? orderDetailModel;
-  int? orderId;
-  OrderDetailBloc? orderDetailBloc;
-  bool? isLoading;
+ final  OrderDetail? orderDetailModel;
+ final int? orderId;
+ final OrderDetailBloc? orderDetailBloc;
+ final bool? isLoading;
 
   OrderDetailTile(
       {this.orderDetailModel,
@@ -82,7 +80,7 @@ class OrderDetailTile extends StatelessWidget with OrderStatusBGColorHelper {
                                         const Size(140, 100)),
                                     foregroundColor:
                                         MaterialStateProperty.all<Color>(
-                                            MobikulTheme.primaryColor),
+                                            MobiKulTheme.primaryColor),
                                     backgroundColor:
                                         MaterialStateProperty.all<Color>(
                                       Theme.of(context)
@@ -145,7 +143,7 @@ class OrderDetailTile extends StatelessWidget with OrderStatusBGColorHelper {
                                                                       .circular(
                                                                           4)),
                                                       backgroundColor:
-                                                          MobikulTheme
+                                                          MobiKulTheme
                                                               .accentColor),
                                                   onPressed: () {
                                                     Navigator.of(context).pop();
@@ -163,8 +161,8 @@ class OrderDetailTile extends StatelessWidget with OrderStatusBGColorHelper {
                                                   child: Text(
                                                       StringConstants.ok
                                                           .localized(),
-                                                      style: TextStyle(
-                                                          color: MobikulTheme
+                                                      style: const TextStyle(
+                                                          color: MobiKulTheme
                                                               .primaryColor))),
                                             ],
                                           );
@@ -222,7 +220,24 @@ class OrderDetailTile extends StatelessWidget with OrderStatusBGColorHelper {
                               style: Theme.of(context).textTheme.labelLarge),
                           const SizedBox(height: AppSizes.spacingSmall),
                           Text(StringConstants.itemOrdered.localized().toUpperCase(),
-                              style: Theme.of(context).textTheme.labelLarge)
+                              style: Theme.of(context).textTheme.labelLarge),
+                          const Spacer(),
+                          if (orderDetailModel?.items?.any((item) => item.type == 'bundle') != true)
+                            GestureDetector(
+                            onTap: () {
+                              orderDetailBloc?.add(ReOrderEvent(orderDetailModel?.id.toString()));
+                            },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: Theme.of(context).colorScheme.onPrimary
+                                )
+                              ),
+                              padding: const EdgeInsets.all(AppSizes.spacingWide/2),
+                              child: Text(StringConstants.reOrder.localized(),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: AppSizes.spacingNormal),
@@ -405,6 +420,35 @@ class OrderDetailTile extends StatelessWidget with OrderStatusBGColorHelper {
                                               ),
                                             ],
                                           ),
+                                          const SizedBox(
+                                              height: AppSizes.spacingMedium),
+                                          ...?orderDetailModel?.items![itemIndex].additional?.attributes?.map((item) => Column(
+                                            children: [
+                                              Row(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                mainAxisAlignment: MainAxisAlignment.start,
+                                                children: [
+                                                  Expanded(
+                                                    flex: 1,
+                                                    child: Text(
+                                                      item.attributeName ?? "",
+                                                      style: const TextStyle(
+                                                        fontWeight: FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  Expanded(
+                                                    flex: 2,
+                                                    child: Text(
+                                                      item.optionLabel ?? "",
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              const SizedBox(
+                                                  height: AppSizes.spacingMedium),
+                                            ],
+                                          ))
                                         ],
                                       ),
                                     ),
@@ -532,125 +576,28 @@ class OrderDetailTile extends StatelessWidget with OrderStatusBGColorHelper {
                   ),
                 ),
                 const SizedBox(height: AppSizes.spacingNormal),
-                Container(
-                  padding: const EdgeInsets.fromLTRB(AppSizes.spacingNormal, 0,
-                      AppSizes.spacingNormal, AppSizes.spacingNormal),
-                  margin: const EdgeInsets.fromLTRB(AppSizes.spacingNormal, 0,
-                      AppSizes.spacingNormal, AppSizes.spacingNormal),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Text(
-                              StringConstants.shippingAndPaymentInfo
-                                  .localized()
-                                  .toUpperCase(),
-                              style: Theme.of(context).textTheme.labelLarge),
-                        ],
-                      ),
-                      const SizedBox(height: AppSizes.spacingNormal),
-                      const Divider(),
-                      const SizedBox(height: AppSizes.spacingNormal),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: AppSizes.spacingNormal),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            if (orderDetailModel?.shippingAddress != null)
-                              getShippingAddress(orderDetailModel, context),
-                            const SizedBox(height: AppSizes.spacingMedium),
-                            Text(
-                                StringConstants.billingAddress
-                                    .localized()
-                                    .toUpperCase(),
-                                style: Theme.of(context).textTheme.labelLarge),
-                            const SizedBox(height: AppSizes.spacingNormal),
-                            Text(
-                              (orderDetailModel?.billingAddress?.companyName ??
-                                  ""),
-                              textAlign: TextAlign.start,
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.onPrimary,
-                                fontSize: 15,
-                              ),
-                              maxLines: 1,
-                              softWrap: true,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: AppSizes.spacingSmall),
-                            Text(
-                              "${orderDetailModel?.billingAddress?.firstName ?? ""} ${orderDetailModel?.billingAddress?.lastName ?? ""}",
-                              textAlign: TextAlign.start,
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.onPrimary,
-                                fontSize: 15,
-                              ),
-                              maxLines: 1,
-                              softWrap: true,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: AppSizes.spacingSmall),
-                            _getFormattedBillingAddress(
-                                orderDetailModel!, context),
-                            const SizedBox(height: AppSizes.spacingSmall),
-                            Text(
-                              "${StringConstants.contact.localized()} ${orderDetailModel?.billingAddress?.phone ?? ""}",
-                              style: const TextStyle(fontSize: 15),
-                            ),
-                          ],
-                        ),
-                      ),
-                      if (orderDetailModel?.shippingTitle != null)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: AppSizes.spacingMedium),
-                          alignment: GlobalData.selectedLanguage == "ar"
-                              ? Alignment.topRight
-                              : Alignment.topLeft,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Text(
-                                  StringConstants.shippingMethod
-                                      .localized()
-                                      .toUpperCase(),
-                                  style:
-                                      Theme.of(context).textTheme.labelLarge),
-                              const SizedBox(height: AppSizes.spacingNormal),
-                              Text(orderDetailModel?.shippingTitle ?? ""),
-                            ],
-                          ),
-                        ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: AppSizes.spacingNormal),
-                        alignment: GlobalData.selectedLanguage == "ar"
-                            ? Alignment.topRight
-                            : Alignment.topLeft,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Text(
-                              StringConstants.paymentMethod
-                                  .localized()
-                                  .toUpperCase(),
-                              style: Theme.of(context).textTheme.labelLarge,
-                            ),
-                            const SizedBox(height: AppSizes.spacingNormal),
-                            Text(
-                              orderDetailModel?.payment?.methodTitle ?? "",
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                if((orderDetailModel?.items ?? []).isNotEmpty &&
+                    orderDetailModel?.items?[0].qtyInvoiced !=0 )
+                  shipmentInvoiceDetails(StringConstants.invoiceDetails, invoiceDetails, orderDetailModel,context),
+                if((orderDetailModel?.items ?? []).isNotEmpty &&
+                    orderDetailModel?.items?[0].qtyShipped !=0 )
+                const SizedBox(height: AppSizes.spacingNormal),
+                if((orderDetailModel?.items ?? []).isNotEmpty &&
+                    orderDetailModel?.items?[0].qtyShipped !=0 )
+                  shipmentInvoiceDetails(StringConstants.shipmentDetails, shipmentDetails, orderDetailModel,context),
+
+                  if((orderDetailModel?.items ?? []).isNotEmpty &&
+                    orderDetailModel?.items?[0].qtyRefunded !=0 )
+                const SizedBox(height: AppSizes.spacingNormal),
+                if((orderDetailModel?.items ?? []).isNotEmpty &&
+                    orderDetailModel?.items?[0].qtyRefunded !=0 )
+                  shipmentInvoiceDetails(StringConstants.refundDetails, refundDetails, orderDetailModel,context),
+
+                const SizedBox(height: AppSizes.spacingNormal),
+                 Padding(
+                   padding: const EdgeInsets.all(AppSizes.spacingNormal),
+                   child: ShippingAndPaymentInfo(orderDetailModel: orderDetailModel,),
+                 ),
               ],
             ),
           ),
@@ -667,61 +614,25 @@ class OrderDetailTile extends StatelessWidget with OrderStatusBGColorHelper {
     }
   }
 
-  _getFormattedAddress(OrderDetail orderDetailModel, BuildContext context) {
-    return Text(
-      "${orderDetailModel.shippingAddress?.address1!.replaceAll("[", "").replaceAll("]", "") ?? ""}, ${orderDetailModel.shippingAddress?.city ?? ""}, ${orderDetailModel.shippingAddress?.state ?? ""}, ${orderDetailModel.shippingAddress?.country ?? ""}, ${orderDetailModel.shippingAddress?.postcode ?? ""}",
-      style: Theme.of(context).textTheme.labelSmall,
-    );
-  }
+ shipmentInvoiceDetails(String title, String route, OrderDetail? argument,BuildContext context) {
+   return InkWell(
+     child: Container(
+       margin: const EdgeInsets.symmetric(horizontal: AppSizes.spacingNormal,vertical: 5.0),
+       alignment: Alignment.center,
+       height: AppSizes.buttonHeight,
+       padding: const EdgeInsets.symmetric(horizontal: AppSizes.spacingNormal,),
+       decoration:  BoxDecoration(
+         color: Theme.of(context).colorScheme.onBackground,
+         borderRadius: BorderRadius.circular(4),
+       ),
+       child: Text(title.localized().toUpperCase(), style: Theme.of(context).textTheme.titleLarge?.copyWith(
+           fontWeight: FontWeight.normal, color:Theme.of(context).colorScheme.background
+       ),),
+     ),
+     onTap: (){
+       Navigator.pushNamed(context, route, arguments: argument);
+     },
+   );
+ }
 
-  _getFormattedBillingAddress(
-      OrderDetail orderDetailModel, BuildContext context) {
-    return Text(
-      "${orderDetailModel.billingAddress?.address1!.replaceAll("[", "").replaceAll("]", "") ?? ""}, ${orderDetailModel.billingAddress?.city ?? ""}, ${orderDetailModel.billingAddress?.state ?? ""}, ${orderDetailModel.billingAddress?.country ?? ""}, ${orderDetailModel.billingAddress?.postcode ?? ""}",
-      style: Theme.of(context).textTheme.labelSmall,
-    );
-  }
-
-  getShippingAddress(OrderDetail? orderDetailModel, BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        Text(StringConstants.shippingAddress.localized().toUpperCase(),
-            style: Theme.of(context).textTheme.labelLarge),
-        const SizedBox(height: AppSizes.spacingNormal),
-        Text(
-          (orderDetailModel?.shippingAddress?.companyName ?? ""),
-          textAlign: TextAlign.start,
-          style: TextStyle(
-            color: Theme.of(context).colorScheme.onPrimary,
-            fontSize: 15,
-          ),
-          maxLines: 1,
-          softWrap: true,
-          overflow: TextOverflow.ellipsis,
-        ),
-        const SizedBox(height: AppSizes.spacingSmall),
-        Text(
-          "${orderDetailModel?.shippingAddress?.firstName ?? ""} ${orderDetailModel?.shippingAddress?.lastName ?? ""}",
-          textAlign: TextAlign.start,
-          style: TextStyle(
-            color: Theme.of(context).colorScheme.onPrimary,
-            fontSize: 15,
-          ),
-          maxLines: 1,
-          softWrap: true,
-          overflow: TextOverflow.ellipsis,
-        ),
-        const SizedBox(height: AppSizes.spacingSmall),
-        _getFormattedAddress(orderDetailModel!, context),
-        const SizedBox(height: AppSizes.spacingSmall),
-        Text(
-          "${StringConstants.contact.localized()} ${orderDetailModel.shippingAddress?.phone ?? ""}",
-          style: Theme.of(context).textTheme.labelMedium,
-        ),
-        const SizedBox(height: AppSizes.spacingMedium),
-      ],
-    );
-  }
 }

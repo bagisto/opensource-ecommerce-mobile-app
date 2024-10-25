@@ -1,7 +1,18 @@
 
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
 import 'package:json_annotation/json_annotation.dart';
 
 import '../../../data_model/graphql_base_model.dart';
+import '../../home_page/data_model/new_product_data.dart';
 part 'downloadable_product_model.g.dart';
 
 
@@ -9,8 +20,9 @@ part 'downloadable_product_model.g.dart';
 class DownloadableProductModel extends GraphQlBaseModel {
   @JsonKey(name: "data")
   List<DownloadableLinkPurchases>? downloadableLinkPurchases;
+  PaginatorInfo? paginatorInfo;
 
-  DownloadableProductModel({this.downloadableLinkPurchases});
+  DownloadableProductModel({this.downloadableLinkPurchases, this.paginatorInfo});
 
   factory DownloadableProductModel.fromJson(Map<String, dynamic> json) {
     return _$DownloadableProductModelFromJson(json);
@@ -134,37 +146,37 @@ class Order {
   String? baseCurrencyCode;
   String? channelCurrencyCode;
   String? orderCurrencyCode;
-  int? grandTotal;
-  int? baseGrandTotal;
-  int? grandTotalInvoiced;
-  int? baseGrandTotalInvoiced;
-  int? grandTotalRefunded;
-  int? baseGrandTotalRefunded;
-  int? subTotal;
-  int? baseSubTotal;
-  int? subTotalInvoiced;
-  int? baseSubTotalInvoiced;
-  int? subTotalRefunded;
-  int? baseSubTotalRefunded;
+  double? grandTotal;
+  double? baseGrandTotal;
+  double? grandTotalInvoiced;
+  double? baseGrandTotalInvoiced;
+  double? grandTotalRefunded;
+  double? baseGrandTotalRefunded;
+  double? subTotal;
+  double? baseSubTotal;
+  double? subTotalInvoiced;
+  double? baseSubTotalInvoiced;
+  double? subTotalRefunded;
+  double? baseSubTotalRefunded;
   int? discountPercent;
-  int? discountAmount;
-  int? baseDiscountAmount;
-  int? discountInvoiced;
-  int? baseDiscountInvoiced;
-  int? discountRefunded;
-  int? baseDiscountRefunded;
-  int? taxAmount;
-  int? baseTaxAmount;
-  int? taxAmountInvoiced;
-  int? baseTaxAmountInvoiced;
-  int? taxAmountRefunded;
-  int? baseTaxAmountRefunded;
-  int? shippingAmount;
-  int? baseShippingAmount;
-  int? shippingInvoiced;
-  int? baseShippingInvoiced;
-  int? shippingRefunded;
-  int? baseShippingRefunded;
+  double? discountAmount;
+  double? baseDiscountAmount;
+  double? discountInvoiced;
+  double? baseDiscountInvoiced;
+  double? discountRefunded;
+  double? baseDiscountRefunded;
+  double? taxAmount;
+  double? baseTaxAmount;
+  double? taxAmountInvoiced;
+  double? baseTaxAmountInvoiced;
+  double? taxAmountRefunded;
+  double? baseTaxAmountRefunded;
+  double? shippingAmount;
+  double? baseShippingAmount;
+  double? shippingInvoiced;
+  double? baseShippingInvoiced;
+  double? shippingRefunded;
+  double? baseShippingRefunded;
   int? customerId;
   String? customerType;
   int? channelId;
@@ -260,10 +272,11 @@ class OrderItem {
   int? qtyInvoiced;
   int? qtyCanceled;
   int? qtyRefunded;
-  int? price;
-  int? basePrice;
-  int? total;
-  int? baseTotal;
+  double? price;
+  double? basePrice;
+  double? total;
+  double? baseTotal;
+  NewProducts? product;
 
   OrderItem(
       {this.id,
@@ -281,7 +294,7 @@ class OrderItem {
         this.price,
         this.basePrice,
         this.total,
-        this.baseTotal});
+        this.baseTotal, this.product});
 
   factory OrderItem.fromJson(Map<String, dynamic> json) {
     return _$OrderItemFromJson(json);

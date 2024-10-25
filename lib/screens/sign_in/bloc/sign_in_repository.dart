@@ -1,16 +1,15 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
-import 'package:bagisto_app_demo/data_model/sign_in_model/signin_model.dart';
-import 'package:bagisto_app_demo/services/api_client.dart';
-import 'package:flutter/material.dart';
+
+import 'package:bagisto_app_demo/screens/sign_in/utils/index.dart';
 
 abstract class SignInRepository {
   Future<SignInModel> callSignInApi(String email, String password);
@@ -25,6 +24,7 @@ class SignInRepositoryImp implements SignInRepository {
     SignInModel? signInModel;
     try {
       signInModel = await ApiClient().getSignInData(email, password, true);
+
     } catch (e, stacktrace) {
       debugPrint("Error --> $e");
       debugPrint("StackTrace --> $stacktrace");

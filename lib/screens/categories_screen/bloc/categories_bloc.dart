@@ -1,24 +1,17 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
-import 'package:bagisto_app_demo/utils/application_localization.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../data_model/add_to_wishlist_model/add_wishlist_model.dart';
-import '../../../data_model/categories_data_model/filter_product_model.dart';
-import '../../../data_model/graphql_base_model.dart';
-import '../../../utils/string_constants.dart';
-import '../../cart_screen/cart_model/add_to_cart_model.dart';
-import '../../home_page/data_model/new_product_data.dart';
-import 'categories_event.dart';
-import 'categories_repository.dart';
-import 'categories_state.dart';
+
+import 'package:bagisto_app_demo/data_model/add_to_wishlist_model/add_wishlist_model.dart';
+import 'package:bagisto_app_demo/screens/categories_screen/utils/index.dart';
+
 
 class CategoryBloc
     extends Bloc<CategoryBaseEvent, CategoriesBaseState> {
@@ -42,7 +35,7 @@ class CategoryBloc
       try {
         AddWishListModel? addWishListModel =
             await repository!.callWishListDeleteItem(event.productId);
-        if (addWishListModel?.responseStatus == true) {
+        if (addWishListModel?.success == true) {
           if (event.datum != null) {
             if (event.datum?.isInWishlist == true) {
               event.datum?.isInWishlist = false;
@@ -56,10 +49,10 @@ class CategoryBloc
           emit(FetchDeleteAddItemCategoryState.success(
               response: addWishListModel,
               productDeletedId: event.productId,
-              successMsg: addWishListModel!.success));
+              successMsg: addWishListModel!.message));
         } else {
           emit(FetchDeleteAddItemCategoryState.fail(
-              error: addWishListModel?.success));
+              error: addWishListModel?.graphqlErrors));
         }
       } catch (e) {
         emit(FetchDeleteAddItemCategoryState.fail(
@@ -67,7 +60,7 @@ class CategoryBloc
       }
     } else if (event is FetchDeleteItemEvent) {
       try {
-        GraphQlBaseModel removeFromWishlist =
+        AddToCartModel removeFromWishlist =
             await repository!.removeItemFromWishlist(event.productId);
         if (removeFromWishlist.status == true) {
           if (event.datum != null) {
@@ -82,7 +75,7 @@ class CategoryBloc
 
           emit(RemoveWishlistState.success(
               productDeletedId: event.productId,
-              successMsg: removeFromWishlist.success,
+              successMsg: removeFromWishlist.message,
               response: removeFromWishlist));
         }
       } catch (e) {
@@ -92,7 +85,7 @@ class CategoryBloc
       try {
         AddToCartModel graphQlBaseModel = await repository!.callAddToCartAPi(
             int.parse(event.productId ?? ""), event.quantity /* event.params*/);
-        if (graphQlBaseModel.responseStatus == true) {
+        if (graphQlBaseModel.graphqlErrors != true) {
           emit(AddToCartSubCategoriesState.success(
               response: graphQlBaseModel,
               successMsg: graphQlBaseModel.message ?? ""));
@@ -106,13 +99,13 @@ class CategoryBloc
       }
     } else if (event is AddToCompareSubCategoryEvent) {
       try {
-        GraphQlBaseModel baseModel = await repository!
+        BaseModel baseModel = await repository!
             .callAddToCompareListApi(int.parse(event.productId ?? ""));
         if (baseModel.status == true) {
           emit(AddToCompareSubCategoryState.success(
-              baseModel: baseModel, successMsg: baseModel.success));
+              baseModel: baseModel, successMsg: baseModel.message));
         } else {
-          emit(AddToCompareSubCategoryState.fail(error: baseModel.success));
+          emit(AddToCompareSubCategoryState.fail(error: baseModel.graphqlErrors));
         }
       } catch (e) {
         emit(AddToCompareSubCategoryState.fail(

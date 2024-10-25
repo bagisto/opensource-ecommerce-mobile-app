@@ -1,3 +1,13 @@
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
 import 'package:bagisto_app_demo/data_model/graphql_base_model.dart';
 import 'package:json_annotation/json_annotation.dart';
 part 'theme_customization.g.dart';
@@ -18,12 +28,12 @@ class ThemeCustomDataModel extends GraphQlBaseModel{
 
 @JsonSerializable()
 class ThemeCustomization {
-  int? id;
-  int? channelId;
+  String? id;
+  String? channelId;
   String? type;
   String? name;
   int? sortOrder;
-  int? status;
+  bool? status;
   String? baseUrl;
   List<Translations>? translations;
 
@@ -41,9 +51,10 @@ class Translations {
   String? id;
   int? themeCustomizationId;
   String? locale;
+  String? localeCode;
   Options? options;
 
-  Translations({this.id, this.themeCustomizationId, this.locale, this.options});
+  Translations({this.id, this.themeCustomizationId, this.locale, this.options, this.localeCode});
 
   factory Translations.fromJson(Map<String, dynamic> json) =>
       _$TranslationsFromJson(json);

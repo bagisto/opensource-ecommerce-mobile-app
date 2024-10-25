@@ -1,46 +1,38 @@
-import 'package:bagisto_app_demo/screens/drawer/widget/drawer_add_item_view.dart';
-import 'package:bagisto_app_demo/screens/drawer/widget/drawer_category_item.dart';
-import 'package:bagisto_app_demo/screens/drawer/widget/log_out_button.dart';
-import 'package:bagisto_app_demo/screens/sign_up/utils/index.dart';
-import 'package:flutter/material.dart';
-import '../../data_model/account_models/account_info_details.dart';
-import '../../data_model/currency_language_model.dart';
-import '../../main.dart';
-import '../../utils/assets_constants.dart';
-import '../../utils/check_internet_connection.dart';
-import '../cms_screen/data_model/cms_model.dart';
-import '../cms_screen/widgets/cms_item_list.dart';
-import '../home_page/data_model/get_categories_drawer_data_model.dart';
-import '../home_page/utils/fetch_shared_pref_helper.dart';
-import 'package:bagisto_app_demo/utils/index.dart';
-import 'package:collection/collection.dart';
-import '../recent_product/utils/database.dart';
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
 
+import 'package:bagisto_app_demo/data_model/account_models/account_info_details.dart';
+import 'package:bagisto_app_demo/screens/drawer/utils/index.dart';
+import '../../utils/server_configuration.dart';
+import '../../utils/shared_preference_keys.dart';
+
+//ignore: must_be_immutable
 class DrawerListView extends StatefulWidget {
-  final GetDrawerCategoriesData getDrawerCategoriesData;
   bool isLoggedIn;
-  final CmsData? cmsData;
-  final AccountInfoDetails? customerDetails;
+  AccountInfoModel? customerDetails;
   String? customerUserName;
   String? image;
   final String? customerLanguage;
   final CurrencyLanguageList? currencyLanguageList;
   final String? customerCurrency;
-  final dynamic setupQuickActions;
   final Function? loginCallback;
 
   DrawerListView({
     Key? key,
-    required this.getDrawerCategoriesData,
     required this.isLoggedIn,
-    this.cmsData,
     required this.customerUserName,
     required this.image,
     this.customerLanguage,
     this.currencyLanguageList,
     required this.customerCurrency,
     this.customerDetails,
-    this.setupQuickActions,
     this.loginCallback
   }) : super(key: key);
 
@@ -49,6 +41,22 @@ class DrawerListView extends StatefulWidget {
 }
 
 class _DrawerListViewState extends State<DrawerListView> {
+
+  @override
+  void initState() {
+    appStoragePref.configurationStorage.listenKey(customerDetails, (value) {
+      AccountInfoModel? data = value as AccountInfoModel?;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if(mounted){
+          setState(() {
+            widget.customerDetails = data;
+          });
+        }
+      });
+    });
+    super.initState();
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -99,7 +107,7 @@ class _DrawerListViewState extends State<DrawerListView> {
                     Text(
                       !widget.isLoggedIn
                           ? StringConstants.signUpOrLogin.localized()
-                          : "${StringConstants.helloLabel.localized()} ${widget.customerDetails?.data?.firstName ?? ""}",
+                          : "${StringConstants.helloLabel.localized()} ${widget.customerDetails?.firstName ?? ""}",
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -120,7 +128,7 @@ class _DrawerListViewState extends State<DrawerListView> {
                       ),
                     ),
                     if(widget.isLoggedIn) Text(
-                        widget.customerDetails?.data?.email ?? "",
+                        widget.customerDetails?.email ?? "",
                         style: Theme.of(context)
                             .textTheme
                             .bodyLarge
@@ -143,9 +151,9 @@ class _DrawerListViewState extends State<DrawerListView> {
                   ],
                 ),
               ),
-              if(!widget.isLoggedIn) const Padding(
-                padding: EdgeInsets.only(right: AppSizes.spacingNormal),
-                child: Icon(Icons.keyboard_double_arrow_right),
+              if(!widget.isLoggedIn) Padding(
+                padding: const EdgeInsets.only(right: AppSizes.spacingNormal),
+                child: Icon(GlobalData.locale == "ar" ? Icons.keyboard_double_arrow_left : Icons.keyboard_double_arrow_right),
               )
             ],
           ),
@@ -153,9 +161,10 @@ class _DrawerListViewState extends State<DrawerListView> {
       ),
     );
 
-    widget.getDrawerCategoriesData.data?.forEach((element) {
+    GlobalData.categoriesDrawerData?.data?.forEach((element) {
       drawerList.add(DrawerCategoryItem(element));
     });
+
 
     if(widget.isLoggedIn) {
       drawerList.add(DrawerAddItemList(
@@ -238,11 +247,31 @@ class _DrawerListViewState extends State<DrawerListView> {
     ));
     }
 
-    if (widget.cmsData != null) {
+
+    if (GlobalData.cmsData != null) {
       drawerList.add(CmsItemsList(
-        cmsData: widget.cmsData,
+        cmsData: GlobalData.cmsData,
       ));
     }
+
+    drawerList.add(DrawerAddItemList(
+      onTap: () {
+        Navigator.pushNamed(context, languageScreen);
+      },
+      icon: Icons.language_sharp,
+      subTitle: widget.customerLanguage ??
+          widget.currencyLanguageList?.locales?.first.name
+    ));
+
+
+    drawerList.add(DrawerAddItemList(
+        onTap: () {
+          Navigator.pushNamed(context, currencyScreen);
+        },
+        icon: Icons.currency_exchange_rounded,
+        subTitle: (widget.customerCurrency ?? "").isEmpty ? (widget.currencyLanguageList?.baseCurrency?.name ??
+            defaultCurrencyName) : widget.customerCurrency
+    ));
 
     widget.isLoggedIn
         ? drawerList.add(LogoutButton(
@@ -251,123 +280,47 @@ class _DrawerListViewState extends State<DrawerListView> {
           ))
         : const SizedBox();
 
+    drawerList.add(const SizedBox(height: AppSizes.spacingNormal));
+
+
     return Drawer(
         elevation: AppSizes.spacingMedium,
         child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                children: drawerList,
-              ),
-              currencyLanguageWidget()
-            ],
+          child: Padding(
+            padding: EdgeInsets.only(top: AppSizes.safeAreaPadding),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  children: drawerList,
+                ),
+              ],
+            ),
           ),
         ));
   }
 
-  Widget currencyLanguageWidget() {
-    return Padding(
-      padding: const EdgeInsets.all(AppSizes.spacingLarge),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              items: widget.currencyLanguageList?.currencies
-                  ?.map((Currencies? value) {
-                return DropdownMenuItem<String>(
-                  value: value?.name,
-                  child: Text(value?.name ?? ""),
-                );
-              }).toList(),
-              elevation: 0,
-              onChanged: (val) async {
-                Currencies? currency = widget.currencyLanguageList?.currencies?.firstWhereOrNull((element) => element.name == val);
-
-                if (currency?.name == widget.customerCurrency) {
-                  SharedPreferenceHelper.setCurrencyCode(currency?.code ?? "USD");
-                  Navigator.pop(context, currency?.code);
-                } else {
-                  SharedPreferenceHelper.setCurrencyCode(currency?.code ?? "USD");
-                  GlobalData.currency = await SharedPreferenceHelper.getCurrencyCode();
-                  SharedPreferenceHelper.setCurrencyLabel(currency?.name ?? "US Dollar");
-                  AppDatabase.getDatabase().then(
-                          (value) => value.recentProductDao
-                          .deleteRecentProducts());
-
-                  if(context.mounted){
-                    RestartWidget.restartApp(context);
-                    Navigator.pushNamedAndRemoveUntil(context, splash, (route) => false);
-                  }
-                }
-              },
-              value: widget.customerCurrency ??
-                  widget.currencyLanguageList?.baseCurrency?.name ??
-                  "US Dollar",
-            ),
-          ),
-          DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              items: GlobalData.languageData?.map((Locales? value) {
-                return DropdownMenuItem<String>(
-                  value: value?.name,
-                  child: Text(value?.name ?? ""),
-                );
-              }).toList(),
-              elevation: 0,
-              onChanged: (val) async{
-                Locales? local = GlobalData.languageData?.firstWhereOrNull((element) => element.name == val);
-
-                GlobalData.selectedLanguage = local?.code?? "";
-                SharedPreferenceHelper.setCustomerLanguage(local?.code ?? "");
-                GlobalData.locale =
-                    await SharedPreferenceHelper.getCustomerLanguage();
-                SharedPreferenceHelper.setLanguageName(local?.name ?? "");
-
-                AppDatabase.getDatabase().then(
-                        (value) => value.recentProductDao.deleteRecentProducts());
-
-                if(context.mounted){
-                  RestartWidget.restartApp(context);
-
-                  Navigator.pushNamedAndRemoveUntil(
-                      context, splash, (route) => false);
-                }
-              },
-              value: widget.customerLanguage ??
-                  widget.currencyLanguageList?.locales?.first.name,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   _fetchSharedPreferenceData() async {
-    getCustomerLoggedInPrefValue().then((isLogged) {
+    bool isLogged = appStoragePref.getCustomerLoggedIn();
       if(widget.loginCallback != null){
         widget.loginCallback!(isLogged);
       }
       if (isLogged) {
-        SharedPreferenceHelper.getCustomerName().then((value) {
+        String value = appStoragePref.getCustomerName();
           setState(() {
             widget.customerUserName = value;
             widget.isLoggedIn = isLogged;
           });
-        });
-        SharedPreferenceHelper.getCustomerImage().then((value) {
+        String imageValue = appStoragePref.getCustomerImage();
           setState(() {
-            widget.image = value;
+            widget.image = imageValue;
             widget.isLoggedIn = isLogged;
           });
-        });
       } else {
         setState(() {
           widget.customerUserName = StringConstants.signUpOrLogin.localized();
           widget.isLoggedIn = isLogged;
         });
       }
-    });
   }
 }

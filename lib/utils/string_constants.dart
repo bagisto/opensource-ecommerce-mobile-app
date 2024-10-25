@@ -1,11 +1,11 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 class StringConstants {
@@ -18,6 +18,7 @@ class StringConstants {
   static const String hotCategories = "hot-categories";
   static const String productPolicy = "product-policy";
   static const String customerReview = "customer-reviews";
+  static const String invoiceDetails="invoiceDetails";
   static const String popularCategories = "popular-categories";
   static const String select = 'select';
   static const String radioText = "radio";
@@ -191,6 +192,7 @@ class StringConstants {
   static const String deleteItemWarning = "deleteItemWarning";
   static const String priceDetails = "priceDetails";
   static const String tax = "tax";
+  static const String taxAmount = "taxAmount";
   static const String discount = "discount";
   static const String grandTotal = "grandTotal";
   static const String reviewAndCheckout = "reviewAndCheckout";
@@ -214,7 +216,7 @@ class StringConstants {
   static const String yourOrderIdMsg = "yourOrderIdMsg";
   static const String orderConfirmationMsg = "orderConfirmationMsg";
   static const String addressAdded = "addressAdded";
-
+  static const String sameAsBilling = "sameAsBilling";
 
   static const String submit = "submit";
   static const String orderStatus = "orderStatus";
@@ -240,7 +242,7 @@ class StringConstants {
   static const String reviews = "reviews";
   static const String orderDetails = "orderDetails";
   static const String editInfo = "editInfo";
-  static const String subTotal = "subtotal";
+  static const String subTotal = "Subtotal";
   static const String qty = "qty";
   static const String manageAddress = "manageAddress";
   static const String currentFilter = "currentFilter";
@@ -331,7 +333,48 @@ class StringConstants {
   static const String noShippingMsg = "noShippingMsg";
   static const String sample = "sample";
   static const String totalAmount = "totalAmount";
-
+  static const String mobile = "mobile";
+  static const String invoice = "invoice";
+  static const String shipment = "shipment";
+  static const String refunds = "refunds";
+  static const String shipmentDetails = "shipmentDetails";
+  static const String refundDetails = "refundDetails";
+  static const String trackingNumber = "trackingNumber";
+  static const String adjustmentRefund = "adjustmentRefund";
+  static const String adjustmentFee = "adjustmentFee";
+  static const String searchLocation = "searchLocation";
+  static const String selectLocation = "selectLocation";
+  static const String pleaseWait = "PleaseWait";
+  static const String currencyTitle = "currencyTitle";
+  static const String language = "language";
+  static const String started = "started";
+  static const String enterValidEmail = "enterValidEmail";
+  static const String enterValidPassword = "enterValidPassword";
+  static const String passwordMismatch = "passwordMismatch";
+  static const String today = "today";
+  static const String yesterday = "yesterday";
+  static const String thisMonth = "thisMonth";
+  static const String lastMonth = "lastMonth";
+  static const String last3Months = "last3Months";
+  static const String last6Months = "last6Months";
+  static const String thisYear = "thisYear";
+  static const String thisWeek = "thisWeek";
+  static const String applyFilters = "applyFilters";
+  static const String status = "status";
+  static const String contactUs = "contactUs";
+  static const String nameLabel = "nameLabel";
+  static const String whatOnYourMind = "whatOnYourMind";
+  static const String describeHere = "describeHere";
+  static const String enterYourEmail = "enterYourEmail";
+  static const String contactUsDetail = "contactUsDetail";
+  static const String reOrder = "reOrder";
+  static const String setDefault = "setDefault";
+  static const String products = "products";
+  static const String subscribeToNewsletter = "subscribeToNewsletter";
+  static const String downloadComplete = "downloadComplete";
+  static const String downloadProgress = "downloadProgress";
+  static const String open = "open";
+  static const String subCategories = "subCategories";
 
 }
 

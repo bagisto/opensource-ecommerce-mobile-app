@@ -1,38 +1,15 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
-import 'package:bagisto_app_demo/screens/search_screen/view/widget/product_list.dart';
-import 'package:bagisto_app_demo/utils/application_localization.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:skeleton_loader/skeleton_loader.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:speech_to_text/speech_to_text.dart';
-import 'package:speech_to_text/speech_recognition_result.dart';
-import '../../../utils/app_constants.dart';
-import '../../../utils/app_global_data.dart';
-import '../../../utils/assets_constants.dart';
-import '../../../utils/dialog_helper.dart';
-import '../../../utils/mobikul_theme.dart';
-import '../../../utils/server_configuration.dart';
-import '../../../utils/string_constants.dart';
-import '../../../widgets/empty_data_view.dart';
-import '../../../widgets/show_message.dart';
-import '../../home_page/data_model/get_categories_drawer_data_model.dart';
-import '../../home_page/data_model/new_product_data.dart';
-import '../bloc/fetch_search_data_state.dart';
-import '../bloc/fetch_search_event.dart';
-import '../bloc/search_bloc.dart';
-import 'widget/categories_view.dart';
+import 'package:bagisto_app_demo/screens/search_screen/utils/index.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({Key? key}) : super(key: key);
@@ -62,7 +39,11 @@ class _SearchScreenState extends State<SearchScreen>
   void initState() {
     activateSpeechRecognizer();
     searchBloc = context.read<SearchBloc>();
-    searchBloc?.add(FetchCategoryPageEvent(GlobalData.rootCategoryId));
+    searchBloc?.add(FetchCategoryPageEvent([
+      {"key": '"status"', "value": '"1"'},
+      {"key": '"locale"', "value": '"${GlobalData.locale}"'},
+      {"key": '"parent_id"', "value": '"1"'}
+    ]));
     super.initState();
   }
 
@@ -84,7 +65,7 @@ class _SearchScreenState extends State<SearchScreen>
         searchBloc?.add(CircularBarEvent(isReqToShowLoader: true));
         searchBloc?.add(SearchBarTextEvent(searchText: transcription));
         searchBloc?.add(FetchSearchEvent([
-          {"key": '\"name\"', "value": '\"$transcription\"'}
+          {"key": '"name"', "value": '"$transcription"'}
         ]));
       }
       stop();
@@ -93,83 +74,79 @@ class _SearchScreenState extends State<SearchScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: GlobalData.contentDirection(),
-      child: BlocConsumer<SearchBloc, SearchBaseState>(
-          listener: (BuildContext context, SearchBaseState current) {},
-          builder: (BuildContext context, SearchBaseState state) {
-            _searchText.text = (state is AppBarSearchTextState
-                ? state.searchText
-                : ((state is ClearSearchBarTextState)
-                    ? ""
-                    : _searchText.text))!;
-            _searchText.value = _searchText.value.copyWith(
-              text: _searchText.text,
-              selection: TextSelection.fromPosition(
-                TextPosition(offset: _searchText.text.length),
-              ),
-            );
-            if (state is CircularBarState) {
-              isLoading = state.isReqToShowLoader!;
+    return BlocConsumer<SearchBloc, SearchBaseState>(
+        listener: (BuildContext context, SearchBaseState current) {},
+        builder: (BuildContext context, SearchBaseState state) {
+          _searchText.text = (state is AppBarSearchTextState
+              ? state.searchText
+              : ((state is ClearSearchBarTextState)
+              ? ""
+              : _searchText.text))!;
+          _searchText.value = _searchText.value.copyWith(
+            text: _searchText.text,
+            selection: TextSelection.fromPosition(
+              TextPosition(offset: _searchText.text.length),
+            ),
+          );
+          if (state is CircularBarState) {
+            isLoading = state.isReqToShowLoader!;
+          }
+          if (state is FetchCategoriesPageDataState) {
+            if (state.status == Status.success) {
+              data = state.getCategoriesData?.data;
             }
-            if (state is FetchCategoriesPageDataState) {
-              if (state.status == Status.success) {
-                data = state.getCategoriesData?.data;
-              }
-              if (state.status == Status.fail) {}
+            if (state.status == Status.fail) {}
+          }
+          if (state is FetchSearchDataState) {
+            searchBloc?.add(CircularBarEvent(isReqToShowLoader: false));
+            if (state.status == Status.success) {
+              products = state.products!;
             }
-            if (state is FetchSearchDataState) {
-              searchBloc?.add(CircularBarEvent(isReqToShowLoader: false));
-              if (state.status == Status.success) {
-                products = state.products!;
-              }
-              if (state.status == Status.fail) {
-                return (state.products?.data ?? []).isEmpty
-                    ? const EmptyDataView(
-                        assetPath: AssetConstants.emptyCatalog,
-                        message: "EmptyPageGenericLabel",
-                      )
-                    : const SizedBox();
-              }
+            if (state.status == Status.fail) {
+              return (state.products?.data ?? []).isEmpty
+                  ? const EmptyDataView(
+                assetPath: AssetConstants.emptyCatalog,
+                message: StringConstants.emptyPageGenericLabel,
+              )
+                  : const SizedBox();
             }
-            return Scaffold(
-                appBar: _setAppBarView(context),
-                body: SingleChildScrollView(
-                  child: Column(children: [
-                    Visibility(
-                      visible: isLoading,
-                      child: LinearProgressIndicator(
-                        backgroundColor: Theme.of(context).iconTheme.color,
-                        valueColor: const AlwaysStoppedAnimation(Colors.white),
-                      ),
+          }
+          return Scaffold(
+              appBar: _setAppBarView(context),
+              body: SingleChildScrollView(
+                child: Column(children: [
+                  Visibility(
+                    visible: isLoading,
+                    child: const LinearProgressIndicator(
+                      backgroundColor: MobiKulTheme.accentColor,
+                      valueColor: AlwaysStoppedAnimation(Colors.white),
                     ),
-                    ((data ?? []).isNotEmpty)
-                        ? CategoriesView(data: data)
-                        : SkeletonLoader(
-                            highlightColor: Theme.of(context).highlightColor,
-                            baseColor:
-                                Theme.of(context).appBarTheme.backgroundColor ??
-                                    MobikulTheme.primaryColor,
-                            builder: const SizedBox(
-                              height: 100,
-                              child: Card(
-                                color: Colors.red,
-                              ),
-                            )),
-                    ((products?.data ?? []).isNotEmpty)
-                        ? _getSearchData(products)
-                        : _searchText.text.isNotEmpty
-                            ? (products?.data ?? []).isEmpty
-                                ? const EmptyDataView(
-                                    assetPath: AssetConstants.emptyCatalog,
-                                    message: StringConstants.emptyPageGenericLabel,
-                                  )
-                                : const SizedBox()
-                            : const SizedBox(),
-                  ]),
-                ));
-          }),
-    );
+                  ),
+                  ((data ?? []).isNotEmpty)
+                      ? CategoriesView(data: data)
+                      : SkeletonLoader(
+                      highlightColor: Theme.of(context).highlightColor,
+                      baseColor: Theme.of(context).scaffoldBackgroundColor,
+
+                      builder: const SizedBox(
+                        height: 100,
+                        child: Card(
+                          color: Colors.red,
+                        ),
+                      )),
+                  ((products?.data ?? []).isNotEmpty)
+                      ? _getSearchData(products)
+                      : _searchText.text.isNotEmpty
+                      ? (products?.data ?? []).isEmpty
+                      ? const EmptyDataView(
+                    assetPath: AssetConstants.emptyCatalog,
+                    message: StringConstants.emptyPageGenericLabel,
+                  )
+                      : const SizedBox()
+                      : const SizedBox(),
+                ]),
+              ));
+        });
   }
 
   /// App Bar View
@@ -182,24 +159,22 @@ class _SearchScreenState extends State<SearchScreen>
           children: [
             Expanded(
               child: TextField(
-                style:
-                    TextStyle(color: Theme.of(context).colorScheme.onPrimary),
                 onChanged: (value) async {
                   if (value.length > 2) {
                     searchBloc?.add(SearchBarTextEvent(searchText: value));
                     searchBloc?.add(CircularBarEvent(isReqToShowLoader: true));
                     searchBloc?.add(FetchSearchEvent([
-                      {"key": '\"name\"', "value": '\"$value\"'}
+                      {"key": '"name"', "value": '"$value"'}
                     ]));
                   }
                 },
                 readOnly: _isListening,
                 controller: _searchText,
+                style: Theme.of(context).textTheme.bodyMedium,
                 decoration: InputDecoration(
-                    border: InputBorder.none,
-                    hintText: StringConstants.searchScreenTitle.localized(),
-                    hintStyle: TextStyle(
-                        color: Theme.of(context).colorScheme.onPrimary)),
+                  border: InputBorder.none,
+                  hintText: StringConstants.searchScreenTitle.localized(),
+                ),
               ),
             ),
           ],
@@ -207,26 +182,40 @@ class _SearchScreenState extends State<SearchScreen>
         actions: [
           _searchText.text.isNotEmpty
               ? IconButton(
-                  icon: const Icon(
-                    Icons.close,
-                  ),
-                  onPressed: () {
-                    searchBloc?.add(SearchBarTextEvent(searchText: ""));
-                  },
-                )
-              : Container(),
+            icon: const Icon(
+              Icons.close,
+            ),
+            onPressed: () {
+              searchBloc?.add(SearchBarTextEvent(searchText: ""));
+            },
+          )
+              : const SizedBox(),
           _isListening
               ? const Center(
-                  child: Text(
-                    "Listening...",
-                    style: TextStyle(
-                        color: Colors.grey, fontWeight: FontWeight.w400),
-                  ),
-                )
-              : Container(),
+            child: Text(
+              "Listening...",
+              style: TextStyle(
+                  color: Colors.grey, fontWeight: FontWeight.w400),
+            ),
+          )
+              : const SizedBox(),
           _buildVoiceInput(
             onPressed: _speechToText.isNotListening ? start : stop,
-          )
+          ),
+          IconButton(
+            icon: const Icon(
+              Icons.camera_alt_outlined,
+            ),
+            onPressed: () async {
+              DialogHelper.searchDialog(context, () {
+                Navigator.of(context).pop();
+                _checkPermission(_permission, searchImage);
+              }, () {
+                Navigator.of(context).pop();
+                _checkPermission(_permission, searchText);
+              });
+            },
+          ),
         ],
       ),
     );
@@ -237,7 +226,7 @@ class _SearchScreenState extends State<SearchScreen>
     var productList = model?.data;
     return (productList != null && productList.isNotEmpty)
         ? ProductList(model: model!)
-        : Container();
+        : const SizedBox();
   }
 
   ///voice search
@@ -296,7 +285,6 @@ class _SearchScreenState extends State<SearchScreen>
   }
 
   ///Camera search
-
   Future<void> _checkPermission(Permission permission, String type) async {
     final status = await permission.request();
     if (status == PermissionStatus.granted) {
@@ -325,11 +313,10 @@ class _SearchScreenState extends State<SearchScreen>
       searchBloc?.add(CircularBarEvent(isReqToShowLoader: true));
       searchBloc?.add(SearchBarTextEvent(searchText: data));
       searchBloc?.add(FetchSearchEvent([
-        {"key": '\"name\"', "value": '\"$data\"'}
+        {"key": '"name"', "value": '"$data"'}
       ]));
       return data;
     } else {
-      // ignore: use_build_context_synchronously
       DialogHelper.networkErrorDialog(context, onConfirm: () {
         onImageSearch(data);
       });
@@ -337,17 +324,7 @@ class _SearchScreenState extends State<SearchScreen>
   }
 
   static Future<bool> connectedToNetwork() async {
-    var result = await Connectivity().checkConnectivity();
-    if (result == ConnectivityResult.mobile) {
-      return true;
-    } else if (result == ConnectivityResult.wifi) {
-      return true;
-    } else if (result == ConnectivityResult.ethernet) {
-      return true;
-    } else if (result == ConnectivityResult.bluetooth) {
-      return true;
-    } else {
-      return false;
-    }
+    bool result = await InternetConnectionChecker().hasConnection;
+    return result;
   }
 }

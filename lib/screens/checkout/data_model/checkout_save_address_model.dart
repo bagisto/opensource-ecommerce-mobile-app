@@ -1,11 +1,11 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 
@@ -14,6 +14,7 @@ import 'package:json_annotation/json_annotation.dart';
 import '../../../data_model/graphql_base_error_model.dart';
 import '../../../data_model/graphql_base_model.dart';
 import '../../cart_screen/cart_model/cart_data_model.dart';
+import 'checkout_save_shipping_model.dart';
 part 'checkout_save_address_model.g.dart';
 
 @JsonSerializable()
@@ -42,17 +43,15 @@ class Data {
 @JsonSerializable()
 class SaveCheckoutAddresses  extends GraphQlBaseErrorModel{
 
-  @override
-  String? success;
   String? cartTotal;
   int? cartCount;
   List<ShippingMethods>? shippingMethods;
-  Payment? paymentMethods;
+  List<PaymentMethodsList>? paymentMethods;
   String? jumpToSection;
   CartModel? cart;
 
   SaveCheckoutAddresses(
-      {this.success,
+      {
         this.cartTotal,
         this.cartCount,
         this.shippingMethods,

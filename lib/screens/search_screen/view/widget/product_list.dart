@@ -1,10 +1,20 @@
-import 'package:bagisto_app_demo/utils/route_constants.dart';
-import 'package:flutter/material.dart';
-import 'package:collection/collection.dart';
-import '../../../../utils/app_constants.dart';
-import '../../../../utils/app_global_data.dart';
-import '../../../home_page/data_model/new_product_data.dart';
-import '../../../home_page/utils/route_argument_helper.dart';
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
+
+
+
+import 'package:bagisto_app_demo/screens/order_detail/utils/index.dart';
+import 'package:bagisto_app_demo/screens/search_screen/utils/index.dart';
+
+import '../../../../utils/prefetching_helper.dart';
 
 class ProductList extends StatelessWidget {
   final NewProductsModel? model;
@@ -18,14 +28,13 @@ class ProductList extends StatelessWidget {
         itemCount: model?.data?.length ?? 0,
         itemBuilder: (BuildContext context, int index) {
           NewProducts? product = model?.data?[index];
-          var productFlats = product?.productFlats?.firstWhereOrNull((e) => e.locale==GlobalData.locale );
 
           return InkWell(
             onTap: () {
               Navigator.pushNamed(context, productScreen,
                   arguments: PassProductData(
-                      title: productFlats?.name,
-                      urlKey: productFlats?.urlKey,
+                      title: product?.name,
+                      urlKey: product?.urlKey,
                       productId: int.parse(product?.id ?? "")));
             },
             child: Card(
@@ -38,18 +47,22 @@ class ProductList extends StatelessWidget {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if ((product?.images ?? []).isNotEmpty)
-                      Container(
-                        padding: const EdgeInsets.all(AppSizes.spacingWide*4),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(0),
-                          image: DecorationImage(
-                            image:
-                            NetworkImage(product?.images?.first.url ?? ""),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
+                    ((product?.images ?? []).isNotEmpty) ?
+                      ClipRRect(
+                        borderRadius: const BorderRadius.all(Radius.circular(8)),
+                        child: ImageView(url: product?.images?.first.url ?? "", fit: BoxFit.cover,
+                          width: MediaQuery.of(context).size.width / 3,
+                          height:
+                          MediaQuery.of(context).size.height * 0.2),
+                      ) :
+                    ClipRRect(
+                      borderRadius: const BorderRadius.all(Radius.circular(8)),
+                      child: ImageView(url: "",
+                          fit: BoxFit.cover,
+                          width: MediaQuery.of(context).size.width / 3,
+                          height:
+                          MediaQuery.of(context).size.height * 0.2),
+                    ),
                     Expanded(
                         flex: 4,
                         child: Padding(
@@ -57,11 +70,11 @@ class ProductList extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(productFlats?.name ?? ""),
+                              Text(product?.name ?? ""),
                               const SizedBox(
                                 height: 12,
                               ),
-                             Text(product?.priceHtml?.formattedFinalPrice ?? "")
+                             Text(product?.priceHtml?.formattedFinalPrice ?? product?.priceHtml?.formattedRegularPrice ?? "")
                             ],
                           ),
                         )),

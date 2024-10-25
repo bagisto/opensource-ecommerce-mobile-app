@@ -1,11 +1,17 @@
 
-import 'package:bagisto_app_demo/utils/application_localization.dart';
-import 'package:bagisto_app_demo/utils/route_constants.dart';
-import 'package:flutter/material.dart';
-import '../../../../data_model/app_route_arguments.dart';
-import '../../../../utils/app_constants.dart';
-import '../../../../utils/string_constants.dart';
-import '../../../home_page/data_model/get_categories_drawer_data_model.dart';
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
+
+
+import 'package:bagisto_app_demo/screens/search_screen/utils/index.dart';
 
 class CategoriesView extends StatelessWidget {
   final List<HomeCategories>? data;
@@ -37,13 +43,21 @@ class CategoriesView extends StatelessWidget {
                     itemBuilder: (context, index) {
                       return GestureDetector(
                         onTap: () {
-                          Navigator.pushNamed(context, categoryScreen,
-                              arguments: CategoriesArguments(
-                                  metaDescription: data?[index].description,
-                                  categorySlug: data?[index].slug ?? "",
-                                  id: data?[index].categoryId.toString(),
-                                  title: data?[index].name,
-                                  image: data?[index].imageUrl));
+                          if((data?[index].children ?? []).isNotEmpty){
+                            Navigator.pushNamed(context, drawerSubCategoryScreen, arguments:
+                            CategoriesArguments(categorySlug: data?[index].slug,
+                                title: data?[index].name, id: data?[index].id.toString(),
+                                image: data?[index].bannerUrl ?? "", parentId: "1"));
+                          }
+                          else{
+                            Navigator.pushNamed(context, categoryScreen,
+                                arguments: CategoriesArguments(
+                                    metaDescription: data?[index].description,
+                                    categorySlug: data?[index].slug ?? "",
+                                    id: data?[index].id.toString(),
+                                    title: data?[index].name,
+                                    image: data?[index].bannerUrl));
+                          }
                         },
                         child: Container(
                           margin: const EdgeInsets.only(
@@ -56,7 +70,7 @@ class CategoriesView extends StatelessWidget {
                           decoration: BoxDecoration(
                             borderRadius:
                                 const BorderRadius.all(Radius.circular(AppSizes.spacingWide)),
-                            color: Theme.of(context).colorScheme.onPrimary,
+                            color: Theme.of(context).colorScheme.onBackground,
                           ),
                           child: Center(
                               child: Text(
@@ -64,7 +78,7 @@ class CategoriesView extends StatelessWidget {
                             style: Theme.of(context)
                                 .textTheme
                                 .bodyMedium?.copyWith(
-                              color: Theme.of(context).colorScheme.primary
+                              color: Theme.of(context).colorScheme.secondaryContainer
                             ),
                           )),
                         ),

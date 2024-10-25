@@ -1,23 +1,26 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 
-import '../../../data_model/graphql_base_model.dart';
-import '../../../services/api_client.dart';
-import '../data_model/address_model.dart';
-import 'package:flutter/material.dart';
+
+
+import 'package:bagisto_app_demo/screens/address_list/utils/index.dart';
+
+import '../data_model/default_address_model.dart';
 
 abstract class AddressRepository {
   Future<AddressModel> callAddressApi();
 
-  Future<GraphQlBaseModel> callRemoveAddressApi(String? customerId);
+  Future<BaseModel> callRemoveAddressApi(String? customerId);
+
+  Future<SetDefaultAddress?> setDefaultAddress(String addressId);
 }
 
 class AddressRepositoryImp implements AddressRepository {
@@ -34,10 +37,22 @@ class AddressRepositoryImp implements AddressRepository {
   }
 
   @override
-  Future<GraphQlBaseModel> callRemoveAddressApi(String? id) async {
-    GraphQlBaseModel? baseModel;
+  Future<BaseModel> callRemoveAddressApi(String? id) async {
+    BaseModel? baseModel;
     try {
       baseModel = await ApiClient().deleteAddress(id);
+    } catch (error, stacktrace) {
+      debugPrint("Error --> $error");
+      debugPrint("StackTrace --> $stacktrace");
+    }
+    return baseModel!;
+  }
+
+  @override
+  Future<SetDefaultAddress?> setDefaultAddress(String addressId) async {
+    SetDefaultAddress? baseModel;
+    try {
+      baseModel = await ApiClient().setDefaultAddress(addressId);
     } catch (error, stacktrace) {
       debugPrint("Error --> $error");
       debugPrint("StackTrace --> $stacktrace");

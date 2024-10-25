@@ -1,5 +1,14 @@
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
 import 'dart:io';
-import 'package:flutter/material.dart';
 import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
 
 class NoInternetError extends StatelessWidget {
@@ -14,7 +23,7 @@ class NoInternetError extends StatelessWidget {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+            backgroundColor: Theme.of(context).colorScheme.background,
             title: Text(error),
 
             actions: <Widget>[

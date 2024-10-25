@@ -1,6 +1,18 @@
 
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
 import 'package:json_annotation/json_annotation.dart';
 import '../../../data_model/graphql_base_model.dart';
+import '../../../data_model/order_model/order_detail_model.dart';
+import '../../../data_model/product_model/product_screen_model.dart';
 import '../../product_screen/data_model/product_details_model.dart';
 part 'cart_data_model.g.dart';
 
@@ -43,12 +55,13 @@ class CartModel extends GraphQlBaseModel {
   Payment? payment;
   String? checkoutMethod;
   dynamic conversionTime;
+  List<AppliedTaxRate>? appliedTaxRates;
 
 
   CartModel({this.items,this.id, this.customerEmail, this.customerFirstName, this.customerLastName, this.shippingMethod,
     this.couponCode, this.isGift, this.itemsCount, this.itemsQty, this.exchangeRate, this.globalCurrencyCode,
     this.baseCurrencyCode, this.channelCurrencyCode, this.cartCurrencyCode, this.grandTotal, this.baseGrandTotal,
-    this.subTotal, this.baseSubTotal, this.taxTotal, this.baseTaxTotal, this.discountAmount,
+    this.subTotal, this.baseSubTotal, this.taxTotal, this.baseTaxTotal, this.discountAmount,this.appliedTaxRates,
     this.baseDiscountAmount, this.isGuest, this.isActive,  this.customerId, this.channelId, this.appliedCartRuleIds, this.createdAt, this.updatedAt,this.formattedPrice,this.shippingAddress,
     this.billingAddress,this.selectedShippingRate,this.payment, this.checkoutMethod, this.conversionTime});
 
@@ -58,6 +71,23 @@ class CartModel extends GraphQlBaseModel {
   @override
   Map<String, dynamic> toJson() => _$CartModelToJson(this);
 
+}
+
+@JsonSerializable()
+class AppliedTaxRate {
+  @JsonKey(name: "taxName")
+  String taxName;
+  @JsonKey(name: "totalAmount")
+  String totalAmount;
+
+  AppliedTaxRate({
+    required this.taxName,
+    required this.totalAmount,
+  });
+
+  factory AppliedTaxRate.fromJson(Map<String, dynamic> json) => _$AppliedTaxRateFromJson(json);
+
+  Map<String, dynamic> toJson() => _$AppliedTaxRateToJson(this);
 }
 
 
@@ -81,6 +111,7 @@ class Items {
   String? sku;
   String? type;
   String? name;
+  String? appliedTaxRate;
   String? couponCode;
   double? weight;
   double? totalWeight;
@@ -167,7 +198,8 @@ class Items {
     this.createdAt,
     this.updatedAt,
     this.product,
-    this.urlKey, this.formattedPrice
+    this.urlKey, this.formattedPrice,
+    this.appliedTaxRate
   });
 
   factory Items.fromJson(Map<String, dynamic> json) => _$ItemsFromJson(json);
@@ -227,6 +259,7 @@ class ShippingAddress {
   String? lastName;
   String? gender;
   String? companyName;
+  @JsonKey(name: "address")
   String? address1;
   String? address2;
   String? postcode;
@@ -407,22 +440,22 @@ class FormattedPrice {
   Map<String, dynamic> toJson() => _$FormattedPriceToJson(this);
 }
 
-@JsonSerializable()
-class Additional{
-  bool? isBuyNow;
-  String? productId;
-  int? quantity;
-  String? selectedConfigurableOption;
-  SuperAttributes? superAttributes;
-  List<Attributes>? attributes;
-
-  Additional({this.isBuyNow,this.productId,this.quantity,this.selectedConfigurableOption,this.superAttributes,this.attributes});
-  factory Additional.fromJson(Map<String, dynamic> json) {
-    return _$AdditionalFromJson(json);
-  }
-  Map<String, dynamic> toJson() => _$AdditionalToJson(this);
-
-}
+// @JsonSerializable()
+// class Additional{
+//   bool? isBuyNow;
+//   String? productId;
+//   int? quantity;
+//   String? selectedConfigurableOption;
+//   SuperAttributes? superAttributes;
+//   List<Attributes>? attributes;
+//
+//   Additional({this.isBuyNow,this.productId,this.quantity,this.selectedConfigurableOption,this.superAttributes,this.attributes});
+//   factory Additional.fromJson(Map<String, dynamic> json) {
+//     return _$AdditionalFromJson(json);
+//   }
+//   Map<String, dynamic> toJson() => _$AdditionalToJson(this);
+//
+// }
 
 @JsonSerializable()
 class SuperAttributes{
@@ -437,29 +470,6 @@ class SuperAttributes{
 
 }
 
-@JsonSerializable()
-class Attributes{
-  String? optionId;
-  String? optionLabel;
-  String? attributeCode;
-  String? attributeName;
-  String? id;
-  String? code;
-  String? label;
-  String? swatchType;
-  String? swatchValue;
-  String? type;
-  List<Options>? options;
-
-
-  Attributes({this.optionId,this.optionLabel,this.attributeCode,this.attributeName, this.id, this.options, this.type,
-  this.code, this.label, this.swatchType, this.swatchValue});
-  factory Attributes.fromJson(Map<String, dynamic> json) {
-    return _$AttributesFromJson(json);
-  }
-  Map<String, dynamic> toJson() => _$AttributesToJson(this);
-
-}
 
 @JsonSerializable()
 class Options {

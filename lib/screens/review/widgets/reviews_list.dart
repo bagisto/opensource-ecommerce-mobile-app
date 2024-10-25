@@ -1,13 +1,18 @@
-import 'package:bagisto_app_demo/screens/home_page/utils/route_argument_helper.dart';
-import 'package:bagisto_app_demo/utils/index.dart';
-import 'package:bagisto_app_demo/widgets/image_view.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
-import 'package:bagisto_app_demo/screens/review/utils/index.dart';
-import 'package:collection/collection.dart';
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
 
-import '../../../utils/status_color_helper.dart';
 
+
+import  'package:bagisto_app_demo/screens/review/utils/index.dart';
+
+//ignore: must_be_immutable
 class ReviewsList extends StatefulWidget {
   ReviewData? reviewData;
   ReviewsBloc? reviewsBloc;
@@ -34,7 +39,7 @@ class _ReviewsListState extends State<ReviewsList> {
       onTap: () {
         Navigator.pushNamed(context, productScreen,
             arguments: PassProductData(
-                title: productFlats?.name ??
+                title: widget.reviewData?.product?.name ??
                     widget.reviewData?.product?.productFlats?[0].name,
                 urlKey: widget.reviewData?.product?.urlKey,
                 productId:
@@ -109,11 +114,6 @@ class _ReviewsListState extends State<ReviewsList> {
                                     fontSize: 16, fontWeight: FontWeight.bold)),
                           ),
                           const SizedBox(width: AppSizes.spacingNormal),
-                          InkWell(
-                              onTap: () {
-                                _onPressRemove(context);
-                              },
-                              child: const Icon(Icons.delete))
                         ],
                       ),
                       const SizedBox(
@@ -133,10 +133,13 @@ class _ReviewsListState extends State<ReviewsList> {
                             style: const TextStyle(
                                 fontSize: 14, fontWeight: FontWeight.bold),
                           ),
-                          Text(widget.reviewData?.customerName ?? "",
-                              style: const TextStyle(
-                                fontSize: 14,
-                              )),
+                          Padding(
+                            padding: const EdgeInsets.only(left:4.0),
+                            child: Text(widget.reviewData?.customer?.name ?? "",
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                )),
+                          ),
                         ],
                       ),
                     ],
@@ -147,18 +150,18 @@ class _ReviewsListState extends State<ReviewsList> {
                 height: 8.0,
               ),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Row(
-                    children: [
-                      Text("${StringConstants.email.localized()}:",
-                          style: const TextStyle(
-                              fontSize: 14, fontWeight: FontWeight.w500)),
-                      Text(widget.reviewData?.customerName ?? "",
-                          style: const TextStyle(
-                              fontSize: 14, fontWeight: FontWeight.w400)),
-                    ],
-                  ),
+                  // Row(
+                  //   children: [
+                  //     Text("${StringConstants.email.localized()}:",
+                  //         style: const TextStyle(
+                  //             fontSize: 14, fontWeight: FontWeight.w500)),
+                  //     Text(widget.reviewData?.customerName ?? "",
+                  //         style: const TextStyle(
+                  //             fontSize: 14, fontWeight: FontWeight.w400)),
+                  //   ],
+                  // ),
                   Row(
                     children: [
                       Text("${StringConstants.date.localized()}:",
@@ -181,40 +184,40 @@ class _ReviewsListState extends State<ReviewsList> {
     );
   }
 
-  _onPressRemove(BuildContext context) {
-    return showDialog(
-      barrierDismissible: false,
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
-          title: Text(
-            StringConstants.deleteReviewWarning.localized(),
-            style: Theme.of(context).textTheme.labelMedium,
-          ),
-          actions: [
-            MaterialButton(
-              onPressed: () {
-                Navigator.of(context, rootNavigator: true).pop();
-              },
-              child: Text(
-                StringConstants.no.localized(),
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-            ),
-            TextButton(
-                onPressed: () {
-                  Navigator.of(context, rootNavigator: true).pop();
-
-                  if (widget.reviewsBloc != null) {
-                    widget.reviewsBloc
-                        ?.add(RemoveReviewEvent(widget.reviewData?.id, ""));
-                  }
-                },
-                child: Text(StringConstants.yes.localized(), style: Theme.of(context).textTheme.bodyMedium))
-          ],
-        );
-      },
-    );
-  }
+  // _onPressRemove(BuildContext context) {
+  //   return showDialog(
+  //     barrierDismissible: false,
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         backgroundColor: Theme.of(context).colorScheme.background,
+  //         title: Text(
+  //           StringConstants.deleteReviewWarning.localized(),
+  //           style: Theme.of(context).textTheme.labelMedium,
+  //         ),
+  //         actions: [
+  //           MaterialButton(
+  //             onPressed: () {
+  //               Navigator.of(context, rootNavigator: true).pop();
+  //             },
+  //             child: Text(
+  //               StringConstants.no.localized(),
+  //               style: Theme.of(context).textTheme.bodyMedium,
+  //             ),
+  //           ),
+  //           TextButton(
+  //               onPressed: () {
+  //                 Navigator.of(context, rootNavigator: true).pop();
+  //
+  //                 if (widget.reviewsBloc != null) {
+  //                   widget.reviewsBloc
+  //                       ?.add(RemoveReviewEvent(widget.reviewData?.id, ""));
+  //                 }
+  //               },
+  //               child: Text(StringConstants.yes.localized(), style: Theme.of(context).textTheme.bodyMedium))
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
 }

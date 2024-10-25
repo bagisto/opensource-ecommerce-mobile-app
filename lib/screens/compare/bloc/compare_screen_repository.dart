@@ -1,28 +1,24 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
-import 'package:flutter/material.dart';
 
-import '../../../data_model/add_to_wishlist_model/add_wishlist_model.dart';
-import '../../../data_model/graphql_base_model.dart';
-import '../../../services/api_client.dart';
-import '../../cart_screen/cart_model/add_to_cart_model.dart';
-import '../data_model/compare_product_model.dart';
+import 'package:bagisto_app_demo/screens/compare/utils/index.dart';
+
 
 abstract class CompareScreenRepository{
   Future<CompareProductsData> callCompareApi();
-  Future<GraphQlBaseModel> removeFromCompareList(int productId);
+  Future<BaseModel> removeFromCompareList(int productId);
   Future<AddToCartModel> callAddToCartAPi(int productId, int quantity);
   Future<AddWishListModel?> callWishListAddDeleteItem(var wishListProductId);
-  Future<GraphQlBaseModel> removeItemFromWishlist(var wishListProductId);
-  Future<GraphQlBaseModel> removeAllCompareProducts();
+  Future<AddToCartModel> removeItemFromWishlist(var wishListProductId);
+  Future<BaseModel> removeAllCompareProducts();
 
 }
 class CompareScreenRepositoryImp implements CompareScreenRepository {
@@ -40,8 +36,8 @@ class CompareScreenRepositoryImp implements CompareScreenRepository {
   }
 
   @override
-  Future<GraphQlBaseModel> removeFromCompareList(int productId)async{
-    GraphQlBaseModel? baseModel;
+  Future<BaseModel> removeFromCompareList(int productId)async{
+    BaseModel? baseModel;
     baseModel = await ApiClient().removeFromCompare(productId);
 
     return baseModel!;
@@ -70,8 +66,8 @@ class CompareScreenRepositoryImp implements CompareScreenRepository {
   }
 
   @override
-  Future<GraphQlBaseModel> removeItemFromWishlist(var wishListProductId) async {
-    GraphQlBaseModel? removeFromWishlist;
+  Future<AddToCartModel> removeItemFromWishlist(var wishListProductId) async {
+    AddToCartModel? removeFromWishlist;
     try{
       removeFromWishlist=await ApiClient().removeFromWishlist(wishListProductId.toString());
 
@@ -83,8 +79,8 @@ class CompareScreenRepositoryImp implements CompareScreenRepository {
   }
 
   @override
-  Future<GraphQlBaseModel> removeAllCompareProducts()async{
-    GraphQlBaseModel? baseModel;
+  Future<BaseModel> removeAllCompareProducts()async{
+    BaseModel? baseModel;
     baseModel = await ApiClient().removeAllCompareProducts();
 
     return baseModel!;

@@ -1,31 +1,47 @@
 
 
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
 // Application Specific Constants
 const int defaultSplashDelay = 3;
 
-
-// local instance bagisto 2.0 updated
 const String baseUrl = "";
 
-const String defaultWebsiteId = "1";
-
-///default website id
+///default channel id
 const String defaultChannelId = "1";
 
-///default channel id
+///default store code
 const String defaultStoreCode = "en";
 
-///default store code
-const String defaultChannelName = "";
+const String defaultLanguageName = "English";
 
-///default channel id
-const String defaultCurrencyCode = "";
-const String storage = "storage/";
+const String defaultCurrencyCode = "USD";
 
-///this storage keyword is appending with image url to get the image
-List<String> supportedLocale = ['en', 'fr', 'nl', 'tr', 'es', 'ar', 'pt_br'];
+const String defaultCurrencyName = "US Dollar";
+
+const String defaultAppTitle = "Bagisto App";
+
+///default channel name
+const String defaultChannelName = "com.webkul.bagisto_mobikul/channel";
+
+const String demoEmail = "john@example.com";
+
+const String demoPassword = "demo123";
 
 ///supported locales in app
+List<String> supportedLocale = ['en', 'fr', 'nl', 'tr', 'es', 'ar', 'pt_br'];
+
+const bool isPreFetchingEnable = true;
+
+///supported payment methods in app
 const availablePaymentMethods = [
   "cashondelivery",
   "moneytransfer",

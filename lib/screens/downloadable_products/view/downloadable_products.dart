@@ -1,22 +1,18 @@
-import 'package:bagisto_app_demo/screens/account/view/account_screen.dart';
-import 'package:bagisto_app_demo/screens/downloadable_products/bloc/downloadable_products_bloc.dart';
-import 'package:bagisto_app_demo/screens/downloadable_products/bloc/downlaodable_products_state.dart';
-import 'package:bagisto_app_demo/screens/downloadable_products/view/widgets/download_product_item.dart';
-import 'package:bagisto_app_demo/utils/application_localization.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:skeleton_loader/skeleton_loader.dart';
-import '../../../utils/app_global_data.dart';
-import '../../../utils/assets_constants.dart';
-import '../../../utils/string_constants.dart';
-import '../../../widgets/common_error_msg.dart';
-import '../../../widgets/empty_data_view.dart';
-import '../../../widgets/show_message.dart';
-import '../../home_page/data_model/new_product_data.dart';
-import '../../product_screen/view/file_download.dart';
-import '../bloc/downloadable_products_events.dart';
-import '../data_model/download_product_model.dart';
-import '../data_model/downloadable_product_model.dart';
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
+import 'package:bagisto_app_demo/screens/categories_screen/utils/index.dart';
+import 'package:bagisto_app_demo/screens/downloadable_products/utils/index.dart';
+
+import '../data_model/download_product_Image_model.dart';
+import 'widgets/downloadable_order_filter.dart';
 
 class DownLoadableScreen extends StatefulWidget {
   const DownLoadableScreen({Key? key}) : super(key: key);
@@ -29,30 +25,81 @@ class _DownLoadableScreenState extends State<DownLoadableScreen> {
   List<NewProducts>? data;
   int page = 1;
   int limit = 10;
-  DownloadLink? downloadLink;
+  Download? downloadLink;
+  DownloadLinkDataModel? downloadBaseLinkData;
+  bool isLoading = false;
   DownloadableProductModel? productsList;
   DownloadableLinkPurchases? linkPurchases;
   DownloadableProductsBloc? downloadableProductsBloc;
+  DownloadableFiltersInput? appliedFilters;
+  ScrollController scrollController =  ScrollController();
 
   @override
   void initState() {
     downloadableProductsBloc = context.read<DownloadableProductsBloc>();
     downloadableProductsBloc
         ?.add(DownloadableProductsCustomerEvent(page, limit));
+    scrollController.addListener(() => _setItemScrollListener());
     super.initState();
+  }
+
+  _setItemScrollListener() {
+    if (scrollController.hasClients &&
+        scrollController.position.maxScrollExtent ==
+            scrollController.offset) {
+      if (hasMoreData()) {
+        page += 1;
+        downloadableProductsBloc?.add(DownloadableProductsCustomerEvent(
+            page, limit,
+            status: appliedFilters?.status?.toUpperCase(),
+            title: appliedFilters?.title, orderDateTo: appliedFilters?.orderDateTo,
+            orderDateFrom: appliedFilters?.orderDateFrom,
+            orderId: appliedFilters?.orderId));
+      }
+    }
+  }
+
+  hasMoreData() {
+    var total = productsList?.paginatorInfo?.total ?? 0;
+    return (total > (productsList?.downloadableLinkPurchases?.length ?? 0) && !isLoading);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: GlobalData.contentDirection(),
-      child: Scaffold(
-        appBar: AppBar(
-          centerTitle: false,
-          title: Text(StringConstants.downloadableProductsList.localized()),
-        ),
-        body: _downloadableProductsList(),
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: false,
+        title: Text(StringConstants.downloadableProductsList.localized()),
+        actions: [
+          IconButton(
+              onPressed: () {
+                showModalBottomSheet(
+                    context: context,
+                    builder: (context) => DownloadableOrderFilters(appliedFilters: appliedFilters)).then((value){
+                  if(value != null){
+                    appliedFilters = value as DownloadableFiltersInput?;
+                    page = 1;
+                    downloadableProductsBloc?.add(DownloadableProductsCustomerEvent(
+                        page, limit,
+                        status: appliedFilters?.status?.toUpperCase(),
+                        title: appliedFilters?.title, orderDateTo: appliedFilters?.orderDateTo,
+                        orderDateFrom: appliedFilters?.orderDateFrom,
+                        orderId: appliedFilters?.orderId));
+                  }
+                  else {
+                    appliedFilters = null;
+                    page = 1;
+                    downloadableProductsBloc?.add(DownloadableProductsCustomerEvent(page, limit));
+                  }
+                });
+              },
+              icon: const Icon(
+                Icons.filter_alt,
+                size: AppSizes.spacingLarge*2,
+              ))
+        ],
       ),
+      body: _downloadableProductsList(),
     );
   }
 
@@ -63,12 +110,21 @@ class _DownLoadableScreenState extends State<DownLoadableScreen> {
       listener: (BuildContext context, DownloadableProductsBaseState state) {
         if (state is DownloadProductState) {
           downloadLink = state.downloadLink;
-          if (downloadLink?.status == true) {
-            ShowMessage.showNotification(StringConstants.downloadSuccess.localized(), "",
-                Colors.green, const Icon(Icons.check_circle));
-          }
+          if (downloadLink?.status == true) {}
           downloadableProductsBloc
               ?.add(DownloadableProductsCustomerEvent(page, limit));
+        }
+        if (state is DownloadBase64ProductState) {
+          isLoading = false;
+          downloadBaseLinkData = state.downloadLinkProduct;
+          if(state.status == DownloadableProductsStatus.success) {
+            DownloadFile().saveBase64String(downloadBaseLinkData?.string ??'',
+                downloadBaseLinkData?.download?.fileName??'');
+          }
+          else{
+            ShowMessage.errorNotification(
+                state.error ?? downloadBaseLinkData?.graphqlErrors ?? "", context);
+          }
         }
       },
       builder: (BuildContext context, DownloadableProductsBaseState state) {
@@ -80,13 +136,13 @@ class _DownLoadableScreenState extends State<DownLoadableScreen> {
   ///build container method
   Widget _downloadableProductsItems(DownloadableProductsBaseState state) {
     if (state is DownloadableProductsInitialState) {
-      return SingleChildScrollView(
+      return const SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(8.0, 8, 8, 8),
+          padding: EdgeInsets.all(AppSizes.spacingNormal),
           child: SkeletonLoader(
             items: 6,
             builder: Card(
-              child: Container(
+              child: SizedBox(
                 height: 125,
               ),
             ),
@@ -94,45 +150,51 @@ class _DownLoadableScreenState extends State<DownLoadableScreen> {
         ),
       );
     }
+    if(state is ShowLoaderState){
+      isLoading = true;
+    }
     if (state is DownloadProductState) {
       downloadLink = state.downloadLink;
-      DownloadFile().downloadPersonalData(
-          downloadLink?.download?.url ?? "",
-          (downloadLink?.download?.name ?? "product"),
-              downloadLink?.download?.type ?? "", context, scaffoldMessengerKey);
+      downloadableProductsBloc?.add(DownloadBase64ProductEvent(int.parse(downloadLink?.id.toString() ?? "0")));
     }
     if (state is DownloadableProductsCustomerDataState) {
-      productsList = state.productsList;
-    }
-    if (state is DownloadableProductsDataState) {
-      if (state.status == DownloadableProductsStatus.success) {
-        data = state.productsModel?.data;
-        return downloadableList();
-      }
-      if (state.status == DownloadableProductsStatus.fail) {
-        return ErrorMessage.errorMsg(state.error ?? StringConstants.error);
+      if (page > 1) {
+        productsList?.downloadableLinkPurchases?.addAll(state.productsList?.downloadableLinkPurchases ?? []);
+        productsList?.paginatorInfo = state.productsList?.paginatorInfo;
+      } else {
+        productsList = state.productsList;
+        isLoading = false;
       }
     }
+
     return downloadableList();
   }
 
   Widget downloadableList() {
     if ((productsList?.downloadableLinkPurchases ?? []).isNotEmpty) {
-      return ListView.builder(
-          scrollDirection: Axis.vertical,
-          shrinkWrap: true,
-          itemCount: productsList?.downloadableLinkPurchases?.length ?? 0,
-          itemBuilder: (context, index) {
-            linkPurchases = productsList?.downloadableLinkPurchases?[index];
-            int available = (linkPurchases?.downloadBought ?? 0) -
-                (linkPurchases?.downloadUsed ?? 0);
-            return DownloadProductItem(
-              available: available,
-              downloadableProductsBloc: downloadableProductsBloc,
-              linkPurchases: linkPurchases,
-              product: data?[index],
-            );
-          });
+      return Stack(
+        children: [
+          ListView.builder(
+              scrollDirection: Axis.vertical,
+              controller: scrollController,
+              shrinkWrap: true,
+              itemCount: productsList?.downloadableLinkPurchases?.length ?? 0,
+              itemBuilder: (context, index) {
+                linkPurchases = productsList?.downloadableLinkPurchases?[index];
+                int available = (linkPurchases?.downloadBought ?? 0) -
+                    (linkPurchases?.downloadUsed ?? 0);
+                return DownloadProductItem(
+                  available: available,
+                  downloadableProductsBloc: downloadableProductsBloc,
+                  linkPurchases: linkPurchases,
+                  product: data?[index],
+                );
+              }),
+          Visibility(
+              visible: isLoading,
+              child: const Loader())
+        ],
+      );
     } else {
       return EmptyDataView(
           assetPath: AssetConstants.emptyCart,

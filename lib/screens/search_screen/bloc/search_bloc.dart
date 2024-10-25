@@ -1,21 +1,17 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 
 
-import 'package:bagisto_app_demo/screens/search_screen/bloc/search_repository.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../home_page/data_model/get_categories_drawer_data_model.dart';
-import '../../home_page/data_model/new_product_data.dart';
-import 'fetch_search_data_state.dart';
-import 'fetch_search_event.dart';
+
+import 'package:bagisto_app_demo/screens/search_screen/utils/index.dart';
 
 
 class SearchBloc extends Bloc<SearchBaseEvent,SearchBaseState>{
@@ -51,14 +47,14 @@ class SearchBloc extends Bloc<SearchBaseEvent,SearchBaseState>{
     }
     if (event is FetchCategoryPageEvent) {
       try {
-        GetDrawerCategoriesData? getDrawerCategoriesData = await repository?.getCategoriesList(id: event.categoryId);
+        GetDrawerCategoriesData? getDrawerCategoriesData = await repository?.getCategoriesList(filters: event.filters);
         if (getDrawerCategoriesData?.responseStatus == true) {
           emit (FetchCategoriesPageDataState.success(getCategoriesData: getDrawerCategoriesData));
         } else {
           emit (FetchCategoriesPageDataState.fail(error: getDrawerCategoriesData?.success));
         }
       } catch (e) {
-        emit (FetchCategoriesPageDataState.fail(error: "Contact Admin"));
+        emit (FetchCategoriesPageDataState.fail(error: StringConstants.somethingWrong.localized()));
       }
     }
   }

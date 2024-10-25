@@ -1,19 +1,16 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 // ignore_for_file: file_names, implementation_imports
 
-import 'package:bagisto_app_demo/utils/status_color_helper.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../utils/index.dart';
+
 import 'package:bagisto_app_demo/screens/order_detail/utils/index.dart';
 
 class OrderDetailScreen extends StatefulWidget {
@@ -47,15 +44,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
   Widget build(BuildContext context) {
     return ScaffoldMessenger(
       key: scaffoldMessengerKey,
-      child: Directionality(
-        textDirection: GlobalData.contentDirection(),
-        child: Scaffold(
-          appBar: AppBar(
-            centerTitle: false,
-            title: Text(StringConstants.orderDetails.localized()),
-          ),
-          body: _orderDetail(context),
+      child: Scaffold(
+        appBar: AppBar(
+          centerTitle: false,
+          title: Text(StringConstants.orderDetails.localized()),
         ),
+        body: _orderDetail(context),
       ),
     );
   }
@@ -73,6 +67,17 @@ class _OrderDetailScreenState extends State<OrderDetailScreen>
             Future.delayed(const Duration(seconds: 2)).then((value) {
               Navigator.pop(context);
             });
+          }
+        }
+        else if(state is ReOrderState){
+          if(state.status == OrderDetailStatus.success){
+            ShowMessage.successNotification(state.model?.message ?? "",context);
+            Future.delayed(const Duration(seconds: 2)).then((value) {
+              Navigator.pushNamed(context, cartScreen);
+            });
+          }
+          else{
+            ShowMessage.errorNotification(state.model?.message ?? "",context);
           }
         }
       },

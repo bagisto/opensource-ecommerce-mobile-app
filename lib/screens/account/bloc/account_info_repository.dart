@@ -1,22 +1,20 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 
-import 'package:bagisto_app_demo/data_model/account_models/account_info_details.dart';
-import 'package:bagisto_app_demo/data_model/account_models/account_update_model.dart';
-import 'package:bagisto_app_demo/data_model/graphql_base_model.dart';
-import 'package:bagisto_app_demo/services/api_client.dart';
-import 'package:flutter/material.dart';
 
+
+import '../../../data_model/account_models/account_update_model.dart';
+import '../utils/index.dart';
 abstract class AccountInfoRepository {
-  Future<AccountInfoDetails> callAccountDetailsApi();
+  Future<AccountInfoModel> callAccountDetailsApi();
 
   Future<AccountUpdate> callAccountUpdateApi(
       String firstName,
@@ -28,17 +26,19 @@ abstract class AccountInfoRepository {
       String oldPassword,
       String password,
       String confirmPassword,
-      String avatar);
+      String avatar,
+      bool subscribedToNewsLetter);
 
-  Future<GraphQlBaseModel> callDeleteAccountApi(String password);
+  Future<BaseModel> callDeleteAccountApi(String password);
 }
 
 class AccountInfoRepositoryImp implements AccountInfoRepository {
   @override
-  Future<AccountInfoDetails> callAccountDetailsApi() async {
-    AccountInfoDetails? accountInfoDetails;
+  Future<AccountInfoModel> callAccountDetailsApi() async {
+    AccountInfoModel? accountInfoDetails;
     try {
       accountInfoDetails = await ApiClient().getCustomerData();
+      print("resposne is getting ><>> ${accountInfoDetails?.firstName}");
     } catch (error, stacktrace) {
       debugPrint("Error --> $error");
       debugPrint("StackTrace --> $stacktrace");
@@ -57,7 +57,9 @@ class AccountInfoRepositoryImp implements AccountInfoRepository {
       String oldPassword,
       String password,
       String confirmPassword,
-      String avatar) async {
+      String avatar,
+      bool subscribedToNewsLetter
+      ) async {
     AccountUpdate? accountUpdate;
     try {
       accountUpdate = await ApiClient().updateCustomerData(
@@ -70,17 +72,20 @@ class AccountInfoRepositoryImp implements AccountInfoRepository {
           password,
           confirmPassword,
           oldPassword,
-          avatar);
+          avatar,
+          subscribedToNewsLetter
+      );
     } catch (error, stacktrace) {
       debugPrint("Error --> $error");
       debugPrint("StackTrace --> $stacktrace");
     }
+    print("accountreposcreen---$subscribedToNewsLetter");
     return accountUpdate!;
   }
 
   @override
-  Future<GraphQlBaseModel> callDeleteAccountApi(String password) async {
-    GraphQlBaseModel? baseModel;
+  Future<BaseModel> callDeleteAccountApi(String password) async {
+    BaseModel? baseModel;
     try {
       baseModel = await ApiClient().deleteCustomerAccount(password);
     } catch (error, stacktrace) {

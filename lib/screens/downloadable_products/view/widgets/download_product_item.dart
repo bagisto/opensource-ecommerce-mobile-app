@@ -1,12 +1,17 @@
-import 'package:bagisto_app_demo/utils/application_localization.dart';
-import 'package:flutter/material.dart';
-import '../../../../utils/app_constants.dart';
-import '../../../../utils/string_constants.dart';
-import '../../../../widgets/image_view.dart';
-import '../../../home_page/data_model/new_product_data.dart';
-import '../../bloc/downloadable_products_bloc.dart';
-import '../../data_model/downloadable_product_model.dart';
-import 'download_button.dart';
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
+
+
+import 'package:bagisto_app_demo/screens/downloadable_products/utils/index.dart';
+
 
 class DownloadProductItem extends StatelessWidget {
   final int available;
@@ -24,6 +29,7 @@ class DownloadProductItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     return Card(
       elevation: 4,
       child: Row(
@@ -32,17 +38,17 @@ class DownloadProductItem extends StatelessWidget {
           SizedBox(
             height: 140,
             child: Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(AppSizes.spacingNormal),
               child: Card(
                 clipBehavior: Clip.antiAlias,
                 shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                  borderRadius: BorderRadius.all(Radius.circular(AppSizes.spacingNormal)),
                 ),
                 child: Stack(
                   children: [
-                    ((product?.images?.length ?? 0) > 0)
+                    ((linkPurchases?.orderItem?.product?.images?.length ?? 0) > 0)
                         ? ImageView(
-                            url: (product?.images![0].path ?? ""),
+                            url: linkPurchases?.orderItem?.product?.images?.firstOrNull?.url,
                             width: MediaQuery.of(context).size.width / 2.9,
                           )
                         : ImageView(
@@ -64,7 +70,7 @@ class DownloadProductItem extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(linkPurchases?.orderId ?? ""),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AppSizes.spacingNormal),
                       SizedBox(
                           child: Text(linkPurchases?.productName ?? "",
                               textAlign: TextAlign.start,
@@ -73,18 +79,19 @@ class DownloadProductItem extends StatelessWidget {
                                   fontWeight: FontWeight.bold,
                                   color: Colors.grey[500],
                                   fontSize: 16))),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AppSizes.spacingNormal),
                       Text(linkPurchases?.createdAt ?? ""),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AppSizes.spacingNormal),
                       Text((available == 0)
                           ? StringConstants.expired.localized()
                           : (linkPurchases?.order?.status?.toLowerCase() != StringConstants.pending.toLowerCase()
                               ? StringConstants.available.localized()
                               : StringConstants.pending.localized())),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AppSizes.spacingNormal),
                       Text("${StringConstants.remainingDownloads.localized()} $available"),
                       const SizedBox(height: AppSizes.spacingLarge),
-                      if(linkPurchases?.order?.status?.toLowerCase() != StringConstants.pending.toLowerCase())
+                      if(linkPurchases?.order?.status?.toLowerCase() != StringConstants.pending.toLowerCase()
+                      && available>0)
                         DownloadButton(
                         available: available,
                         downloadableProductsBloc: downloadableProductsBloc,

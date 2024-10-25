@@ -1,18 +1,19 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+import 'package:bagisto_app_demo/screens/cart_screen/utils/cart_index.dart';
+import 'package:bagisto_app_demo/utils/server_configuration.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
@@ -42,8 +43,12 @@ class PushNotificationsManager {
   void setUpFirebase(BuildContext context) {
     flutterLocalNotificationsPlugin.initialize(initializationSettings,
         onSelectNotification: (String? payload) async {
-      if (payload?.isNotEmpty ?? false) {
-        debugPrint("payload$payload");
+      if ((payload ?? "").isNotEmpty) {
+        debugPrint("payload ---> $payload");
+        Map<String, dynamic> payloadData = jsonDecode(payload ?? "");
+        if(payloadData["type"] == "openFile"){
+          openFile(payloadData["path"].toString());
+        }
       }
     });
     _firebaseCloudMessagingListeners(context);
@@ -138,6 +143,43 @@ class PushNotificationsManager {
       debugPrint(message?.data.toString());
       if (message?.data != null) {}
     });
+  }
+
+  void createDownloadNotification(int total, int progress, String name, String path) async {
+    await Future<void>.delayed(const Duration(milliseconds: 0), () async {
+      var androidPlatformChannel = AndroidNotificationDetails(
+          'progress channel', 'Bagisto Notification',
+          channelShowBadge: false,
+          importance: Importance.max,
+          priority: Priority.high,
+          onlyAlertOnce: true,
+          showProgress: progress < total ? true : false,
+          maxProgress: total,
+          progress: progress
+      );
+
+      var platformChannelSpecifics = NotificationDetails(android: androidPlatformChannel);
+      await flutterLocalNotificationsPlugin.show(1, name, total==progress ? StringConstants.completed.localized()
+          : StringConstants.started.localized(),
+          platformChannelSpecifics, payload: jsonEncode({
+            "type" : "openFile",
+            "path" : path
+          }));
+    });
+
+  }
+
+  Future<void> openFile(String fileName) async {
+    const platform = MethodChannel(defaultChannelName);
+    try {
+      if (Platform.isAndroid) {
+        await platform.invokeMethod('fileviewer', fileName);
+      } else {
+        await platform.invokeMethod('fileviewer', fileName);
+      }
+    } on PlatformException catch (e) {
+      debugPrint("Failed ${e.toString()}");
+    }
   }
 
   void _iosPermission() {

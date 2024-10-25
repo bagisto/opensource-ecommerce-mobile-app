@@ -1,11 +1,11 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 import 'dart:developer';
@@ -19,21 +19,25 @@ String appDocPath = "";
 class GraphQlApiCalling {
   final loggerLink = LoggerLink();
   final authLink = AuthLink(
-    getToken: SharedPreferenceHelper.getCustomerToken,
+    getToken: appStoragePref.getCustomerToken,
   );
-  final httpLink =
-      HttpLink(baseUrl, defaultHeaders: {
-    "Cookie": "${GlobalData.cookie}",
-    "x-currency": "${GlobalData.currency}",
-    "x-locale": "${GlobalData.selectedLanguage ?? GlobalData.locale}"
-  });
+
 
   GraphQLClient clientToQuery() {
-    SharedPreferenceHelper.getCustomerToken()
-        .then((value) => log("authLink---->$value"));
+    final httpLink =
+    HttpLink(baseUrl, defaultHeaders: {
+      "Cookie": appStoragePref.getCookieGet(),
+      "x-currency": GlobalData.currencyCode,
+      "x-locale": GlobalData.locale
+    });
+
+
+    log("authLink---->${appStoragePref.getCustomerToken()}");
     log("headers ----> ${httpLink.defaultHeaders}");
+    log("baseUrl ----> $baseUrl");
     return GraphQLClient(
       cache: GraphQLCache(store: HiveStore()),
+      queryRequestTimeout: const Duration(seconds: 40),
       link: loggerLink.concat(authLink.concat(httpLink)),
     );
   }

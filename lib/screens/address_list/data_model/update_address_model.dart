@@ -1,11 +1,11 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 
@@ -15,7 +15,7 @@ import '../../../data_model/graphql_base_model.dart';
 part 'update_address_model.g.dart';
 
 @JsonSerializable()
-class UpdateAddressModel extends GraphQlBaseModel{
+class UpdateAddressModel extends BaseModel{
   Data? data;
   UpdateAddressModel({ this.data});
   factory UpdateAddressModel.fromJson(Map<String, dynamic> json) =>

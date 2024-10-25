@@ -1,15 +1,19 @@
 
 
-import 'package:bagisto_app_demo/utils/application_localization.dart';
-import 'package:flutter/material.dart';
-import '../../../../../utils/app_constants.dart';
-import '../../../../../utils/mobikul_theme.dart';
-import '../../../../../utils/string_constants.dart';
-import '../../../../../widgets/common_widgets.dart';
-import '../../../../cart_screen/bloc/cart_screen_base_event.dart';
-import '../../../../cart_screen/bloc/cart_screen_bloc.dart';
-import '../../../../cart_screen/cart_model/cart_data_model.dart';
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
+
+
 import '../../../data_model/save_payment_model.dart';
+import 'package:bagisto_app_demo/screens/checkout/utils/index.dart';
 
 
 class ApplyCouponCode extends StatefulWidget {
@@ -56,7 +60,7 @@ class _ApplyCouponCodeState extends State<ApplyCouponCode> {
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
                     flex: 2,
@@ -71,7 +75,7 @@ class _ApplyCouponCodeState extends State<ApplyCouponCode> {
                         StringConstants.cartPageEnterDiscountCodeLabel.localized(),
                         validLabel: "",
                         contentPadding: const EdgeInsets.symmetric(
-                            vertical: 0, horizontal: 12),
+                            vertical: 0, horizontal: AppSizes.spacingMedium),
                         validator: (discountCode) {
                           if ((discountCode?.trim() ?? "").isEmpty) {
                             setState(() {
@@ -94,12 +98,11 @@ class _ApplyCouponCodeState extends State<ApplyCouponCode> {
                               : 0,
                           right: 3),
                       child: MaterialButton(
-                        height: 47,
+                        height: AppSizes.buttonHeight+5,
                         color: Theme.of(context).colorScheme.onBackground,
-                        textColor: MobikulTheme.primaryColor,
                         elevation: 0.0,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4.0),
+                          borderRadius: BorderRadius.circular(AppSizes.spacingSmall),
                         ),
                         onPressed: () {
                           if (_discountCouponFormKey.currentState!
@@ -131,11 +134,15 @@ class _ApplyCouponCodeState extends State<ApplyCouponCode> {
                             widget.cartDetailsModel?.couponCode == ''
                             ? Text(
                           StringConstants.apply.localized().toUpperCase(),
-                          style: const TextStyle(
+                          style:  TextStyle(
                               fontSize: AppSizes.spacingLarge,
-                              fontWeight: FontWeight.w500),
+                              fontWeight: FontWeight.w500,
+                          color: Theme.of(context).colorScheme.secondaryContainer),
                         )
-                            : Text(StringConstants.remove.localized()),
+                            : Text(StringConstants.remove.localized(),  style:  TextStyle(
+                            fontSize: AppSizes.spacingLarge,
+                            fontWeight: FontWeight.w500,
+                            color: Theme.of(context).colorScheme.secondaryContainer),),
                       ),
                     ),
                   )
@@ -144,7 +151,7 @@ class _ApplyCouponCodeState extends State<ApplyCouponCode> {
             ],
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: AppSizes.spacingNormal),
         Theme(
           data:Theme.of(context).copyWith(dividerColor: Colors.transparent),
           child: ExpansionTile(
@@ -158,7 +165,7 @@ class _ApplyCouponCodeState extends State<ApplyCouponCode> {
               ),
               children: [
                 Container(
-                  padding: const EdgeInsets.all(4.0),
+                  padding: const EdgeInsets.all(AppSizes.spacingSmall),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -179,7 +186,7 @@ class _ApplyCouponCodeState extends State<ApplyCouponCode> {
                   ),
                 ),
                 widget.savePaymentModel.cart?.selectedShippingRate!=null?Container(
-                  padding: const EdgeInsets.all(4.0),
+                  padding: const EdgeInsets.all(AppSizes.spacingSmall),
                   child:Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -200,28 +207,7 @@ class _ApplyCouponCodeState extends State<ApplyCouponCode> {
                   ),
                 ): const SizedBox.shrink(),
                 Container(
-                  padding: const EdgeInsets.all(4.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        StringConstants.tax.localized(),
-                        style: const TextStyle(
-                            fontWeight: FontWeight.w500),
-                      ),
-                      Text(
-                        widget.savePaymentModel.cart?.formattedPrice?.taxTotal
-                            .toString() ??
-                            "",
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold),
-                      )
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.all(4.0),
+                  padding: const EdgeInsets.all(AppSizes.spacingSmall),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -231,18 +217,83 @@ class _ApplyCouponCodeState extends State<ApplyCouponCode> {
                         style: const TextStyle(
                             fontWeight: FontWeight.w500),
                       ),
-                      Text(
-                        widget.savePaymentModel.cart?.formattedPrice?.discount
-                            .toString() ??
-                            "",
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold),
-                      )
+
+                      Text( widget.savePaymentModel.cart?.formattedPrice?.discountAmount !=null?
+                      widget.savePaymentModel.cart?.formattedPrice?.discountAmount
+                          .toString() ??
+                          "":"${GlobalData.currencySymbol }0.0",
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
                     ],
                   ),
                 ),
+                const SizedBox(
+                  height: AppSizes.spacingMedium,
+                ),
                 Container(
-                  padding: const EdgeInsets.all(4.0),
+                 // margin:const EdgeInsets.symmetric(horizontal: AppSizes.spacingMedium, vertical: 0),
+                  decoration: BoxDecoration(
+                    //color: Colors.red,
+                    border: Border(
+                      top: BorderSide(color: Colors.grey.shade300, width: 1), // Left border
+                      bottom: BorderSide(color:  Colors.grey.shade300, width: 1), // Right border
+                    ),
+                  ),
+                  child: ExpansionTile(
+                    iconColor: Colors.grey,
+                    tilePadding: const EdgeInsets.symmetric(horizontal:AppSizes.spacingSmall, vertical: 0),
+                    title: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          StringConstants.tax.localized(),
+                          style: const TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                        Text(
+                          "${widget.savePaymentModel.cart?.formattedPrice?.taxTotal?.toString() ?? ""}",
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                    children: [
+                      Container(
+                         padding: const EdgeInsets.fromLTRB(AppSizes.spacingSmall, 0, AppSizes.spacingSmall, 0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ...?widget.savePaymentModel.cart?.appliedTaxRates?.map((taxRate) {
+                              return Column(
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "${taxRate.taxName.trim()}",
+                                        style: const TextStyle(fontWeight: FontWeight.normal),
+                                      ),
+                                      Text(
+                                        "${taxRate.totalAmount}",
+                                        style: const TextStyle(fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
+                                  ),
+
+                                ],
+                              );
+                            }).toList(),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(
+                  height: AppSizes.spacingMedium,
+                ),
+                Container(
+                  padding: const EdgeInsets.all(AppSizes.spacingSmall),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.start,

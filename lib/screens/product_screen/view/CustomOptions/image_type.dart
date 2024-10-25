@@ -1,19 +1,19 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 // ignore_for_file: file_names, must_be_immutable
 
-import 'package:bagisto_app_demo/utils/string_constants.dart';
-import 'package:flutter/material.dart';
+
+import '../../../../data_model/product_model/product_screen_model.dart';
 import '../../../../widgets/image_view.dart';
-import '../../../cart_screen/cart_model/cart_data_model.dart';
+import '../../../../utils/index.dart';
 
 
 class ImageType extends StatefulWidget {

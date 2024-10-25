@@ -1,21 +1,21 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 import '../../../data_model/add_to_wishlist_model/add_wishlist_model.dart';
-import 'package:flutter/material.dart';
 import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
-import '../../cart_screen/cart_model/add_to_cart_model.dart';
+
+import '../data_model/download_sample_model.dart';
 
 abstract class ProductScreenRepository {
   Future<NewProductsModel?> getProductDetails(
-      List<Map<String, dynamic>>? filters);
+  List<Map<String, dynamic>>? filters);
 
   Future<AddToCartModel?> callAddToCartAPi(
       int quantity,
@@ -26,13 +26,15 @@ abstract class ProductScreenRepository {
       List configurableParams,
       String? configurableId);
 
-  Future<GraphQlBaseModel?> callAddToCompareListApi(
+  Future<BaseModel?> callAddToCompareListApi(
     String productId,
   );
 
   Future<AddWishListModel?> callWishListDeleteItem(String wishListProductId);
 
-  Future<GraphQlBaseModel?> removeItemFromWishlist(String wishListProductId);
+  Future<AddToCartModel?> removeItemFromWishlist(String wishListProductId);
+
+  Future<DownloadSampleModel?> downloadSample(String type, String id);
 }
 
 class ProductScreenRepo implements ProductScreenRepository {
@@ -78,8 +80,8 @@ class ProductScreenRepo implements ProductScreenRepository {
   }
 
   @override
-  Future<GraphQlBaseModel?> callAddToCompareListApi(String productId) async {
-    GraphQlBaseModel? baseModel;
+  Future<BaseModel?> callAddToCompareListApi(String productId) async {
+    BaseModel? baseModel;
 
     try {
       baseModel = await ApiClient().addToCompare(productId);
@@ -105,9 +107,9 @@ class ProductScreenRepo implements ProductScreenRepository {
   }
 
   @override
-  Future<GraphQlBaseModel?> removeItemFromWishlist(
+  Future<AddToCartModel?> removeItemFromWishlist(
       String wishListProductId) async {
-    GraphQlBaseModel? removeFromWishlist;
+    AddToCartModel? removeFromWishlist;
     try {
       removeFromWishlist =
           await ApiClient().removeFromWishlist(wishListProductId);
@@ -116,5 +118,17 @@ class ProductScreenRepo implements ProductScreenRepository {
       debugPrint("StackTrace -->${stacktrace.toString()}");
     }
     return removeFromWishlist;
+  }
+
+  @override
+  Future<DownloadSampleModel?> downloadSample(String type, String id) async {
+    DownloadSampleModel? model;
+    try {
+      model = await ApiClient().downloadSample(type, id);
+    } catch (error, stacktrace) {
+      debugPrint("Error -->${error.toString()}");
+      debugPrint("StackTrace -->${stacktrace.toString()}");
+    }
+    return model;
   }
 }

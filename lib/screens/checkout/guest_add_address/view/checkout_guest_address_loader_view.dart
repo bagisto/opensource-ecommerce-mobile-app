@@ -1,7 +1,14 @@
-import 'package:flutter/material.dart';
-import 'package:skeleton_loader/skeleton_loader.dart';
-import '../../../../utils/app_constants.dart';
-import '../../../../utils/mobikul_theme.dart';
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
+import 'package:bagisto_app_demo/screens/checkout/utils/index.dart';
 
 
 class CheckoutGuestAddressLoaderView extends StatelessWidget {
@@ -12,23 +19,23 @@ class CheckoutGuestAddressLoaderView extends StatelessWidget {
     return SingleChildScrollView(
       child: Column(
         children: [
-          const SizedBox(height: 12),
+          const SizedBox(height: 12,),
           SkeletonLoader(
               highlightColor: Theme.of(context).highlightColor,
-              baseColor: Theme.of(context).appBarTheme.backgroundColor ?? MobikulTheme.primaryColor,
+              baseColor: Theme.of(context).scaffoldBackgroundColor,
               items: 11,
               builder:
               Padding(
                 padding: const EdgeInsets.fromLTRB(0.0,0,0,12),
                 child: Container(
-                  height: AppSizes.spacingWide*3,
+                  height: 60,
                   decoration: BoxDecoration(
                     color: Colors.red,
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
               )),
-          const SizedBox(height: 10),
+          const SizedBox(height: 10,),
         ],
       ),
     );

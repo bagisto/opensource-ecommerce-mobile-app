@@ -1,14 +1,24 @@
-import 'package:bagisto_app_demo/screens/account/view/account_screen.dart';
-import 'package:bagisto_app_demo/screens/cart_screen/cart_index.dart';
-import 'package:bagisto_app_demo/widgets/common_date_picker.dart';
-import '../../../../utils/index.dart';
-import 'profile_image_view.dart';
-import 'change_email_pass_view.dart';
 
-//ignore: must_be_immutable
+
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
+import 'package:bagisto_app_demo/screens/account/utils/index.dart';
+
+import '../../sign_up/widgets/news_letter_checkbox.dart';
+
 class ProfileDetailView extends StatefulWidget {
-  GlobalKey<FormState> formKey;
-  ProfileDetailView({Key? key, required this.formKey}) : super(key: key);
+  final ValueChanged<bool>? onChanged;
+ final GlobalKey<FormState> formKey;
+ final bool? subsNewsLetter;
+  const ProfileDetailView({Key? key, required this.formKey,this.subsNewsLetter,this.onChanged}) : super(key: key);
 
   @override
   State<ProfileDetailView> createState() => _ProfileDetailViewState();
@@ -17,6 +27,8 @@ class ProfileDetailView extends StatefulWidget {
 class _ProfileDetailViewState extends State<ProfileDetailView>
     with EmailValidator, PhoneNumberValidator {
   bool autoValidate = false;
+  late bool isNewsLetterSelected = widget.subsNewsLetter?? false;
+
 
   @override
   void initState() {
@@ -30,6 +42,7 @@ class _ProfileDetailViewState extends State<ProfileDetailView>
 
   @override
   Widget build(BuildContext context) {
+
     return SingleChildScrollView(
       child: Form(
         key: widget.formKey,
@@ -112,10 +125,10 @@ class _ProfileDetailViewState extends State<ProfileDetailView>
                             value: genderValues?[currentGenderValue],
                             decoration: InputDecoration(
                               contentPadding: const EdgeInsets.fromLTRB(
-                                  12.0, 16.0, 12.0, 16.0),
+                                 AppSizes.spacingMedium,  AppSizes.spacingLarge,  AppSizes.spacingMedium,AppSizes.spacingLarge),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: const BorderRadius.all(
-                                    Radius.circular(4.0)),
+                                    Radius.circular(AppSizes.spacingSmall)),
                                 borderSide:
                                     BorderSide(color: Colors.grey.shade500),
                               ),
@@ -124,15 +137,15 @@ class _ProfileDetailViewState extends State<ProfileDetailView>
                               fillColor: Colors.black,
                               labelText: StringConstants.genderLbl.localized(),
                               focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(4),
+                                  borderRadius: BorderRadius.circular(AppSizes.spacingSmall),
                                   borderSide: BorderSide(
                                       color: Colors.grey.shade500)),
                               errorBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(4),
+                                  borderRadius: BorderRadius.circular(AppSizes.spacingSmall),
                                   borderSide:
                                       BorderSide(color: Colors.red.shade500)),
                               focusedErrorBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(4),
+                                borderRadius: BorderRadius.circular(AppSizes.spacingSmall),
                                 borderSide:
                                     BorderSide(color: Colors.grey.shade500),
                               ),
@@ -165,10 +178,21 @@ class _ProfileDetailViewState extends State<ProfileDetailView>
                   ),
                 ),
                 const SizedBox(
-                  height: 20,
+                  height: AppSizes.spacingWide,
                 ),
                 const ChangeEmailAndPassword(),
-                const SizedBox(height:AppSizes.spacingWide),
+                //const SizedBox(height:AppSizes.spacingWide),
+                NewsLetterCheckbox(
+                        (value) {
+                      setState(() {
+                        isNewsLetterSelected = value;
+                      });
+                      widget.onChanged!(value); // Call the callback
+                    },
+                  "",
+                  false,
+                  widget.subsNewsLetter
+                ),
               ],
             ),
           ],

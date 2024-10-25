@@ -1,33 +1,17 @@
-// ignore_for_file: must_be_immutable
-
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
-import 'package:bagisto_app_demo/utils/application_localization.dart';
-import 'package:bagisto_app_demo/utils/mobikul_theme.dart';
-import 'package:bagisto_app_demo/widgets/price_widget.dart';
-import 'package:bagisto_app_demo/widgets/wishlist_compare_widget.dart';
-import 'package:flutter/material.dart';
-import '../../../../utils/app_global_data.dart';
-import '../../../../utils/app_constants.dart';
-import '../../../../widgets/common_widgets.dart';
-import '../../../../widgets/image_view.dart';
-import '../../../../widgets/show_message.dart';
-import 'package:collection/collection.dart';
-import '../../../utils/route_constants.dart';
-import '../../../utils/status_color_helper.dart';
-import '../../../utils/string_constants.dart';
-import '../../home_page/data_model/new_product_data.dart';
-import '../../home_page/utils/route_argument_helper.dart';
-import '../bloc/categories_bloc.dart';
-import '../bloc/categories_event.dart';
+// ignore_for_file: must_be_immutable
+
+
+import 'package:bagisto_app_demo/screens/categories_screen/utils/index.dart';
 
 class SubCategoriesGridView extends StatelessWidget {
   bool? isLogin;
@@ -40,14 +24,12 @@ class SubCategoriesGridView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var productFlats = data?.productFlats
-        ?.firstWhereOrNull((e) => e.locale == GlobalData.locale);
 
     return GestureDetector(
       onTap: () {
         Navigator.pushNamed(context, productScreen,
             arguments: PassProductData(
-              title: productFlats?.name ?? data?.productFlats?.firstOrNull?.name ?? "",
+              title: data?.name ?? data?.productFlats?.firstOrNull?.name ?? "",
               urlKey: data?.urlKey,
               productId: int.parse(data?.id ?? ""),
             ));
@@ -55,7 +37,7 @@ class SubCategoriesGridView extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.only(top: AppSizes.spacingNormal),
         child: Card(
-            elevation: 3,
+            elevation: 2,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(AppSizes.spacingNormal),
             ),
@@ -95,9 +77,9 @@ class SubCategoriesGridView extends StatelessWidget {
                               left: AppSizes.spacingNormal,
                               top: AppSizes.spacingNormal,
                               child: Container(
-                                decoration: BoxDecoration(
-                                    color: MobikulTheme.saleRedColor,
-                                    borderRadius: const BorderRadius.all(
+                                decoration: const BoxDecoration(
+                                    color: Colors.red,
+                                    borderRadius: BorderRadius.all(
                                         Radius.circular(
                                             AppSizes.spacingLarge))),
                                 child: Padding(
@@ -185,7 +167,7 @@ class SubCategoriesGridView extends StatelessWidget {
                   )
                 ]),
                 const SizedBox(
-                  height: AppSizes.size4,
+                  height: AppSizes.spacingSmall,
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: AppSizes.spacingWide/2, left: AppSizes.spacingWide/2, right: AppSizes.spacingWide/2),
@@ -195,7 +177,7 @@ class SubCategoriesGridView extends StatelessWidget {
                       Expanded(
                         flex: 4,
                         child: Text(
-                          productFlats?.name ??
+                          data?.name ??
                               data?.productFlats?.firstOrNull?.name ??
                               "",
                           overflow: TextOverflow.ellipsis,
@@ -252,26 +234,29 @@ class SubCategoriesGridView extends StatelessWidget {
                     : const SizedBox(
                         height: AppSizes.spacingWide,
                       ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: CommonWidgets().appButton(
-                      context,
-                      StringConstants.addToCart.localized(),
-                      MediaQuery.of(context).size.width, () {
-                      subCategoryBloc?.add(
-                        OnClickSubCategoriesLoaderEvent(isReqToShowLoader: true));
-                    if (data?.type == StringConstants.simple || data?.type == StringConstants.virtual) {
-                      var dict = <String, dynamic>{};
-                      dict['product_id'] = data?.id ?? '';
-                      dict['quantity'] = 1;
-                      subCategoryBloc?.add(
-                          AddToCartSubCategoriesEvent((data?.id ?? ""), 1, ""));
-                    } else {
-                      ShowMessage.warningNotification(StringConstants.addOptions.localized(), context);
-                      subCategoryBloc?.add(OnClickSubCategoriesLoaderEvent(
-                          isReqToShowLoader: false));
-                    }
-                  }),
+                Opacity(
+                  opacity: (data?.isSaleable ?? false) ? 1 : 0.4,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: AppSizes.spacingNormal),
+                    child: CommonWidgets().appButton(
+                        context,
+                        StringConstants.addToCart.localized(),
+                        MediaQuery.of(context).size.width, (data?.isSaleable ?? false) ? () {
+                        subCategoryBloc?.add(
+                          OnClickSubCategoriesLoaderEvent(isReqToShowLoader: true));
+                      if (data?.type == StringConstants.simple || data?.type == StringConstants.virtual) {
+                        var dict = <String, dynamic>{};
+                        dict['product_id'] = data?.id ?? '';
+                        dict['quantity'] = 1;
+                        subCategoryBloc?.add(
+                            AddToCartSubCategoriesEvent((data?.id ?? ""), 1, ""));
+                      } else {
+                        ShowMessage.warningNotification(StringConstants.addOptions.localized(), context);
+                        subCategoryBloc?.add(OnClickSubCategoriesLoaderEvent(
+                            isReqToShowLoader: false));
+                      }
+                    } : (){} ),
+                  ),
                 )
               ],
             )),

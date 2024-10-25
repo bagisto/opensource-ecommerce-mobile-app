@@ -1,40 +1,42 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
-import 'dart:async';
-import 'package:bagisto_app_demo/screens/cart_screen/cart_index.dart';
-import 'package:bagisto_app_demo/utils/no_data_found_widget.dart';
+
 import 'package:bagisto_app_demo/screens/review/utils/index.dart';
 
+
+
 class ReviewsScreen extends StatefulWidget {
-  ReviewsScreen({Key? key, this.isFromDashboard}) : super(key: key);
+  const ReviewsScreen({Key? key, this.isFromDashboard}) : super(key: key);
  final  bool? isFromDashboard;
 
   @override
-  _ReviewsScreenState createState() => _ReviewsScreenState();
+  State<ReviewsScreen> createState() => _ReviewsScreenState();
 }
 
 class _ReviewsScreenState extends State<ReviewsScreen> {
   ReviewModel? reviewModel;
   final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
   GlobalKey<ScaffoldMessengerState>();
-  final StreamController streamController = StreamController.broadcast();
   ReviewsBloc? reviewsBloc;
+  int page = 1;
+  final ScrollController _scrollController = ScrollController();
 
-  Stream get onUpdate => streamController.stream;
-  bool _isVisible = false;
 
   @override
   void initState() {
     reviewsBloc = context.read<ReviewsBloc>();
-    reviewsBloc?.add(FetchReviewsEvent());
+    reviewsBloc?.add(FetchReviewsEvent(page));
+    _scrollController.addListener(() {
+      paginationFunction();
+    });
     super.initState();
   }
 
@@ -42,47 +44,15 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
   Widget build(BuildContext context) {
     return ScaffoldMessenger(
       key: scaffoldMessengerKey,
-      child: Directionality(
-        textDirection: GlobalData.contentDirection(),
-        child: Scaffold(
-          appBar: (widget.isFromDashboard ?? false)
-              ? null
-              : AppBar(
-            centerTitle: false,
-            title: Text(
-                StringConstants.reviews.localized(),
-          )),
-          body: _reviewsBloc(context),
-          floatingActionButton: (widget.isFromDashboard ?? false)
-              ? null
-              : StreamBuilder(
-            stream: onUpdate,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Visibility(
-                  visible: _isVisible,
-                  child: FloatingActionButton(
-                    onPressed: () {},
-                    child: const Icon(Icons.delete),
-                  ),
-                );
-              }
-              return Visibility(
-                visible: snapshot.data.toString() == "true" ? true : false,
-                child: FloatingActionButton(
-                  onPressed: () {
-                    ReviewsBloc reviewsBloc = context.read<ReviewsBloc>();
-                    reviewsBloc.add(RemoveAllReviewsEvent());
-                  },
-                  child: Icon(
-                    Icons.delete,
-                    color: Theme.of(context).colorScheme.onBackground,
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
+      child: Scaffold(
+        appBar: (widget.isFromDashboard ?? false)
+            ? null
+            : AppBar(
+          centerTitle: false,
+          title: Text(
+              StringConstants.reviews.localized(),
+        )),
+        body: _reviewsBloc(context),
       ),
     );
   }
@@ -97,24 +67,24 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
         } else if (state is RemoveReviewState) {
           if (state.status == ReviewStatus.fail) {
             ShowMessage.showNotification(
-                "Failed", state.error, Colors.red, Icon(Icons.cancel_outlined));
+                StringConstants.failed.localized(), state.error, Colors.red, const Icon(Icons.cancel_outlined));
           } else if (state.status == ReviewStatus.success) {
             ShowMessage.showNotification(
-                "Success",
+                StringConstants.success.localized(),
                 state.baseModel?.message,
-                Color.fromRGBO(140, 194, 74, 5),
-                Icon(Icons.check_circle_outline));
+                const Color.fromRGBO(140, 194, 74, 5),
+                const Icon(Icons.check_circle_outline));
           }
         } else if (state is RemoveAllReviewState) {
           if (state.status == ReviewStatus.fail) {
             ShowMessage.showNotification(
-                "Failed", state.error, Colors.red, Icon(Icons.cancel_outlined));
+                StringConstants.failed.localized(), state.error, Colors.red, const Icon(Icons.cancel_outlined));
           } else if (state.status == ReviewStatus.success) {
             ShowMessage.showNotification(
-                "Success",
+                StringConstants.success.localized(),
                 state.baseModel?.message,
-                Color.fromRGBO(140, 194, 74, 5),
-                Icon(Icons.check_circle_outline));
+                const Color.fromRGBO(140, 194, 74, 5),
+                const Icon(Icons.check_circle_outline));
           }
         }
       },
@@ -128,8 +98,13 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
   Widget buildUI(BuildContext context, ReviewsBaseState state) {
     if (state is FetchReviewState) {
       if (state.status == ReviewStatus.success) {
-        reviewModel = state.reviewModel;
-        return _reviewsList(state.reviewModel!);
+        if (page > 1) {
+          reviewModel?.data?.addAll(state.reviewModel?.data ?? []);
+          reviewModel?.paginatorInfo = state.reviewModel?.paginatorInfo;
+        } else {
+          reviewModel = state.reviewModel;
+        }
+        return _reviewsList(reviewModel!);
       }
       if (state.status == ReviewStatus.fail) {
         return ErrorMessage.errorMsg(state.error ?? "");
@@ -151,7 +126,6 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
       if (state.status == ReviewStatus.success) {
         if (reviewModel != null) {
           reviewModel?.data?.clear();
-          streamController.add(false);
           return _reviewsList(reviewModel!);
         } else {}
       }
@@ -160,25 +134,24 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
       return const ReviewLoader();
     }
 
-    return Container();
+    return const SizedBox();
   }
 
   ///method use to show review list
-  _reviewsList(ReviewModel reviewModel) {
+  _reviewsList(ReviewModel? reviewModel) {
     if (reviewModel == null) {
       return const NoDataFound();
     } else {
       if ((reviewModel.data ?? []).isEmpty) {
-        streamController.add(false);
-        return const EmptyDataView(
+        return EmptyDataView(
           assetPath: AssetConstants.emptyReviews,
-          message: "noReview",
+          message: "noReview".localized(),
         );
       } else {
-        streamController.add(true);
         return Padding(
           padding: const EdgeInsets.fromLTRB(8.0,8,8,0),
           child: ListView.builder(
+              controller: _scrollController,
               itemCount: (widget.isFromDashboard ?? false)
                   ? ((reviewModel.data?.length ?? 0) > 5)
                   ? 5
@@ -188,11 +161,21 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
                 return ReviewsList(
                   reviewData: reviewModel.data?[index],
                   reviewsBloc:
-                  reviewsBloc, /*callback:  _callBack(int.parse(reviewModel.data?[index].id??"")),*/
+                  reviewsBloc,
                 );
               }),
         );
       }
+    }
+  }
+
+  void paginationFunction() {
+    if (_scrollController.offset ==
+        _scrollController.position.maxScrollExtent  &&
+        ((reviewModel?.paginatorInfo?.currentPage ?? 0) <
+            (reviewModel?.paginatorInfo?.lastPage ?? 0))) {
+      page++;
+      reviewsBloc?.add(FetchReviewsEvent(page));
     }
   }
 }

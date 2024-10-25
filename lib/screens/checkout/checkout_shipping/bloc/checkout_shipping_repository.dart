@@ -1,17 +1,14 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
-
-import 'package:flutter/material.dart';
-
-import '../../../../services/api_client.dart';
+import 'package:bagisto_app_demo/screens/checkout/utils/index.dart';
 import '../../data_model/checkout_save_address_model.dart';
 
 abstract class CheckOutShippingRepository{
@@ -39,7 +36,7 @@ abstract class CheckOutShippingRepository{
       String? shippingPostCode,
       String? shippingPhone, int id,
       {int? billingId,
-      int? shippingId});
+      int? shippingId, bool useForShipping});
 
 }
 class CheckOutShippingRepositoryImp implements CheckOutShippingRepository {
@@ -68,7 +65,7 @@ class CheckOutShippingRepositoryImp implements CheckOutShippingRepository {
       String? shippingPostCode,
       String? shippingPhone, int id, {
         int? billingId,
-        int? shippingId}) async {
+        int? shippingId, bool useForShipping = true}) async {
     SaveCheckoutAddresses? checkOutSaveAddressModel;
     try {
       checkOutSaveAddressModel = await ApiClient().checkoutSaveAddress(
@@ -93,7 +90,7 @@ class CheckOutShippingRepositoryImp implements CheckOutShippingRepository {
         shippingState,
         shippingCity,
         shippingPostCode,
-        shippingPhone, id);
+        shippingPhone, id, useForShipping: useForShipping);
     } catch (error, stacktrace) {
       debugPrint("Error --> $error");
       debugPrint("StackTrace --> $stacktrace");

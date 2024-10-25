@@ -1,11 +1,11 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 // ignore_for_file: must_be_immutable, overridden_fields, file_names
@@ -37,7 +37,7 @@ class CommonDropDownField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return itemList?.isEmpty == true
-        ? Container()
+        ? const SizedBox()
         : Theme(
             data: Theme.of(context).copyWith(
               canvasColor: Theme.of(context).colorScheme.background,

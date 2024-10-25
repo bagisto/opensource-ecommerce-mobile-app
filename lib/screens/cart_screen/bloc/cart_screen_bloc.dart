@@ -1,23 +1,14 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
-import 'package:bagisto_app_demo/utils/application_localization.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../data_model/graphql_base_model.dart';
-import '../../../utils/string_constants.dart';
-import '../cart_model/add_to_cart_model.dart';
-import '../cart_model/apply_coupon.dart';
-import '../cart_model/cart_data_model.dart';
-import 'cart_screen_base_event.dart';
-import 'cart_screen_repository.dart';
-import 'fetch_cart_data_state.dart';
+import 'package:bagisto_app_demo/screens/cart_screen/utils/cart_index.dart';
 
 class CartScreenBloc extends Bloc<CartScreenBaseEvent, CartScreenBaseState> {
   CartScreenRepository? repository;
@@ -56,7 +47,7 @@ class CartScreenBloc extends Bloc<CartScreenBaseEvent, CartScreenBaseState> {
       }
     } else if (event is RemoveAllCartItemEvent) {
       try {
-        GraphQlBaseModel? removeCartProductModel =
+        BaseModel? removeCartProductModel =
             await repository?.removeAllCartItem();
         emit(RemoveAllCartItemState.success(
             removeAllCartProductModel: removeCartProductModel));
@@ -93,7 +84,7 @@ class CartScreenBloc extends Bloc<CartScreenBaseEvent, CartScreenBaseState> {
       try {
         AddToCartModel? baseModel =
             await repository?.moveToWishlist(event.id ?? 0);
-        if (baseModel?.status == true) {
+        if (baseModel?.success == true) {
           emit(MoveToCartState.success(
             response: baseModel,
             id: event.id,

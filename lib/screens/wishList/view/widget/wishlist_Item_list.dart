@@ -1,31 +1,36 @@
-import 'package:bagisto_app_demo/utils/application_localization.dart';
-import 'package:bagisto_app_demo/utils/route_constants.dart';
-import 'package:bagisto_app_demo/widgets/loader.dart';
-import 'package:bagisto_app_demo/widgets/price_widget.dart';
-import 'package:flutter/material.dart';
-import 'package:skeleton_loader/skeleton_loader.dart';
-import '../../../../utils/app_constants.dart';
-import '../../../../utils/string_constants.dart';
-import '../../../../widgets/common_widgets.dart';
-import '../../../../widgets/image_view.dart';
-import '../../../../widgets/show_message.dart';
-import '../../../home_page/utils/route_argument_helper.dart';
-import '../../bloc/wishlist_bloc.dart';
-import '../../bloc/fetch_wishlist_event.dart';
-import '../../data_model/wishlist_model.dart';
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
 
-// ignore: must_be_immutable
-class WishlistItemList extends StatelessWidget {
-  WishListData? model;
-  bool isLoading;
-  WishListBloc? wishListBloc;
 
-  WishlistItemList(
+import 'package:bagisto_app_demo/screens/wishList/utils/index.dart';
+
+import '../../../product_screen/view/quantity_view.dart';
+
+class WishlistItemList extends StatefulWidget {
+ final WishListData? model;
+ final bool isLoading;
+ final WishListBloc? wishListBloc;
+
+  const WishlistItemList(
       {Key? key,
       required this.model,
       required this.isLoading,
       this.wishListBloc})
       : super(key: key);
+
+  @override
+  State<WishlistItemList> createState() => _WishlistItemListState();
+}
+
+class _WishlistItemListState extends State<WishlistItemList> {
+ Map<String, String> quantityMap = {};
 
   @override
   Widget build(BuildContext context) {
@@ -34,19 +39,20 @@ class WishlistItemList extends StatelessWidget {
         GridView.builder(
           shrinkWrap: true,
           physics: const ScrollPhysics(),
-          itemCount: model?.data?.length ?? 0,
+          itemCount: widget.model?.data?.length ?? 0,
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              mainAxisExtent: (MediaQuery.of(context).size.height / 3) + 160,
+              mainAxisExtent: (MediaQuery.of(context).size.height / 3) + 170,
               crossAxisCount: 2),
           itemBuilder: (BuildContext context, int index) {
+            WishlistData? item = widget.model?.data?[index];
             return GestureDetector(
               onTap: () {
                 Navigator.pushNamed(context, productScreen,
                     arguments: PassProductData(
-                        title: model?.data?[index].product?.name ?? "",
-                        urlKey: model?.data?[index].product?.urlKey,
+                        title: item?.product?.name ?? "",
+                        urlKey: item?.product?.urlKey,
                         productId:
-                            int.parse(model?.data?[index].product?.id ?? "")));
+                            int.parse(item?.product?.id ?? "")));
               },
               child: Card(
                   elevation: 2,
@@ -57,25 +63,47 @@ class WishlistItemList extends StatelessWidget {
                     children: <Widget>[
                       Stack(children: [
                         ImageView(
-                          url: (model?.data?[index].product?.images ?? []).isNotEmpty
-                              ? model?.data![index].product?.images![0].url ?? ""
+                          url: (item?.product?.images ?? [])
+                                  .isNotEmpty
+                              ? item?.product?.images![0].url ??
+                                  ""
                               : "",
                           width: MediaQuery.of(context).size.width,
                           height: MediaQuery.of(context).size.height / 5,
                         ),
                         Positioned(
-                          top: 0,
-                          right: 0,
-                          child: IconButton(
-                            onPressed: () {
-                              wishListBloc?.add(OnClickWishListLoaderEvent(
-                                  isReqToShowLoader: true));
-                              wishListBloc?.add(FetchDeleteAddItemEvent(
-                                  model?.data![index].productId));
-                            },
-                            icon: const Icon(Icons.cancel_outlined),
-                          ),
-                        ),
+                            top: 0,
+                            right: 8,
+                            child: GestureDetector(
+                              onTap: () {
+                                widget.wishListBloc?.add(OnClickWishListLoaderEvent(
+                                    isReqToShowLoader: true));
+                                widget.wishListBloc?.add(FetchDeleteAddItemEvent(
+                                    item?.productId));
+                              },
+                              child: Container(
+                                  padding: const EdgeInsets.all(1),
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onBackground,
+                                    borderRadius: const BorderRadius.all(
+                                        Radius.circular(20)),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.grey.withOpacity(0.4),
+                                        spreadRadius: 1,
+                                        blurRadius: 7,
+                                        offset: const Offset(
+                                            0, 1), // changes position of shadow
+                                      ),
+                                    ],
+                                  ),
+                                  child: Icon(
+                                    Icons.close,
+                                    color: Colors.grey[500],
+                                  )),
+                            )),
                       ]),
                       const SizedBox(
                         height: 4,
@@ -89,7 +117,7 @@ class WishlistItemList extends StatelessWidget {
                             Expanded(
                               flex: 4,
                               child: Text(
-                                model?.data?[index].product?.name ?? "",
+                                item?.product?.name ?? "",
                                 overflow: TextOverflow.ellipsis,
                                 maxLines: 1,
                                 softWrap: true,
@@ -101,36 +129,54 @@ class WishlistItemList extends StatelessWidget {
                       const SizedBox(
                         height: 4,
                       ),
-                      PriceWidgetHtml(priceHtml: model?.data?[index].product?.priceHtml?.priceHtml ?? ""),
+                      PriceWidgetHtml(
+                          priceHtml: item?.product?.priceHtml
+                                  ?.priceHtml ??
+                              ""),
                       Padding(
-                        padding: const EdgeInsets.all(8),
-                        child: CommonWidgets().appButton(
-                            context,
-                            StringConstants.addToCart.localized(),
-                            MediaQuery.of(context).size.width, () {
-                          if (model?.data?[index].product?.type ==
-                              StringConstants.simple || model?.data?[index].product?.type == StringConstants.virtual) {
-                            wishListBloc?.add(OnClickWishListLoaderEvent(
-                                isReqToShowLoader: true));
+                        padding: const EdgeInsets.only(left: 8.0),
+                        child: QuantityView(
+                          qty: quantityMap["${item?.product?.id}"] ?? "1",
+                          callBack: (qty) {
+                            quantityMap["${item?.product?.id}"] = qty.toString();
+                          },
+                          showTitle: false,
+                        ),
+                      ),
+                      Opacity(
+                        opacity: (item?.product?.isSaleable ?? false) ? 1 : 0.4,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8),
+                          child: CommonWidgets().appButton(
+                              context,
+                              StringConstants.addToCart.localized(),
+                              MediaQuery.of(context).size.width, (item?.product?.isSaleable ?? false) ? () {
+                            if (item?.product?.type ==
+                                    StringConstants.simple ||
+                                item?.product?.type ==
+                                    StringConstants.virtual) {
+                              widget.wishListBloc?.add(OnClickWishListLoaderEvent(
+                                  isReqToShowLoader: true));
 
-                            wishListBloc?.add(AddToCartWishlistEvent(
-                              model?.data![index].id,
-                            ));
-                          } else {
-                            ShowMessage.showNotification(
-                                StringConstants.warning.localized(),
-                                StringConstants.addOptions.localized(),
-                                Colors.yellow,
-                                const Icon(Icons.warning_amber));
-                          }
-                        }),
+                              widget.wishListBloc?.add(AddToCartWishlistEvent(
+                                  item?.id, quantityMap["${item?.product?.id}"] ?? "1"
+                              ));
+                            } else {
+                              ShowMessage.showNotification(
+                                  StringConstants.warning.localized(),
+                                  StringConstants.addOptions.localized(),
+                                  Colors.yellow,
+                                  const Icon(Icons.warning_amber));
+                            }
+                          }:(){}),
+                        ),
                       )
                     ],
                   )),
             );
           },
         ),
-        if (isLoading)
+        if (widget.isLoading)
           const Align(
             alignment: Alignment.center,
             child: SkeletonLoader(

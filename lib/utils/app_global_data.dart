@@ -1,24 +1,35 @@
 
-import 'dart:async';
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
 
-import 'package:flutter/material.dart';
+import 'dart:async';
 import '../data_model/currency_language_model.dart';
+import '../screens/cms_screen/data_model/cms_model.dart';
+import '../screens/home_page/data_model/get_categories_drawer_data_model.dart';
 import '../screens/home_page/data_model/new_product_data.dart';
+import 'server_configuration.dart';
 
 class GlobalData {
-  static List<Locales>? languageData = [];
+  static CurrencyLanguageList? languageData;
   static String? cookie;
-  static String? locale ="en";
-  static String? currency;
+  static String locale = defaultStoreCode;
+  static String currencyCode = defaultCurrencyCode;
   static String? currencySymbol = "";
-  static String? selectedLanguage = "";
   static int rootCategoryId = 1;
+  static CmsData? cmsData;
+  static GetDrawerCategoriesData? categoriesDrawerData;
+
+  static final StreamController cartCountController = StreamController<int>.broadcast();
 
   static StreamController<NewProductsModel?> productsStream = StreamController<NewProductsModel?>.broadcast();
 
   static List<NewProductsModel?>? allProducts = [];
 
-  static TextDirection contentDirection() {
-    return selectedLanguage == "ar" ? TextDirection.rtl : TextDirection.ltr;
-  }
 }

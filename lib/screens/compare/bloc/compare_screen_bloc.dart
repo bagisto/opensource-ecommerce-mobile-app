@@ -1,25 +1,18 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 
-import 'package:bagisto_app_demo/utils/application_localization.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../data_model/add_to_wishlist_model/add_wishlist_model.dart';
-import '../../../data_model/graphql_base_model.dart';
-import '../../../utils/string_constants.dart';
-import '../../cart_screen/cart_model/add_to_cart_model.dart';
-import '../data_model/compare_product_model.dart';
-import 'compare_base_state.dart';
-import 'compare_screen_event.dart';
-import 'compare_screen_repository.dart';
+
+
+import 'package:bagisto_app_demo/screens/compare/utils/index.dart';
 
 
 class CompareScreenBloc
@@ -42,29 +35,29 @@ class CompareScreenBloc
             compareScreenModel: compareScreenModel));
       } catch (e) {
         emit(CompareScreenFetchDataState.fail(
-            error: "SomethingWrong".localized()));
+            error: StringConstants.somethingWrong.localized()));
       }
     } else if (event is RemoveFromCompareListEvent) {
       try {
-        GraphQlBaseModel baseModel = await repository!.removeFromCompareList(
+        BaseModel baseModel = await repository!.removeFromCompareList(
           int.parse(event.productId ?? ""),
         );
         if (baseModel.status == true) {
           emit(RemoveFromCompareState.success(
               productDeletedId: event.productId.toString(),
               baseModel: baseModel,
-              successMsg: baseModel.success));
+              successMsg: baseModel.message));
         } else {
-          emit(RemoveFromCompareState.fail(error: baseModel.success));
+          emit(RemoveFromCompareState.fail(error: baseModel.graphqlErrors));
         }
       } catch (e) {
         emit(RemoveFromCompareState.fail(
-            error: "SomethingWrong".localized()));
+            error: StringConstants.somethingWrong.localized()));
       }
     } else if (event is AddToCartCompareEvent) {
       try {
         AddToCartModel? graphQlBaseModel = await repository?.callAddToCartAPi(int.parse(event.productId??""), event.quantity/* event.params*/);
-        if (graphQlBaseModel?.responseStatus == true) {
+        if (graphQlBaseModel?.success == true) {
           emit(AddToCartCompareState.success(
               response: graphQlBaseModel,
               cartProductId: event.productId,
@@ -74,7 +67,7 @@ class CompareScreenBloc
         }
       } catch (e) {
         emit(AddToCartCompareState.fail(
-            error:"SomethingWrong".localized()));
+            error: StringConstants.somethingWrong.localized()));
       }
     } else if (event is AddToWishlistCompareEvent) {
       try {
@@ -88,14 +81,14 @@ class CompareScreenBloc
         emit(AddToWishlistCompareState.success(
             response: addWishListModel,
             productDeletedId: event.productId,
-            successMsg: addWishListModel!.success));
+            successMsg: addWishListModel!.message));
       } catch (e) {
         emit(AddToWishlistCompareState.fail(
-            error: "SomethingWrong".localized()));
+            error: StringConstants.somethingWrong.localized()));
       }
     }else if (event is FetchDeleteWishlistItemEvent) {
       try {
-        GraphQlBaseModel removeFromWishlist = await repository!.removeItemFromWishlist(event.productId);
+        AddToCartModel removeFromWishlist = await repository!.removeItemFromWishlist(event.productId);
         if(removeFromWishlist.status==true) {
           if (event.datum != null) {
             if (event.datum?.product?.isInWishlist == true) {
@@ -107,10 +100,10 @@ class CompareScreenBloc
             event.datum?.product?.isInWishlist= !(event.datum?.product?.isInWishlist ?? true);
           }
 
-          emit (RemoveFromWishlistState.success( productDeletedId: event.productId.toString(), successMsg:removeFromWishlist.success,response: removeFromWishlist));
+          emit (RemoveFromWishlistState.success( productDeletedId: event.productId.toString(), successMsg:removeFromWishlist.message,response: removeFromWishlist));
         }
       } catch (e) {
-        emit (RemoveFromWishlistState.fail(error: "SomethingWrong".localized()));
+        emit (RemoveFromWishlistState.fail(error: StringConstants.somethingWrong.localized()));
       }
     }
 
@@ -119,17 +112,17 @@ class CompareScreenBloc
           isReqToShowLoader: event.isReqToShowLoader));
     }else if (event is RemoveAllCompareListEvent) {
       try {
-        GraphQlBaseModel baseModel = await repository!.removeAllCompareProducts();
+        BaseModel baseModel = await repository!.removeAllCompareProducts();
         if (baseModel.status == true) {
           emit(RemoveAllCompareProductState.success(
               baseModel: baseModel,
-              successMsg: baseModel.success));
+              successMsg: baseModel.message));
         } else {
-          emit(RemoveAllCompareProductState.fail(error: baseModel.success));
+          emit(RemoveAllCompareProductState.fail(error: baseModel.graphqlErrors));
         }
       } catch (e) {
         emit(RemoveAllCompareProductState.fail(
-            error: "SomethingWrong".localized()));
+            error: StringConstants.somethingWrong.localized()));
       }
     }
 

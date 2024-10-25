@@ -1,11 +1,18 @@
-import 'package:bagisto_app_demo/widgets/loader.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
 import 'package:geocoding/geocoding.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart' as location;
-import '../../../utils/index.dart';
-import 'package:flutter/material.dart';
+export 'package:location/location.dart';
 import 'package:bagisto_app_demo/screens/location/utils/index.dart';
+import 'package:location/location.dart';
 
 class LocationScreen extends StatefulWidget {
   final String? address;
@@ -13,7 +20,7 @@ class LocationScreen extends StatefulWidget {
   const LocationScreen({Key? key, this.address}) : super(key: key);
 
   @override
-  _LocationScreenState createState() => _LocationScreenState();
+  State<LocationScreen> createState() => _LocationScreenState();
 }
 
 class _LocationScreenState extends State<LocationScreen> {
@@ -24,13 +31,14 @@ class _LocationScreenState extends State<LocationScreen> {
   GoogleMapController? _controller;
   String address = '';
   Map<String, dynamic> addressMap = {};
+  double defaultLatitude = 28.6296987;
+  double defaultLongitude = 77.3762753;
 
   @override
   void initState() {
     if (widget.address != null) {
       address = widget.address ?? "";
     }
-
     getCurrentLocation();
 
     super.initState();
@@ -38,25 +46,23 @@ class _LocationScreenState extends State<LocationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: _buildUI(),
-    );
+    return _buildUI();
   }
 
   Widget _buildUI() {
-    return Directionality(
-      textDirection: GlobalData.contentDirection(),
-      child: Scaffold(
-        body: Column(
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
           children: [
             Expanded(
               child: ((latitude != null) && (longitude != null))
                   ? Stack(children: [
                       GoogleMap(
                         zoomControlsEnabled: false,
+                        myLocationButtonEnabled: false,
                         initialCameraPosition: CameraPosition(
                           target: LatLng(
-                              latitude ?? 28.6296987, longitude ?? 77.3762753),
+                              latitude ?? defaultLatitude, longitude ?? defaultLongitude),
                           zoom: 16.0,
                         ),
                         onMapCreated: (GoogleMapController controller) {
@@ -74,7 +80,7 @@ class _LocationScreenState extends State<LocationScreen> {
                           });
                         },
                       ),
-                      Positioned(
+                      const Positioned(
                           right: 0,
                           top: 0,
                           left: 0,
@@ -82,56 +88,69 @@ class _LocationScreenState extends State<LocationScreen> {
                           child: Icon(
                             Icons.location_pin,
                             color: Colors.red,
-                            size: 40,
+                            size: AppSizes.spacingWide*2,
                           )),
                       Positioned(
-                          bottom: 15,
-                          right: 15,
+                          bottom: AppSizes.spacingLarge,
+                          right: AppSizes.spacingLarge,
                           child: InkWell(
                             onTap: getCurrentLocation,
-                            child: CircleAvatar(
-                              backgroundColor: MobikulTheme.accentColor,
-                              child: const Icon(
+                            child: const CircleAvatar(
+                              backgroundColor: MobiKulTheme.accentColor,
+                              child: Icon(
                                 Icons.my_location_sharp,
                                 color: Colors.white,
                               ),
                             ),
                           )),
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => BlocProvider(
-                                      create: (context) => LocationScreenBloc(
-                                          repository: LocationRepositoryImp()),
-                                      child: const PlaceSearch()))).then(
-                              (value) {
-                            if (value is LatLng) {
-                              placeSearch(value);
-                            }
-                          });
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(AppSizes.spacingMedium),
-                          margin: const EdgeInsets.all(AppSizes.spacingMedium),
-                          color: Theme.of(context).cardColor,
-                          child: const Row(
-                            children: [
-                              Icon(Icons.search),
-                              SizedBox(
-                                width: AppSizes.spacingWide,
+                      Row(
+                        children: [
+                          GestureDetector(onTap: (){
+                            Navigator.of(context).pop();
+                          }, child: const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: AppSizes.spacingNormal),
+                            child: Icon(Icons.arrow_back,
+                              color: MobiKulTheme.accentColor),
+                          )),
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => BlocProvider(
+                                            create: (context) => LocationScreenBloc(
+                                                repository: LocationRepositoryImp()),
+                                            child: const PlaceSearch()))).then(
+                                    (value) {
+                                  if (value is LatLng) {
+                                    placeSearch(value);
+                                  }
+                                });
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(AppSizes.spacingMedium),
+                                margin: const EdgeInsets.all(AppSizes.spacingMedium),
+                                color: Theme.of(context).cardColor,
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.search),
+                                    const SizedBox(
+                                      width: AppSizes.spacingWide,
+                                    ),
+                                    Text(
+                                      StringConstants.searchLocation.localized(),
+                                      style: const TextStyle(color: Colors.grey),
+                                    )
+                                  ],
+                                ),
                               ),
-                              Text(
-                                "Search for a location",
-                                style: TextStyle(color: Colors.grey),
-                              )
-                            ],
+                            ),
                           ),
-                        ),
+                        ],
                       ),
                     ])
-                  : Loader(),
+                  : const Loader(),
             ),
             GestureDetector(
               onTap: () {
@@ -143,17 +162,17 @@ class _LocationScreenState extends State<LocationScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Row(
+                    Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.location_pin,
                         ),
-                        SizedBox(
+                        const SizedBox(
                           width: AppSizes.spacingMedium,
                         ),
                         Text(
-                          "Select this Location",
-                          style: TextStyle(color: Colors.grey),
+                          StringConstants.selectLocation.localized(),
+                          style: const TextStyle(color: Colors.grey),
                         )
                       ],
                     ),
@@ -169,11 +188,9 @@ class _LocationScreenState extends State<LocationScreen> {
                                 .bodyLarge
                                 ?.copyWith(color: Colors.grey[600]),
                           ))
-                        : const Text(
-                            "Please wait...",
-                            style: TextStyle(color: Colors.black),
+                        : Text(
+                            StringConstants.pleaseWait.localized(),
                           )
-                    // GenericMethods.getStringValue(context, AppStrings.loadingMessage),
                   ],
                 ),
               ),
@@ -185,22 +202,20 @@ class _LocationScreenState extends State<LocationScreen> {
   }
 
   void getCurrentLocation() async {
-    var location;
+    LocationData? location;
     try {
       location = await currentLocation.getLocation();
     } catch (e) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        // AlertMessage.showError(e.toString(), context);
-      });
+      if(!mounted) return;
       Navigator.pop(context);
     }
     setState(() {
-      latitude = location.latitude;
-      longitude = location.longitude;
+      latitude = location?.latitude;
+      longitude = location?.longitude;
     });
-    position = LatLng(latitude ?? 28.6296987, longitude ?? 77.3762753);
+    position = LatLng(latitude ?? defaultLatitude, longitude ?? defaultLongitude);
     _controller?.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
-      target: LatLng(latitude ?? 28.6296987, longitude ?? 77.3762753),
+      target: LatLng(latitude ?? defaultLatitude, longitude ?? defaultLongitude),
       zoom: 16.0,
     )));
   }
@@ -212,7 +227,7 @@ class _LocationScreenState extends State<LocationScreen> {
     });
     position = LatLng(latitude!, longitude!);
     _controller?.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
-      target: LatLng(latitude ?? 28.6296987, longitude ?? 77.3762753),
+      target: LatLng(latitude ?? defaultLatitude, longitude ?? defaultLongitude),
       zoom: 16.0,
     )));
     getLocation(location);

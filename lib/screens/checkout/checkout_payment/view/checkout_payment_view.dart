@@ -1,44 +1,34 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
-import 'package:bagisto_app_demo/utils/application_localization.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:skeleton_loader/skeleton_loader.dart';
 
-import '../../../../utils/app_constants.dart';
-import '../../../../utils/app_global_data.dart';
-import '../../../../utils/mobikul_theme.dart';
-import '../../../../utils/radio_button_group.dart';
-import '../../../../utils/server_configuration.dart';
-import '../../../../utils/string_constants.dart';
-import '../../../../widgets/common_error_msg.dart';
+
+
+
+import 'package:bagisto_app_demo/screens/checkout/utils/index.dart';
 import '../../data_model/checkout_save_shipping_model.dart';
-import '../bloc/checkout_fetch_payment_state.dart';
-import '../bloc/checkout_payment_base_event.dart';
-import '../bloc/checkout_payment_bloc.dart';
+export 'package:bagisto_app_demo/screens/checkout/data_model/checkout_save_shipping_model.dart';
 
-//ignore: must_be_immutable
 class CheckoutPaymentView extends StatefulWidget {
-  String? shippingId;
-  Function(String)? callBack;
-  ValueChanged<String>? priceCallback;
+  final String? shippingId;
+  final Function(String)? callBack;
+  final ValueChanged<String>? priceCallback;
+  final String? total;
+  PaymentMethods? paymentMethods;
 
-  String? total;
-
-  CheckoutPaymentView(
+   CheckoutPaymentView(
       {Key? key,
       this.total,
       this.shippingId,
       this.callBack,
-      this.priceCallback})
+      this.priceCallback, this.paymentMethods})
       : super(key: key);
 
   @override
@@ -48,21 +38,22 @@ class CheckoutPaymentView extends StatefulWidget {
 class _CheckoutPaymentViewState extends State<CheckoutPaymentView> {
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-        textDirection: GlobalData.contentDirection(),
-        child: _paymentBloc(context));
+    return _paymentBloc(context);
   }
 
   ///ADDRESS BLOC CONTAINER///
   _paymentBloc(BuildContext context) {
     CheckOutPaymentBloc checkOutPaymentBloc =
         context.read<CheckOutPaymentBloc>();
-    checkOutPaymentBloc
-        .add(CheckOutPaymentEvent(shippingMethod: widget.shippingId));
+    if((widget.paymentMethods?.paymentMethods ?? []).isEmpty){
+      checkOutPaymentBloc
+          .add(CheckOutPaymentEvent(shippingMethod: widget.shippingId));
+    }
     return BlocConsumer<CheckOutPaymentBloc, CheckOutPaymentBaseState>(
       listener: (BuildContext context, CheckOutPaymentBaseState state) {},
       builder: (BuildContext context, CheckOutPaymentBaseState state) {
-        return buildUI(context, state);
+        return (widget.paymentMethods?.paymentMethods ?? []).isNotEmpty ? _paymentMethods(widget.paymentMethods!)
+            : buildUI(context, state);
       },
     );
   }
@@ -80,8 +71,7 @@ class _CheckoutPaymentViewState extends State<CheckoutPaymentView> {
     if (state is CheckOutPaymentInitialState) {
       return SkeletonLoader(
           highlightColor: Theme.of(context).highlightColor,
-          baseColor: Theme.of(context).appBarTheme.backgroundColor ??
-              MobikulTheme.primaryColor,
+          baseColor: Theme.of(context).scaffoldBackgroundColor,
           builder: Container(
               height: 130,
               padding: const EdgeInsets.fromLTRB(0, 12, 0, 0),
@@ -90,7 +80,7 @@ class _CheckoutPaymentViewState extends State<CheckoutPaymentView> {
                 color: Colors.grey,
               )));
     }
-    return Container();
+    return const SizedBox();
   }
 
   _paymentMethods(PaymentMethods checkOutShipping) {
@@ -105,14 +95,14 @@ class _CheckoutPaymentViewState extends State<CheckoutPaymentView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSizes.spacingNormal),
           Text(
             StringConstants.paymentMethods.localized(),
             style: Theme.of(context).textTheme.labelLarge,
           ),
           Card(
             elevation: 2,
-            margin: const EdgeInsets.fromLTRB(0, 8, 0, 4),
+            margin: const EdgeInsets.fromLTRB(0, AppSizes.spacingNormal, 0, AppSizes.spacingSmall),
             child: Container(
               padding: const EdgeInsets.all(AppSizes.spacingNormal),
               child: RadioButtonGroup(

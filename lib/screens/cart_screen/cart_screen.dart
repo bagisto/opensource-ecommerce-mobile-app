@@ -1,20 +1,15 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
-import 'package:bagisto_app_demo/screens/cart_screen/widget/apply_coupon_view.dart';
-import 'package:bagisto_app_demo/screens/cart_screen/widget/button_view.dart';
-import 'package:bagisto_app_demo/screens/cart_screen/widget/price_details_view.dart';
-import 'package:bagisto_app_demo/screens/cart_screen/widget/proceed_view.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
-import '../../widgets/common_app_bar.dart';
-import 'cart_index.dart';
+
+import 'package:bagisto_app_demo/screens/cart_screen/utils/cart_index.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({Key? key}) : super(key: key);
@@ -46,34 +41,19 @@ class _CartScreenState extends State<CartScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return createClient();
+    return buildUI();
   }
 
-  Widget createClient() {
-    return GraphQLProvider(
-      client: ValueNotifier(GraphQlApiCalling().clientToQuery()),
-      child: CacheProvider(
-        child: buildUI(),
-      ),
-    );
-  }
 
   Widget buildUI() {
     return ScaffoldMessenger(
       key: scaffoldMessengerKey,
-      child: Directionality(
-        textDirection: GlobalData.contentDirection(),
-        child: Scaffold(
-          appBar: CommonAppBar(StringConstants.cart.localized(),
-          index: 2),
-          body: _cartScreenData(context),
-        ),
+      child: Scaffold(
+        appBar: CommonAppBar(StringConstants.cart.localized(),
+        index: 2),
+        body: _cartScreenData(context),
       ),
     );
-  }
-
-  Future getSharePreferenceCartCount() async {
-    return await SharedPreferenceHelper.getCartCount();
   }
 
   ///bloc method
@@ -87,6 +67,7 @@ class _CartScreenState extends State<CartScreen> {
           } else if (state.status == CartStatus.success) {
             ShowMessage.successNotification(
                 state.removeCartProductModel?.message ?? "",context);
+            GlobalData.cartCountController.sink.add(state.removeCartProductModel?.cart?.itemsQty ?? 0);
           }
         }
         if (state is RemoveAllCartItemState) {
@@ -96,6 +77,7 @@ class _CartScreenState extends State<CartScreen> {
           } else if (state.status == CartStatus.success) {
             ShowMessage.successNotification(
                 state.removeAllCartProductModel!.message ?? "",context);
+            GlobalData.cartCountController.sink.add(0);
           }
         }
         if (state is AddCouponState) {
@@ -155,6 +137,7 @@ class _CartScreenState extends State<CartScreen> {
       if (state.status == CartStatus.success) {
         _cartDetailsModel = state.cartDetailsModel;
         _discountController.text = _cartDetailsModel?.couponCode ?? "";
+        GlobalData.cartCountController.sink.add(state.cartDetailsModel?.itemsQty ?? 0);
         return _cartScreenBody(_cartDetailsModel);
       }
       if (state.status == CartStatus.fail) {
@@ -178,7 +161,7 @@ class _CartScreenState extends State<CartScreen> {
         if (_cartDetailsModel != null) {
           _cartDetailsModel!.items!
               .removeWhere((element) => element.id == productId);
-          SharedPreferenceHelper.setCartCount(
+          appStoragePref.setCartCount(
               _cartDetailsModel?.itemsCount ?? 0);
           fetchCartData();
           return _cartScreenBody(_cartDetailsModel!);
@@ -188,7 +171,7 @@ class _CartScreenState extends State<CartScreen> {
     if (state is MoveToCartState) {
       if (state.status == CartStatus.success) {
         var productId = state.id;
-        SharedPreferenceHelper.setCartCount(_cartDetailsModel?.itemsCount ?? 0);
+        appStoragePref.setCartCount(_cartDetailsModel?.itemsCount ?? 0);
         fetchCartData();
         if (_cartDetailsModel != null) {
           _cartDetailsModel?.items?.removeWhere((element) => element.id == productId.toString());
@@ -200,7 +183,7 @@ class _CartScreenState extends State<CartScreen> {
       if (state.status == CartStatus.success) {
         if (_cartDetailsModel != null) {
           _cartDetailsModel!.items!.removeWhere((element) => element.id == StringConstants.productId);
-          SharedPreferenceHelper.setCartCount(
+          appStoragePref.setCartCount(
               _cartDetailsModel?.itemsCount ?? 0);
           fetchCartData();
           return _cartScreenBody(_cartDetailsModel!);
@@ -254,57 +237,59 @@ class _CartScreenState extends State<CartScreen> {
 
   ///this method will show cart items
   _cartItems(CartModel cartDetailsModel) {
-    return Column(
-      children: [
-        Expanded(
-          child: RefreshIndicator(
-            color: Theme.of(context).colorScheme.onPrimary,
-            onRefresh: () {
-              return Future.delayed(const Duration(microseconds: 2), () {
-                fetchCartData();
-              });
-            },
-            child: SingleChildScrollView(
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: AppSizes.spacingNormal),
-                child: Column(
-                  children: [
-                    CartListItem(
-                        cartDetailsModel: cartDetailsModel,
+    return SafeArea(
+      child: Column(
+        children: [
+          Expanded(
+            child: RefreshIndicator(
+              color: Theme.of(context).colorScheme.onPrimary,
+              onRefresh: () {
+                return Future.delayed(const Duration(microseconds: 2), () {
+                  fetchCartData();
+                });
+              },
+              child: SingleChildScrollView(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: AppSizes.spacingNormal),
+                  child: Column(
+                    children: [
+                      CartListItem(
+                          cartDetailsModel: cartDetailsModel,
+                          selectedItems: _selectedItems,
+                          cartScreenBloc: cartScreenBloc,
+                          callBack: (quantityChanged) {
+                            setState(() {
+                              this.quantityChanged = quantityChanged;
+                            });
+                          }),
+                      const SizedBox(height:AppSizes.spacingSmall),
+                      ApplyCouponView(
+                        discountController: _discountController,
+                        cartScreenBloc: cartScreenBloc,
+                        cartDetailsModel: _cartDetailsModel,
+                      ),
+                      const SizedBox(height:AppSizes.spacingSmall),
+                      ButtonView(
                         selectedItems: _selectedItems,
                         cartScreenBloc: cartScreenBloc,
-                        callBack: (quantityChanged) {
-                          setState(() {
-                            this.quantityChanged = quantityChanged;
-                          });
-                        }),
-                    const SizedBox(height:AppSizes.spacingSmall),
-                    ApplyCouponView(
-                      discountController: _discountController,
-                      cartScreenBloc: cartScreenBloc,
-                      cartDetailsModel: _cartDetailsModel,
-                    ),
-                    const SizedBox(height:AppSizes.spacingSmall),
-                    ButtonView(
-                      selectedItems: _selectedItems,
-                      cartScreenBloc: cartScreenBloc,
-                    ),
-                    const SizedBox(height:AppSizes.spacingSmall),
-                    PriceDetailView(
-                      cartDetailsModel: cartDetailsModel,
-                    ),
-                  ],
+                      ),
+                      const SizedBox(height:AppSizes.spacingSmall),
+                      PriceDetailView(
+                        cartDetailsModel: cartDetailsModel,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-        ProceedView(
-          cartDetailsModel: cartDetailsModel,
-          quantityChanged: quantityChanged,
-          cartScreenBloc: cartScreenBloc,
-        )
-      ],
+          ProceedView(
+            cartDetailsModel: cartDetailsModel,
+            quantityChanged: quantityChanged,
+            cartScreenBloc: cartScreenBloc,
+          )
+        ],
+      ),
     );
   }
 }

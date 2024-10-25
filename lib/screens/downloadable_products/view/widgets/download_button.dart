@@ -1,10 +1,15 @@
-import 'package:bagisto_app_demo/utils/application_localization.dart';
-import 'package:flutter/material.dart';
-import '../../../../utils/string_constants.dart';
-import '../../../../widgets/show_message.dart';
-import '../../bloc/downloadable_products_bloc.dart';
-import '../../bloc/downloadable_products_events.dart';
-import '../../data_model/downloadable_product_model.dart';
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
+
+import 'package:bagisto_app_demo/screens/downloadable_products/utils/index.dart';
 
 class DownloadButton extends StatelessWidget {
   final int available;
@@ -22,7 +27,6 @@ class DownloadButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return ElevatedButton(
       style: ButtonStyle(
-        maximumSize: MaterialStateProperty.all(const Size(270, 104)),
         foregroundColor: MaterialStateProperty.all<Color>(
           Theme.of(context).colorScheme.background,
         ),
@@ -40,6 +44,7 @@ class DownloadButton extends StatelessWidget {
           ? () {
               if ((linkPurchases != null)) {
                 int id = int.tryParse(linkPurchases?.id ?? "0") ?? 0;
+
                 downloadableProductsBloc?.add(DownloadProductEvent(id));
               } else {
                 ShowMessage.showNotification(

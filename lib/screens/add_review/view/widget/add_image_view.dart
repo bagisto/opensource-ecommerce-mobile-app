@@ -1,3 +1,13 @@
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
@@ -5,10 +15,9 @@ import 'package:bagisto_app_demo/utils/application_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../utils/app_constants.dart';
-import '../../../../utils/mobikul_theme.dart';
 import '../../../../utils/string_constants.dart';
 import '../../../../widgets/common_widgets.dart';
-import '../../bloc/add_review_base_event.dart';
+import '../../bloc/add_review_event.dart';
 import '../../bloc/add_review_bloc.dart';
 
 class AddImageView extends StatefulWidget {
@@ -34,7 +43,7 @@ class _AddImageViewState extends State<AddImageView> {
       children: [
         Card(
           child: (imageFile == null)
-              ? Container()
+              ? const SizedBox()
               : Stack(
                   children: [
                     SizedBox(
@@ -54,19 +63,19 @@ class _AddImageViewState extends State<AddImageView> {
                   ],
                 ),
         ),
-        if (imageFile != null) const SizedBox(height: 20.0),
+        if (imageFile != null) const SizedBox(height:AppSizes.spacingWide),
         SizedBox(
           height: AppSizes.buttonHeight,
           width: MediaQuery.of(context).size.width,
           child: OutlinedButton(
-            style: OutlinedButton.styleFrom(side: const BorderSide()),
+            style: OutlinedButton.styleFrom(side:  BorderSide(color: Theme.of(context).colorScheme.onBackground)),
             child: Text(
               imageFile == null
                   ? StringConstants.addImage.localized().toUpperCase()
                   : StringConstants.replaceImage.localized().toUpperCase(),
-              style: TextStyle(
+              style:  TextStyle(
                 fontSize: AppSizes.spacingLarge,
-                color: MobikulTheme.accentColor,
+                  color: Theme.of(context).colorScheme.onBackground
               ),
             ),
             onPressed: () {
@@ -83,7 +92,7 @@ class _AddImageViewState extends State<AddImageView> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+            backgroundColor: Theme.of(context).colorScheme.background,
             title: Text(
               StringConstants.pleaseChoose.localized(),
             ),
@@ -147,7 +156,7 @@ class _AddImageViewState extends State<AddImageView> {
       base64string = base64.encode(imageBytes);
     }
     widget.addReviewBloc?.add(ImagePickerEvent(pickedFile: pickedFile, image: base64string));
-    // ignore: use_build_context_synchronously
+    if(!mounted) return;
     Navigator.pop(context);
   }
 }

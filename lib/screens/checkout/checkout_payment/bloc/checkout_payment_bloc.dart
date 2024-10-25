@@ -1,20 +1,19 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 
-import 'package:flutter_bloc/flutter_bloc.dart';
+
+import 'package:bagisto_app_demo/screens/checkout/utils/index.dart';
 
 import '../../data_model/checkout_save_shipping_model.dart';
-import 'checkout_fetch_payment_state.dart';
-import 'checkout_payment_base_event.dart';
-import 'checkout_payment_repository.dart';
+
 
 class CheckOutPaymentBloc
     extends Bloc<CheckOutPaymentBaseEvent, CheckOutPaymentBaseState> {

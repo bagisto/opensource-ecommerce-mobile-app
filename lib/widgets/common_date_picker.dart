@@ -1,14 +1,13 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
 
@@ -44,16 +43,20 @@ class _CommonDatePickerState extends State<CommonDatePicker> {
   @override
   void initState() {
     if (widget.controller?.text != null &&
-        (widget.controller?.text ?? "").isNotEmpty) {
+        (widget.controller?.text ?? "" ).isNotEmpty && widget.controller?.text != 'null') {
       String? text = widget.controller?.text ?? selectedDate.toString();
+
       DateTime tempDate = DateFormat('yyyy-MM-dd').parse(text);
       selectedDate = tempDate;
     }
+    else{
+      widget.controller?.text = "";
+
+    }
     if (widget.save == 1 && initDate.isNotEmpty) {
-      SharedPreferenceHelper.getDate().then((value) {
-        initDate = value;
+
+      initDate = appStoragePref.getDate();
         selectedDate = DateTime.parse(initDate);
-      });
     }
     super.initState();
   }
@@ -64,8 +67,8 @@ class _CommonDatePickerState extends State<CommonDatePicker> {
           return Theme(
             data: ThemeData(
               primarySwatch: Colors.grey,
-              colorScheme: ColorScheme.light(
-                  primary: Theme.of(context).colorScheme.onBackground,
+              colorScheme: const ColorScheme.light(
+                  primary: MobiKulTheme.accentColor,
                   onPrimary: Colors.white,
                   onSurface: Colors.black,
                   secondary: Colors.black),
@@ -89,7 +92,7 @@ class _CommonDatePickerState extends State<CommonDatePicker> {
     DateTime date = DateTime.parse(picked.toString());
 
     if (widget.save == 0) {
-      SharedPreferenceHelper.setDate(picked.toString());
+      appStoragePref.setDate(picked.toString());
     }
 
     String formattedDate = DateFormat('yyyy-MM-dd').format(date);
@@ -119,7 +122,7 @@ class _CommonDatePickerState extends State<CommonDatePicker> {
                 onTap: () async {
                   FocusScope.of(context).requestFocus(FocusNode());
                   if (widget.save == 1) {
-                    initDate = await SharedPreferenceHelper.getDate();
+                    initDate = appStoragePref.getDate();
                     if(initDate.isNotEmpty) {
                       selectedDate = DateTime.parse(initDate);
                     }

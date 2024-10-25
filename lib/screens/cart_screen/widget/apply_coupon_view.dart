@@ -1,5 +1,15 @@
 
-import '../cart_index.dart';
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
+import '../utils/cart_index.dart';
 
 class ApplyCouponView extends StatefulWidget {
   final CartModel? cartDetailsModel;
@@ -42,7 +52,7 @@ class _ApplyCouponViewState extends State<ApplyCouponView> {
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
                     flex: 2,
@@ -58,7 +68,7 @@ class _ApplyCouponViewState extends State<ApplyCouponView> {
                               .localized(),
                           label: StringConstants.couponCode
                               .localized(),
-                        contentPadding: const EdgeInsets.symmetric(vertical: 0,horizontal: AppSizes.size12),
+                        contentPadding: const EdgeInsets.symmetric(vertical: 0,horizontal: AppSizes.spacingMedium),
                         validator: (discountCode) {
                         if ((discountCode?.trim() ?? "").isEmpty) {
                           setState(() {
@@ -76,7 +86,7 @@ class _ApplyCouponViewState extends State<ApplyCouponView> {
                     child: Padding(
                       padding: EdgeInsets.only(left: AppSizes.spacingNormal,bottom: showButton? AppSizes.spacingWide:0,right: 3),
                       child: MaterialButton(
-                        height: 47,
+                        height: AppSizes.buttonHeight+5,
                         color: Theme.of(context)
                             .colorScheme
                             .onBackground,
@@ -84,9 +94,8 @@ class _ApplyCouponViewState extends State<ApplyCouponView> {
                             .colorScheme.background,
                         elevation: 0.0,
                         shape:  RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(AppSizes.size4),
+                          borderRadius: BorderRadius.circular(AppSizes.spacingSmall),
                         ),
-
                         onPressed: () {
                           if (_discountCouponFormKey.currentState!.validate()) {
                             setState(() {

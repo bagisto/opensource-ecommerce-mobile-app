@@ -1,11 +1,11 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 import 'dart:async';
@@ -39,7 +39,7 @@ class ApplicationLocalizations {
   Map<String, String>? _localizedStrings;
 
   Future<bool> load() async {
-    var selectedCode = await SharedPreferenceHelper.getCustomerLanguage();
+    var selectedCode = appStoragePref.getCustomerLanguage();
     if (!(supportedLocale.contains(selectedCode))) {
       selectedCode = supportedLocale.first;
     }

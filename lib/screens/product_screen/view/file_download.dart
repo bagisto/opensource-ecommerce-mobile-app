@@ -1,36 +1,27 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
 
-import 'dart:convert';
 import 'dart:io';
-import 'package:bagisto_app_demo/utils/server_configuration.dart';
-import 'package:device_info_plus/device_info_plus.dart';
-import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
-
+import 'package:bagisto_app_demo/utils/push_notifications_manager.dart';
 
 
 class DownloadFile {
-  var tag = "DownloadInvoice ";
   String savePath = "";
   String _localPath = "";
   AndroidDeviceInfo? android;
   TargetPlatform? platform = TargetPlatform.android;
 
   Future downloadPersonalData(String url,
-      String fileNames,
+      String? fileNames,
       String fileType,
       BuildContext context,
       GlobalKey<ScaffoldMessengerState>? scaffoldMessengerKey) async {
@@ -38,45 +29,35 @@ class DownloadFile {
       Dio dio = Dio();
       var status = await Permission.storage.status;
       if (status.isGranted) {
-        debugPrint("${tag}permission is granted");
+        debugPrint("$url, $fileNames permission is granted");
         String fileName = fileNames ?? "product";
         savePath = await getFilePath(fileName);
 
-        ShowMessage.successNotification(StringConstants.downloading.localized(), context);
-
         await dio.download(url, savePath,
-            onReceiveProgress: (received, total) {
-              debugPrint("$tag Download started received$received total $total");
+            onReceiveProgress: (received, total) async {
+              int progress = ((received / total) * 100).toInt();
+              debugPrint("$progress Download started received$received total $total");
+              if(progress%5 == 0 || progress < 20){
+                PushNotificationsManager.instance.createDownloadNotification(100, progress,
+                    fileName, Platform.isAndroid ? savePath : fileName);
+              }
             });
-        const platform = MethodChannel(defaultChannelName);
-        try {
-          if (Platform.isAndroid) {
-            await platform.invokeMethod('fileviewer', savePath);
-          } else {
-            await platform.invokeMethod('fileviewer', fileName);
-          }
-        } on PlatformException catch (e) {
-          debugPrint("Failed ${e.toString()}");
-        }
-
-        ShowMessage.successNotification(StringConstants.downloadCompleted.localized(), context);
-
       } else if (status.isDenied) {
         Permission.storage.request();
-        debugPrint("${tag}permission is denied ->requesting");
+        debugPrint("permission is denied ->requesting");
       }
     } catch (e) {
-      debugPrint("${tag}exception while downloading $e");
+      debugPrint("exception while downloading $e");
     }
   }
-
 
   Future<String> getFilePath(fileName) async {
     String path = '';
     Directory? dir =  Platform.isAndroid
         ? await getExternalStorageDirectory() //FOR ANDROID
         : await getApplicationDocumentsDirectory();
-    path = '${dir?.path}/$fileName';
+    String sanitizedFileName = fileName.replaceAll(RegExp(r'[/\\]'), '_');
+    path = '${dir?.path}/$sanitizedFileName';
     return path;
   }
 
@@ -102,24 +83,30 @@ class DownloadFile {
             _createFileFromString(stringUrl, fileName);
           } else if (status.isDenied) {
             Permission.storage.request();
-            debugPrint("$tag permission is denied ->requesting");
+            debugPrint(" permission is denied ->requesting");
           }
         } else {
           _createFileFromString(stringUrl, fileName);
         }
       } catch (e) {
-        debugPrint("$tag exception while downloading invoice $e");
+        debugPrint(" exception while downloading invoice $e");
       }
     }
   }
 
   Future<void> _createFileFromString(String stringUrl, String fileName) async {
     _localPath = await getFilePath(fileName);
-    String url = stringUrl.substring(23);
-    Uint8List bytes = base64.decode(url);
+    Uint8List bytes = base64.decode(stringUrl);
     String dir = _localPath;
-    File file = File("$dir/$fileName");
+    File file = File(dir);
+    if (!(await file.parent.exists())) {
+      await file.parent.create(recursive: true);
+    }
+    debugPrint("create file from string ${file.path}* $fileName");
     await file.writeAsBytes(bytes);
+    PushNotificationsManager.instance.createDownloadNotification(100, 100,
+        fileName, Platform.isAndroid ? _localPath : fileName);
   }
+
 
 }

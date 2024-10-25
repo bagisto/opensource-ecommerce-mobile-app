@@ -1,12 +1,18 @@
 
-import 'package:flutter/material.dart';
-import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
-import '../../../../utils/route_constants.dart';
-import '../../../../utils/string_constants.dart';
-import '../../../home_page/utils/route_argument_helper.dart';
-import '../../bloc/compare_screen_bloc.dart';
-import '../../data_model/compare_product_model.dart';
-import 'compare_list.dart';
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
+
+
+
+
+import 'package:bagisto_app_demo/screens/compare/utils/index.dart';
 
 class CompareView extends StatelessWidget {
   final CompareProductsData compareScreenModel;
@@ -38,19 +44,16 @@ class CompareView extends StatelessWidget {
                       BoxDecoration(border: Border.all(color: Colors.grey,width: 1.5)),
                   child: Padding(
                     padding:
-                        const EdgeInsets.only(left: 12.0, top: 6, bottom: 2),
+                        const EdgeInsets.only(left:AppSizes.spacingMedium, top: AppSizes.spacingNormal, bottom: AppSizes.spacingSmall),
                     child: Text(
                       StringConstants.sku,
-                      style: TextStyle(
-                          color: Colors.grey[500],
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600),
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(color: Colors.grey[500]),
                     ),
                   ),
                 ),
               ),
               SizedBox(
-                height: 33,
+                height: AppSizes.spacingLarge*2,
                 child: ListView.builder(
                     padding: EdgeInsets.zero,
                     shrinkWrap: true,
@@ -83,7 +86,7 @@ class CompareView extends StatelessWidget {
                           )),
                           child: Padding(
                             padding: const EdgeInsets.only(
-                                left: 8.0, top: 8, right: 8),
+                                left: AppSizes.spacingNormal, top: AppSizes.spacingNormal, right: AppSizes.spacingNormal),
                             child: SizedBox(
                               width: MediaQuery.of(context).size.width / 2,
                               child: Text(
@@ -166,7 +169,7 @@ class CompareView extends StatelessWidget {
                                       left: 8.0, top: 8, right: 8),
                                   child: ColorFiltered(
                                     colorFilter: ColorFilter.mode(
-                                      Theme.of(context).colorScheme.onBackground,
+                                      Theme.of(context).colorScheme.onPrimary,
                                       BlendMode.srcIn,
                                     ),
                                     child: HtmlWidget(

@@ -1,8 +1,16 @@
-import 'package:flutter/material.dart';
-import '../../../utils/application_localization.dart';
-import '../../../utils/app_constants.dart';
-import '../../../widgets/common_widgets.dart';
+/*
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
+ */
 
+
+
+import 'package:bagisto_app_demo/screens/drawer/utils/index.dart';
 
 class DrawerAddItemList extends StatelessWidget {
   final String? headingTitle;
@@ -21,7 +29,7 @@ class DrawerAddItemList extends StatelessWidget {
             height: 40,
             child: ListTile(
                 title: Text(
-              headingTitle?.localized().toUpperCase() ?? "",
+             " headingTitle?.localized().toUpperCase() "?? "",
               style: TextStyle(
                 fontWeight: FontWeight.w700,
                 fontSize: 16,

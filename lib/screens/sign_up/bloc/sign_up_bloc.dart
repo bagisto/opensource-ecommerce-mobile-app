@@ -1,16 +1,16 @@
 /*
- * Webkul Software.
- * @package Mobikul Application Code.
- * @Category Mobikul
- * @author Webkul <support@webkul.com>
- * @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- * @license https://store.webkul.com/license.html
- * @link https://store.webkul.com/license.html
+ *   Webkul Software.
+ *   @package Mobikul Application Code.
+ *   @Category Mobikul
+ *   @author Webkul <support@webkul.com>
+ *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
+ *   @license https://store.webkul.com/license.html
+ *   @link https://store.webkul.com/license.html
  */
 
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:bagisto_app_demo/screens/sign_up/utils/index.dart';
+
+import '../../../data_model/sign_up_model/signup_model.dart';
 
 class SignUpBloc extends Bloc<SignUpBaseEvent, SignUpBaseState> {
   SignUpRepository? repository;
@@ -29,12 +29,16 @@ class SignUpBloc extends Bloc<SignUpBaseEvent, SignUpBaseState> {
           event.lastName ?? "",
           event.password ?? "",
           event.confirmPassword ?? "",
+          event.newsLetter ?? false
         );
+      print("newsssletter----${event.newsLetter}");
+
         if (signUpResponseModel?.status == true) {
           emit(FetchSignUpState.success(signUpModel: signUpResponseModel));
+
         } else {
           emit(
-              FetchSignUpState.fail(error: signUpResponseModel?.success ?? ""));
+              FetchSignUpState.fail(error: signUpResponseModel?.graphqlErrors ?? ""));
         }
       } catch (e) {
         emit(FetchSignUpState.fail(error: e.toString()));
