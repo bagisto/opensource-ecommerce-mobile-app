@@ -19,10 +19,11 @@ class WishListScreen extends StatefulWidget {
 
 class _WishListScreenState extends State<WishListScreen> {
   WishListData? mWishList;
-  ShareWishlistData? share;
+  // ShareWishlistData? share;
   final StreamController wishlistController = StreamController<int>.broadcast();
   int? cartCount = 0;
-  final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+  final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
+      GlobalKey<ScaffoldMessengerState>();
   bool isLoading = false;
   AddToCartModel? addToCartModel;
   WishListBloc? wishListBloc;
@@ -47,7 +48,6 @@ class _WishListScreenState extends State<WishListScreen> {
     super.dispose();
     wishlistController.close();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -126,7 +126,7 @@ class _WishListScreenState extends State<WishListScreen> {
             ShowMessage.showNotification(
                 StringConstants.success.localized(),
                 state.successMsg ?? "",
-                const Color.fromRGBO(140, 194, 74, 5),
+                Colors.green.shade400,
                 const Icon(Icons.check_circle_outline));
           }
         } else if (state is RemoveAllWishlistProductState) {
@@ -140,7 +140,7 @@ class _WishListScreenState extends State<WishListScreen> {
             ShowMessage.showNotification(
                 StringConstants.success.localized(),
                 state.successMsg ?? "",
-                const Color.fromRGBO(140, 194, 74, 5),
+                Colors.green.shade400,
                 const Icon(Icons.check_circle_outline));
           }
         } else if (state is AddToCartWishlistState) {
@@ -154,7 +154,7 @@ class _WishListScreenState extends State<WishListScreen> {
             ShowMessage.showNotification(
                 StringConstants.success.localized(),
                 state.successMsg ?? "",
-                const Color.fromRGBO(140, 194, 74, 5),
+                Colors.green.shade400,
                 const Icon(Icons.check_circle_outline));
             WishListBloc wishListBloc = context.read<WishListBloc>();
             wishListBloc.add(FetchWishListEvent());
@@ -176,7 +176,8 @@ class _WishListScreenState extends State<WishListScreen> {
       if (state.status == WishListStatus.success) {
         if (state.cartDetails != null) {
           appStoragePref.setCartCount(state.cartDetails?.itemsQty ?? 0);
-          GlobalData.cartCountController.sink.add(state.cartDetails?.itemsQty ?? 0);
+          GlobalData.cartCountController.sink
+              .add(state.cartDetails?.itemsQty ?? 0);
         }
       }
     }
@@ -187,14 +188,14 @@ class _WishListScreenState extends State<WishListScreen> {
         return _showWishList(mWishList, context, isLoading);
       }
       if (state.status == WishListStatus.fail) {
-        return ErrorMessage.errorMsg(state.error ?? "");
+        return EmptyDataView();
       }
     }
     if (state is FetchDeleteAddItemState) {
       isLoading = false;
       if (state.status == WishListStatus.success) {
-          wishListBloc?.add(FetchWishListEvent());
-          return _showWishList(mWishList, context, isLoading);
+        wishListBloc?.add(FetchWishListEvent());
+        return _showWishList(mWishList, context, isLoading);
       }
     }
     if (state is RemoveAllWishlistProductState) {
@@ -213,7 +214,8 @@ class _WishListScreenState extends State<WishListScreen> {
       if (state.status == WishListStatus.success) {
         wishListBloc?.add(FetchWishListEvent());
         addToCartModel = state.response!;
-        GlobalData.cartCountController.sink.add(addToCartModel?.cart?.itemsQty ?? 0);
+        GlobalData.cartCountController.sink
+            .add(addToCartModel?.cart?.itemsQty ?? 0);
         return _showWishList(mWishList, context, isLoading);
       }
     }

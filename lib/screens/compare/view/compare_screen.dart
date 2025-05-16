@@ -82,7 +82,7 @@ class _CompareScreenState extends State<CompareScreen>
                 backgroundColor: Theme.of(context).colorScheme.onBackground,
                 onPressed: () {
                   CompareScreenBloc compareScreenBloc =
-                  context.read<CompareScreenBloc>();
+                      context.read<CompareScreenBloc>();
                   compareScreenBloc
                       .add(OnClickCompareLoaderEvent(isReqToShowLoader: true));
                   compareScreenBloc.add(RemoveAllCompareListEvent(""));
@@ -127,7 +127,7 @@ class _CompareScreenState extends State<CompareScreen>
             ShowMessage.showNotification(
                 StringConstants.success.localized(),
                 state.successMsg,
-                const Color.fromRGBO(140, 194, 74, 5),
+                Colors.green.shade400,
                 const Icon(Icons.check_circle_outline));
           }
         } else if (state is RemoveAllCompareProductState) {
@@ -138,7 +138,7 @@ class _CompareScreenState extends State<CompareScreen>
             ShowMessage.showNotification(
                 StringConstants.success.localized(),
                 state.successMsg,
-                const Color.fromRGBO(140, 194, 74, 5),
+                Colors.green.shade400,
                 const Icon(Icons.check_circle_outline));
           }
         } else if (state is AddToCartCompareState) {
@@ -152,7 +152,7 @@ class _CompareScreenState extends State<CompareScreen>
             ShowMessage.showNotification(
                 StringConstants.success.localized(),
                 state.successMsg,
-                const Color.fromRGBO(140, 194, 74, 5),
+                Colors.green.shade400,
                 const Icon(Icons.check_circle_outline));
           }
         } else if (state is AddToWishlistCompareState) {
@@ -166,7 +166,7 @@ class _CompareScreenState extends State<CompareScreen>
             ShowMessage.showNotification(
                 StringConstants.success.localized(),
                 state.successMsg ?? "",
-                const Color.fromRGBO(140, 194, 74, 5),
+                Colors.green.shade400,
                 const Icon(Icons.check_circle_outline));
           }
         } else if (state is RemoveFromWishlistState) {
@@ -180,7 +180,7 @@ class _CompareScreenState extends State<CompareScreen>
             ShowMessage.showNotification(
                 StringConstants.success.localized(),
                 state.successMsg ?? "",
-                const Color.fromRGBO(140, 194, 74, 5),
+                Colors.green.shade400,
                 const Icon(Icons.check_circle_outline));
           }
         }
@@ -215,8 +215,8 @@ class _CompareScreenState extends State<CompareScreen>
     if (state is RemoveFromCompareState) {
       isLoading = false;
       if (state.status == CompareStatusStatus.success) {
-          compareScreenBloc?.add(CompareScreenFetchEvent());
-          return _compareScreen(_compareScreenModel, isLoading);
+        compareScreenBloc?.add(CompareScreenFetchEvent());
+        return _compareScreen(_compareScreenModel, isLoading);
       }
     }
     if (state is RemoveAllCompareProductState) {
@@ -230,7 +230,8 @@ class _CompareScreenState extends State<CompareScreen>
       isLoading = false;
       if (state.status == CompareStatusStatus.success) {
         AddToCartModel? addToCartModel = state.response;
-        GlobalData.cartCountController.sink.add(addToCartModel?.cart?.itemsQty ?? 0);
+        GlobalData.cartCountController.sink
+            .add(addToCartModel?.cart?.itemsQty ?? 0);
         compareScreenBloc?.add(CompareScreenFetchEvent());
       }
     }

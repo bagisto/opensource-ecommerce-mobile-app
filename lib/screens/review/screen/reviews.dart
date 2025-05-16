@@ -8,14 +8,11 @@
  *   @link https://store.webkul.com/license.html
  */
 
-
 import 'package:bagisto_app_demo/screens/review/utils/index.dart';
-
-
 
 class ReviewsScreen extends StatefulWidget {
   const ReviewsScreen({Key? key, this.isFromDashboard}) : super(key: key);
- final  bool? isFromDashboard;
+  final bool? isFromDashboard;
 
   @override
   State<ReviewsScreen> createState() => _ReviewsScreenState();
@@ -24,11 +21,10 @@ class ReviewsScreen extends StatefulWidget {
 class _ReviewsScreenState extends State<ReviewsScreen> {
   ReviewModel? reviewModel;
   final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
-  GlobalKey<ScaffoldMessengerState>();
+      GlobalKey<ScaffoldMessengerState>();
   ReviewsBloc? reviewsBloc;
   int page = 1;
   final ScrollController _scrollController = ScrollController();
-
 
   @override
   void initState() {
@@ -48,10 +44,10 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
         appBar: (widget.isFromDashboard ?? false)
             ? null
             : AppBar(
-          centerTitle: false,
-          title: Text(
-              StringConstants.reviews.localized(),
-        )),
+                centerTitle: false,
+                title: Text(
+                  StringConstants.reviews.localized(),
+                )),
         body: _reviewsBloc(context),
       ),
     );
@@ -64,28 +60,6 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
         if (state is FetchReviewState) {
           if (state.status == ReviewStatus.fail) {
           } else if (state.status == ReviewStatus.success) {}
-        } else if (state is RemoveReviewState) {
-          if (state.status == ReviewStatus.fail) {
-            ShowMessage.showNotification(
-                StringConstants.failed.localized(), state.error, Colors.red, const Icon(Icons.cancel_outlined));
-          } else if (state.status == ReviewStatus.success) {
-            ShowMessage.showNotification(
-                StringConstants.success.localized(),
-                state.baseModel?.message,
-                const Color.fromRGBO(140, 194, 74, 5),
-                const Icon(Icons.check_circle_outline));
-          }
-        } else if (state is RemoveAllReviewState) {
-          if (state.status == ReviewStatus.fail) {
-            ShowMessage.showNotification(
-                StringConstants.failed.localized(), state.error, Colors.red, const Icon(Icons.cancel_outlined));
-          } else if (state.status == ReviewStatus.success) {
-            ShowMessage.showNotification(
-                StringConstants.success.localized(),
-                state.baseModel?.message,
-                const Color.fromRGBO(140, 194, 74, 5),
-                const Icon(Icons.check_circle_outline));
-          }
         }
       },
       builder: (BuildContext context, ReviewsBaseState state) {
@@ -107,29 +81,10 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
         return _reviewsList(reviewModel!);
       }
       if (state.status == ReviewStatus.fail) {
-        return ErrorMessage.errorMsg(state.error ?? "");
+        return EmptyDataView();
       }
     }
 
-    if (state is RemoveReviewState) {
-      if (state.status == ReviewStatus.success) {
-        var productId = state.productDeletedId;
-        if (reviewModel != null) {
-          reviewModel!.data!.removeWhere(
-                  (element) => element.id.toString() == productId.toString());
-
-          return _reviewsList(reviewModel!);
-        } else {}
-      }
-    }
-    if (state is RemoveAllReviewState) {
-      if (state.status == ReviewStatus.success) {
-        if (reviewModel != null) {
-          reviewModel?.data?.clear();
-          return _reviewsList(reviewModel!);
-        } else {}
-      }
-    }
     if (state is ReviewInitialState) {
       return const ReviewLoader();
     }
@@ -149,19 +104,18 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
         );
       } else {
         return Padding(
-          padding: const EdgeInsets.fromLTRB(8.0,8,8,0),
+          padding: const EdgeInsets.fromLTRB(8.0, 8, 8, 0),
           child: ListView.builder(
               controller: _scrollController,
               itemCount: (widget.isFromDashboard ?? false)
                   ? ((reviewModel.data?.length ?? 0) > 5)
-                  ? 5
-                  : reviewModel.data?.length ?? 0
+                      ? 5
+                      : reviewModel.data?.length ?? 0
                   : reviewModel.data?.length ?? 0,
               itemBuilder: (context, index) {
                 return ReviewsList(
                   reviewData: reviewModel.data?[index],
-                  reviewsBloc:
-                  reviewsBloc,
+                  reviewsBloc: reviewsBloc,
                 );
               }),
         );
@@ -171,7 +125,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
 
   void paginationFunction() {
     if (_scrollController.offset ==
-        _scrollController.position.maxScrollExtent  &&
+            _scrollController.position.maxScrollExtent &&
         ((reviewModel?.paginatorInfo?.currentPage ?? 0) <
             (reviewModel?.paginatorInfo?.lastPage ?? 0))) {
       page++;

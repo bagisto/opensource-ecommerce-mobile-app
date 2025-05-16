@@ -10,10 +10,11 @@
 
 import 'package:bagisto_app_demo/data_model/graphql_base_model.dart';
 import 'package:json_annotation/json_annotation.dart';
+
 part 'theme_customization.g.dart';
 
 @JsonSerializable()
-class ThemeCustomDataModel extends GraphQlBaseModel{
+class ThemeCustomDataModel extends BaseModel {
   @JsonKey(name: "data")
   List<ThemeCustomization>? themeCustomization;
 
@@ -29,38 +30,30 @@ class ThemeCustomDataModel extends GraphQlBaseModel{
 @JsonSerializable()
 class ThemeCustomization {
   String? id;
-  String? channelId;
   String? type;
   String? name;
-  int? sortOrder;
-  bool? status;
-  String? baseUrl;
   List<Translations>? translations;
 
-  ThemeCustomization({this.id, this.channelId, this.type, this.name, this.sortOrder, this.status, this.baseUrl, this.translations});
+  ThemeCustomization({this.id, this.type, this.name, this.translations});
 
   factory ThemeCustomization.fromJson(Map<String, dynamic> json) =>
       _$ThemeCustomizationFromJson(json);
 
-  Map<String, dynamic> toJson() =>
-      _$ThemeCustomizationToJson(this);
+  Map<String, dynamic> toJson() => _$ThemeCustomizationToJson(this);
 }
 
 @JsonSerializable()
 class Translations {
   String? id;
-  int? themeCustomizationId;
-  String? locale;
   String? localeCode;
   Options? options;
 
-  Translations({this.id, this.themeCustomizationId, this.locale, this.options, this.localeCode});
+  Translations({this.id, this.options, this.localeCode});
 
   factory Translations.fromJson(Map<String, dynamic> json) =>
       _$TranslationsFromJson(json);
 
-  Map<String, dynamic> toJson() =>
-      _$TranslationsToJson(this);
+  Map<String, dynamic> toJson() => _$TranslationsToJson(this);
 }
 
 @JsonSerializable()
@@ -70,33 +63,30 @@ class Options {
   String? title;
   List<Images>? images;
   List<Filters>? filters;
-  dynamic columns;
-  dynamic column1;
-  dynamic column2;
-  dynamic column3;
 
-  Options({this.css, this.html, this.title, this.images, this.filters, this.columns, this.column1, this.column2, this.column3});
+  Options({
+    this.css,
+    this.html,
+    this.title,
+    this.images,
+    this.filters,
+  });
 
   factory Options.fromJson(Map<String, dynamic> json) =>
       _$OptionsFromJson(json);
 
-  Map<String, dynamic> toJson() =>
-      _$OptionsToJson(this);
+  Map<String, dynamic> toJson() => _$OptionsToJson(this);
 }
 
 @JsonSerializable()
 class Images {
-  String? link;
-  String? image;
   String? imageUrl;
 
-  Images({this.link, this.image, this.imageUrl});
+  Images({this.imageUrl});
 
-  factory Images.fromJson(Map<String, dynamic> json) =>
-      _$ImagesFromJson(json);
+  factory Images.fromJson(Map<String, dynamic> json) => _$ImagesFromJson(json);
 
-  Map<String, dynamic> toJson() =>
-      _$ImagesToJson(this);
+  Map<String, dynamic> toJson() => _$ImagesToJson(this);
 }
 
 @JsonSerializable()
@@ -109,7 +99,5 @@ class Filters {
   factory Filters.fromJson(Map<String, dynamic> json) =>
       _$FiltersFromJson(json);
 
-  Map<String, dynamic> toJson() =>
-      _$FiltersToJson(this);
-
+  Map<String, dynamic> toJson() => _$FiltersToJson(this);
 }

@@ -375,6 +375,8 @@ class StringConstants {
   static const String downloadProgress = "downloadProgress";
   static const String open = "open";
   static const String subCategories = "subCategories";
+  static const String agreeTerms = "agreeTermsMsg";
+  static const String agreementFieldRequired = "agreementFieldRequired";
 
 }
 

@@ -8,10 +8,8 @@
  *   @link https://store.webkul.com/license.html
  */
 
-
-
-
 import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
+import 'package:carousel_slider/carousel_slider.dart' as slider;
 
 class ProductImageView extends StatefulWidget {
   final List<String>? imgList;
@@ -30,7 +28,7 @@ class ProductImageView extends StatefulWidget {
 }
 
 class ProductImageViewState extends State<ProductImageView> {
-  final buttonCarouselController = CarouselController();
+  final buttonCarouselController = slider.CarouselSliderController();
   int? _current = 0;
 
   @override
@@ -51,32 +49,35 @@ class ProductImageViewState extends State<ProductImageView> {
                       builder: (context) =>
                           ZoomImageView(imgList: widget.productData?.images)));
             },
-            child: (widget.imgList ?? []).isNotEmpty ? CarouselSlider(
-              carouselController: buttonCarouselController,
-              options: CarouselOptions(
-                  autoPlay: false,
-                  enlargeCenterPage: true,
-                  viewportFraction: 1.0,
-                  enableInfiniteScroll: false,
-                  height: MediaQuery.of(context).size.width/1.1,
-                  onPageChanged: (index, reason) {
-                    setState(() {
-                      _current = index;
-                    });
-                  }),
-              items: widget.imgList
-                  ?.map((item) => Center(
-                  child: ImageView(
-                      url: item,
-                      width: MediaQuery.of(context).size.width,
-                      height: MediaQuery.of(context).size.width,
-                    fit: BoxFit.fill,
-                  ))).toList(),
-            ) : ImageView(
-              url: "",
-              width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.width,
-            ),
+            child: (widget.imgList ?? []).isNotEmpty
+                ? slider.CarouselSlider(
+                    carouselController: buttonCarouselController,
+                    options: slider.CarouselOptions(
+                        autoPlay: false,
+                        enlargeCenterPage: true,
+                        viewportFraction: 1.0,
+                        enableInfiniteScroll: false,
+                        height: MediaQuery.of(context).size.width / 1.1,
+                        onPageChanged: (index, reason) {
+                          setState(() {
+                            _current = index;
+                          });
+                        }),
+                    items: widget.imgList
+                        ?.map((item) => Center(
+                                child: ImageView(
+                              url: item,
+                              width: MediaQuery.of(context).size.width,
+                              height: MediaQuery.of(context).size.width,
+                              fit: BoxFit.fill,
+                            )))
+                        .toList(),
+                  )
+                : ImageView(
+                    url: "",
+                    width: MediaQuery.of(context).size.width,
+                    height: MediaQuery.of(context).size.width,
+                  ),
           ),
         ]),
         if ((widget.imgList?.length ?? 0) > 1)
@@ -117,7 +118,7 @@ class ProductImageViewState extends State<ProductImageView> {
       ]),
       Positioned(
           right: 8.0,
-          top:  20.0,
+          top: 20.0,
           child: InkWell(
             onTap: () {
               if (widget.callBack != null) {
@@ -125,11 +126,13 @@ class ProductImageViewState extends State<ProductImageView> {
                   if (value) {
                     widget.callBack!(StringConstants.wishlist);
                   } else {
-                    ShowMessage.showNotification(StringConstants.failed.localized(),StringConstants.internetIssue.localized(),
-                         Colors.red, const Icon(Icons.cancel_outlined));
+                    ShowMessage.showNotification(
+                        StringConstants.failed.localized(),
+                        StringConstants.internetIssue.localized(),
+                        Colors.red,
+                        const Icon(Icons.cancel_outlined));
                   }
                 });
-
               }
             },
             child: Container(
@@ -147,14 +150,14 @@ class ProductImageViewState extends State<ProductImageView> {
                   ],
                 ),
                 child: widget.productData?.isInWishlist ?? false
-                    ?  Icon(
-                  Icons.favorite,
-                  color: Theme.of(context).colorScheme.secondaryContainer,
-                )
+                    ? Icon(
+                        Icons.favorite,
+                        color: Theme.of(context).colorScheme.secondaryContainer,
+                      )
                     : Icon(
-                  Icons.favorite_outline_rounded,
-                  color: Theme.of(context).colorScheme.secondaryContainer,
-                )),
+                        Icons.favorite_outline_rounded,
+                        color: Theme.of(context).colorScheme.secondaryContainer,
+                      )),
           )),
       Positioned(
         right: 8.0,
@@ -166,8 +169,11 @@ class ProductImageViewState extends State<ProductImageView> {
                 if (value) {
                   widget.callBack!(StringConstants.compare);
                 } else {
-                  ShowMessage.showNotification(StringConstants.failed.localized(), StringConstants.internetIssue.localized(),
-                       Colors.red, const Icon(Icons.cancel_outlined));
+                  ShowMessage.showNotification(
+                      StringConstants.failed.localized(),
+                      StringConstants.internetIssue.localized(),
+                      Colors.red,
+                      const Icon(Icons.cancel_outlined));
                 }
               });
             }
@@ -190,51 +196,51 @@ class ProductImageViewState extends State<ProductImageView> {
                 AssetConstants.compareIcon,
                 height: AppSizes.spacingWide,
                 width: AppSizes.spacingWide,
-                color:Theme.of(context).colorScheme.secondaryContainer,
+                color: Theme.of(context).colorScheme.secondaryContainer,
               )),
         ),
       ),
       (widget.productData?.isInSale ?? false)
           ? Positioned(
-          left: AppSizes.spacingNormal,
-          top: AppSizes.spacingNormal,
-          child: Container(
-            decoration: const BoxDecoration(
-                color: Colors.red,
-                borderRadius: BorderRadius.all(Radius.circular(15))),
-            child: Padding(
-                padding: const EdgeInsets.only(
-                    left: AppSizes.spacingMedium,
-                    right: AppSizes.spacingMedium,
-                    top: AppSizes.spacingSmall,
-                    bottom: AppSizes.spacingSmall),
-                child: Text(
-                  StringConstants.sale.localized(),
-                  style: const TextStyle(color: Colors.white),
-                )),
-          ))
-          : (widget.productData?.productFlats?[0].isNew ?? false) ?
-         Positioned(
-          left: AppSizes.spacingNormal,
-          top: AppSizes.spacingNormal,
-          child: Container(
-            decoration: const BoxDecoration(
-                color: Colors.green,
-                borderRadius: BorderRadius.all(Radius.circular(15))),
-            child: Padding(
-                padding: const EdgeInsets.only(
-                    left: AppSizes.spacingNormal,
-                    right: AppSizes.spacingNormal,
-                    top: AppSizes.spacingSmall/2,
-                    bottom: AppSizes.spacingSmall),
-                child: Text(
-                  StringConstants.statusNew.localized(),
-                  style: const TextStyle(color: Colors.white),
-                )
-            ),
-          )) :
-      Container(color: Colors.transparent,),
+              left: AppSizes.spacingNormal,
+              top: AppSizes.spacingNormal,
+              child: Container(
+                decoration: const BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.all(Radius.circular(15))),
+                child: Padding(
+                    padding: const EdgeInsets.only(
+                        left: AppSizes.spacingMedium,
+                        right: AppSizes.spacingMedium,
+                        top: AppSizes.spacingSmall,
+                        bottom: AppSizes.spacingSmall),
+                    child: Text(
+                      StringConstants.sale.localized(),
+                      style: const TextStyle(color: Colors.white),
+                    )),
+              ))
+          : (widget.productData?.productFlats?[0].isNew ?? false)
+              ? Positioned(
+                  left: AppSizes.spacingNormal,
+                  top: AppSizes.spacingNormal,
+                  child: Container(
+                    decoration: const BoxDecoration(
+                        color: Colors.green,
+                        borderRadius: BorderRadius.all(Radius.circular(15))),
+                    child: Padding(
+                        padding: const EdgeInsets.only(
+                            left: AppSizes.spacingNormal,
+                            right: AppSizes.spacingNormal,
+                            top: AppSizes.spacingSmall / 2,
+                            bottom: AppSizes.spacingSmall),
+                        child: Text(
+                          StringConstants.statusNew.localized(),
+                          style: const TextStyle(color: Colors.white),
+                        )),
+                  ))
+              : Container(
+                  color: Colors.transparent,
+                ),
     ]);
   }
 }
-

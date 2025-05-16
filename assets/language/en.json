@@ -606,5 +606,7 @@
   "downloadComplete" : "Download complete",
   "downloadProgress" : "Download progress",
   "open" : "OPEN",
-  "subCategories" : "Subcategories"
+  "subCategories" : "Subcategories",
+  "agreeTermsMsg" : "I agree with the terms and conditions",
+  "agreementFieldRequired": "The agreement field is required"
 }

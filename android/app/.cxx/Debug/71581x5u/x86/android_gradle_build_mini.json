@@ -1,0 +1,20 @@
+{
+  "buildFiles": [
+    "/Users/afzal/Downloads/flutter 3.29.2/packages/flutter_tools/gradle/src/main/groovy/CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "/Users/afzal/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+      "-C",
+      "/Users/afzal/Documents/demo/Bagisto_demo_new_projects/laravel-mobile-app-afzal_v2.2.2/android/app/.cxx/Debug/71581x5u/x86",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "/Users/afzal/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+    "-C",
+    "/Users/afzal/Documents/demo/Bagisto_demo_new_projects/laravel-mobile-app-afzal_v2.2.2/android/app/.cxx/Debug/71581x5u/x86",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {}
+}

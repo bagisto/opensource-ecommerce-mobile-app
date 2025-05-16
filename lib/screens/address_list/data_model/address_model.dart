@@ -9,13 +9,14 @@
  */
 
 import 'package:json_annotation/json_annotation.dart';
+
 import '../../../data_model/graphql_base_model.dart';
 import 'country_model.dart';
 
 part 'address_model.g.dart';
 
 @JsonSerializable()
-class AddressModel extends GraphQlBaseModel {
+class AddressModel extends BaseModel {
   @JsonKey(name: "data")
   List<AddressData>? addressData = [];
   CountriesData? countryData;
@@ -69,7 +70,11 @@ class AddressData {
       this.phone,
       this.isDefault,
       this.createdAt,
-      this.updatedAt,this.addressType, this.shippingAddressId, this.billingAddressId, this.email});
+      this.updatedAt,
+      this.addressType,
+      this.shippingAddressId,
+      this.billingAddressId,
+      this.email});
   factory AddressData.fromJson(Map<String, dynamic> json) =>
       _$AddressDataFromJson(json);
 

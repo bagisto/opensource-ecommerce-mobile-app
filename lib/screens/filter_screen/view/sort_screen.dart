@@ -8,9 +8,8 @@
  *   @link https://store.webkul.com/license.html
  */
 
-
-
 import 'package:bagisto_app_demo/screens/filter_screen/utils/index.dart';
+
 class SortBottomSheet extends StatefulWidget {
   final int? page;
   final CategoryBloc? subCategoryBloc;
@@ -18,9 +17,10 @@ class SortBottomSheet extends StatefulWidget {
 
   const SortBottomSheet(
       {Key? key,
-        this.categorySlug,
-        this.page,
-        this.subCategoryBloc, required this.filters})
+      this.categorySlug,
+      this.page,
+      this.subCategoryBloc,
+      required this.filters})
       : super(key: key);
 
   final String? categorySlug;
@@ -60,13 +60,8 @@ class _SortBottomSheetState extends State<SortBottomSheet> {
       return const Loader();
     }
     if (state is FilterFetchState) {
-      if (state.status == FilterStatus.success) {
-        data = state.filterModel?.sortOrders;
-        return sortList();
-      }
-      if (state.status == FilterStatus.fail) {
-        return ErrorMessage.errorMsg(state.error ?? "Error");
-      }
+      data = state.filterModel?.sortOrders;
+      return sortList();
     }
     return sortList();
   }
@@ -86,19 +81,24 @@ class _SortBottomSheetState extends State<SortBottomSheet> {
               ),
               TextButton(
                 onPressed: () async {
-                  widget.filters.removeWhere((element) => element["key"] == '"sort"');
-                  widget.subCategoryBloc?.add(FetchSubCategoryEvent(
-                      widget.filters, widget.page));
+                  widget.filters
+                      .removeWhere((element) => element["key"] == '"sort"');
+                  widget.subCategoryBloc
+                      ?.add(FetchSubCategoryEvent(widget.filters, widget.page));
                   widget.subCategoryBloc?.add(
-                      OnClickSubCategoriesLoaderEvent(
-                          isReqToShowLoader: true));
+                      OnClickSubCategoriesLoaderEvent(isReqToShowLoader: true));
                   appStoragePref.setSortName("");
 
                   Navigator.pop(context);
                 },
-                style: TextButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.onBackground),
+                style: TextButton.styleFrom(
+                    backgroundColor:
+                        Theme.of(context).colorScheme.onBackground),
                 child: Text(StringConstants.clear.localized().toUpperCase(),
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(color:Theme.of(context).colorScheme.secondaryContainer,)),
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                          color:
+                              Theme.of(context).colorScheme.secondaryContainer,
+                        )),
               ),
             ],
           ),
@@ -127,7 +127,8 @@ class _SortBottomSheetState extends State<SortBottomSheet> {
                         appStoragePref.setSortName(value ?? "");
                       });
 
-                      widget.filters.removeWhere((element) => element["key"] == '"sort"');
+                      widget.filters
+                          .removeWhere((element) => element["key"] == '"sort"');
 
                       widget.filters.add({
                         "key": '"sort"',
@@ -136,7 +137,8 @@ class _SortBottomSheetState extends State<SortBottomSheet> {
 
                       widget.subCategoryBloc?.add(FetchSubCategoryEvent(
                         widget.filters,
-                        widget.page,));
+                        widget.page,
+                      ));
 
                       widget.subCategoryBloc?.add(
                           OnClickSubCategoriesLoaderEvent(

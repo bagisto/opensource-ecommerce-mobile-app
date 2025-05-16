@@ -18,7 +18,7 @@ import 'checkout_save_shipping_model.dart';
 part 'checkout_save_address_model.g.dart';
 
 @JsonSerializable()
-class CheckOutSaveAddressDataModel extends GraphQlBaseModel{
+class CheckOutSaveAddressDataModel extends BaseModel{
   Data? data;
   CheckOutSaveAddressDataModel({this.data});
 

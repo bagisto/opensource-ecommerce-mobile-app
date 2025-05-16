@@ -10,11 +10,10 @@
 
 import 'package:bagisto_app_demo/screens/add_review/utils/index.dart';
 
-
 class AddReview extends StatefulWidget {
- final String? imageUrl;
- final String? productId;
- final String? productName;
+  final String? imageUrl;
+  final String? productId;
+  final String? productName;
 
   const AddReview({Key? key, this.imageUrl, this.productId, this.productName})
       : super(key: key);
@@ -28,7 +27,7 @@ class _AddReviewState extends State<AddReview> {
   final _reviewFormKey = GlobalKey<FormState>();
   final titleController = TextEditingController();
   final commentController = TextEditingController();
-  var rating=0;
+  var rating = 0;
   bool isLoading = false;
   final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
       GlobalKey<ScaffoldMessengerState>();
@@ -62,14 +61,14 @@ class _AddReviewState extends State<AddReview> {
         if (state is AddReviewFetchState) {
           isLoading = true;
           if (state.status == AddReviewStatus.fail) {
-            ShowMessage.showNotification(StringConstants.failed, state.error, Colors.red,
-                const Icon(Icons.cancel_outlined));
+            ShowMessage.showNotification(StringConstants.failed, state.error,
+                Colors.red, const Icon(Icons.cancel_outlined));
           } else if (state.status == AddReviewStatus.success) {
             ShowMessage.showNotification(
                 StringConstants.success.localized(),
                 // state.addReviewModel!.success ?? StringConstants.updated.localized(),
-            state.addReviewModel?.message.toString(),
-                const Color.fromRGBO(140, 194, 74, 5),
+                state.addReviewModel?.message.toString(),
+                Colors.green.shade400,
                 const Icon(Icons.check_circle_outline));
           }
         }
@@ -98,7 +97,7 @@ class _AddReviewState extends State<AddReview> {
     if (state is ImagePickerState) {
       String? image = state.image;
       images.clear();
-      if(image != null){
+      if (image != null) {
         images.add({
           "uploadType": '"base64"',
           "imageUrl": '"data:image/png;base64,$image"'
@@ -145,7 +144,7 @@ class _AddReviewState extends State<AddReview> {
                     ),
                     const SizedBox(height: AppSizes.spacingNormal),
                     RatingBar.builder(
-                      itemSize: AppSizes.spacingMedium*2,
+                      itemSize: AppSizes.spacingMedium * 2,
                       initialRating: num.tryParse('0.0')?.toDouble() ?? 0.0,
                       minRating: 1,
                       direction: Axis.horizontal,
@@ -166,7 +165,8 @@ class _AddReviewState extends State<AddReview> {
                       titleController,
                       StringConstants.titleHint.localized(),
                       label: StringConstants.titleLabel.localized(),
-                      validLabel: StringConstants.pleaseFillLabel.localized() + StringConstants.titleLabel.localized(),
+                      validLabel: StringConstants.pleaseFillLabel.localized() +
+                          StringConstants.titleLabel.localized(),
                       isRequired: true,
                       validator: (email) {
                         if (((email ?? "").trim()).isEmpty) {
@@ -187,18 +187,18 @@ class _AddReviewState extends State<AddReview> {
                         hintText: StringConstants.commentHint.localized(),
                         labelStyle: Theme.of(context).textTheme.bodyMedium,
                         enabledBorder: OutlineInputBorder(
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(AppSizes.spacingSmall)),
+                            borderRadius: const BorderRadius.all(
+                                Radius.circular(AppSizes.spacingSmall)),
                             borderSide:
                                 BorderSide(color: Colors.grey.shade500)),
                         focusedBorder: OutlineInputBorder(
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(AppSizes.spacingSmall)),
+                            borderRadius: const BorderRadius.all(
+                                Radius.circular(AppSizes.spacingSmall)),
                             borderSide:
                                 BorderSide(color: Colors.grey.shade500)),
                         errorBorder: OutlineInputBorder(
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(AppSizes.spacingSmall)),
+                            borderRadius: const BorderRadius.all(
+                                Radius.circular(AppSizes.spacingSmall)),
                             borderSide: BorderSide(color: Colors.red.shade500)),
                         focusedErrorBorder: OutlineInputBorder(
                           borderRadius: const BorderRadius.all(Radius.zero),
@@ -215,24 +215,30 @@ class _AddReviewState extends State<AddReview> {
                       textInputAction: TextInputAction.next,
                       keyboardType: TextInputType.emailAddress,
                     ),
-                    const SizedBox(height: AppSizes.spacingMedium*2),
-                    AddImageView(addReviewBloc: addReviewBloc),
+                    const SizedBox(height: AppSizes.spacingMedium * 2),
+                    // AddImageView(addReviewBloc: addReviewBloc),
                     const SizedBox(height: AppSizes.spacingWide),
                     MaterialButton(
                       shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(AppSizes.spacingSmall)),
-                          ),
+                        borderRadius: BorderRadius.all(
+                            Radius.circular(AppSizes.spacingSmall)),
+                      ),
                       elevation: 0.0,
                       height: AppSizes.buttonHeight,
                       minWidth: MediaQuery.of(context).size.width,
                       color: Theme.of(context).colorScheme.onBackground,
-                      textColor: Theme.of(context).colorScheme.secondaryContainer,
+                      textColor:
+                          Theme.of(context).colorScheme.secondaryContainer,
                       onPressed: () {
                         _onPressSubmitButton();
                       },
                       child: Text(
                         StringConstants.submitReview.localized().toUpperCase(),
-                        style: TextStyle(fontSize: AppSizes.spacingLarge,color:Theme.of(context).colorScheme.secondaryContainer ),
+                        style: TextStyle(
+                            fontSize: AppSizes.spacingLarge,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .secondaryContainer),
                       ),
                     ),
                     const SizedBox(height: AppSizes.spacingWide),
@@ -250,7 +256,7 @@ class _AddReviewState extends State<AddReview> {
   ///method will call on press submit review button
   _onPressSubmitButton() {
     if (_reviewFormKey.currentState!.validate()) {
-      if(images.isNotEmpty){
+      // if (images.isNotEmpty) {
         if ((rating) > 0) {
           showDialog(
               context: context,
@@ -291,7 +297,8 @@ class _AddReviewState extends State<AddReview> {
               rating: rating,
               title: titleController.text,
               comment: commentController.text,
-              name: "", attachments: images));
+              name: "",
+              attachments: images));
           Future.delayed(const Duration(seconds: 3)).then((value) {
             Navigator.pop(context);
             Navigator.pop(context);
@@ -303,14 +310,13 @@ class _AddReviewState extends State<AddReview> {
               Colors.yellow,
               const Icon(Icons.warning_amber));
         }
-      }
-      else {
-        ShowMessage.showNotification(
-            StringConstants.warning.localized(),
-            StringConstants.addReviewImage.localized(),
-            Colors.yellow,
-            const Icon(Icons.warning_amber));
-      }
+      // } else {
+      //   ShowMessage.showNotification(
+      //       StringConstants.warning.localized(),
+      //       StringConstants.addReviewImage.localized(),
+      //       Colors.yellow,
+      //       const Icon(Icons.warning_amber));
+      // }
     }
   }
 }

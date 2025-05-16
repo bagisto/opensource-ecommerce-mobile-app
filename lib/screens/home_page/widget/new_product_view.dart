@@ -85,7 +85,7 @@ class _NewProductViewState extends State<NewProductView> {
                   NewProducts? val = widget.model?[index];
 
                   if(widget.callPreCache){
-                    preCacheProductDetails(val?.urlKey ?? "");
+                    // preCacheProductDetails(val?.urlKey ?? "");
                   }
 
                   return GestureDetector(

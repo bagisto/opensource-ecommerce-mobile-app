@@ -79,9 +79,7 @@ class _SearchScreenState extends State<SearchScreen>
         builder: (BuildContext context, SearchBaseState state) {
           _searchText.text = (state is AppBarSearchTextState
               ? state.searchText
-              : ((state is ClearSearchBarTextState)
-              ? ""
-              : _searchText.text))!;
+              : ((state is ClearSearchBarTextState) ? "" : _searchText.text))!;
           _searchText.value = _searchText.value.copyWith(
             text: _searchText.text,
             selection: TextSelection.fromPosition(
@@ -105,9 +103,9 @@ class _SearchScreenState extends State<SearchScreen>
             if (state.status == Status.fail) {
               return (state.products?.data ?? []).isEmpty
                   ? const EmptyDataView(
-                assetPath: AssetConstants.emptyCatalog,
-                message: StringConstants.emptyPageGenericLabel,
-              )
+                      assetPath: AssetConstants.emptyCatalog,
+                      message: StringConstants.emptyPageGenericLabel,
+                    )
                   : const SizedBox();
             }
           }
@@ -125,25 +123,25 @@ class _SearchScreenState extends State<SearchScreen>
                   ((data ?? []).isNotEmpty)
                       ? CategoriesView(data: data)
                       : SkeletonLoader(
-                      highlightColor: Theme.of(context).highlightColor,
-                      baseColor: Theme.of(context).scaffoldBackgroundColor,
-
-                      builder: const SizedBox(
-                        height: 100,
-                        child: Card(
-                          color: Colors.red,
-                        ),
-                      )),
+                          highlightColor: Theme.of(context).highlightColor,
+                          baseColor: Theme.of(context).scaffoldBackgroundColor,
+                          builder: const SizedBox(
+                            height: 100,
+                            child: Card(
+                              color: Colors.red,
+                            ),
+                          )),
                   ((products?.data ?? []).isNotEmpty)
                       ? _getSearchData(products)
                       : _searchText.text.isNotEmpty
-                      ? (products?.data ?? []).isEmpty
-                      ? const EmptyDataView(
-                    assetPath: AssetConstants.emptyCatalog,
-                    message: StringConstants.emptyPageGenericLabel,
-                  )
-                      : const SizedBox()
-                      : const SizedBox(),
+                          ? (products?.data ?? []).isEmpty
+                              ? const EmptyDataView(
+                                  assetPath: AssetConstants.emptyCatalog,
+                                  message:
+                                      StringConstants.emptyPageGenericLabel,
+                                )
+                              : const SizedBox()
+                          : const SizedBox(),
                 ]),
               ));
         });
@@ -182,22 +180,22 @@ class _SearchScreenState extends State<SearchScreen>
         actions: [
           _searchText.text.isNotEmpty
               ? IconButton(
-            icon: const Icon(
-              Icons.close,
-            ),
-            onPressed: () {
-              searchBloc?.add(SearchBarTextEvent(searchText: ""));
-            },
-          )
+                  icon: const Icon(
+                    Icons.close,
+                  ),
+                  onPressed: () {
+                    searchBloc?.add(SearchBarTextEvent(searchText: ""));
+                  },
+                )
               : const SizedBox(),
           _isListening
               ? const Center(
-            child: Text(
-              "Listening...",
-              style: TextStyle(
-                  color: Colors.grey, fontWeight: FontWeight.w400),
-            ),
-          )
+                  child: Text(
+                    "Listening...",
+                    style: TextStyle(
+                        color: Colors.grey, fontWeight: FontWeight.w400),
+                  ),
+                )
               : const SizedBox(),
           _buildVoiceInput(
             onPressed: _speechToText.isNotListening ? start : stop,
@@ -324,7 +322,8 @@ class _SearchScreenState extends State<SearchScreen>
   }
 
   static Future<bool> connectedToNetwork() async {
-    bool result = await InternetConnectionChecker().hasConnection;
+    bool result =
+        await InternetConnectionChecker.createInstance().hasConnection;
     return result;
   }
 }

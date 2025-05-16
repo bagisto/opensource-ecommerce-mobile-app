@@ -9,14 +9,14 @@
  */
 
 import 'package:json_annotation/json_annotation.dart';
+
 import '../../../data_model/graphql_base_model.dart';
-import '../../cart_screen/cart_model/cart_data_model.dart';
 import '../../product_screen/data_model/product_details_model.dart';
 
 part 'wishlist_model.g.dart';
 
 @JsonSerializable()
-class WishListData extends GraphQlBaseModel {
+class WishListData extends BaseModel {
   List<WishlistData>? data;
 
   WishListData({this.data});
@@ -31,33 +31,14 @@ class WishListData extends GraphQlBaseModel {
 @JsonSerializable()
 class WishlistData {
   String? id;
-  String? channelId;
   String? productId;
-  String? customerId;
-  String? itemOptions;
-  dynamic additional;
-  String? movedToCart;
-  String? timeOfMoving;
-  String? createdAt;
-  String? updatedAt;
-  Customer? customer;
   Product? product;
-  CartModel? cart;
 
-  WishlistData(
-      {this.id,
-      this.channelId,
-      this.productId,
-      this.customerId,
-      this.itemOptions,
-      this.additional,
-      this.movedToCart,
-      this.timeOfMoving,
-      this.createdAt,
-      this.updatedAt,
-      this.customer,
-      this.product,
-      this.cart});
+  WishlistData({
+    this.id,
+    this.productId,
+    this.product,
+  });
 
   factory WishlistData.fromJson(Map<String, dynamic> json) =>
       _$WishlistDataFromJson(json);
@@ -110,21 +91,4 @@ class Customer {
       _$CustomerFromJson(json);
 
   Map<String, dynamic> toJson() => _$CustomerToJson(this);
-}
-
-@JsonSerializable()
-class ShareWishlistData extends GraphQlBaseModel {
-  bool? isWishlistShared;
-  String? wishlistSharedLink;
-
-  ShareWishlistData({
-    this.isWishlistShared,
-    this.wishlistSharedLink,
-  });
-
-  factory ShareWishlistData.fromJson(Map<String, dynamic> json) =>
-      _$ShareWishlistDataFromJson(json);
-
-  @override
-  Map<String, dynamic> toJson() => _$ShareWishlistDataToJson(this);
 }

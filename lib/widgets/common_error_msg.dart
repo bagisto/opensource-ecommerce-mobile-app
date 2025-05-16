@@ -8,7 +8,7 @@
  *   @link https://store.webkul.com/license.html
  */
 
-import 'package:flutter/material.dart';
+import '../screens/account/utils/index.dart';
 
 class ErrorMessage {
   static errorMsg(String errorMsg) {

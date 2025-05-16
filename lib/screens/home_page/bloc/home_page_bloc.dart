@@ -8,14 +8,12 @@
  *   @link https://store.webkul.com/license.html
  */
 
-
-
+import 'package:bagisto_app_demo/screens/home_page/utils/index.dart';
 
 import '../../../data_model/add_to_wishlist_model/add_wishlist_model.dart';
 import '../../cart_screen/cart_model/cart_data_model.dart';
 import '../../cms_screen/data_model/cms_model.dart';
 import '../data_model/theme_customization.dart';
-import 'package:bagisto_app_demo/screens/home_page/utils/index.dart';
 
 class HomePageBloc extends Bloc<HomePageEvent, HomePageBaseState> {
   HomePageRepository? repository;
@@ -34,10 +32,12 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageBaseState> {
               graphQlBaseModel: graphQlBaseModel,
               successMsg: graphQlBaseModel?.message ?? ""));
         } else {
-          emit(AddToCartState.fail(error: graphQlBaseModel?.graphqlErrors ?? ""));
+          emit(AddToCartState.fail(
+              error: graphQlBaseModel?.graphqlErrors ?? ""));
         }
       } catch (e) {
-        emit(AddToCartState.fail(error: StringConstants.somethingWrong.localized()));
+        emit(AddToCartState.fail(
+            error: StringConstants.somethingWrong.localized()));
       }
     } else if (event is FetchAddWishlistHomepageEvent) {
       try {
@@ -90,7 +90,8 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageBaseState> {
               response: removeFromWishlist));
         }
       } catch (e) {
-        emit(RemoveWishlistState.fail(error: StringConstants.somethingWrong.localized()));
+        emit(RemoveWishlistState.fail(
+            error: StringConstants.somethingWrong.localized()));
       }
     } else if (event is OnClickLoaderEvent) {
       emit(OnClickLoaderState(isReqToShowLoader: event.isReqToShowLoader));
@@ -117,8 +118,8 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageBaseState> {
           homepageSliders: homeSlidersData,
         ));
       } catch (e) {
-        emit(
-            FetchHomeCustomDataState.fail(error: StringConstants.somethingWrong.localized()));
+        emit(FetchHomeCustomDataState.fail(
+            error: StringConstants.somethingWrong.localized()));
       }
     }
     if (event is FetchAllProductsEvent) {
@@ -127,9 +128,11 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageBaseState> {
             await repository?.getAllProducts(filters: event.filters);
         GlobalData.productsStream.sink.add(products);
         emit(FetchAllProductsState.success(allProducts: products));
-        GlobalData.cartCountController.sink.add(products?.data?.firstOrNull?.cart?.itemsQty ?? 0);
+        GlobalData.cartCountController.sink
+            .add(products?.data?.firstOrNull?.cart?.itemsQty ?? 0);
       } catch (e) {
-        emit(FetchAllProductsState.fail(error: StringConstants.somethingWrong.localized()));
+        emit(FetchAllProductsState.fail(
+            error: StringConstants.somethingWrong.localized()));
       }
     }
     if (event is CartCountEvent) {
@@ -139,7 +142,8 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageBaseState> {
           cartDetails: cartDetails,
         ));
       } catch (e) {
-        emit(FetchCartCountState.fail(error: StringConstants.somethingWrong.localized()));
+        emit(FetchCartCountState.fail(
+            error: StringConstants.somethingWrong.localized()));
       }
     } else if (event is CustomerDetailsEvent) {
       try {
@@ -148,7 +152,8 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageBaseState> {
         emit(CustomerDetailsState.success(
             accountInfoDetails: accountInfoDetails));
       } catch (e) {
-        emit(CustomerDetailsState.fail(error: StringConstants.somethingWrong.localized()));
+        emit(CustomerDetailsState.fail(
+            error: StringConstants.somethingWrong.localized()));
       }
     }
     if (event is FetchHomePageCategoriesEvent) {
@@ -157,8 +162,8 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageBaseState> {
             await repository?.getHomeCategoriesList(filters: event.filters);
         emit(FetchHomeCategoriesState.success(getCategoriesData: data));
       } catch (e) {
-        emit(
-            FetchHomeCategoriesState.fail(error: StringConstants.somethingWrong.localized()));
+        emit(FetchHomeCategoriesState.fail(
+            error: StringConstants.somethingWrong.localized()));
       }
     }
     if (event is FetchCMSDataEvent) {
@@ -166,7 +171,8 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageBaseState> {
         CmsData? cmsData = await repository?.callCmsData("");
         emit(FetchCMSDataState.success(cmsData: cmsData));
       } catch (e) {
-        emit(FetchCMSDataState.fail(error: StringConstants.somethingWrong.localized()));
+        emit(FetchCMSDataState.fail(
+            error: StringConstants.somethingWrong.localized()));
       }
     }
   }

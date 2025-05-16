@@ -68,7 +68,7 @@ class _CmsContentState extends State<CmsContent> {
         return _cmsContent(state.cmsData);
       }
       if (state.status == CmsStatus.fail) {
-        return ErrorMessage.errorMsg(state.error ?? "Error");
+        return EmptyDataView();
       }
     }
     return const SizedBox();

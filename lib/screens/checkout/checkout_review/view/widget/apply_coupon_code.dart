@@ -74,8 +74,6 @@ class _ApplyCouponCodeState extends State<ApplyCouponCode> {
                         _discountController,
                         StringConstants.cartPageEnterDiscountCodeLabel.localized(),
                         validLabel: "",
-                        contentPadding: const EdgeInsets.symmetric(
-                            vertical: 0, horizontal: AppSizes.spacingMedium),
                         validator: (discountCode) {
                           if ((discountCode?.trim() ?? "").isEmpty) {
                             setState(() {

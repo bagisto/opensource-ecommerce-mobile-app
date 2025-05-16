@@ -11,6 +11,7 @@
 import 'package:bagisto_app_demo/screens/cart_screen/utils/cart_index.dart';
 import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
 import 'package:hive/hive.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../data_model/download_sample_model.dart';
 
@@ -58,7 +59,6 @@ class _ProductScreenState extends State<ProductScreen> {
     super.initState();
   }
 
-
   @override
   Widget build(BuildContext context) {
     return ScaffoldMessenger(
@@ -81,11 +81,10 @@ class _ProductScreenState extends State<ProductScreen> {
           actions: [
             IconButton(
                 onPressed: () async {
-                  await FlutterShare.share(
-                      title: widget.title ?? "",
-                      text: '',
-                      linkUrl: productData?.shareURL ?? "",
-                      chooserTitle: '');
+                  await Share.share(
+                    productData?.shareURL ?? "",
+                    subject: widget.title ?? "",
+                  );
                 },
                 icon: const Icon(
                   Icons.share,
@@ -167,28 +166,22 @@ class _ProductScreenState extends State<ProductScreen> {
           if (state.status == ProductStatus.fail) {
             ShowMessage.errorNotification(state.error ?? "", context);
           } else if (state.status == ProductStatus.success) {
-            ShowMessage.successNotification(
-                state.successMsg ??'', context);
+            ShowMessage.successNotification(state.successMsg ?? '', context);
           }
         } else if (state is RemoveFromWishlistState) {
           if (state.status == ProductStatus.fail) {
             ShowMessage.errorNotification(state.error ?? "", context);
           } else if (state.status == ProductStatus.success) {
-            ShowMessage.successNotification(
-                state.successMsg ??'', context);
+            ShowMessage.successNotification(state.successMsg ?? '', context);
           }
-        }else if (state is DownloadProductSampleState) {
-          downloadSampleModel = state.model ;
+        } else if (state is DownloadProductSampleState) {
+          downloadSampleModel = state.model;
 
-          if(state.model?.success == true) {
-
-            DownloadFile().saveBase64String(downloadSampleModel?.string ?? "",
-                 state.fileName ?? "Sample");
-
-          }
-          else{
-            ShowMessage.errorNotification(
-                state.error  ?? "", context);
+          if (state.model?.success == true) {
+            DownloadFile().saveBase64String(
+                downloadSampleModel?.string ?? "", state.fileName ?? "Sample");
+          } else {
+            ShowMessage.errorNotification(state.error ?? "", context);
           }
         }
       },
@@ -223,7 +216,8 @@ class _ProductScreenState extends State<ProductScreen> {
     if (state is AddToCartProductState) {
       isLoading = false;
       if (state.status == ProductStatus.success) {
-        GlobalData.cartCountController.sink.add(addToCartModel?.cart?.itemsQty ?? 0);
+        GlobalData.cartCountController.sink
+            .add(addToCartModel?.cart?.itemsQty ?? 0);
       }
     }
     if (state is AddToWishListProductState) {
@@ -247,8 +241,14 @@ class _ProductScreenState extends State<ProductScreen> {
             productData: productData,
             isLoading: isLoading,
             isLoggedIn: isLoggedIn,
-            callback: (configurableParams, bundleParams, selectList, selectParam,
-                groupedParams, downloadLinks, qty, configurableProductId) {
+            callback: (configurableParams,
+                bundleParams,
+                selectList,
+                selectParam,
+                groupedParams,
+                downloadLinks,
+                qty,
+                configurableProductId) {
               this.configurableParams = configurableParams;
               this.bundleParams = bundleParams;
               this.selectList = selectList;
@@ -272,30 +272,35 @@ class _ProductScreenState extends State<ProductScreen> {
             height: AppSizes.spacingWide * 4,
             color: Theme.of(context).scaffoldBackgroundColor,
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 14.0, horizontal: 16),
+              padding:
+                  const EdgeInsets.symmetric(vertical: 14.0, horizontal: 16),
               child: MaterialButton(
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppSizes.spacingMedium),
+                      borderRadius:
+                          BorderRadius.circular(AppSizes.spacingMedium),
                       side: BorderSide(
                           color: Theme.of(context).colorScheme.onBackground)),
                   elevation: AppSizes.spacingSmall,
                   height: AppSizes.buttonHeight,
                   minWidth: MediaQuery.of(context).size.width,
                   textColor: Theme.of(context).colorScheme.onBackground,
-                  onPressed: (productData?.isSaleable ?? false) ? () {
-                    checkInternetConnection().then((value) {
-                      if (value) {
-                        ProductScreenBLoc productBloc =
-                        context.read<ProductScreenBLoc>();
-                        productBloc.add(
-                            OnClickProductLoaderEvent(isReqToShowLoader: true));
-                        _addToCart(context);
-                      } else {
-                        ShowMessage.errorNotification(
-                            StringConstants.internetIssue.localized(), context);
-                      }
-                    });
-                  } : null,
+                  onPressed: (productData?.isSaleable ?? false)
+                      ? () {
+                          checkInternetConnection().then((value) {
+                            if (value) {
+                              ProductScreenBLoc productBloc =
+                                  context.read<ProductScreenBLoc>();
+                              productBloc.add(OnClickProductLoaderEvent(
+                                  isReqToShowLoader: true));
+                              _addToCart(context);
+                            } else {
+                              ShowMessage.errorNotification(
+                                  StringConstants.internetIssue.localized(),
+                                  context);
+                            }
+                          });
+                        }
+                      : null,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -304,9 +309,9 @@ class _ProductScreenState extends State<ProductScreen> {
                               .textTheme
                               .labelMedium
                               ?.copyWith(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onBackground)),
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onBackground)),
                     ],
                   )),
             ),
@@ -340,7 +345,6 @@ class _ProductScreenState extends State<ProductScreen> {
         return;
       }
     } else if (productData?.type == StringConstants.bundle) {
-
       if (bundleParams.isNotEmpty) {
         debugPrint("BundleParams-->$bundleParams");
         list.add(bundleParams);
@@ -384,7 +388,9 @@ class _ProductScreenState extends State<ProductScreen> {
     } else if (productData?.type == StringConstants.configurable) {
       String? id = getId(productData, configurableParams);
 
-      if ((configurableParams.isEmpty || configurableProductId == null) || configurableParams.length < (productData?.configurableData?.attributes?.length ?? 0)) {
+      if ((configurableParams.isEmpty || configurableProductId == null) ||
+          configurableParams.length <
+              (productData?.configurableData?.attributes?.length ?? 0)) {
         ShowMessage.warningNotification(
             StringConstants.pleaseSelectVariants.localized(), context);
 
@@ -449,11 +455,11 @@ class _ProductScreenState extends State<ProductScreen> {
   }
 
   void setRecentViewed(NewProducts? productData) async {
-    Hive.openBox("recentProducts").then((box){
+    Hive.openBox("recentProducts").then((box) {
       box.put(productData?.id, productData).then(
             (value) =>
-            RecentViewController.controller.sink.add(productData?.id),
-      );
+                RecentViewController.controller.sink.add(productData?.id),
+          );
     });
   }
 }

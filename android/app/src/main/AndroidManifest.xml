@@ -10,7 +10,7 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="webkul.bagisto_app_demo">
+    >
 
     <uses-feature
         android:name="android.hardware.camera"
@@ -34,7 +34,7 @@
         android:usesCleartextTraffic="true"
         android:icon="@mipmap/ic_launcher">
         <activity
-            android:name=".MainActivity"
+            android:name="webkul.bagisto_app_demo.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.AppCompat.DayNight"
             android:launchMode="singleTask"
@@ -69,16 +69,6 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
 
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data
-                    android:host=""
-                    android:pathPrefix=""
-                    android:scheme="https" />
-
-            </intent-filter>
         </activity>
 
         <activity android:name="webkul.bagisto_app_demo.mlkit.activities.CameraSearchActivity"
@@ -92,7 +82,7 @@
             android:value="2" />
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaRfDL5pg-OdSNY31ekS9CjVEbk9_pK0j1avU" />
+            android:value="AIzaSyDL5pg-OdSNY31ekS9CjVEbk9_pK034567" />
 
         <meta-data
             android:name="com.google.ar.core"

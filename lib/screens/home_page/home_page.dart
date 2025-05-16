@@ -62,7 +62,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    checkForDeepLink().then((value) => debugPrint("data ---> $value"));
     return buildUI();
   }
 
@@ -293,42 +292,6 @@ class _HomeScreenState extends State<HomeScreen> {
         customerUserName = StringConstants.signInLabel.localized();
         isLoggedIn = isLogged;
       });
-    }
-  }
-
-  var methodChannel = const MethodChannel(defaultChannelName);
-
-  Future<String> checkForDeepLink() async {
-    try {
-      if (Platform.isAndroid) {
-        var data = await methodChannel.invokeMethod('initialLink');
-        var splitData = data.toString().split("/");
-        if (mounted) {
-          Navigator.of(context).pushNamed(productScreen,
-              arguments: PassProductData(
-                title: splitData.last,
-                urlKey: splitData.last,
-                productId: 1,
-              ));
-        }
-        return data;
-      } else if (Platform.isIOS) {
-        var data = await methodChannel.invokeMethod('uni_links/events');
-        var splitData = data.toString().split("/");
-        if (mounted) {
-          Navigator.of(context).pushNamed(productScreen,
-              arguments: PassProductData(
-                title: splitData.last,
-                urlKey: splitData.last,
-                productId: 1,
-              ));
-        }
-        return data;
-      } else {
-        return 'OS NOT SUPPORTED';
-      }
-    } on PlatformException catch (e) {
-      return "Failed to Invoke: '${e.message}'.";
     }
   }
 

@@ -36,18 +36,15 @@ Future preCacheCMSData() async {
 }
 
 Future preCacheOrderDetails(int orderId) async {
-  if(isPreFetchingEnable){
     try {
       await ApiClient().getOrderDetail(orderId);
     } catch (error, stacktrace) {
       debugPrint("Error --> $error");
       debugPrint("StackTrace --> $stacktrace");
     }
-  }
 }
 
 Future preCacheProductDetails(String urlKey) async {
-  if(isPreFetchingEnable){
     try {
       await ApiClient().getAllProducts(filters: [
         {"key": '"url_key"', "value": '"$urlKey"'}
@@ -56,6 +53,5 @@ Future preCacheProductDetails(String urlKey) async {
       debugPrint("Error --> $error");
       debugPrint("StackTrace --> $stacktrace");
     }
-  }
 }
 

@@ -8,7 +8,6 @@
  *   @link https://store.webkul.com/license.html
  */
 
-
 import 'package:bagisto_app_demo/screens/add_edit_address/utils/index.dart';
 
 import '../../location/view/location_screen.dart';
@@ -28,7 +27,8 @@ class AddNewAddress extends StatefulWidget {
 
 class _AddNewAddressState extends State<AddNewAddress> {
   final _formKey = GlobalKey<FormState>();
-  final bool _autoValidate = false; //this bool value is used to decide when to validate form
+  final bool _autoValidate =
+      false; //this bool value is used to decide when to validate form
   Data? selectedCountry;
   final firstNameController = TextEditingController();
   final lastNameController = TextEditingController();
@@ -40,7 +40,8 @@ class _AddNewAddressState extends State<AddNewAddress> {
   final stateNameController = TextEditingController();
   final phoneController = TextEditingController();
   final vatIdController = TextEditingController();
-  final emailController = TextEditingController(text: appStoragePref.getCustomerEmail());
+  final emailController =
+      TextEditingController(text: appStoragePref.getCustomerEmail());
   CountriesData? countryData;
   List<Data>? countryList = [];
   States? selectedState;
@@ -75,7 +76,8 @@ class _AddNewAddressState extends State<AddNewAddress> {
         ? cityController.text = widget.addressModel?.city ?? ""
         : "";
     widget.isEdit ?? false
-        ? stateNameController.text = widget.addressModel?.stateName ?? (widget.addressModel?.state ?? "")
+        ? stateNameController.text =
+            widget.addressModel?.stateName ?? (widget.addressModel?.state ?? "")
         : "";
     widget.isEdit ?? false
         ? zipCodeController.text = widget.addressModel?.postcode ?? ""
@@ -86,9 +88,7 @@ class _AddNewAddressState extends State<AddNewAddress> {
     widget.isEdit ?? false
         ? editCountryName = widget.addressModel?.countryName ?? ""
         : "";
-    widget.isEdit ?? false
-        ? stateName = stateNameController.text ?? ""
-        : null;
+    widget.isEdit ?? false ? stateName = stateNameController.text ?? "" : null;
     widget.isEdit ?? false
         ? countryCode = widget.addressModel?.country ?? ""
         : "";
@@ -114,7 +114,8 @@ class _AddNewAddressState extends State<AddNewAddress> {
 
   @override
   Widget build(BuildContext context) {
-    print("tr --> ${widget.addressModel?.stateName} ${stateNameController.text} $stateName");
+    print(
+        "tr --> ${widget.addressModel?.stateName} ${stateNameController.text} $stateName");
     return ScaffoldMessenger(
       key: scaffoldMessengerKey,
       child: Scaffold(
@@ -126,14 +127,15 @@ class _AddNewAddressState extends State<AddNewAddress> {
           actions: [
             InkWell(
               onTap: () async {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => const LocationScreen()))
-                    .then((value) {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const LocationScreen())).then((value) {
                   debugPrint('values 1123332----- $value');
                   if (value is Map) {
                     debugPrint('values ----- $value');
                     street1Controller.text =
-                    "${value['street1'] ?? ""} ${value['street2'] ?? ""} ${value['street3'] ?? ""}";
+                        "${value['street1'] ?? ""} ${value['street2'] ?? ""} ${value['street3'] ?? ""}";
                     cityController.text = value['city'] ?? "";
                     zipCodeController.text = value['zip'];
                     stateNameController.text = value['state'];
@@ -142,10 +144,9 @@ class _AddNewAddressState extends State<AddNewAddress> {
                       addCountryName = value['country'];
                       countryCode = value['countryCode'];
                       stateName = value['state'];
-                      if(selectedCountry != null){
+                      if (selectedCountry != null) {
                         selectedCountry?.name = value['country'];
-                      }
-                      else{
+                      } else {
                         selectedCountry = Data(name: value['country']);
                       }
                     });
@@ -158,8 +159,7 @@ class _AddNewAddressState extends State<AddNewAddress> {
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.onPrimary,
-                  shape: BoxShape.circle
-                ),
+                    shape: BoxShape.circle),
                 child: Icon(
                   Icons.my_location,
                   color: Theme.of(context).colorScheme.background,
@@ -194,7 +194,8 @@ class _AddNewAddressState extends State<AddNewAddress> {
                     vatId: vatIdController.text,
                     address1: street1Controller.text.toString(),
                     country: selectedCountry?.code ?? countryCode,
-                    countryName: selectedCountry?.name ?? countryController.text,
+                    countryName:
+                        selectedCountry?.name ?? countryController.text,
                     state: selectedState?.code ?? stateNameController.text,
                     city: cityController.text,
                     phone: phoneController.text,
@@ -213,7 +214,8 @@ class _AddNewAddressState extends State<AddNewAddress> {
                       vatId: vatIdController.text,
                       address1: street1Controller.text.toString(),
                       country: selectedCountry?.code ?? countryCode,
-                      countryName: selectedCountry?.name ?? countryController.text,
+                      countryName:
+                          selectedCountry?.name ?? countryController.text,
                       state: selectedState?.code ?? stateNameController.text,
                       city: cityController.text,
                       phone: phoneController.text,
@@ -243,9 +245,11 @@ class _AddNewAddressState extends State<AddNewAddress> {
                       phone: phoneController.text,
                       isDefault: isDefault,
                       vatId: vatIdController.text,
-                      stateName: selectedState?.code ?? stateNameController.text,
+                      stateName:
+                          selectedState?.code ?? stateNameController.text,
                       firstName: firstNameController.text,
-                      countryName: selectedCountry?.name ?? countryController.text,
+                      countryName:
+                          selectedCountry?.name ?? countryController.text,
                     ));
               });
               Navigator.pop(
@@ -284,11 +288,9 @@ class _AddNewAddressState extends State<AddNewAddress> {
         countryList = state.countryData!.data;
         if (selectedCountry == null) {
           if (widget.isEdit ?? false) {
-
-            var countryFromEdit = countryList?.firstWhereOrNull((e) => e.name == widget.addressModel?.countryName);
-            widget.isEdit ?? false
-                ? selectedCountry = countryFromEdit
-                : "";
+            var countryFromEdit = countryList?.firstWhereOrNull(
+                (e) => e.name == widget.addressModel?.countryName);
+            widget.isEdit ?? false ? selectedCountry = countryFromEdit : "";
             countryCode = selectedCountry?.code;
             if ((countryFromEdit?.states?.length ?? 0) > 0) {
               selectedState = countryFromEdit?.states?.first;
@@ -305,12 +307,10 @@ class _AddNewAddressState extends State<AddNewAddress> {
               selectedState = selectedCountry?.states?.first;
             }
           }
-        }else {
-
-        }
+        } else {}
       }
       if (state.status == AddEditStatus.fail) {
-        return ErrorMessage.errorMsg(state.error ?? "Error");
+        return EmptyDataView();
       }
     }
     if (state is InitialAddEditAddressState) {
@@ -353,7 +353,8 @@ class _AddNewAddressState extends State<AddNewAddress> {
                 isCheckout: widget.isCheckout,
               ),
               CommonDropDownField(
-                value: widget.isEdit ?? false ? editCountryName : addCountryName,
+                value:
+                    widget.isEdit ?? false ? editCountryName : addCountryName,
                 itemList: getCountryStrings(),
                 hintText: StringConstants.countryHint.localized(),
                 labelText: StringConstants.countryLabel.localized(),
@@ -369,7 +370,9 @@ class _AddNewAddressState extends State<AddNewAddress> {
                               ?.map((e) => e.defaultName ?? '')
                               .toList() ??
                           [],
-                      hintText: (widget.isEdit ??false) ? stateNameController.text.toString() :StringConstants.stateHint.localized() ,
+                      hintText: (widget.isEdit ?? false)
+                          ? stateNameController.text.toString()
+                          : StringConstants.stateHint.localized(),
                       labelText: StringConstants.stateLabel.localized(),
                       key: const Key('States'),
                       callBack: dropdownUpdate,
@@ -379,9 +382,8 @@ class _AddNewAddressState extends State<AddNewAddress> {
                       stateNameController,
                       StringConstants.stateHint.localized(),
                       label: StringConstants.stateLabel.localized(),
-                      validLabel:
-                          StringConstants.pleaseFillLabel.localized() +
-                              StringConstants.stateLabel.localized(),
+                      validLabel: StringConstants.pleaseFillLabel.localized() +
+                          StringConstants.stateLabel.localized(),
                       isRequired: true,
                       validator: (cityName) {
                         if (cityName!.isEmpty) {
@@ -408,12 +410,27 @@ class _AddNewAddressState extends State<AddNewAddress> {
                   return null;
                 },
               ),
-              SaveAddressButton(isEdit:widget.isEdit,addEditAddressBloc: addEditAddressBloc,
-                countryCode: countryCode,selectedCountry: selectedCountry,selectedState: selectedState,stateCode: stateCode,addressId:widget.addressModel?.id,firstNameController: firstNameController, lastNameController: lastNameController,
-                companyController: companyController, street1Controller: street1Controller,
-                zipCodeController: zipCodeController, phoneController: phoneController, vatIdController: vatIdController,
-                formKey: _formKey, isDefault: isDefault, cityController: cityController,
-                stateNameController: stateNameController, emailController: emailController,)
+              SaveAddressButton(
+                isEdit: widget.isEdit,
+                addEditAddressBloc: addEditAddressBloc,
+                countryCode: countryCode,
+                selectedCountry: selectedCountry,
+                selectedState: selectedState,
+                stateCode: stateCode,
+                addressId: widget.addressModel?.id,
+                firstNameController: firstNameController,
+                lastNameController: lastNameController,
+                companyController: companyController,
+                street1Controller: street1Controller,
+                zipCodeController: zipCodeController,
+                phoneController: phoneController,
+                vatIdController: vatIdController,
+                formKey: _formKey,
+                isDefault: isDefault,
+                cityController: cityController,
+                stateNameController: stateNameController,
+                emailController: emailController,
+              )
             ],
           ),
         ),
@@ -459,5 +476,4 @@ class _AddNewAddressState extends State<AddNewAddress> {
     }
     setState(() {});
   }
-
 }

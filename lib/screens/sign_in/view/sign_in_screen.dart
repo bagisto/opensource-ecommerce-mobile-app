@@ -80,7 +80,7 @@ class _SignInScreenState extends State<SignInScreen> with EmailValidator {
                 appStoragePref.setCustomerLoggedIn(true);
                 appStoragePref.setCustomerName(_signInModel?.data?.name ?? "");
                 appStoragePref.setCustomerEmail(_signInModel?.data?.email ?? "");
-                appStoragePref.setCustomerToken(_signInModel?.token ?? "");
+                appStoragePref.setCustomerToken("${_signInModel?.tokenType} ${_signInModel?.token}");
                 appStoragePref.setCustomerId(int.parse(_signInModel?.data?.id ?? ""));
                 appStoragePref.setCustomerImage(_signInModel?.data?.imageUrl ?? "");
                 checkFingerprint(fingerPrint: state.fingerPrint);
@@ -106,7 +106,7 @@ class _SignInScreenState extends State<SignInScreen> with EmailValidator {
                 appStoragePref.setCustomerName(_signInModel?.data?.name ?? "");
                 appStoragePref.setCustomerEmail(
                     _signInModel?.data?.email ?? "");
-                appStoragePref.setCustomerToken(_signInModel?.token ?? "");
+                appStoragePref.setCustomerToken("${_signInModel?.tokenType} ${_signInModel?.token}");
                 appStoragePref.setCustomerId(int.parse(_signInModel?.data?.id ?? ""));
                 checkFingerprint();
                 if(context.mounted){

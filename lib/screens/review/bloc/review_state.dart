@@ -10,9 +10,8 @@
 
 // ignore_for_file: file_names
 
-
+import 'package:bagisto_app_demo/screens/review/utils/index.dart';
 import 'package:equatable/equatable.dart';
-import  'package:bagisto_app_demo/screens/review/utils/index.dart';
 
 abstract class ReviewsBaseState extends Equatable {}
 
@@ -22,47 +21,21 @@ class ReviewInitialState extends ReviewsBaseState {
   @override
   List<Object> get props => [];
 }
+
 //ignore: must_be_immutable
 class FetchReviewState extends ReviewsBaseState {
-
   ReviewStatus? status;
   String? error;
   String? successMsg;
   ReviewModel? reviewModel;
 
-
-  FetchReviewState.success({this.reviewModel,this.successMsg}) : status = ReviewStatus.success;
+  FetchReviewState.success({this.reviewModel, this.successMsg})
+      : status = ReviewStatus.success;
 
   FetchReviewState.fail({this.error}) : status = ReviewStatus.fail;
 
   @override
-  List<Object> get props => [if (reviewModel !=null) reviewModel! else ""];
+  List<Object> get props => [if (reviewModel != null) reviewModel! else ""];
 }
 
 //ignore: must_be_immutable
-class RemoveReviewState extends ReviewsBaseState{
-  ReviewStatus? status;
-  String? error;
-  String? successMsg;
-  GraphQlBaseModel? baseModel;
-  dynamic productDeletedId;
-  RemoveReviewState.success({ this.successMsg,this.baseModel,this.productDeletedId}):status=ReviewStatus.success;
-  RemoveReviewState.fail({this.error}):status=ReviewStatus.fail;
-
-  @override
-  List<Object> get props => [successMsg??"",error??"",baseModel!,productDeletedId];
-
-}
-//ignore: must_be_immutable
-class RemoveAllReviewState extends ReviewsBaseState{
-  ReviewStatus? status;
-  String? error;
-  String? successMsg;
-  GraphQlBaseModel? baseModel;
-  RemoveAllReviewState.success({ this.successMsg,this.baseModel}):status=ReviewStatus.success;
-  RemoveAllReviewState.fail({this.error}):status=ReviewStatus.fail;
-
-  @override
-  List<Object> get props => [successMsg??"",error??"",baseModel!];
-
-}

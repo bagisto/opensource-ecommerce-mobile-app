@@ -1,3 +1,22 @@
+# CHANGELOG for v2.3.0-alpha
+
+#### This changelog consists the bug & security fixes and new features being included in the releases listed below.
+
+## **v2.3.0-alpha (16th of May, 2025)** - *Release*
+
+* [Enhancement] Compatibility with Bagisto v2.3.0.
+* [Enhancement] Introduced an "Agreement & Terms Policy" button on the sign-up screen.
+* [Improvement] support dynamic additional key, enabling flexible data handling.
+* [Improvement] Updated filterAttributes key dynamic to enabling flexible data handling.
+* [Improvement] Optimized GraphQL queries across the project to improve data retrieval performance.
+* [Compatibility] Compatibility with Xcode 16.3.
+* [Compatibility] Compatibility with Flutter Version 3.29.3.
+
+## **Bug Fixes**
+
+[Fixed] Resolved customer account update issue.
+[Fixed] Fixed issue with product review submission.
+
 # CHANGELOG for v2.2.2
 
 #### This changelog consists the bug & security fixes and new features being included in the releases listed below.

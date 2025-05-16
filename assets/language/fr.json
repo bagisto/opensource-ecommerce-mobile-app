@@ -606,5 +606,7 @@
   "downloadComplete": "Télécharger terminé",
   "downloadProgress": "Progression du téléchargement",
   "open": "OUVRIR",
-  "subCategories": "Sous-catégories"
+  "subCategories": "Sous-catégories",
+  "agreeTermsMsg" : "J'accepte les termes et conditions",
+  "agreementFieldRequired": "Le champ d'accord est requis"
 }

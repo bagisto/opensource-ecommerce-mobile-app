@@ -1,5 +1,3 @@
-
-
 /*
  *   Webkul Software.
  *   @package Mobikul Application Code.
@@ -32,9 +30,9 @@ const String defaultAppTitle = "Bagisto App";
 ///default channel name
 const String defaultChannelName = "com.webkul.bagisto_mobikul/channel";
 
-const String demoEmail = "john@example.com";
+const String demoEmail = "";
 
-const String demoPassword = "demo123";
+const String demoPassword = "";
 
 ///supported locales in app
 List<String> supportedLocale = ['en', 'fr', 'nl', 'tr', 'es', 'ar', 'pt_br'];

@@ -11,8 +11,6 @@
 import 'package:bagisto_app_demo/screens/address_list/utils/index.dart';
 import 'package:bagisto_app_demo/screens/categories_screen/utils/index.dart';
 
-
-
 class AddressScreen extends StatefulWidget {
   const AddressScreen({Key? key, this.isFromDashboard}) : super(key: key);
   final bool? isFromDashboard;
@@ -95,10 +93,10 @@ class _AddressScreenState extends State<AddressScreen> {
         return _addressList(state.addressModel!);
       }
       if (state.status == AddressStatus.fail) {
-        return ErrorMessage.errorMsg(state.error ?? StringConstants.error);
+        return EmptyDataView();
       }
     }
-    if(state is ShowLoaderState){
+    if (state is ShowLoaderState) {
       isLoading = true;
     }
     if (state is InitialAddressState) {
@@ -144,8 +142,8 @@ class _AddressScreenState extends State<AddressScreen> {
               child: (widget.isFromDashboard ?? false)
                   ? null
                   : Container(
-                      padding:
-                          const EdgeInsets.symmetric(vertical: AppSizes.spacingNormal),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: AppSizes.spacingNormal),
                       child: Padding(
                         padding: const EdgeInsets.all(AppSizes.spacingNormal),
                         child: MaterialButton(
@@ -160,7 +158,9 @@ class _AddressScreenState extends State<AddressScreen> {
                           onPressed: () {
                             Navigator.pushNamed(context, addAddressScreen,
                                     arguments: AddressNavigationData(
-                                        isEdit: false, addressModel: null, isCheckout: false))
+                                        isEdit: false,
+                                        addressModel: null,
+                                        isCheckout: false))
                                 .then((value) {
                               fetchAddressData();
                             });
@@ -178,8 +178,9 @@ class _AddressScreenState extends State<AddressScreen> {
                                     .localized()
                                     .toUpperCase(),
                                 style: TextStyle(
-                                    color:
-                                        Theme.of(context).colorScheme.onPrimary),
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onPrimary),
                               )
                             ],
                           ),
@@ -210,15 +211,12 @@ class _AddressScreenState extends State<AddressScreen> {
                             : addressModel.addressData?.length ?? 0,
                         itemBuilder: (context, index) {
                           return SavedAddressList(
-                            addressModel: addressModel.addressData?[index],
-                            reload: fetchAddressData,
-                            isFromDashboard: widget.isFromDashboard ?? false,
-                              addressBloc: addressBloc
-                          );
+                              addressModel: addressModel.addressData?[index],
+                              reload: fetchAddressData,
+                              isFromDashboard: widget.isFromDashboard ?? false,
+                              addressBloc: addressBloc);
                         }),
-                    Visibility(
-                        visible: isLoading,
-                        child: const Loader())
+                    Visibility(visible: isLoading, child: const Loader())
                   ],
                 ),
               ),

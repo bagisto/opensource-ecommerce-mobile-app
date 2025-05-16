@@ -4,7 +4,7 @@ import GoogleMaps
 import Firebase
 import QuickLook
 
-@UIApplicationMain
+@main
 @objc class AppDelegate: FlutterAppDelegate, MessagingDelegate {
     private var _latestLink: String?
     private var latestLink: String? {
@@ -28,7 +28,7 @@ import QuickLook
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    GMSServices.provideAPIKey("AIzaSyAHMKgHxLvPvRwmOaB8NHWcFwn6laFvwbM")
+    GMSServices.provideAPIKey("AIzaSyAHMKgHxLvPvRwmOaB8NHWcFwn6l123456")
       let controller : FlutterViewController = window?.rootViewController as! FlutterViewController
               let mlkitChannel = FlutterMethodChannel(name:"com.webkul.bagisto_mobikul/channel",
                                                         binaryMessenger: controller.binaryMessenger)

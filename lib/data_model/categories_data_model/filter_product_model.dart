@@ -11,31 +11,33 @@
 import 'package:json_annotation/json_annotation.dart';
 
 import '../graphql_base_model.dart';
+
 part 'filter_product_model.g.dart';
 
 @JsonSerializable()
-class GetFilterAttribute extends GraphQlBaseModel{
+class GetFilterAttribute extends BaseModel {
   double? minPrice;
   double? maxPrice;
-  List<FilterAttribute>? filterAttributes;
+  List<dynamic>? filterAttributes;
   List<SortOrder>? sortOrders;
-  List<FilterData>? filterData;
+  // List<FilterData>? filterData;
 
   GetFilterAttribute({
-     this.minPrice,
-     this.maxPrice,
-     this.filterAttributes,
-     this.sortOrders, this.filterData,
+    this.minPrice,
+    this.maxPrice,
+    this.filterAttributes,
+    this.sortOrders,
+    // this.filterData,
   });
 
   factory GetFilterAttribute.fromJson(Map<String, dynamic> json) =>
       _$GetFilterAttributeFromJson(json);
 
   @override
-  Map<String, dynamic> toJson() =>
-      _$GetFilterAttributeToJson(this);
+  Map<String, dynamic> toJson() => _$GetFilterAttributeToJson(this);
 }
 
+/* // new api does not use this class as we are moving dynamic
 @JsonSerializable()
 class FilterData {
   String? key;
@@ -46,10 +48,11 @@ class FilterData {
   factory FilterData.fromJson(Map<String, dynamic> json) =>
       _$FilterDataFromJson(json);
 
-  Map<String, dynamic> toJson() =>
-      _$FilterDataToJson(this);
+  Map<String, dynamic> toJson() => _$FilterDataToJson(this);
 }
+*/
 
+/* // new api does not use this class as we are moving dynamic
 @JsonSerializable()
 class FilterAttribute {
   String? id;
@@ -59,19 +62,21 @@ class FilterAttribute {
   List<Option>? options;
 
   FilterAttribute({
-     this.id,
-     this.code,
-     this.adminName,
-     this.type,
-     this.options,
+    this.id,
+    this.code,
+    this.adminName,
+    this.type,
+    this.options,
   });
 
   factory FilterAttribute.fromJson(Map<String, dynamic> json) =>
       _$FilterAttributeFromJson(json);
 
-  Map<String, dynamic> toJson() =>
-      _$FilterAttributeToJson(this);
+  Map<String, dynamic> toJson() => _$FilterAttributeToJson(this);
 }
+*/
+
+/* // new api does not use this class as we are moving dynamic
 @JsonSerializable()
 class Option {
   String? id;
@@ -82,32 +87,32 @@ class Option {
   List<Translation>? translations;
 
   Option({
-     this.id,
-     this.adminName,
+    this.id,
+    this.adminName,
     this.swatchValue,
     this.sortOrder,
     this.isNew,
     this.translations,
   });
-  factory Option.fromJson(Map<String, dynamic> json) =>
-      _$OptionFromJson(json);
+  factory Option.fromJson(Map<String, dynamic> json) => _$OptionFromJson(json);
 
-  Map<String, dynamic> toJson() =>
-      _$OptionToJson(this);
+  Map<String, dynamic> toJson() => _$OptionToJson(this);
 }
+
 @JsonSerializable()
 class Translation {
   String? id;
   String? label;
   String? locale;
-  Translation({this.label,this.locale,this.id});
+  Translation({this.label, this.locale, this.id});
 
   factory Translation.fromJson(Map<String, dynamic> json) =>
       _$TranslationFromJson(json);
 
-  Map<String, dynamic> toJson() =>
-      _$TranslationToJson(this);
+  Map<String, dynamic> toJson() => _$TranslationToJson(this);
 }
+
+ */
 @JsonSerializable()
 class SortOrder {
   String? key;
@@ -118,32 +123,32 @@ class SortOrder {
   String? order;
   String? position;
 
-  SortOrder({
-     this.key,
-     this.label,
-     this.value, this.title, this.sort, this.order, this.position
-  });
+  SortOrder(
+      {this.key,
+      this.label,
+      this.value,
+      this.title,
+      this.sort,
+      this.order,
+      this.position});
 
   factory SortOrder.fromJson(Map<String, dynamic> json) =>
       _$SortOrderFromJson(json);
 
-  Map<String, dynamic> toJson() =>
-      _$SortOrderToJson(this);
+  Map<String, dynamic> toJson() => _$SortOrderToJson(this);
 }
+
 @JsonSerializable()
 class Value {
   String? sort;
   String? order;
 
   Value({
-     this.sort,
-     this.order,
+    this.sort,
+    this.order,
   });
 
-  factory Value.fromJson(Map<String, dynamic> json) =>
-      _$ValueFromJson(json);
+  factory Value.fromJson(Map<String, dynamic> json) => _$ValueFromJson(json);
 
-  Map<String, dynamic> toJson() =>
-      _$ValueToJson(this);
+  Map<String, dynamic> toJson() => _$ValueToJson(this);
 }
-

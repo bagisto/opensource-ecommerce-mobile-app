@@ -606,5 +606,7 @@
   "downloadComplete": "اكتمل التنزيل",
   "downloadProgress": "تقدم التنزيل",
   "open": "مفتوح",
-  "subCategories": "الفئات الفرعيه"
+  "subCategories": "الفئات الفرعيه",
+  "agreeTermsMsg" : "أوافق على الشروط والأحكام",
+  "agreementFieldRequired": "حقل الاتفاق مطلوب"
 }

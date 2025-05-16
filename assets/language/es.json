@@ -606,5 +606,7 @@
   "downloadComplete": "Descargar completa",
   "downloadProgress": "Progreso de la descarga",
   "open": "ABRIR",
-  "subCategories": "Subcategorías"
+  "subCategories": "Subcategorías",
+  "agreeTermsMsg" : "Acepto los términos y condiciones",
+  "agreementFieldRequired": "El campo de acuerdo es obligatorio"
 }

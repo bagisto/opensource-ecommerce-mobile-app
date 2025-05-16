@@ -1,8 +1,3 @@
-import 'package:flutter/material.dart';
-
-import '../../utils/app_constants.dart';
-import '../../utils/string_constants.dart';
-import '../../widgets/common_date_picker.dart';
 import 'package:bagisto_app_demo/screens/account/utils/index.dart';
 
 import 'bloc/contact_us_bloc.dart';
@@ -34,7 +29,6 @@ class _ContactUsPageState extends State<ContactUsPage> with EmailValidator {
     super.initState();
   }
 
-
   @override
   Widget build(BuildContext context) {
     return ScaffoldMessenger(
@@ -48,26 +42,25 @@ class _ContactUsPageState extends State<ContactUsPage> with EmailValidator {
       ),
     );
   }
+
   _contactUsBloc(BuildContext context) {
     return BlocConsumer<ContactUsScreenBloc, ContactUsBaseState>(
       listener: (BuildContext context, ContactUsBaseState state) {
         if (state is ContactUsState) {
           isLoading = true;
           if (state.status == ContactUsStatus.fail) {
-            ShowMessage.showNotification(StringConstants.failed, state.error, Colors.red,
-                const Icon(Icons.cancel_outlined));
-          } else if  (state.status == ContactUsStatus.success) {
+            ShowMessage.showNotification(StringConstants.failed, state.error,
+                Colors.red, const Icon(Icons.cancel_outlined));
+          } else if (state.status == ContactUsStatus.success) {
             ShowMessage.showNotification(
                 StringConstants.success.localized(),
-                 state.successMsg ?? StringConstants.updated.localized(),
-
-                const Color.fromRGBO(140, 194, 74, 5),
+                state.successMsg ?? StringConstants.updated.localized(),
+                Colors.green.shade400,
                 const Icon(Icons.check_circle_outline));
             nameController.clear();
             emailController.clear();
             phoneController.clear();
             commentController.clear();
-
           }
         }
       },
@@ -77,10 +70,8 @@ class _ContactUsPageState extends State<ContactUsPage> with EmailValidator {
     );
   }
 
-
-  _reviewForm()  {
+  _reviewForm() {
     return Scaffold(
-
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -89,14 +80,14 @@ class _ContactUsPageState extends State<ContactUsPage> with EmailValidator {
             child: Column(
               children: <Widget>[
                 Padding(
-                  padding: const EdgeInsets.only(top: 20.0,bottom: 40),
+                  padding: const EdgeInsets.only(top: 20.0, bottom: 40),
                   child: Text(StringConstants.contactUsDetail.localized()),
                 ),
                 CommonWidgets().getTextField(
                   context,
                   nameController,
                   StringConstants.nameLabel.localized(),
-                  label:StringConstants.name.localized(),
+                  label: StringConstants.name.localized(),
                   isRequired: true,
                   validator: (name) {
                     if ((name ?? "").isEmpty) {
@@ -120,8 +111,7 @@ class _ContactUsPageState extends State<ContactUsPage> with EmailValidator {
                     if ((email ?? "").isEmpty) {
                       return StringConstants.pleaseFillLabel.localized() +
                           StringConstants.email.localized();
-                    }
-                    else if (!isValidEmail(email)) {
+                    } else if (!isValidEmail(email)) {
                       return StringConstants.validEmailLabel.localized();
                     }
                     return null;
@@ -146,73 +136,76 @@ class _ContactUsPageState extends State<ContactUsPage> with EmailValidator {
                   },
                 ),
                 const SizedBox(height: AppSizes.spacingWide),
-
-          TextFormField(
-            maxLines: 4,
-            style: Theme.of(context).textTheme.bodyMedium,
-            controller: commentController,
-            decoration: InputDecoration(
-                label: Text.rich(TextSpan(
-                  children: <InlineSpan>[
-                    WidgetSpan(
-                      child: Text(
-                        StringConstants.whatOnYourMind.localized(),
+                TextFormField(
+                  maxLines: 4,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                  controller: commentController,
+                  decoration: InputDecoration(
+                      label: Text.rich(TextSpan(
+                        children: <InlineSpan>[
+                          WidgetSpan(
+                            child: Text(
+                              StringConstants.whatOnYourMind.localized(),
+                            ),
+                          ),
+                          const WidgetSpan(
+                            child: Text(
+                              '*',
+                              style: TextStyle(color: Colors.red, fontSize: 14),
+                            ),
+                          ),
+                        ],
+                      )),
+                      hintText: StringConstants.describeHere.localized(),
+                      isDense: true,
+                      errorStyle: const TextStyle(fontSize: 12),
+                      floatingLabelBehavior: FloatingLabelBehavior.always,
+                      //   prefixIcon: prefixIcon,
+                      prefixIconColor: Theme.of(context).iconTheme.color,
+                      hintStyle: Theme.of(context)
+                          .textTheme
+                          .bodyMedium
+                          ?.copyWith(color: Colors.grey.shade500),
+                      labelStyle: Theme.of(context).textTheme.bodyMedium,
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(4.0)),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
                       ),
-                    ),
-                    const WidgetSpan(
-                      child: Text(
-                        '*',
-                        style: TextStyle(color: Colors.red, fontSize: 14),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(4.0)),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
                       ),
-                    ),
-                  ],
-                ))   ,
-                hintText: StringConstants.describeHere.localized(),
-                isDense: true,
-                errorStyle: const TextStyle(
-                    fontSize: 12
+                      errorBorder: OutlineInputBorder(
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(4.0)),
+                        borderSide: BorderSide(color: Colors.red.shade300),
+                      ),
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(4.0)),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      // suffixIcon: suffixIcon,
+                      suffixIconColor: Theme.of(context).iconTheme.color),
+                  validator: (value) {
+                    if ((value ?? "").trim().isEmpty) {
+                      return StringConstants.pleaseFillLabel.localized() +
+                          StringConstants.commentLabel.localized();
+                    }
+                    return null; // Returns null if the input is valid
+                  },
                 ),
-                floatingLabelBehavior: FloatingLabelBehavior.always,
-             //   prefixIcon: prefixIcon,
-                prefixIconColor: Theme.of(context).iconTheme.color,
-                hintStyle: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(color: Colors.grey.shade500),
-                labelStyle: Theme.of(context).textTheme.bodyMedium,
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: const BorderRadius.all(Radius.circular(4.0)),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: const BorderRadius.all(Radius.circular(4.0)),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
-                ),
-                errorBorder: OutlineInputBorder(
-                  borderRadius: const BorderRadius.all(Radius.circular(4.0)),
-                  borderSide: BorderSide(color: Colors.red.shade300),
-                ),
-                focusedErrorBorder: OutlineInputBorder(
-                  borderRadius: const BorderRadius.all(Radius.circular(4.0)),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
-                ),
-               // suffixIcon: suffixIcon,
-                suffixIconColor: Theme.of(context).iconTheme.color),
-            validator: (value) {
-              if ((value ?? "").trim().isEmpty) {
-                return StringConstants.pleaseFillLabel.localized() +
-                    StringConstants.commentLabel.localized();
-              }
-              return null; // Returns null if the input is valid
-            },
-          ),
               ],
             ),
           ),
         ),
       ),
       bottomNavigationBar: Padding(
-        padding: const EdgeInsets.symmetric(vertical:AppSizes.spacingMedium, horizontal: AppSizes.spacingMedium),
+        padding: const EdgeInsets.symmetric(
+            vertical: AppSizes.spacingMedium,
+            horizontal: AppSizes.spacingMedium),
         child: MaterialButton(
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(AppSizes.spacingNormal)),
@@ -243,12 +236,10 @@ class _ContactUsPageState extends State<ContactUsPage> with EmailValidator {
       _phone = phoneController.text;
       _message = commentController.text;
 
-
       contactUsScreenBloc?.add(ContactUsEvent(_name, _email, _phone, _message));
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Form submitted successfully!')),
       );
-
     }
   }
 }

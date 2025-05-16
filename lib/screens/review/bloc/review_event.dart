@@ -10,36 +10,13 @@
 
 // ignore_for_file: file_names
 
-
-
 import 'package:equatable/equatable.dart';
 
-abstract class ReviewsBaseEvent extends Equatable{}
+abstract class ReviewsBaseEvent extends Equatable {}
 
 class FetchReviewsEvent extends ReviewsBaseEvent {
   final int page;
   FetchReviewsEvent(this.page);
   @override
   List<Object> get props => [];
-}
-
-
-class RemoveReviewEvent extends ReviewsBaseEvent {
-  final dynamic productId;
-
-  final String? message;
-
-  RemoveReviewEvent(this.productId, this.message);
-
-  @override
-  List<Object> get props => [productId ?? "", message ?? ""];
-
-}
-class RemoveAllReviewsEvent extends ReviewsBaseEvent {
-
-  RemoveAllReviewsEvent();
-
-  @override
-  List<Object> get props => [];
-
 }

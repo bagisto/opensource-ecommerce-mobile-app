@@ -19,7 +19,8 @@ abstract class SignUpRepository {
     String lastName,
     String password,
     String confirmPassword,
-      bool subsNewsLetter
+      bool subsNewsLetter,
+      bool agreement
   );
 
   // Future<Subscribe?> subscribeNewsLetter(
@@ -35,7 +36,8 @@ class SignUpRepositoryImp implements SignUpRepository {
     String lastName,
     String password,
     String confirmPassword,
-      bool subsNewsLetter
+      bool subsNewsLetter,
+      bool agreement
   ) async {
     SignInModel? SignUpResponseModel;
 
@@ -46,7 +48,8 @@ class SignUpRepositoryImp implements SignUpRepository {
         lastName,
         password,
         confirmPassword,
-          subsNewsLetter
+          subsNewsLetter,
+          agreement
       );
 
     } catch (error, stacktrace) {

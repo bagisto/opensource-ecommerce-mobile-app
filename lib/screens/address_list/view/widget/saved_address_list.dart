@@ -33,14 +33,17 @@ class SavedAddressList extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(AppSizes.spacingMedium, 0, 0, 0),
-                child: Text(
-                  "${addressModel?.firstName ?? ""} ${addressModel?.lastName ?? ""}",
-                  style: TextStyle(
-                      color: Colors.grey[600],
-                      fontWeight: FontWeight.bold,
-                      fontSize: AppSizes.spacingLarge),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSizes.spacingMedium),
+                  child: Text(
+                    "${addressModel?.firstName ?? ""} ${addressModel?.lastName ?? ""}",
+                    maxLines: 3,
+                    style: TextStyle(
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.bold,
+                        fontSize: AppSizes.spacingLarge),
+                  ),
                 ),
               ),
               if(isFromDashboard == false)

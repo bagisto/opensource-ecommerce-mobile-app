@@ -1,4 +1,3 @@
-
 /*
  *   Webkul Software.
  *   @package Mobikul Application Code.
@@ -9,6 +8,7 @@
  *   @link https://store.webkul.com/license.html
  */
 
+import 'package:bagisto_app_demo/utils/extension.dart';
 
 import '../utils/cart_index.dart';
 
@@ -33,7 +33,6 @@ class CartListItem extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       itemCount: cartDetailsModel.items?.length ?? 0,
       itemBuilder: (BuildContext context, int itemIndex) {
-
         return InkWell(
           onTap: () {
             Navigator.pushNamed(context, productScreen,
@@ -55,42 +54,48 @@ class CartListItem extends StatelessWidget {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          ((cartDetailsModel.items?[itemIndex].product
-                                          ?.images ??
+                          ((cartDetailsModel
+                                          .items?[itemIndex].product?.images ??
                                       [])
-                                  .isNotEmpty) ?
-                          ImageView(
+                                  .isNotEmpty)
+                              ? ImageView(
                                   url: cartDetailsModel.items?[itemIndex]
                                           .product?.images?[0].url ??
                                       "",
-                                  height: MediaQuery.of(context).size.width / 3.5,
-                                ) : ImageView(
-                            url: AssetConstants.placeHolder,
-                            height: MediaQuery.of(context).size.width / 3.5,
-                          ),
+                                  height:
+                                      MediaQuery.of(context).size.width / 3.5,
+                                )
+                              : ImageView(
+                                  url: AssetConstants.placeHolder,
+                                  height:
+                                      MediaQuery.of(context).size.width / 3.5,
+                                ),
                           QuantityView(
                             qty: cartDetailsModel.items?[itemIndex].quantity
-                                ?.toString() ??
+                                    ?.toString() ??
                                 "",
                             showTitle: false,
                             setQuantity: true,
                             callBack: (val) {
-                                cartDetailsModel
-                                    .items?[itemIndex].quantity = val;
-                                var quantityChanged = true;
-                                if(callBack != null){
-                                  callBack!(quantityChanged);
-                                }
-                              _itemChange({
-                                "cartItemId": cartDetailsModel
-                                    .items?[itemIndex].id
-                                    .toString() ?? "",
-                                "quantity": cartDetailsModel
-                                    .items?[itemIndex].quantity
-                                    .toString() ?? ""
-                              }, true, cartDetailsModel
-                                  .items?[itemIndex].id
-                                  .toString());
+                              cartDetailsModel.items?[itemIndex].quantity = val;
+                              var quantityChanged = true;
+                              if (callBack != null) {
+                                callBack!(quantityChanged);
+                              }
+                              _itemChange(
+                                  {
+                                    "cartItemId": cartDetailsModel
+                                            .items?[itemIndex].id
+                                            .toString() ??
+                                        "",
+                                    "quantity": cartDetailsModel
+                                            .items?[itemIndex].quantity
+                                            .toString() ??
+                                        ""
+                                  },
+                                  true,
+                                  cartDetailsModel.items?[itemIndex].id
+                                      .toString());
                             },
                           ),
                         ],
@@ -99,7 +104,11 @@ class CartListItem extends StatelessWidget {
                     Flexible(
                       flex: 2,
                       child: Container(
-                        padding: const EdgeInsets.fromLTRB(AppSizes.spacingNormal,AppSizes.spacingLarge,AppSizes.spacingNormal,AppSizes.spacingNormal),
+                        padding: const EdgeInsets.fromLTRB(
+                            AppSizes.spacingNormal,
+                            AppSizes.spacingLarge,
+                            AppSizes.spacingNormal,
+                            AppSizes.spacingNormal),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -107,8 +116,9 @@ class CartListItem extends StatelessWidget {
                             Wrap(
                               children: [
                                 Text(
-                                  cartDetailsModel.items?[itemIndex].name?? cartDetailsModel
-                                      .items?[itemIndex].name ?? "",
+                                  cartDetailsModel.items?[itemIndex].name ??
+                                      cartDetailsModel.items?[itemIndex].name ??
+                                      "",
                                   style: Theme.of(context).textTheme.labelSmall,
                                 ),
                               ],
@@ -116,39 +126,39 @@ class CartListItem extends StatelessWidget {
                             const SizedBox(
                               height: AppSizes.spacingNormal,
                             ),
-                            cartDetailsModel.items?[itemIndex].additional
-                                        ?.attributes != null
+                            // cartDetailsModel.items?[itemIndex]
+                            //             .additional?['attributes'] !=
+                            getAttributesValueFromAdditional(cartDetailsModel
+                                        .items?[itemIndex].additional) !=
+                                    null
                                 ? ListView.builder(
                                     shrinkWrap: true,
                                     physics:
                                         const NeverScrollableScrollPhysics(),
-                                    itemCount: cartDetailsModel
-                                        .items?[itemIndex]
-                                        .additional
-                                        ?.attributes
-                                        ?.length ?? 0,
+                                    // itemCount: cartDetailsModel
+                                    //         .items?[itemIndex]
+                                    //         .additional?['attributes']
+                                    //         ?.length ??
+                                    //     0,
+                                    itemCount: getAttributesValueFromAdditional(
+                                                cartDetailsModel
+                                                    .items?[itemIndex]
+                                                    .additional)
+                                            ?.length ??
+                                        0,
                                     itemBuilder:
                                         (BuildContext context, int index) {
                                       return Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        mainAxisAlignment: MainAxisAlignment.start,
                                         children: [
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.start,
-                                            children: <Widget>[
-                                              Text(
-                                                  "${cartDetailsModel.items?[itemIndex].additional?.attributes?[index].attributeName} - ",
-                                                  style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color: Colors.grey)),
-                                              Text(
-                                                  "${cartDetailsModel.items?[itemIndex].additional?.attributes?[index].optionLabel}",
-                                                  style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color: Colors.grey)),
-                                            ],
-                                          ),
+                                          Text(
+                                              "${getAttributeKeyValueFromAdditional(cartDetailsModel.items?[itemIndex].additional, index, 'attribute_name')}  - "
+                                              "${getAttributeKeyValueFromAdditional(cartDetailsModel.items?[itemIndex].additional, index, 'option_label')}",
+                                              maxLines: 2,
+                                              style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.grey)),
                                           const SizedBox(
                                             height: AppSizes.spacingSmall,
                                           ),
@@ -164,7 +174,8 @@ class CartListItem extends StatelessWidget {
                                 Text(
                                   cartDetailsModel.items?[itemIndex]
                                           .formattedPrice?.price
-                                          .toString() ?? '0',
+                                          .toString() ??
+                                      '0',
                                   style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                       color: Colors.grey),
@@ -177,7 +188,8 @@ class CartListItem extends StatelessWidget {
                             Wrap(
                               children: [
                                 Text(
-                                  StringConstants.cartPageSubtotalLabel.localized(),
+                                  StringConstants.cartPageSubtotalLabel
+                                      .localized(),
                                   style: const TextStyle(
                                     fontWeight:
                                         FontWeight.bold, /* color: Colors.grey*/
@@ -185,7 +197,9 @@ class CartListItem extends StatelessWidget {
                                 ),
                                 Text(
                                   cartDetailsModel.items?[itemIndex]
-                                          .formattedPrice?.total.toString() ?? "",
+                                          .formattedPrice?.total
+                                          .toString() ??
+                                      "",
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -198,27 +212,35 @@ class CartListItem extends StatelessWidget {
                     ),
                   ],
                 ),
-               const Divider(height: 1,thickness: 1.5,),
+                const Divider(
+                  height: 1,
+                  thickness: 1.5,
+                ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Expanded(
                       flex: 1,
                       child: Container(
-                        decoration:  BoxDecoration(
-                          border: Border(right: BorderSide(color: Colors.grey.shade300, width: 1)),
+                        decoration: BoxDecoration(
+                          border: Border(
+                              right: BorderSide(
+                                  color: Colors.grey.shade300, width: 1)),
                         ),
                         child: MaterialButton(
                           elevation: 0.0,
                           onPressed: () {
-                            bool isLogged = appStoragePref.getCustomerLoggedIn();
-                              if (isLogged) {
-                                cartScreenBloc?.add(MoveToCartEvent(int.parse(
-                                    cartDetailsModel.items?[itemIndex].id ?? "")));
-                              } else {
-                                ShowMessage.warningNotification(
-                                    StringConstants.pleaseLogin.localized(),context);
-                              }
+                            bool isLogged =
+                                appStoragePref.getCustomerLoggedIn();
+                            if (isLogged) {
+                              cartScreenBloc?.add(MoveToCartEvent(int.parse(
+                                  cartDetailsModel.items?[itemIndex].id ??
+                                      "")));
+                            } else {
+                              ShowMessage.warningNotification(
+                                  StringConstants.pleaseLogin.localized(),
+                                  context);
+                            }
                           },
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
@@ -237,7 +259,8 @@ class CartListItem extends StatelessWidget {
                                     maxLines: 1,
                                     textAlign: TextAlign.center,
                                     overflow: TextOverflow.ellipsis,
-                                    style: Theme.of(context).textTheme.bodyLarge,
+                                    style:
+                                        Theme.of(context).textTheme.bodyLarge,
                                   ),
                                 ),
                               )
@@ -249,13 +272,16 @@ class CartListItem extends StatelessWidget {
                     Expanded(
                       flex: 1,
                       child: Container(
-                        decoration:  BoxDecoration(
-                          border: Border(left: BorderSide(color: Colors.grey.shade300, width: 1)),
+                        decoration: BoxDecoration(
+                          border: Border(
+                              left: BorderSide(
+                                  color: Colors.grey.shade300, width: 1)),
                         ),
                         child: MaterialButton(
                           elevation: 0.0,
                           onPressed: () {
-                            _onPressRemove(cartDetailsModel, itemIndex, context);
+                            _onPressRemove(
+                                cartDetailsModel, itemIndex, context);
                           },
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
@@ -269,7 +295,8 @@ class CartListItem extends StatelessWidget {
                               Padding(
                                 padding: const EdgeInsets.only(left: 8.0),
                                 child: Text(
-                                  StringConstants.cartPageRemoveItemLabel.localized(),
+                                  StringConstants.cartPageRemoveItemLabel
+                                      .localized(),
                                   maxLines: 2,
                                   textAlign: TextAlign.center,
                                   style: Theme.of(context).textTheme.bodyLarge,
@@ -290,8 +317,9 @@ class CartListItem extends StatelessWidget {
     );
   }
 
-  void _itemChange(Map<dynamic, String> itemValue, bool isSelected, String? id) {
-    selectedItems.removeWhere((element) => element["cartItemId"]==id);
+  void _itemChange(
+      Map<dynamic, String> itemValue, bool isSelected, String? id) {
+    selectedItems.removeWhere((element) => element["cartItemId"] == id);
     if (isSelected) {
       selectedItems.add(itemValue);
     } else {
@@ -328,7 +356,8 @@ class CartListItem extends StatelessWidget {
                       cartItemId: int.parse(
                           cartDetailsModel.items?[itemIndex].id ?? "")));
                 },
-                child: Text(StringConstants.yes.localized(), style: Theme.of(context).textTheme.bodyMedium))
+                child: Text(StringConstants.yes.localized(),
+                    style: Theme.of(context).textTheme.bodyMedium))
           ],
         );
       },

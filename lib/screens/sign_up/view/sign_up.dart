@@ -40,6 +40,8 @@ class _SignUpScreenState extends State<SignUpScreen> with EmailValidator {
   bool showPassword = false;
   bool showConfirmPassword = false;
   bool isNewsLetterSelected = false;
+  bool agreement = false;
+  bool showAgreementError = false;
 
   @override
   void initState() {
@@ -239,12 +241,23 @@ class _SignUpScreenState extends State<SignUpScreen> with EmailValidator {
                 NewsLetterCheckbox(
                       (value) {
                         isNewsLetterSelected = value;
-                        print("isNewsLetterSelectedisNewsLetterSelected--${isNewsLetterSelected}");
-                       // GlobalData.subscribeNewsLetter = isNewsLetterSelected;
-                  },
-                 "",
+                  }, StringConstants.subscribeToNewsletter.localized(),
                   true,
                   false
+                ),
+                NewsLetterCheckbox(
+                        (value) {
+                          agreement = value;
+                          if (showAgreementError && agreement) {
+                            setState(() {
+                              showAgreementError = false;
+                            });
+                          }
+                    }, StringConstants.agreeTerms.localized(),
+                    true,
+                    false,
+                  showError: showAgreementError,
+                  errorText: StringConstants.agreementFieldRequired.localized(),
                 ),
                 const SizedBox(height: AppSizes.spacingWide),
                 Padding(
@@ -268,6 +281,12 @@ class _SignUpScreenState extends State<SignUpScreen> with EmailValidator {
                   color: Theme.of(context).colorScheme.onBackground,
                   textColor: Theme.of(context).colorScheme.secondaryContainer,
                   onPressed: () {
+                    if (!agreement) {
+                      setState(() {
+                        showAgreementError = true;
+                      });
+                      return;
+                    }
                     _onPressCreateAccount();
                   },
                   child: Text(
@@ -331,7 +350,8 @@ class _SignUpScreenState extends State<SignUpScreen> with EmailValidator {
         lastName: lastNameController.text,
         password: passwordController.text,
         confirmPassword: confirmPasswordController.text,
-        newsLetter: isNewsLetterSelected
+        newsLetter: isNewsLetterSelected,
+        agreement: agreement
       ));
     }
   }
@@ -341,7 +361,7 @@ class _SignUpScreenState extends State<SignUpScreen> with EmailValidator {
     appStoragePref.setCustomerLoggedIn(true);
     appStoragePref.setCustomerName(signInModel?.data?.name ?? "");
     appStoragePref.setCustomerEmail(signInModel?.data?.email ?? "");
-    appStoragePref.setCustomerToken(signInModel?.token ?? "");
+    appStoragePref.setCustomerToken("${signInModel?.tokenType} ${signInModel?.token}");
     appStoragePref.setCustomerId(int.parse(signInModel?.data?.id ?? "2"));
     return true;
   }

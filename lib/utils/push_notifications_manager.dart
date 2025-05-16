@@ -11,6 +11,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+
 import 'package:bagisto_app_demo/screens/cart_screen/utils/cart_index.dart';
 import 'package:bagisto_app_demo/utils/server_configuration.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -26,7 +27,7 @@ class PushNotificationsManager {
   static const initializationSettingsAndroid =
       AndroidInitializationSettings('@mipmap/ic_launcher');
 
-  static const initializationSettingsIOS = IOSInitializationSettings(
+  static const initializationSettingsIOS = DarwinInitializationSettings(
     requestAlertPermission: true,
     requestBadgePermission: true,
     requestSoundPermission: true,
@@ -41,12 +42,18 @@ class PushNotificationsManager {
       FlutterLocalNotificationsPlugin();
 
   void setUpFirebase(BuildContext context) {
+    FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
     flutterLocalNotificationsPlugin.initialize(initializationSettings,
-        onSelectNotification: (String? payload) async {
+        onDidReceiveNotificationResponse: (NotificationResponse response) {
+      final String? payload = response.payload;
       if ((payload ?? "").isNotEmpty) {
         debugPrint("payload ---> $payload");
         Map<String, dynamic> payloadData = jsonDecode(payload ?? "");
-        if(payloadData["type"] == "openFile"){
+        if (payloadData["type"] == "openFile") {
           openFile(payloadData["path"].toString());
         }
       }
@@ -75,7 +82,7 @@ class PushNotificationsManager {
         playSound: true,
         styleInformation: notificationStyle);
 
-    var iOSPlatformChannelSpecifics = const IOSNotificationDetails(
+    var iOSPlatformChannelSpecifics = const DarwinNotificationDetails(
       presentAlert: true,
       presentSound: true,
       presentBadge: true,
@@ -117,7 +124,7 @@ class PushNotificationsManager {
       String title = notification?.title ?? "";
       String body = notification?.body ?? "";
 
-      RegExp exp = RegExp(r"<[^>]*>",multiLine: true,caseSensitive: true);
+      RegExp exp = RegExp(r"<[^>]*>", multiLine: true, caseSensitive: true);
       String parsedString = body.replaceAll(exp, ' ').trim();
 
       body = parsedString;
@@ -145,7 +152,8 @@ class PushNotificationsManager {
     });
   }
 
-  void createDownloadNotification(int total, int progress, String name, String path) async {
+  void createDownloadNotification(
+      int total, int progress, String name, String path) async {
     await Future<void>.delayed(const Duration(milliseconds: 0), () async {
       var androidPlatformChannel = AndroidNotificationDetails(
           'progress channel', 'Bagisto Notification',
@@ -155,18 +163,19 @@ class PushNotificationsManager {
           onlyAlertOnce: true,
           showProgress: progress < total ? true : false,
           maxProgress: total,
-          progress: progress
-      );
+          progress: progress);
 
-      var platformChannelSpecifics = NotificationDetails(android: androidPlatformChannel);
-      await flutterLocalNotificationsPlugin.show(1, name, total==progress ? StringConstants.completed.localized()
-          : StringConstants.started.localized(),
-          platformChannelSpecifics, payload: jsonEncode({
-            "type" : "openFile",
-            "path" : path
-          }));
+      var platformChannelSpecifics =
+          NotificationDetails(android: androidPlatformChannel);
+      await flutterLocalNotificationsPlugin.show(
+          1,
+          name,
+          total == progress
+              ? StringConstants.completed.localized()
+              : StringConstants.started.localized(),
+          platformChannelSpecifics,
+          payload: jsonEncode({"type": "openFile", "path": path}));
     });
-
   }
 
   Future<void> openFile(String fileName) async {

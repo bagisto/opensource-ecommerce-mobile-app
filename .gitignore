@@ -26,6 +26,7 @@ proguard/
 # Log Files
 *.log
 *.g.dart
+*.aab
 
 # Android Studio Navigation editor temp files
 .navigation/

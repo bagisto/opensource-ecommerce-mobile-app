@@ -116,13 +116,9 @@ class CategoryBloc
           isReqToShowLoader: event.isReqToShowLoader));
     } else if (event is FilterFetchEvent) {
       try {
-        GetFilterAttribute filterModel =
-            await repository!.getFilterProducts(event.categorySlug ?? "");
-        if (filterModel.status == true) {
-          emit(FilterFetchState.success(filterModel: filterModel));
-        } else {
-          emit(FilterFetchState.fail(error: filterModel.success ?? ""));
-        }
+        GetFilterAttribute? filterModel =
+            await repository?.getFilterProducts(event.categorySlug ?? "");
+        emit(FilterFetchState.success(filterModel: filterModel));
       } catch (e) {
         emit(FilterFetchState.fail(error: e.toString()));
       }
