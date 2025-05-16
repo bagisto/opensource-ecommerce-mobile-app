@@ -59,6 +59,7 @@ class CommonWidgets with EmailValidator {
                     : null,
             hintText: hint,
             isDense: true,
+            contentPadding: contentPadding ?? EdgeInsets.all(16),
             errorStyle: const TextStyle(
               fontSize: 12
             ),

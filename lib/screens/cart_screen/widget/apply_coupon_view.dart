@@ -68,7 +68,6 @@ class _ApplyCouponViewState extends State<ApplyCouponView> {
                               .localized(),
                           label: StringConstants.couponCode
                               .localized(),
-                        contentPadding: const EdgeInsets.symmetric(vertical: 0,horizontal: AppSizes.spacingMedium),
                         validator: (discountCode) {
                         if ((discountCode?.trim() ?? "").isEmpty) {
                           setState(() {

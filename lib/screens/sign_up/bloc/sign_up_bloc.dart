@@ -29,7 +29,8 @@ class SignUpBloc extends Bloc<SignUpBaseEvent, SignUpBaseState> {
           event.lastName ?? "",
           event.password ?? "",
           event.confirmPassword ?? "",
-          event.newsLetter ?? false
+          event.newsLetter ?? false,
+          event.agreement ?? false
         );
       print("newsssletter----${event.newsLetter}");
 

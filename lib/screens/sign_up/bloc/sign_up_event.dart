@@ -19,6 +19,7 @@ class FetchSignUpEvent extends SignUpBaseEvent {
   String? password;
   String? confirmPassword;
   bool? newsLetter;
+  bool? agreement;
 
   FetchSignUpEvent(
       {this.email,
@@ -26,7 +27,8 @@ class FetchSignUpEvent extends SignUpBaseEvent {
         this.lastName,
         this.password,
         this.confirmPassword,
-        this.newsLetter
+        this.newsLetter,
+        this.agreement
       });
 
   @override

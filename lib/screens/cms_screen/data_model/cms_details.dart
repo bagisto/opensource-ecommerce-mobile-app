@@ -13,54 +13,39 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'cms_details.g.dart';
 
-
 @JsonSerializable()
-class CmsPage extends GraphQlBaseModel{
+class CmsPage extends BaseModel {
   String? id;
-  dynamic layout;
-  String? createdAt;
-  String? updatedAt;
   List<Translations>? translations;
-  List<dynamic>? channels;
 
-  CmsPage({this.id, this.translations, this.channels, this.createdAt, this.layout, this.updatedAt});
+  CmsPage({
+    this.id,
+    this.translations,
+  });
 
   factory CmsPage.fromJson(Map<String, dynamic> json) =>
       _$CmsPageFromJson(json);
 
   @override
-  Map<String, dynamic> toJson() =>
-      _$CmsPageToJson(this);
+  Map<String, dynamic> toJson() => _$CmsPageToJson(this);
 }
+
 @JsonSerializable()
 class Translations {
   String? id;
-  String? urlKey;
-  String? metaDescription;
-  String? metaTitle;
-  String? pageTitle;
-  String? metaKeywords;
+  String? name;
   String? htmlContent;
   String? locale;
-  String? cmsPageId;
-  String? name;
-  String? description;
-  String? localeId;
 
-  Translations(
-      {this.id,
-        this.urlKey,
-        this.metaDescription,
-        this.metaTitle,
-        this.pageTitle,
-        this.metaKeywords,
-        this.htmlContent,
-        this.locale,
-        this.cmsPageId, this.name, this.description, this.localeId});
+  Translations({
+    this.id,
+    this.name,
+    this.htmlContent,
+    this.locale,
+  });
 
   factory Translations.fromJson(Map<String, dynamic> json) =>
       _$TranslationsFromJson(json);
 
-  Map<String, dynamic> toJson() =>
-      _$TranslationsToJson(this);
+  Map<String, dynamic> toJson() => _$TranslationsToJson(this);
 }

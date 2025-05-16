@@ -9,87 +9,58 @@
  */
 
 import 'package:json_annotation/json_annotation.dart';
+
 import '../../../data_model/graphql_base_model.dart';
 
 part 'cms_model.g.dart';
 
 @JsonSerializable()
-class CmsData extends GraphQlBaseModel{
+class CmsData extends BaseModel {
   List<Data>? data;
-  @JsonKey(name: "paginatorInfo")
-  PaginatorInfo? paginationInfo;
-  CmsData({this.data, this.paginationInfo});
+
+  CmsData({
+    this.data,
+  });
 
   factory CmsData.fromJson(Map<String, dynamic> json) =>
       _$CmsDataFromJson(json);
 
   @override
-  Map<String, dynamic> toJson() =>
-      _$CmsDataToJson(this);
-}
-@JsonSerializable()
-class PaginatorInfo{
-  int?  count;
-  int? currentPage;
-  int? lastPage;
-  int? total;
-
-
-  PaginatorInfo({this.count,this.currentPage,this.lastPage,this.total});
-  factory PaginatorInfo.fromJson(Map<String, dynamic> json) =>
-      _$PaginatorInfoFromJson(json);
-
-  Map<String, dynamic> toJson() =>
-      _$PaginatorInfoToJson(this);
-
+  Map<String, dynamic> toJson() => _$CmsDataToJson(this);
 }
 
 @JsonSerializable()
 class Data {
   String? id;
-  dynamic layout;
-  String? createdAt;
-  String? updatedAt;
+
   List<Translations>? translations;
-  List<dynamic>? channels;
 
-  Data({this.id, this.translations, this.channels, this.createdAt, this.layout, this.updatedAt});
+  Data({
+    this.id,
+    this.translations,
+  });
 
-  factory Data.fromJson(Map<String, dynamic> json) =>
-      _$DataFromJson(json);
+  factory Data.fromJson(Map<String, dynamic> json) => _$DataFromJson(json);
 
-  Map<String, dynamic> toJson() =>
-      _$DataToJson(this);
+  Map<String, dynamic> toJson() => _$DataToJson(this);
 }
+
 @JsonSerializable()
 class Translations {
   String? id;
-  String? urlKey;
-  String? metaDescription;
-  String? metaTitle;
   String? pageTitle;
-  String? metaKeywords;
-  String? htmlContent;
-  String? locale;
-  String? cmsPageId;
   String? name;
-  String? description;
-  String? localeId;
+  String? locale;
 
-  Translations(
-      {this.id,
-        this.urlKey,
-        this.metaDescription,
-        this.metaTitle,
-        this.pageTitle,
-        this.metaKeywords,
-        this.htmlContent,
-        this.locale,
-        this.cmsPageId, this.name, this.description, this.localeId});
+  Translations({
+    this.id,
+    this.locale,
+    this.name,
+    this.pageTitle,
+  });
 
   factory Translations.fromJson(Map<String, dynamic> json) =>
       _$TranslationsFromJson(json);
 
-  Map<String, dynamic> toJson() =>
-      _$TranslationsToJson(this);
+  Map<String, dynamic> toJson() => _$TranslationsToJson(this);
 }

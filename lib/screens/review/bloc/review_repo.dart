@@ -10,12 +10,10 @@
 
 // ignore_for_file: file_names, avoid_print
 
-
-import  'package:bagisto_app_demo/screens/review/utils/index.dart';
+import 'package:bagisto_app_demo/screens/review/utils/index.dart';
 
 abstract class ReviewsRepository {
   Future<ReviewModel> callReviewApi(int page);
-  Future<GraphQlBaseModel> removeReview(int productId);
 }
 
 class ReviewsRepositoryImp implements ReviewsRepository {
@@ -29,12 +27,5 @@ class ReviewsRepositoryImp implements ReviewsRepository {
       print("StackTrace --> $stacktrace");
     }
     return reviewModel!;
-  }
-
-  @override
-  Future<GraphQlBaseModel> removeReview(int productId)async{
-    GraphQlBaseModel? baseModel;
-    baseModel = await ApiClient().removeReview(productId);
-    return baseModel!;
   }
 }

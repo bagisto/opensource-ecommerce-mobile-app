@@ -8,11 +8,6 @@
  *   @link https://store.webkul.com/license.html
  */
 
-
-
-
-
-
 import 'package:bagisto_app_demo/screens/drawer/utils/index.dart';
 
 class DrawerBloc extends Bloc<DrawerEvent, DrawerPageBaseState> {
@@ -27,7 +22,7 @@ class DrawerBloc extends Bloc<DrawerEvent, DrawerPageBaseState> {
     if (event is FetchDrawerPageEvent) {
       try {
         GetDrawerCategoriesData? getDrawerCategoriesData =
-        await repository?.getDrawerCategoriesList(event.filters);
+            await repository?.getDrawerCategoriesList(event.filters);
         if (getDrawerCategoriesData?.responseStatus == true) {
           emit(FetchDrawerPageDataState.success(
               getCategoriesDrawerData: getDrawerCategoriesData));
@@ -35,24 +30,21 @@ class DrawerBloc extends Bloc<DrawerEvent, DrawerPageBaseState> {
           emit(FetchDrawerPageDataState.fail(
               error: getDrawerCategoriesData?.success));
         }
-      }
-     catch (e) {
+      } catch (e) {
         emit(FetchDrawerPageDataState.fail(
             error: StringConstants.contactAdmin.localized()));
       }
     }
     if (event is CurrencyLanguageEvent) {
       try {
-        CurrencyLanguageList? currencyLanguageList = await repository?.getLanguageCurrencyList();
-        if (currencyLanguageList?.status == true) {
-          emit(FetchLanguageCurrencyState.success(
-            currencyLanguageList: currencyLanguageList,
-          ));
-        } else {
-          emit(FetchLanguageCurrencyState.fail(error: currencyLanguageList?.success));
-        }
+        CurrencyLanguageList? currencyLanguageList =
+            await repository?.getLanguageCurrencyList();
+        emit(FetchLanguageCurrencyState.success(
+          currencyLanguageList: currencyLanguageList,
+        ));
       } catch (e) {
-        emit(FetchLanguageCurrencyState.fail(error:StringConstants.somethingWrong.localized()));
+        emit(FetchLanguageCurrencyState.fail(
+            error: StringConstants.somethingWrong.localized()));
       }
     }
   }

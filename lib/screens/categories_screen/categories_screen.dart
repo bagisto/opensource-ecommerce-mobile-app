@@ -171,12 +171,7 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
     if (state is FilterFetchState) {
       subCategoryBloc?.add(FetchSubCategoryEvent(
           filters, page));
-      if (state.status == CategoriesStatus.success) {
-        data = state.filterModel;
-      }
-      if (state.status == CategoriesStatus.fail) {
-        return ErrorMessage.errorMsg(state.error ?? "Error");
-      }
+      data = state.filterModel;
     }
     return buildHomePageUI();
   }

@@ -1,5 +1,3 @@
-
-
 /*
  *   Webkul Software.
  *   @package Mobikul Application Code.
@@ -12,100 +10,70 @@
 
 import 'package:json_annotation/json_annotation.dart';
 
-import '../screens/cms_screen/data_model/cms_model.dart';
-import 'graphql_base_model.dart';
 part 'currency_language_model.g.dart';
 
 @JsonSerializable()
-class CurrencyLanguageList extends GraphQlBaseModel {
+class CurrencyLanguageList {
   List<Locales>? locales;
-  Locales? defaultLocale;
   List<Currencies>? currencies;
   Currencies? baseCurrency;
   String? id;
-  String? code;
   String? name;
-  String? description;
-  String? theme;
-  String? hostname;
-  int? defaultLocaleId;
-  int? baseCurrencyId;
   int? rootCategoryId;
-  List<InventorySources>? inventorySources;
-  RootCategory? rootCategory;
-  String? logoUrl;
-  String? faviconUrl;
-  dynamic maintenanceModeText;
-  String? allowedIps;
-  bool? isMaintenanceOn;
 
-  CurrencyLanguageList(
-      {this.locales,
-        this.defaultLocale,
-        this.currencies,
-        this.baseCurrency,
-        this.description, this.name, this.id, this.code, this.theme, this.baseCurrencyId,
-        this.defaultLocaleId, this.faviconUrl, this.hostname, this.inventorySources, this.logoUrl,
-        this.rootCategory, this.rootCategoryId, this.allowedIps, this.isMaintenanceOn, this.maintenanceModeText
-      });
+  CurrencyLanguageList({
+    this.locales,
+    this.name,
+    this.id,
+    this.currencies,
+    this.baseCurrency,
+    this.rootCategoryId,
+  });
 
   factory CurrencyLanguageList.fromJson(Map<String, dynamic> json) =>
       _$CurrencyLanguageListFromJson(json);
 
   @override
-  Map<String, dynamic> toJson() =>
-      _$CurrencyLanguageListToJson(this);
+  Map<String, dynamic> toJson() => _$CurrencyLanguageListToJson(this);
 }
+
 @JsonSerializable()
 class Locales {
   String? id;
   String? name;
   String? code;
-  String? direction;
-  String? createdAt;
-  String? updatedAt;
 
-
-  Locales(
-      {this.id,
-        this.name,
-        this.code,
-        this.direction,
-        this.updatedAt, this.createdAt
-       });
+  Locales({
+    this.id,
+    this.name,
+    this.code,
+  });
 
   factory Locales.fromJson(Map<String, dynamic> json) =>
       _$LocalesFromJson(json);
 
-  Map<String, dynamic> toJson() =>
-      _$LocalesToJson(this);
+  Map<String, dynamic> toJson() => _$LocalesToJson(this);
 }
+
 @JsonSerializable()
 class Currencies {
   String? id;
   String? name;
   String? code;
   String? symbol;
-  String? createdAt;
-  String? updatedAt;
-  dynamic exchangeRate;
-
-
-  Currencies(
-      {this.id,
-        this.name,
-        this.code,
-        this.symbol,
-        this.updatedAt, this.createdAt, this.exchangeRate
-       });
+  Currencies({
+    this.id,
+    this.name,
+    this.code,
+  });
 
   factory Currencies.fromJson(Map<String, dynamic> json) =>
       _$CurrenciesFromJson(json);
 
-  Map<String, dynamic> toJson() =>
-      _$CurrenciesToJson(this);
+  Map<String, dynamic> toJson() => _$CurrenciesToJson(this);
 }
 
+/*
 @JsonSerializable()
 class RootCategory {
   String? id;
@@ -203,3 +171,4 @@ class InventorySources {
   Map<String, dynamic> toJson() => _$InventorySourcesToJson(this);
 }
 
+*/

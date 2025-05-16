@@ -106,7 +106,7 @@ class _SubCategoriesViewState extends State<SubCategoriesView> {
                                 crossAxisCount: 2,),
                               itemBuilder: (BuildContext context, int index) {
                                 if(widget.isPreCatching){
-                                  preCacheProductDetails(widget.categoriesData?.data?[index].urlKey ?? "");
+                                  // preCacheProductDetails(widget.categoriesData?.data?[index].urlKey ?? "");
                                 }
                                 if (index == widget.categoriesData?.data?.length) {
                                   if (widget.categoriesData?.data?.length.toString() ==
@@ -145,7 +145,7 @@ class _SubCategoriesViewState extends State<SubCategoriesView> {
                         itemCount: (widget.categoriesData?.data!.length ?? 0),
                         itemBuilder: (context, index) {
                           if(widget.isPreCatching){
-                            preCacheProductDetails(widget.categoriesData?.data?[index].urlKey ?? "");
+                            // preCacheProductDetails(widget.categoriesData?.data?[index].urlKey ?? "");
                           }
                           if (index == widget.categoriesData?.data?.length) {
                             if (widget.categoriesData?.data?.length.toString() ==

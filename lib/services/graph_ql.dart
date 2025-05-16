@@ -9,28 +9,30 @@
  */
 
 import 'dart:developer';
+
 import 'package:graphql_flutter/graphql_flutter.dart';
+
 import '../utils/app_global_data.dart';
 import '../utils/server_configuration.dart';
 import '../utils/shared_preference_helper.dart';
 
 String appDocPath = "";
 
+/*
+ * GraphQlApiCalling class is used to call graphql api and return graphql client object to call api
+ */
 class GraphQlApiCalling {
   final loggerLink = LoggerLink();
   final authLink = AuthLink(
     getToken: appStoragePref.getCustomerToken,
   );
 
-
   GraphQLClient clientToQuery() {
-    final httpLink =
-    HttpLink(baseUrl, defaultHeaders: {
+    final httpLink = HttpLink(baseUrl, defaultHeaders: {
       "Cookie": appStoragePref.getCookieGet(),
       "x-currency": GlobalData.currencyCode,
       "x-locale": GlobalData.locale
     });
-
 
     log("authLink---->${appStoragePref.getCustomerToken()}");
     log("headers ----> ${httpLink.defaultHeaders}");
@@ -43,6 +45,7 @@ class GraphQlApiCalling {
   }
 }
 
+/// LoggerLink class is used to log the graphql api request and response
 class LoggerLink extends Link {
   @override
   Stream<Response> request(Request request, [NextLink? forward]) {

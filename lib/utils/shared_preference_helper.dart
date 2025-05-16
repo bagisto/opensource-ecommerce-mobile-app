@@ -16,9 +16,14 @@ import 'package:get_storage/get_storage.dart';
 import '../data_model/account_models/account_info_details.dart';
 import '../screens/home_page/data_model/get_categories_drawer_data_model.dart';
 
+///this is file is for shared preference helper class which will help to store and retrieve data
+///from flutter shared preference using get_storage package and shared preference keys are defined
+/// in shared_preference_keys.dart file
+
 final appStoragePref = SharedPreferenceHelper();
 
 class SharedPreferenceHelper {
+  //named storage box for storing user app configuration data
   var configurationStorage = GetStorage(
       "configurationStorage"); //-----Use only for user app configuration data
 
@@ -38,7 +43,7 @@ class SharedPreferenceHelper {
     return configurationStorage.read(language) ?? defaultLanguageName;
   }
 
-  setSortName(String selectedSort)  {
+  setSortName(String selectedSort) {
     configurationStorage.write(sort, selectedSort);
   }
 
@@ -46,12 +51,13 @@ class SharedPreferenceHelper {
     return configurationStorage.read(sort) ?? "";
   }
 
-   setCurrencyLabel(String currencyLabel) {
+  setCurrencyLabel(String currencyLabel) {
     configurationStorage.write(configCurrencyLabel, currencyLabel);
   }
 
   String getCurrencyLabel() {
-    return configurationStorage.read(configCurrencyLabel) ?? defaultCurrencyName;
+    return configurationStorage.read(configCurrencyLabel) ??
+        defaultCurrencyName;
   }
 
   onUserLogout() {
@@ -70,7 +76,7 @@ class SharedPreferenceHelper {
   }
 
   bool getAddressData() {
-     return configurationStorage.read(addressData) ?? false;
+    return configurationStorage.read(addressData) ?? false;
   }
 
   setCartCount(int cartCount) {
@@ -89,7 +95,7 @@ class SharedPreferenceHelper {
     return configurationStorage.read(customerId) ?? 0;
   }
 
-    setCustomerToken(String customerTokenValue) {
+  setCustomerToken(String customerTokenValue) {
     configurationStorage.write(customerToken, customerTokenValue);
   }
 
@@ -181,15 +187,15 @@ class SharedPreferenceHelper {
     configurationStorage.write(configCurrencyCode, currencyCode);
   }
 
-   String getCurrencyCode() {
-     return configurationStorage.read(configCurrencyCode) ?? defaultCurrencyCode;
+  String getCurrencyCode() {
+    return configurationStorage.read(configCurrencyCode) ?? defaultCurrencyCode;
   }
 
-  AccountInfoDetails? getCustomerDetails() {
+  AccountInfoModel? getCustomerDetails() {
     return configurationStorage.read(customerDetails);
   }
 
-   setCustomerDetails(AccountInfoModel? details) {
+  setCustomerDetails(AccountInfoModel? details) {
     return configurationStorage.write(customerDetails, details);
   }
 
@@ -198,6 +204,12 @@ class SharedPreferenceHelper {
   }
 
   GetDrawerCategoriesData? getDrawerCategories() {
-    return configurationStorage.read(drawerCatData);
+    var data = configurationStorage.read(drawerCatData);
+    if(data is GetDrawerCategoriesData){
+      return data;
+    }
+    GetDrawerCategoriesData? drawerData =
+        GetDrawerCategoriesData.fromJson(data ?? {});
+    return drawerData;
   }
 }

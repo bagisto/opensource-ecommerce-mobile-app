@@ -1,4 +1,3 @@
-
 /*
  *   Webkul Software.
  *   @package Mobikul Application Code.
@@ -10,11 +9,14 @@
  */
 
 import 'dart:async';
+
 import '../data_model/currency_language_model.dart';
 import '../screens/cms_screen/data_model/cms_model.dart';
 import '../screens/home_page/data_model/get_categories_drawer_data_model.dart';
 import '../screens/home_page/data_model/new_product_data.dart';
 import 'server_configuration.dart';
+
+/// Global Data class to store global data throughout the application like currency, language, cookie, etc. and stream controllers.
 
 class GlobalData {
   static CurrencyLanguageList? languageData;
@@ -26,10 +28,11 @@ class GlobalData {
   static CmsData? cmsData;
   static GetDrawerCategoriesData? categoriesDrawerData;
 
-  static final StreamController cartCountController = StreamController<int>.broadcast();
+  static final StreamController cartCountController =
+      StreamController<int>.broadcast();
 
-  static StreamController<NewProductsModel?> productsStream = StreamController<NewProductsModel?>.broadcast();
+  static StreamController<NewProductsModel?> productsStream =
+      StreamController<NewProductsModel?>.broadcast();
 
   static List<NewProductsModel?>? allProducts = [];
-
 }

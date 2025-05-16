@@ -21,11 +21,14 @@ class SignInModel extends BaseModel {
     this.token,
     // required this.message,
     this.data,
+    this.tokenType
   });
 
   // String?error;
   @JsonKey(name:'accessToken')
   String? token;
+
+  String? tokenType;
 
   // late final String message;
   @JsonKey(name: 'customer')
@@ -52,7 +55,7 @@ class Data {
     this.group,
     this.createdAt,
     this.updatedAt,
-    this.imageUrl
+    this.imageUrl,
   });
 
   String? id;

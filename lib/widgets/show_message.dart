@@ -8,7 +8,6 @@
  *   @link https://store.webkul.com/license.html
  */
 
-
 import 'package:bagisto_app_demo/utils/application_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:overlay_support/overlay_support.dart';
@@ -17,19 +16,32 @@ import '../utils/string_constants.dart';
 
 class ShowMessage {
   static successNotification(String msg, BuildContext context) {
-    return showSimpleNotification(Text(StringConstants.success.localized(),
-      style: const TextStyle(fontSize: 16.0,fontWeight: FontWeight.bold,color: Colors.white),),
+    return showSimpleNotification(
+        Text(
+          StringConstants.success.localized(),
+          style: const TextStyle(
+              fontSize: 16.0, fontWeight: FontWeight.bold, color: Colors.white),
+        ),
         context: context,
-        background: const Color.fromRGBO(140, 194, 74, 5),
+        background: Colors.green.shade400,
         leading: const Icon(
           Icons.check_circle_outline,
           color: Colors.white,
         ),
         slideDismissDirection: DismissDirection.up,
-        subtitle: Text(msg,style: const TextStyle(color: Colors.white),));
+        subtitle: Text(
+          msg,
+          style: const TextStyle(color: Colors.white),
+        ));
   }
+
   static errorNotification(String msg, BuildContext context) {
-    return showSimpleNotification(Text(StringConstants.failed.localized(), style: const TextStyle(fontSize: 16.0,fontWeight: FontWeight.bold,color: Colors.white)),
+    return showSimpleNotification(
+        Text(StringConstants.failed.localized(),
+            style: const TextStyle(
+                fontSize: 16.0,
+                fontWeight: FontWeight.bold,
+                color: Colors.white)),
         context: context,
         background: Colors.red,
         leading: const Icon(
@@ -37,10 +49,20 @@ class ShowMessage {
           color: Colors.white,
         ),
         slideDismissDirection: DismissDirection.up,
-        subtitle: Text(msg,style: const TextStyle(color: Colors.white),));
+        subtitle: Text(
+          msg,
+          style: const TextStyle(color: Colors.white),
+        ));
   }
-  static warningNotification(String msg, BuildContext context, {String? title}) {
-    return showSimpleNotification(Text(title ?? StringConstants.warning.localized(),style: const TextStyle(fontSize: 16.0,fontWeight: FontWeight.bold,color: Colors.white)),
+
+  static warningNotification(String msg, BuildContext context,
+      {String? title}) {
+    return showSimpleNotification(
+        Text(title ?? StringConstants.warning.localized(),
+            style: const TextStyle(
+                fontSize: 16.0,
+                fontWeight: FontWeight.bold,
+                color: Colors.white)),
         context: context,
         background: Colors.amber,
         leading: const Icon(
@@ -48,7 +70,10 @@ class ShowMessage {
           color: Colors.white,
         ),
         slideDismissDirection: DismissDirection.up,
-        subtitle: Text(msg,style: const TextStyle(color: Colors.white),));
+        subtitle: Text(
+          msg,
+          style: const TextStyle(color: Colors.white),
+        ));
   }
 
   static showNotification(

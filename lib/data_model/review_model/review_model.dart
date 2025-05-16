@@ -12,10 +12,11 @@
 
 import 'package:bagisto_app_demo/data_model/graphql_base_model.dart';
 import 'package:json_annotation/json_annotation.dart';
+
 part 'review_model.g.dart';
 
 @JsonSerializable()
-class ReviewModel extends GraphQlBaseModel {
+class ReviewModel extends BaseModel {
   PaginatorInfo? paginatorInfo;
   List<ReviewData>? data;
 
@@ -27,22 +28,21 @@ class ReviewModel extends GraphQlBaseModel {
   @override
   Map<String, dynamic> toJson() => _$ReviewModelToJson(this);
 }
+
 @JsonSerializable()
-class PaginatorInfo{
-  int?  count;
+class PaginatorInfo {
+  int? count;
   int? currentPage;
   int? lastPage;
   int? total;
 
-
-  PaginatorInfo({this.count,this.currentPage,this.lastPage,this.total});
+  PaginatorInfo({this.count, this.currentPage, this.lastPage, this.total});
   factory PaginatorInfo.fromJson(Map<String, dynamic> json) =>
       _$PaginatorInfoFromJson(json);
 
-  Map<String, dynamic> toJson() =>
-      _$PaginatorInfoToJson(this);
-
+  Map<String, dynamic> toJson() => _$PaginatorInfoToJson(this);
 }
+
 @JsonSerializable()
 class ReviewData {
   String? id;
@@ -75,6 +75,7 @@ class ReviewData {
 
   Map<String, dynamic> toJson() => _$ReviewDataToJson(this);
 }
+
 @JsonSerializable()
 class Customer {
   String? id;
@@ -83,14 +84,14 @@ class Customer {
   String? name;
   String? gender;
   String? email;
-  Customer(
-      {this.id,
-        this.firstName,
-        this.lastName,
-        this.name,
-        this.gender,
-        this.email,
-        });
+  Customer({
+    this.id,
+    this.firstName,
+    this.lastName,
+    this.name,
+    this.gender,
+    this.email,
+  });
   factory Customer.fromJson(Map<String, dynamic> json) =>
       _$CustomerFromJson(json);
 
@@ -117,7 +118,10 @@ class ProductData {
       this.sku,
       this.createdAt,
       this.updatedAt,
-      this.productFlats, this.urlKey, this.images, this.name});
+      this.productFlats,
+      this.urlKey,
+      this.images,
+      this.name});
 
   factory ProductData.fromJson(Map<String, dynamic> json) =>
       _$ProductDataFromJson(json);

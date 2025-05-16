@@ -16,7 +16,7 @@ import 'package:json_annotation/json_annotation.dart';
 part 'signup_model.g.dart';
 
 @JsonSerializable()
-class SignUpResponseModel extends GraphQlBaseModel{
+class SignUpResponseModel extends BaseModel{
   String? token;
   Data? data;
   // dynamic error;

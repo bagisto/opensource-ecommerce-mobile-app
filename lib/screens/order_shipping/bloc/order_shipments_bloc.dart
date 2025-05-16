@@ -8,10 +8,10 @@
  *   @link https://store.webkul.com/license.html
  */
 
-
 import 'package:bagisto_app_demo/screens/order_shipping/utils/index.dart';
 
-class OrderShipmentsBloc extends Bloc<OrderShipmentsBaseEvent, OrderShipmentsBaseState> {
+class OrderShipmentsBloc
+    extends Bloc<OrderShipmentsBaseEvent, OrderShipmentsBaseState> {
   OrderShipmentsRepositoryImp? repository;
   BuildContext? context;
 
@@ -20,19 +20,15 @@ class OrderShipmentsBloc extends Bloc<OrderShipmentsBaseEvent, OrderShipmentsBas
     on<OrderShipmentsBaseEvent>(mapEventToState);
   }
 
-  void mapEventToState(
-      OrderShipmentsBaseEvent event, Emitter<OrderShipmentsBaseState> emit) async {
+  void mapEventToState(OrderShipmentsBaseEvent event,
+      Emitter<OrderShipmentsBaseState> emit) async {
     if (event is OrderShipmentsFetchDataEvent) {
       try {
         ShipmentModel shipmentData =
-        await repository!.getShipmentsList(event.orderId);
-        if (shipmentData.status == true) {
-          emit(
-            OrderShipmentsListDataState.success(shipmentData: shipmentData),
-          );
-        } else {
-          emit(OrderShipmentsListDataState.fail(error: shipmentData.success));
-        }
+            await repository!.getShipmentsList(event.orderId);
+        emit(
+          OrderShipmentsListDataState.success(shipmentData: shipmentData),
+        );
       } catch (e) {
         emit(OrderShipmentsListDataState.fail(error: e.toString()));
       }

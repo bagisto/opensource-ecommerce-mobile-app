@@ -8,6 +8,10 @@
  *   @link https://store.webkul.com/license.html
  */
 
+/**
+ * this file contains the keys of shared preferences
+ */
+
 /// Configuration Shared Preference Keys
 const String configCurrencyCode = "configCurrencyCode";
 const String configCurrencySymbol = "configCurrencySymbol";

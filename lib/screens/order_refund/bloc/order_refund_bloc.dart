@@ -8,8 +8,6 @@
  *   @link https://store.webkul.com/license.html
  */
 
-
-
 import 'package:bagisto_app_demo/screens/order_refund/utils/index.dart';
 
 class OrderRefundBloc extends Bloc<OrderRefundBaseEvent, OrderRefundBaseState> {
@@ -26,14 +24,10 @@ class OrderRefundBloc extends Bloc<OrderRefundBaseEvent, OrderRefundBaseState> {
     if (event is OrderRefundFetchDataEvent) {
       try {
         OrderRefundModel refundData =
-        await repository!.getRefundList(event.orderId);
-        if (refundData.status == true) {
-          emit(
-            OrderRefundListDataState.success(refundData: refundData),
-          );
-        } else {
-          emit(OrderRefundListDataState.fail(error: refundData.success));
-        }
+            await repository!.getRefundList(event.orderId);
+        emit(
+          OrderRefundListDataState.success(refundData: refundData),
+        );
       } catch (e) {
         emit(OrderRefundListDataState.fail(error: e.toString()));
       }

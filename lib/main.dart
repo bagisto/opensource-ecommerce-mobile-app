@@ -11,30 +11,22 @@
 // must_be_immutable, void_checks
 
 import 'dart:io';
+
 import 'package:bagisto_app_demo/screens/home_page/data_model/get_categories_drawer_data_model.dart';
-import 'package:bagisto_app_demo/screens/home_page/data_model/new_product_data.dart';
 import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
-import 'package:bagisto_app_demo/utils/app_global_data.dart';
 import 'package:bagisto_app_demo/utils/app_navigation.dart';
-import 'package:bagisto_app_demo/utils/application_localization.dart';
-import 'package:bagisto_app_demo/utils/mobikul_theme.dart';
 import 'package:bagisto_app_demo/utils/push_notifications_manager.dart';
-import 'package:bagisto_app_demo/utils/route_constants.dart';
-import 'package:bagisto_app_demo/utils/server_configuration.dart';
-import 'package:bagisto_app_demo/utils/shared_preference_helper.dart';
 import 'package:bagisto_app_demo/utils/theme_provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:overlay_support/overlay_support.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+
 import 'data_model/product_model/product_screen_model.dart';
 
 String? token;
@@ -91,10 +83,13 @@ Future<void> hiveRegisterAdapter() async {
   Hive.registerAdapter(GetDrawerCategoriesDataAdapter());
 }
 
+// restarts the widget by taking a child widget to draw and assign unique key to be associated with it
 class RestartWidget extends StatefulWidget {
   const RestartWidget({Key? key, required this.child}) : super(key: key);
   final Widget child;
+
   static restartApp(BuildContext context) {
+    //find the current this state object and calls the [restartApp] function to restart the whole app
     context.findAncestorStateOfType<_RestartWidgetState>()?.restartApp();
   }
 
@@ -121,9 +116,13 @@ class _RestartWidgetState extends State<RestartWidget> {
   }
 }
 
+/// BagistoApp class is the main class of the application. It is responsible for
+/// initializing the app,setting up the theme, routes, and localization settings.
 class BagistoApp extends StatefulWidget {
   const BagistoApp(
-    this.selectedLanguage, {Key? key,}) : super(key: key);
+    this.selectedLanguage, {
+    Key? key,
+  }) : super(key: key);
 
   final String? selectedLanguage;
   @override
@@ -134,6 +133,7 @@ class _BagistoAppState extends State<BagistoApp> {
   Locale? _locale;
   String appRoot = splash;
 
+  /// Initialize the app with default values like language, currency, currency symbol
   @override
   void initState() {
     GlobalData.locale = appStoragePref.getCustomerLanguage();
@@ -144,7 +144,9 @@ class _BagistoAppState extends State<BagistoApp> {
     notification();
     super.initState();
   }
-  Future<void> notification()async{
+
+  // Permission for notification
+  Future<void> notification() async {
     await Permission.notification.isDenied.then((value) {
       if (value) {
         Permission.notification.request();
@@ -152,7 +154,12 @@ class _BagistoAppState extends State<BagistoApp> {
     });
   }
 
-
+  /// Builds the MaterialApp widget with the specified theme, routes, and localization settings.
+  /// Returns a ChangeNotifierProvider that provides a ThemeProvider to the widget tree. The
+  /// ThemeProvider is used to manage the theme of the app. The MaterialApp widget is wrapped
+  /// in an OverlaySupport widget to enable overlay notifications. The supportedLocales property
+  /// specifies the locales that the app supports. The localeResolutionCallback property is used
+  /// to resolve the locale based on the user's preferred locale. The locale property specifies the current locale of the app.
   @override
   Widget build(BuildContext context) {
     return OverlaySupport.global(
@@ -192,6 +199,7 @@ class _BagistoAppState extends State<BagistoApp> {
   }
 }
 
+/// HttpOverrides class to bypass SSL certificate verification for HTTPS requests to localhost. This is useful for testing purposes when using a local server.
 class MyHttpOverrides extends HttpOverrides {
   @override
   HttpClient createHttpClient(SecurityContext? context) {

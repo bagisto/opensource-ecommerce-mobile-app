@@ -8,9 +8,6 @@
  *   @link https://store.webkul.com/license.html
  */
 
-
-
-
 import 'package:bagisto_app_demo/screens/checkout/utils/index.dart';
 
 // ignore: must_be_immutable
@@ -84,8 +81,7 @@ class _GuestAddAddressFormState extends State<GuestAddAddressForm>
   Widget build(BuildContext context) {
     return ScaffoldMessenger(
       key: scaffoldMessengerKey,
-      child: Scaffold(
-          body: _guestAddressBloc(context)),
+      child: Scaffold(body: _guestAddressBloc(context)),
     );
   }
 
@@ -138,8 +134,9 @@ class _GuestAddAddressFormState extends State<GuestAddAddressForm>
         child: Stack(
           children: [
             Container(
-              padding:
-                  const EdgeInsets.symmetric(vertical: AppSizes.spacingNormal, horizontal:AppSizes.spacingMedium),
+              padding: const EdgeInsets.symmetric(
+                  vertical: AppSizes.spacingNormal,
+                  horizontal: AppSizes.spacingMedium),
               child: Form(
                 key: _formKey,
                 autovalidateMode: _autoValidate
@@ -152,8 +149,9 @@ class _GuestAddAddressFormState extends State<GuestAddAddressForm>
                     CommonWidgets().getTextField(context, firstNameController,
                         StringConstants.firstNameHint.localized(),
                         label: StringConstants.firstNameLabel.localized(),
-                        validLabel: StringConstants.pleaseFillLabel.localized() +
-                            StringConstants.firstNameLabel.localized(),
+                        validLabel:
+                            StringConstants.pleaseFillLabel.localized() +
+                                StringConstants.firstNameLabel.localized(),
                         isRequired: true, validator: (name) {
                       if ((name ?? "").isEmpty) {
                         return StringConstants.pleaseFillLabel.localized() +
@@ -162,13 +160,12 @@ class _GuestAddAddressFormState extends State<GuestAddAddressForm>
                       return null;
                     }, emailValue: billingAddress?.firstName),
                     const SizedBox(height: AppSizes.spacingWide),
-                    CommonWidgets().getTextField(
-                        context,
-                        lastNameController,
+                    CommonWidgets().getTextField(context, lastNameController,
                         StringConstants.lastNameHint.localized(),
                         label: StringConstants.lastNameLabel.localized(),
-                        validLabel: StringConstants.pleaseFillLabel.localized() +
-                            StringConstants.lastNameLabel.localized(),
+                        validLabel:
+                            StringConstants.pleaseFillLabel.localized() +
+                                StringConstants.lastNameLabel.localized(),
                         isRequired: true, validator: (lastName) {
                       if ((lastName ?? "").isEmpty) {
                         return StringConstants.pleaseFillLabel.localized() +
@@ -177,32 +174,28 @@ class _GuestAddAddressFormState extends State<GuestAddAddressForm>
                       return null;
                     }, emailValue: billingAddress?.lastName),
                     const SizedBox(height: AppSizes.spacingWide),
-                    CommonWidgets().getTextField(
-                      context,
-                      emailController,
-                      StringConstants.signInEmailHint.localized(),
-                      label: StringConstants.signInEmailLabel.localized(),
-                        validLabel: StringConstants.pleaseFillLabel.localized() +
-                            StringConstants.signInEmailLabel.localized(),
-                      isRequired: true,
-                      validator: (email) {
-                        if (email!.isEmpty) {
-                          return StringConstants.pleaseFillLabel.localized() +
-                              StringConstants.signInEmailLabel.localized();
-                        } else if (!isValidEmail(email)) {
-                          return StringConstants.signInEmailLabel.localized();
-                        }
-                        return null;
+                    CommonWidgets().getTextField(context, emailController,
+                        StringConstants.signInEmailHint.localized(),
+                        label: StringConstants.signInEmailLabel.localized(),
+                        validLabel:
+                            StringConstants.pleaseFillLabel.localized() +
+                                StringConstants.signInEmailLabel.localized(),
+                        isRequired: true, validator: (email) {
+                      if (email!.isEmpty) {
+                        return StringConstants.pleaseFillLabel.localized() +
+                            StringConstants.signInEmailLabel.localized();
+                      } else if (!isValidEmail(email)) {
+                        return StringConstants.signInEmailLabel.localized();
                       }
-                    ),
+                      return null;
+                    }),
                     const SizedBox(height: AppSizes.spacingWide),
-                    CommonWidgets().getTextField(
-                        context,
-                        companyController,
+                    CommonWidgets().getTextField(context, companyController,
                         StringConstants.companyNameHint.localized(),
                         label: StringConstants.companyNameLabel.localized(),
-                        validLabel: StringConstants.pleaseFillLabel.localized() +
-                            StringConstants.companyNameLabel.localized(),
+                        validLabel:
+                            StringConstants.pleaseFillLabel.localized() +
+                                StringConstants.companyNameLabel.localized(),
                         isRequired: true, validator: (companyName) {
                       if (companyName!.isEmpty) {
                         return StringConstants.pleaseFillLabel.localized() +
@@ -211,13 +204,12 @@ class _GuestAddAddressFormState extends State<GuestAddAddressForm>
                       return null;
                     }, emailValue: billingAddress?.companyName),
                     const SizedBox(height: AppSizes.spacingWide),
-                    CommonWidgets().getTextField(
-                        context,
-                        phoneController,
+                    CommonWidgets().getTextField(context, phoneController,
                         StringConstants.contactUsPhoneHint.localized(),
                         label: StringConstants.contactUsPhoneLabel.localized(),
-                        validLabel: StringConstants.pleaseFillLabel.localized() +
-                            StringConstants.contactUsPhoneLabel.localized(),
+                        validLabel:
+                            StringConstants.pleaseFillLabel.localized() +
+                                StringConstants.contactUsPhoneLabel.localized(),
                         isRequired: true,
                         keyboardType: TextInputType.phone, validator: (phone) {
                       if ((phone ?? "").isEmpty) {
@@ -235,7 +227,8 @@ class _GuestAddAddressFormState extends State<GuestAddAddressForm>
                       StringConstants.streetHint.localized(),
                       label: StringConstants.streetLabel.localized(),
                       isRequired: true,
-                      validLabel: StringConstants.pleaseFillLabel.localized() + StringConstants.streetLabel.localized(),
+                      validLabel: StringConstants.pleaseFillLabel.localized() +
+                          StringConstants.streetLabel.localized(),
                       validator: (street1) {
                         if ((street1 ?? "").isEmpty) {
                           return StringConstants.pleaseFillLabel.localized() +
@@ -245,12 +238,12 @@ class _GuestAddAddressFormState extends State<GuestAddAddressForm>
                       },
                     ),
                     const SizedBox(height: AppSizes.spacingWide),
-                    CommonWidgets().getTextField(
-                        context,
-                        zipCodeController,
+                    CommonWidgets().getTextField(context, zipCodeController,
                         StringConstants.zipHint.localized(),
                         label: StringConstants.zipLabel.localized(),
-                        validLabel: StringConstants.pleaseFillLabel.localized() + StringConstants.zipLabel.localized(),
+                        validLabel:
+                            StringConstants.pleaseFillLabel.localized() +
+                                StringConstants.zipLabel.localized(),
                         keyboardType: TextInputType.number,
                         isRequired: true, validator: (zipCode) {
                       if (zipCode!.isEmpty) {
@@ -287,12 +280,14 @@ class _GuestAddAddressFormState extends State<GuestAddAddressForm>
                             stateNameController,
                             StringConstants.stateHint.localized(),
                             label: StringConstants.stateLabel.localized(),
-                            validLabel: StringConstants.pleaseFillLabel.localized() +
-                                StringConstants.stateLabel.localized(),
+                            validLabel:
+                                StringConstants.pleaseFillLabel.localized() +
+                                    StringConstants.stateLabel.localized(),
                             isRequired: true,
                             validator: (cityName) {
                               if ((cityName ?? "").isEmpty) {
-                                return StringConstants.pleaseFillLabel.localized() +
+                                return StringConstants.pleaseFillLabel
+                                        .localized() +
                                     StringConstants.stateLabel.localized();
                               }
                               return null;
@@ -304,7 +299,8 @@ class _GuestAddAddressFormState extends State<GuestAddAddressForm>
                       cityController,
                       StringConstants.cityHint.localized(),
                       label: StringConstants.cityLabel.localized(),
-                      validLabel: StringConstants.pleaseFillLabel.localized() + StringConstants.cityLabel.localized(),
+                      validLabel: StringConstants.pleaseFillLabel.localized() +
+                          StringConstants.cityLabel.localized(),
                       isRequired: true,
                       validator: (cityName) {
                         if ((cityName ?? "").isEmpty) {
@@ -317,8 +313,8 @@ class _GuestAddAddressFormState extends State<GuestAddAddressForm>
                     const SizedBox(height: AppSizes.spacingWide),
                     MaterialButton(
                       shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                          ),
+                        borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                      ),
                       elevation: 0.0,
                       height: AppSizes.buttonHeight,
                       minWidth: MediaQuery.of(context).size.width,
@@ -328,7 +324,11 @@ class _GuestAddAddressFormState extends State<GuestAddAddressForm>
                       },
                       child: Text(
                         StringConstants.saveAddress.localized().toUpperCase(),
-                        style: TextStyle(fontSize: AppSizes.spacingLarge, color: Theme.of(context).colorScheme.secondaryContainer),
+                        style: TextStyle(
+                            fontSize: AppSizes.spacingLarge,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .secondaryContainer),
                       ),
                     ),
                     const SizedBox(height: AppSizes.spacingMedium),
@@ -450,7 +450,7 @@ class _GuestAddAddressFormState extends State<GuestAddAddressForm>
         ShowMessage.showNotification(
             StringConstants.success.localized(),
             StringConstants.addressAdded.localized(),
-            const Color.fromRGBO(140, 194, 74, 5),
+            Colors.green.shade400,
             const Icon(Icons.check_circle_outline));
       });
     }

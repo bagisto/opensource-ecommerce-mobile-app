@@ -8,16 +8,16 @@
  *   @link https://store.webkul.com/license.html
  */
 
-import 'package:bagisto_app_demo/screens/account/utils/index.dart';
 import 'package:bagisto_app_demo/screens/order_detail/utils/index.dart';
 import 'package:bagisto_app_demo/screens/order_detail/widgets/shipping_payment_info.dart';
 
+import '../../../utils/extension.dart';
 
 class OrderDetailTile extends StatelessWidget with OrderStatusBGColorHelper {
- final  OrderDetail? orderDetailModel;
- final int? orderId;
- final OrderDetailBloc? orderDetailBloc;
- final bool? isLoading;
+  final OrderDetail? orderDetailModel;
+  final int? orderId;
+  final OrderDetailBloc? orderDetailBloc;
+  final bool? isLoading;
 
   OrderDetailTile(
       {this.orderDetailModel,
@@ -71,7 +71,10 @@ class OrderDetailTile extends StatelessWidget with OrderStatusBGColorHelper {
                               StringConstants.orderWithHash.localized() +
                                   (orderDetailModel?.incrementId ?? ""),
                               style: Theme.of(context).textTheme.headlineSmall),
-                          orderDetailModel?.status?.toLowerCase() == StringConstants.pending.localized().toLowerCase()
+                          orderDetailModel?.status?.toLowerCase() ==
+                                  StringConstants.pending
+                                      .localized()
+                                      .toLowerCase()
                               ? ElevatedButton(
                                   style: ButtonStyle(
                                     minimumSize: MaterialStateProperty.all(
@@ -219,25 +222,33 @@ class OrderDetailTile extends StatelessWidget with OrderStatusBGColorHelper {
                           Text(orderDetailModel?.items?.length.toString() ?? "",
                               style: Theme.of(context).textTheme.labelLarge),
                           const SizedBox(height: AppSizes.spacingSmall),
-                          Text(StringConstants.itemOrdered.localized().toUpperCase(),
+                          Text(
+                              StringConstants.itemOrdered
+                                  .localized()
+                                  .toUpperCase(),
                               style: Theme.of(context).textTheme.labelLarge),
                           const Spacer(),
-                          if (orderDetailModel?.items?.any((item) => item.type == 'bundle') != true)
+                          if (orderDetailModel?.items
+                                  ?.any((item) => item.type == 'bundle') !=
+                              true)
                             GestureDetector(
-                            onTap: () {
-                              orderDetailBloc?.add(ReOrderEvent(orderDetailModel?.id.toString()));
-                            },
-                            child: Container(
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                    color: Theme.of(context).colorScheme.onPrimary
-                                )
-                              ),
-                              padding: const EdgeInsets.all(AppSizes.spacingWide/2),
-                              child: Text(StringConstants.reOrder.localized(),
+                              onTap: () {
+                                orderDetailBloc?.add(ReOrderEvent(
+                                    orderDetailModel?.id.toString()));
+                              },
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    border: Border.all(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onPrimary)),
+                                padding: const EdgeInsets.all(
+                                    AppSizes.spacingWide / 2),
+                                child: Text(
+                                  StringConstants.reOrder.localized(),
+                                ),
                               ),
                             ),
-                          ),
                         ],
                       ),
                       const SizedBox(height: AppSizes.spacingNormal),
@@ -422,33 +433,47 @@ class OrderDetailTile extends StatelessWidget with OrderStatusBGColorHelper {
                                           ),
                                           const SizedBox(
                                               height: AppSizes.spacingMedium),
-                                          ...?orderDetailModel?.items![itemIndex].additional?.attributes?.map((item) => Column(
-                                            children: [
-                                              Row(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                mainAxisAlignment: MainAxisAlignment.start,
-                                                children: [
-                                                  Expanded(
-                                                    flex: 1,
-                                                    child: Text(
-                                                      item.attributeName ?? "",
-                                                      style: const TextStyle(
-                                                        fontWeight: FontWeight.bold,
+                                          ...?getAttributesValueFromAdditional(
+                                                  orderDetailModel
+                                                      ?.items![itemIndex]
+                                                      .additional)
+                                              ?.map((item) => Column(
+                                                    children: [
+                                                      Row(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Expanded(
+                                                            flex: 1,
+                                                            child: Text(
+                                                              item['attribute_name'] ??
+                                                                  "",
+                                                              style:
+                                                                  const TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          Expanded(
+                                                            flex: 2,
+                                                            child: Text(
+                                                              item["option_label"] ??
+                                                                  "",
+                                                            ),
+                                                          ),
+                                                        ],
                                                       ),
-                                                    ),
-                                                  ),
-                                                  Expanded(
-                                                    flex: 2,
-                                                    child: Text(
-                                                      item.optionLabel ?? "",
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              const SizedBox(
-                                                  height: AppSizes.spacingMedium),
-                                            ],
-                                          ))
+                                                      const SizedBox(
+                                                          height: AppSizes
+                                                              .spacingMedium),
+                                                    ],
+                                                  ))
                                         ],
                                       ),
                                     ),
@@ -534,25 +559,29 @@ class OrderDetailTile extends StatelessWidget with OrderStatusBGColorHelper {
                             ],
                           ),
                         ),
-                        orderDetailModel?.formattedPrice
-                            ?.discountAmount != "\$0.00"?Container(
-                          padding: const EdgeInsets.all(AppSizes.spacingSmall),
-                          // color: Colors.white,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              CommonWidgets().getDrawerTileText(
-                                  StringConstants.discount.localized(),
-                                  context),
-                              CommonWidgets().getDrawerTileText(
-                                  orderDetailModel?.formattedPrice
-                                          ?.discountAmount ??
-                                      "",
-                                  context),
-                            ],
-                          ),
-                        ): const SizedBox.shrink(),
+                        orderDetailModel?.formattedPrice?.discountAmount !=
+                                "\$0.00"
+                            ? Container(
+                                padding:
+                                    const EdgeInsets.all(AppSizes.spacingSmall),
+                                // color: Colors.white,
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    CommonWidgets().getDrawerTileText(
+                                        StringConstants.discount.localized(),
+                                        context),
+                                    CommonWidgets().getDrawerTileText(
+                                        orderDetailModel?.formattedPrice
+                                                ?.discountAmount ??
+                                            "",
+                                        context),
+                                  ],
+                                ),
+                              )
+                            : const SizedBox.shrink(),
                         Container(
                           padding: const EdgeInsets.all(AppSizes.spacingSmall),
                           // color: Colors.white,
@@ -576,28 +605,31 @@ class OrderDetailTile extends StatelessWidget with OrderStatusBGColorHelper {
                   ),
                 ),
                 const SizedBox(height: AppSizes.spacingNormal),
-                if((orderDetailModel?.items ?? []).isNotEmpty &&
-                    orderDetailModel?.items?[0].qtyInvoiced !=0 )
-                  shipmentInvoiceDetails(StringConstants.invoiceDetails, invoiceDetails, orderDetailModel,context),
-                if((orderDetailModel?.items ?? []).isNotEmpty &&
-                    orderDetailModel?.items?[0].qtyShipped !=0 )
+                if ((orderDetailModel?.items ?? []).isNotEmpty &&
+                    orderDetailModel?.items?[0].qtyInvoiced != 0)
+                  shipmentInvoiceDetails(StringConstants.invoiceDetails,
+                      invoiceDetails, orderDetailModel, context),
+                if ((orderDetailModel?.items ?? []).isNotEmpty &&
+                    orderDetailModel?.items?[0].qtyShipped != 0)
+                  const SizedBox(height: AppSizes.spacingNormal),
+                if ((orderDetailModel?.items ?? []).isNotEmpty &&
+                    orderDetailModel?.items?[0].qtyShipped != 0)
+                  shipmentInvoiceDetails(StringConstants.shipmentDetails,
+                      shipmentDetails, orderDetailModel, context),
+                if ((orderDetailModel?.items ?? []).isNotEmpty &&
+                    orderDetailModel?.items?[0].qtyRefunded != 0)
+                  const SizedBox(height: AppSizes.spacingNormal),
+                if ((orderDetailModel?.items ?? []).isNotEmpty &&
+                    orderDetailModel?.items?[0].qtyRefunded != 0)
+                  shipmentInvoiceDetails(StringConstants.refundDetails,
+                      refundDetails, orderDetailModel, context),
                 const SizedBox(height: AppSizes.spacingNormal),
-                if((orderDetailModel?.items ?? []).isNotEmpty &&
-                    orderDetailModel?.items?[0].qtyShipped !=0 )
-                  shipmentInvoiceDetails(StringConstants.shipmentDetails, shipmentDetails, orderDetailModel,context),
-
-                  if((orderDetailModel?.items ?? []).isNotEmpty &&
-                    orderDetailModel?.items?[0].qtyRefunded !=0 )
-                const SizedBox(height: AppSizes.spacingNormal),
-                if((orderDetailModel?.items ?? []).isNotEmpty &&
-                    orderDetailModel?.items?[0].qtyRefunded !=0 )
-                  shipmentInvoiceDetails(StringConstants.refundDetails, refundDetails, orderDetailModel,context),
-
-                const SizedBox(height: AppSizes.spacingNormal),
-                 Padding(
-                   padding: const EdgeInsets.all(AppSizes.spacingNormal),
-                   child: ShippingAndPaymentInfo(orderDetailModel: orderDetailModel,),
-                 ),
+                Padding(
+                  padding: const EdgeInsets.all(AppSizes.spacingNormal),
+                  child: ShippingAndPaymentInfo(
+                    orderDetailModel: orderDetailModel,
+                  ),
+                ),
               ],
             ),
           ),
@@ -614,25 +646,31 @@ class OrderDetailTile extends StatelessWidget with OrderStatusBGColorHelper {
     }
   }
 
- shipmentInvoiceDetails(String title, String route, OrderDetail? argument,BuildContext context) {
-   return InkWell(
-     child: Container(
-       margin: const EdgeInsets.symmetric(horizontal: AppSizes.spacingNormal,vertical: 5.0),
-       alignment: Alignment.center,
-       height: AppSizes.buttonHeight,
-       padding: const EdgeInsets.symmetric(horizontal: AppSizes.spacingNormal,),
-       decoration:  BoxDecoration(
-         color: Theme.of(context).colorScheme.onBackground,
-         borderRadius: BorderRadius.circular(4),
-       ),
-       child: Text(title.localized().toUpperCase(), style: Theme.of(context).textTheme.titleLarge?.copyWith(
-           fontWeight: FontWeight.normal, color:Theme.of(context).colorScheme.background
-       ),),
-     ),
-     onTap: (){
-       Navigator.pushNamed(context, route, arguments: argument);
-     },
-   );
- }
-
+  shipmentInvoiceDetails(
+      String title, String route, OrderDetail? argument, BuildContext context) {
+    return InkWell(
+      child: Container(
+        margin: const EdgeInsets.symmetric(
+            horizontal: AppSizes.spacingNormal, vertical: 5.0),
+        alignment: Alignment.center,
+        height: AppSizes.buttonHeight,
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSizes.spacingNormal,
+        ),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.onBackground,
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Text(
+          title.localized().toUpperCase(),
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.normal,
+              color: Theme.of(context).colorScheme.background),
+        ),
+      ),
+      onTap: () {
+        Navigator.pushNamed(context, route, arguments: argument);
+      },
+    );
+  }
 }

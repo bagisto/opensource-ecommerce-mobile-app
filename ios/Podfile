@@ -1,7 +1,6 @@
 # Uncomment this line to define a global platform for your project
-platform :ios, '14.0'
+platform :ios, '16.0' # Updated to a higher deployment target
 
-# CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 
 project 'Runner', {
@@ -41,22 +40,9 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
-        target.build_configurations.each do |config|
-        config_path = config.base_configuration_reference.real_path
-        config = File.read(config_path)
-        config_mod = config.gsub(/DT_TOOLCHAIN_DIR/, "TOOLCHAIN_DIR")
-        File.open(config_path, "w") { |file| file << config_mod }
-        end
-        target.build_configurations.each do |config|
-          config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '12.0'
 
-          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= [
-            '$(inherited)',
-
-            ## dart: PermissionGroup.camera
-            'PERMISSION_CAMERA=1',
-          ]
-
-        end
+    target.build_configurations.each do |config|
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0' # Updated to match the platform
+    end
   end
 end

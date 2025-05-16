@@ -45,7 +45,7 @@ class _ProfileImageViewState extends State<ProfileImageView> {
         children: [
           GestureDetector(
               onTap: () {
-                _showChoiceBottomSheet(context);
+                // _showChoiceBottomSheet(context);
               },
               child: CircleAvatar(
                 radius: AppSizes.screenWidth * 0.13,
@@ -57,23 +57,23 @@ class _ProfileImageViewState extends State<ProfileImageView> {
                         ? NetworkImage('$profileImageEdit?${DateTime.now().millisecondsSinceEpoch.toString()}')
                         : Image.asset(AssetConstants.customerProfilePlaceholder).image,
               )),
-          GestureDetector(
-            onTap: () {
-              _showChoiceBottomSheet(context);
-            },
-            child: Container(
-              padding: const EdgeInsets.all(AppSizes.spacingNormal),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(AppSizes.spacingLarge),
-                color: Theme.of(context).colorScheme.onBackground,
-              ),
-              child:  Icon(
-                Icons.camera_alt,
-                size: 18,
-                color: Theme.of(context).colorScheme.secondaryContainer,
-              ),
-            ),
-          )
+          // GestureDetector(
+          //   onTap: () {
+          //     _showChoiceBottomSheet(context);
+          //   },
+          //   child: Container(
+          //     padding: const EdgeInsets.all(AppSizes.spacingNormal),
+          //     decoration: BoxDecoration(
+          //       borderRadius: BorderRadius.circular(AppSizes.spacingLarge),
+          //       color: Theme.of(context).colorScheme.onBackground,
+          //     ),
+          //     child:  Icon(
+          //       Icons.camera_alt,
+          //       size: 18,
+          //       color: Theme.of(context).colorScheme.secondaryContainer,
+          //     ),
+          //   ),
+          // )
         ],
       ),
     );

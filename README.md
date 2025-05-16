@@ -51,12 +51,12 @@ The open-source ecommerce mobile app comes with an array of features to improve 
 
 Before beginning with the installation, you will need the following with the mentioned versions
 
-- Bagisto Version - v2.2.2
-- Android Studio Version - Flamingo | 2022.2.1
-- Flutter Version - 3.19.2
-- Dart - 3.3.0
-- Xcode - 15.2
-- Swift - 5
+- Bagisto Version - v2.3.0
+- Android Studio Meerkat | 2024.3.1 Patch 2
+- Flutter Version - 3.29.3
+- Dart - 3.7.2
+- Xcode - 16.3
+- Swift - 6.1
 
 Make sure you have installed the API module and set this up properly on your bagisto.
 
@@ -121,7 +121,7 @@ flutter run
 ## Minimum Versions
 
 - Android: 22
-- iOS: 14
+- iOS: 16
 
 ## Configurations Steps
 

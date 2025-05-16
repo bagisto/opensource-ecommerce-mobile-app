@@ -125,9 +125,6 @@ class _DownloadProductSampleState extends State<DownloadProductSample> {
       if (hasStoragePermission) {
         try {
 
-          final cookieManager = CookieManager.instance();
-          final cookies = await cookieManager.getCookies(url: (Uri.parse(url)));
-          final cookieHeader = cookies.map((cookie) => "${cookie.name}=${cookie.value}").join("; ");
           final directory = Platform.isIOS
               ? await getApplicationDocumentsDirectory()
               : await getTemporaryDirectory();
@@ -142,7 +139,6 @@ class _DownloadProductSampleState extends State<DownloadProductSample> {
           await dio.download(
             url,
             savePath,
-            options: Options(headers: {HttpHeaders.cookieHeader: cookieHeader}),
             onReceiveProgress: (received, total) {
               if (total != -1) {
                 double progress = received / total;

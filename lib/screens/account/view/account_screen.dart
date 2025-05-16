@@ -37,7 +37,7 @@ AccountUpdate? _accountUpdate;
 bool isLoad = true;
 String? base64string;
 AccountInfoBloc? accountInfoBloc;
-bool subscribeNewsletter=false;
+bool subscribeNewsletter = false;
 
 GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
     GlobalKey<ScaffoldMessengerState>();
@@ -46,7 +46,6 @@ class _AccountScreenState extends State<AccountScreen>
     with EmailValidator, PhoneNumberValidator {
   @override
   void initState() {
-
     isLoad = true;
     currentPasswordController.text = "";
     newPasswordController.text = "";
@@ -67,7 +66,9 @@ class _AccountScreenState extends State<AccountScreen>
         ),
         body: _profileBloc(context),
         bottomNavigationBar: Padding(
-          padding: const EdgeInsets.symmetric(vertical:AppSizes.spacingMedium, horizontal: AppSizes.spacingMedium),
+          padding: const EdgeInsets.symmetric(
+              vertical: AppSizes.spacingMedium,
+              horizontal: AppSizes.spacingMedium),
           child: MaterialButton(
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(AppSizes.spacingNormal)),
@@ -157,14 +158,16 @@ class _AccountScreenState extends State<AccountScreen>
           _accountInfoDetails = state.accountInfoDetails;
           firstNameController.text = _accountInfoDetails?.firstName ?? "";
           lastNameController.text = _accountInfoDetails?.lastName ?? "";
-          dobController.text = _accountInfoDetails?.dateOfBirth.toString() ?? "";
+          dobController.text =
+              _accountInfoDetails?.dateOfBirth.toString() ?? "";
           phoneController.text = _accountInfoDetails?.phone ?? "";
           emailController.text = _accountInfoDetails?.email ?? "";
-          subscribeNewsletter = _accountInfoDetails?.subscribedToNewsLetter ?? false;
+          subscribeNewsletter =
+              _accountInfoDetails?.subscribedToNewsLetter ?? false;
         }
       }
       if (state.status == AccountStatus.fail) {
-        return ErrorMessage.errorMsg(state.error ?? "error");
+        return const AccountLoaderView();
       }
     }
     if (state is AccountInfoUpdateState) {
@@ -194,7 +197,8 @@ class _AccountScreenState extends State<AccountScreen>
           setState(() {
             subscribeNewsletter = value; // Update local state
             // You can perform any additional logic here if needed
-            print("Newsletter subscription status changed: $subscribeNewsletter");
+            print(
+                "Newsletter subscription status changed: $subscribeNewsletter");
           });
         },
       ),
@@ -203,18 +207,18 @@ class _AccountScreenState extends State<AccountScreen>
 
   _fetchSharedPreferenceData() {
     bool isLogged = appStoragePref.getCustomerLoggedIn();
-      if (isLogged) {
-        String value = appStoragePref.getCustomerName();
-          setState(() {
-            customerUserName = value;
-            isLoggedIn = isLogged;
-          });
-      } else {
-        setState(() {
-          customerUserName = StringConstants.welcomeGuest.localized();
-          isLoggedIn = isLogged;
-        });
-      }
+    if (isLogged) {
+      String value = appStoragePref.getCustomerName();
+      setState(() {
+        customerUserName = value;
+        isLoggedIn = isLogged;
+      });
+    } else {
+      setState(() {
+        customerUserName = StringConstants.welcomeGuest.localized();
+        isLoggedIn = isLogged;
+      });
+    }
   }
 
   ///this method will call on press save button
@@ -265,8 +269,7 @@ class _AccountScreenState extends State<AccountScreen>
           confirmPassword: confirmNewPasswordController.text,
           oldPassword: currentPasswordController.text,
           avatar: base64string ?? "",
-        subscribedToNewsLetter: subscribeNewsletter
-      ));
+          subscribedToNewsLetter: subscribeNewsletter));
       Future.delayed(const Duration(seconds: 3)).then((value) {
         Navigator.pop(context);
       });
@@ -274,7 +277,7 @@ class _AccountScreenState extends State<AccountScreen>
   }
 
   ///this method will update the changes in the save shared preference data
-   _updateSharedPreferences(AccountUpdate accountUpdate) {
+  _updateSharedPreferences(AccountUpdate accountUpdate) {
     appStoragePref.setCustomerLoggedIn(true);
     appStoragePref.setCustomerName(accountUpdate.data?.name ?? "");
     appStoragePref.setCustomerImage(accountUpdate.data?.imageUrl ?? "");

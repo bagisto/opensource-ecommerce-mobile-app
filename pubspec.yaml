@@ -32,61 +32,61 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  lottie: ^2.2.0
-  flutter_bloc: ^8.0.1
+  lottie: ^3.3.1
+  flutter_bloc: ^9.1.0
   equatable: ^2.0.3
-  carousel_slider: ^4.0.0
+  carousel_slider: ^5.0.0
   image_picker: ^1.0.1
   path_provider: ^2.0.8
   permission_handler:
-  firebase_messaging: ^14.2.1
-  flutter_local_notifications: ^9.8.0+1
+  firebase_messaging:  ^15.2.5
+  flutter_local_notifications: ^19.0.0
   graphql_flutter: ^5.1.1
   get_storage: ^2.0.3
-  flutter_widget_from_html: ^0.14.9
+  flutter_widget_from_html: ^0.16.0
   skeleton_loader: ^2.0.0+4
-  firebase_core: ^2.17.0
+  firebase_core: ^3.13.0
   hive: ^2.2.3
   open_file: ^3.3.2
-  intl: ^0.18.1
-  speech_to_text: ^5.4.3
+  intl: ^0.19.0
+  speech_to_text: ^7.0.0
   cached_network_image: ^3.2.1
-  google_fonts: 6.1.0
+  google_fonts: 6.2.1
   json_annotation: ^4.8.1
   overlay_support: ^2.1.0
   cupertino_icons: ^1.0.2
   local_auth: ^2.1.6
-  flutter_share: ^2.0.0
   flutter_rating_bar: ^4.0.0
-  device_info_plus: ^9.1.0
+  device_info_plus: ^11.3.3
   webview_flutter: ^4.4.2
-  flutter_inappwebview: ^5.8.0
-  location: ^4.3.0
-  geocoding: ^2.0.4
+  flutter_inappwebview: ^6.0.0
+  location: ^8.0.0
+  geocoding: ^3.0.0
+  share_plus: ^10.1.4
   google_maps_flutter: ^2.4.0
   dio: ^5.3.3
   retrofit: ^4.0.2
   collection: ^1.17.0
   provider: ^6.0.1
-  internet_connection_checker: ^1.0.0+1
+  internet_connection_checker: ^3.0.1
 
 
 
 
 dependency_overrides:
-  intl: ^0.18.0
+  intl: ^0.19.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
   build_runner: ^2.1.4
-  retrofit_generator: ^7.0.0
+  retrofit_generator: ^9.1.9
   built_value_generator: ^8.1.2
   json_serializable: ^6.5.4
   hive_generator: ^2.0.0
 
-  flutter_lints: ^2.0.0
+  flutter_lints: ^5.0.0
 
 
 flutter:

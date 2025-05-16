@@ -189,7 +189,7 @@ class _ProfileDetailViewState extends State<ProfileDetailView>
                       });
                       widget.onChanged!(value); // Call the callback
                     },
-                  "",
+                    StringConstants.subscribeToNewsletter.localized(),
                   false,
                   widget.subsNewsLetter
                 ),

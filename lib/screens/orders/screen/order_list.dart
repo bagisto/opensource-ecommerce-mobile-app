@@ -8,8 +8,6 @@
  *   @link https://store.webkul.com/license.html
  */
 
-
-
 import 'package:bagisto_app_demo/screens/orders/utils/index.dart';
 import 'package:bagisto_app_demo/utils/prefetching_helper.dart';
 
@@ -37,7 +35,8 @@ class _OrdersListState extends State<OrdersList> with OrderStatusBGColorHelper {
   @override
   void initState() {
     orderListBloc = context.read<OrderListBloc>();
-    orderListBloc?.add(FetchOrderListEvent(id: "", status: "", startDate: "", endDate: "", total: 0, page: 1));
+    orderListBloc?.add(FetchOrderListEvent(
+        id: "", status: "", startDate: "", endDate: "", total: 0, page: 1));
     _scrollController.addListener(() {
       paginationFunction();
     });
@@ -71,7 +70,7 @@ class _OrdersListState extends State<OrdersList> with OrderStatusBGColorHelper {
                       },
                       icon: const Icon(
                         Icons.filter_alt,
-                        size: AppSizes.spacingLarge*2,
+                        size: AppSizes.spacingLarge * 2,
                       ))
                 ],
               ),
@@ -104,21 +103,25 @@ class _OrdersListState extends State<OrdersList> with OrderStatusBGColorHelper {
         return _getOrdersList(ordersListModel);
       }
       if (state.status == OrderStatus.fail) {
-        return ErrorMessage.errorMsg(
-            StringConstants.somethingWrong.localized());
+        return EmptyDataView();
       }
     }
     return const SizedBox();
   }
 
   void paginationFunction() {
-
     if (_scrollController.offset ==
             _scrollController.position.maxScrollExtent &&
         ((ordersListModel?.paginatorInfo?.currentPage ?? 0) <
             (ordersListModel?.paginatorInfo?.lastPage ?? 0))) {
       page++;
-      orderListBloc?.add(FetchOrderListEvent(id: "", status: "", startDate: "", endDate: "", total: 0, page: page));
+      orderListBloc?.add(FetchOrderListEvent(
+          id: "",
+          status: "",
+          startDate: "",
+          endDate: "",
+          total: 0,
+          page: page));
     }
   }
 
@@ -133,7 +136,13 @@ class _OrdersListState extends State<OrdersList> with OrderStatusBGColorHelper {
         color: Theme.of(context).colorScheme.onPrimary,
         onRefresh: () {
           return Future.delayed(const Duration(seconds: 1), () {
-            orderListBloc?.add(FetchOrderListEvent(id: "", status: "", startDate: "", endDate: "", total: 0, page: 1));
+            orderListBloc?.add(FetchOrderListEvent(
+                id: "",
+                status: "",
+                startDate: "",
+                endDate: "",
+                total: 0,
+                page: 1));
           });
         },
         child: Padding(
@@ -142,7 +151,7 @@ class _OrdersListState extends State<OrdersList> with OrderStatusBGColorHelper {
             shrinkWrap: true,
             controller: _scrollController,
             itemBuilder: (BuildContext context, int itemIndex) {
-              preCacheOrderDetails(ordersListModel.data?[itemIndex].id ?? 0);
+              // preCacheOrderDetails(ordersListModel.data?[itemIndex].id ?? 0);
               return OrdersListTile(
                 data: ordersListModel.data?[itemIndex],
                 reload: fetchOrder,
@@ -166,13 +175,13 @@ class _OrdersListState extends State<OrdersList> with OrderStatusBGColorHelper {
 
   _getOrderFilter() {
     return Padding(
-        padding:
-            EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-        child: Card(
-          margin: EdgeInsets.zero,
-          child: SingleChildScrollView(
-            child:Column(
-              mainAxisSize: MainAxisSize.min,
+      padding:
+          EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: Card(
+        margin: EdgeInsets.zero,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
               Padding(
                 padding: const EdgeInsets.all(8.0),
@@ -185,8 +194,7 @@ class _OrdersListState extends State<OrdersList> with OrderStatusBGColorHelper {
                     ),
                     MaterialButton(
                       shape: const RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.all(Radius.circular(5.0))),
+                          borderRadius: BorderRadius.all(Radius.circular(5.0))),
                       elevation: 0.0,
                       minWidth: AppSizes.buttonHeight,
                       color: Theme.of(context).colorScheme.onBackground,
@@ -198,20 +206,27 @@ class _OrdersListState extends State<OrdersList> with OrderStatusBGColorHelper {
                         endDateController.clear();
                         startDateController.clear();
                         _currentStatus = 0;
-                        orderListBloc?.add(FetchOrderListEvent(id: "", status: "", startDate: "", endDate: "", total: 0, page: 1));
+                        orderListBloc?.add(FetchOrderListEvent(
+                            id: "",
+                            status: "",
+                            startDate: "",
+                            endDate: "",
+                            total: 0,
+                            page: 1));
                         Navigator.pop(context);
                       },
                       child: Text(
                         StringConstants.clear.localized().toUpperCase(),
-                        style: const TextStyle(
-                            fontSize: AppSizes.spacingMedium),
+                        style:
+                            const TextStyle(fontSize: AppSizes.spacingMedium),
                       ),
                     ),
                   ],
                 ),
               ),
               Theme(
-                data:Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                data: Theme.of(context)
+                    .copyWith(dividerColor: Colors.transparent),
                 child: ExpansionTile(
                   initiallyExpanded: true,
                   iconColor: Colors.grey,
@@ -228,16 +243,12 @@ class _OrdersListState extends State<OrdersList> with OrderStatusBGColorHelper {
                           horizontal: AppSizes.spacingNormal, vertical: 6),
                       child: Column(
                         children: [
-                          CommonWidgets().getTextField(
-                              context,
-                              orderId,
+                          CommonWidgets().getTextField(context, orderId,
                               StringConstants.enterOrderId.localized(),
                               label: StringConstants.orderId.localized(),
                               validLabel: ""),
                           const SizedBox(height: AppSizes.spacingWide),
-                          CommonWidgets().getTextField(
-                              context,
-                              total,
+                          CommonWidgets().getTextField(context, total,
                               StringConstants.enterTotal.localized(),
                               label: StringConstants.total.localized(),
                               validLabel: ""),
@@ -250,7 +261,8 @@ class _OrdersListState extends State<OrdersList> with OrderStatusBGColorHelper {
               ),
               const SizedBox(height: AppSizes.spacingWide),
               Theme(
-                data:Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                data: Theme.of(context)
+                    .copyWith(dividerColor: Colors.transparent),
                 child: ExpansionTile(
                   initiallyExpanded: true,
                   iconColor: Colors.grey,
@@ -291,7 +303,8 @@ class _OrdersListState extends State<OrdersList> with OrderStatusBGColorHelper {
               ),
               const SizedBox(height: AppSizes.spacingWide),
               Theme(
-                data:Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                data: Theme.of(context)
+                    .copyWith(dividerColor: Colors.transparent),
                 child: ExpansionTile(
                   initiallyExpanded: true,
                   iconColor: Colors.grey,
@@ -309,7 +322,8 @@ class _OrdersListState extends State<OrdersList> with OrderStatusBGColorHelper {
                       child: DropdownButtonFormField(
                           iconEnabledColor: Colors.grey[600],
                           style: Theme.of(context).textTheme.bodyMedium,
-                          items: status?.map<DropdownMenuItem<String>>((String value) {
+                          items: status
+                              ?.map<DropdownMenuItem<String>>((String value) {
                             return DropdownMenuItem<String>(
                               value: value,
                               child: Text(value),
@@ -325,16 +339,14 @@ class _OrdersListState extends State<OrdersList> with OrderStatusBGColorHelper {
                             contentPadding: const EdgeInsets.fromLTRB(
                                 12.0, 16.0, 12.0, 16.0),
                             enabledBorder: OutlineInputBorder(
-                              borderRadius: const BorderRadius.all(
-                                  Radius.circular(8.0)),
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(8.0)),
                               borderSide:
                                   BorderSide(color: Colors.grey.shade500),
                             ),
-                            labelStyle:
-                                Theme.of(context).textTheme.bodyMedium,
+                            labelStyle: Theme.of(context).textTheme.bodyMedium,
                             fillColor: Colors.black,
-                            labelText:
-                                StringConstants.orderStatus.localized(),
+                            labelText: StringConstants.orderStatus.localized(),
                             focusedBorder: OutlineInputBorder(
                                 borderRadius:
                                     const BorderRadius.all(Radius.zero),
@@ -367,7 +379,13 @@ class _OrdersListState extends State<OrdersList> with OrderStatusBGColorHelper {
                         children: [
                           Text(
                             StringConstants.cancel.localized().toUpperCase(),
-                            style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Theme.of(context).colorScheme.onBackground),
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelSmall
+                                ?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onBackground),
                           ),
                         ],
                       )),
@@ -380,7 +398,6 @@ class _OrdersListState extends State<OrdersList> with OrderStatusBGColorHelper {
                       color: Theme.of(context).colorScheme.onBackground,
                       textColor: MobiKulTheme.primaryColor,
                       onPressed: () {
-
                         page = 1;
                         String startDate = startDateController.text != ""
                             ? "${startDateController.text} 00:00:01"
@@ -389,28 +406,30 @@ class _OrdersListState extends State<OrdersList> with OrderStatusBGColorHelper {
                             ? "${endDateController.text} 23:59:59"
                             : endDateController.text;
                         orderListBloc?.add(FetchOrderListEvent(
-
                           id: orderId.text,
                           startDate: startDate,
                           endDate: endDate,
-                          status: status?[_currentStatus] == StringConstants.all.localized()
+                          status: status?[_currentStatus] ==
+                                  StringConstants.all.localized()
                               ? ""
                               : status?[_currentStatus],
                           total: double.tryParse(total.text),
-                          page: page, isFilterApply: true,
+                          page: page,
+                          isFilterApply: true,
                         ));
                         Navigator.pop(context);
                       },
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(
-                              StringConstants.submit
-                                  .localized()
-                                  .toUpperCase(),
-                              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                color: Theme.of(context).colorScheme.secondaryContainer
-                              )),
+                          Text(StringConstants.submit.localized().toUpperCase(),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelSmall
+                                  ?.copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .secondaryContainer)),
                         ],
                       )),
                 ],
@@ -426,6 +445,7 @@ class _OrdersListState extends State<OrdersList> with OrderStatusBGColorHelper {
   }
 
   fetchOrder() async {
-    orderListBloc?.add(FetchOrderListEvent(id: "", status: "", startDate: "", endDate: "", total: 0, page: 1));
+    orderListBloc?.add(FetchOrderListEvent(
+        id: "", status: "", startDate: "", endDate: "", total: 0, page: 1));
   }
 }

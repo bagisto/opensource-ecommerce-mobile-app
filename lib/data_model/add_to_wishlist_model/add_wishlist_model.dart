@@ -8,22 +8,15 @@
  *   @link https://store.webkul.com/license.html
  */
 
-
 import 'package:bagisto_app_demo/data_model/graphql_base_model.dart';
 import 'package:json_annotation/json_annotation.dart';
-
-import '../graphql_base_error_model.dart';
 
 part 'add_wishlist_model.g.dart';
 
 @JsonSerializable()
-
-class AddWishListModel extends BaseModel{
-  // String? error;
+class AddWishListModel extends BaseModel {
   Data? data;
-  String? message;
-
-  AddWishListModel({this.data, this.message});
+  AddWishListModel({this.data});
   factory AddWishListModel.fromJson(Map<String, dynamic> json) {
     return _$AddWishListModelFromJson(json);
   }
@@ -31,11 +24,11 @@ class AddWishListModel extends BaseModel{
   @override
   Map<String, dynamic> toJson() => _$AddWishListModelToJson(this);
 }
+
 @JsonSerializable()
 class Data {
   int? id;
   WishlistProduct? product;
-
 
   Data({this.id, this.product});
 
@@ -45,6 +38,7 @@ class Data {
 
   Map<String, dynamic> toJson() => _$DataToJson(this);
 }
+
 @JsonSerializable()
 class WishlistProduct {
   String? id;
@@ -69,35 +63,33 @@ class WishlistProduct {
 
   WishlistProduct(
       {this.id,
-        this.sku,
-        this.type,
-        this.name,
-        this.urlKey,
-        this.priceHtml,
-        this.price,
-        this.formattedPrice,
-        this.shortDescription,
-        this.description,
-        this.images,
-        this.baseImage,
-        this.reviews,
-        this.inStock,
-        this.isSaved,
-        this.isInWishlist,
-        this.isItemInCart,
-        this.showQuantityChanger});
-
+      this.sku,
+      this.type,
+      this.name,
+      this.urlKey,
+      this.priceHtml,
+      this.price,
+      this.formattedPrice,
+      this.shortDescription,
+      this.description,
+      this.images,
+      this.baseImage,
+      this.reviews,
+      this.inStock,
+      this.isSaved,
+      this.isInWishlist,
+      this.isItemInCart,
+      this.showQuantityChanger});
 
   factory WishlistProduct.fromJson(Map<String, dynamic> json) {
     return _$WishlistProductFromJson(json);
   }
 
   Map<String, dynamic> toJson() => _$WishlistProductToJson(this);
-
 }
 
 @JsonSerializable()
-class PriceHtml{
+class PriceHtml {
   String? regular;
   PriceHtml({this.regular});
 
@@ -107,6 +99,7 @@ class PriceHtml{
 
   Map<String, dynamic> toJson() => _$PriceHtmlToJson(this);
 }
+
 @JsonSerializable()
 class Images {
   String? id;
@@ -119,13 +112,12 @@ class Images {
 
   Images(
       {this.id,
-        this.path,
-        this.url,
-        this.originalImageUrl,
-        this.smallImageUrl,
-        this.mediumImageUrl,
-        this.largeImageUrl});
-
+      this.path,
+      this.url,
+      this.originalImageUrl,
+      this.smallImageUrl,
+      this.mediumImageUrl,
+      this.largeImageUrl});
 
   factory Images.fromJson(Map<String, dynamic> json) {
     return _$ImagesFromJson(json);
@@ -133,6 +125,7 @@ class Images {
 
   Map<String, dynamic> toJson() => _$ImagesToJson(this);
 }
+
 @JsonSerializable()
 class BaseImage {
   String? smallImageUrl;
@@ -142,10 +135,9 @@ class BaseImage {
 
   BaseImage(
       {this.smallImageUrl,
-        this.mediumImageUrl,
-        this.largeImageUrl,
-        this.originalImageUrl});
-
+      this.mediumImageUrl,
+      this.largeImageUrl,
+      this.originalImageUrl});
 
   factory BaseImage.fromJson(Map<String, dynamic> json) {
     return _$BaseImageFromJson(json);
@@ -153,18 +145,23 @@ class BaseImage {
 
   Map<String, dynamic> toJson() => _$BaseImageToJson(this);
 }
+
 @JsonSerializable()
 class Reviews {
-  String?id;
-  String?title;
-  String?comment;
-  String?status;
-  String?productId;
-  int?rating;
+  String? id;
+  String? title;
+  String? comment;
+  String? status;
+  String? productId;
+  int? rating;
 
-  Reviews({this.id,this.title,this.comment,this.status,this.productId,this.rating});
-
-
+  Reviews(
+      {this.id,
+      this.title,
+      this.comment,
+      this.status,
+      this.productId,
+      this.rating});
 
   factory Reviews.fromJson(Map<String, dynamic> json) {
     return _$ReviewsFromJson(json);
@@ -172,4 +169,3 @@ class Reviews {
 
   Map<String, dynamic> toJson() => _$ReviewsToJson(this);
 }
-

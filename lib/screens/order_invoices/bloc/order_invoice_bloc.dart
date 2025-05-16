@@ -10,8 +10,8 @@
 
 import 'package:bagisto_app_demo/screens/order_invoices/utils/index.dart';
 
-
-class OrderInvoiceBloc extends Bloc<OrderInvoiceBaseEvent, OrderInvoiceBaseState> {
+class OrderInvoiceBloc
+    extends Bloc<OrderInvoiceBaseEvent, OrderInvoiceBaseState> {
   OrderInvoiceRepository? repository;
   BuildContext? context;
 
@@ -25,14 +25,9 @@ class OrderInvoiceBloc extends Bloc<OrderInvoiceBaseEvent, OrderInvoiceBaseState
     if (event is OrderInvoiceFetchDataEvent) {
       try {
         InvoicesModel invoicesList =
-        await repository!.getInvoicesList(event.orderId);
-        if (invoicesList.status == true) {
-          emit(
-            OrderInvoiceListDataState.success(invoicesList: invoicesList),
-          );
-        } else {
-          emit(OrderInvoiceListDataState.fail(error: invoicesList.success));
-        }
+            await repository!.getInvoicesList(event.orderId);
+        print("asdf-->${invoicesList.toJson()}");
+        emit(OrderInvoiceListDataState.success(invoicesList: invoicesList));
       } catch (e) {
         emit(OrderInvoiceListDataState.fail(error: e.toString()));
       }

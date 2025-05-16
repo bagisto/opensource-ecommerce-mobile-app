@@ -21,7 +21,16 @@ class LocationRepositoryImp implements LocationRepository{
    Future<GooglePlaceModel> getPlace(String text)async{
     GooglePlaceModel model;
     String endPoint = "$text&key=AIzaSyBAlqVDV_6ec8DKG3yJPAE29HV4f-GOsdk&language=${GlobalData.locale}";
-    model = await GooglePlaceApiClient(Dio(BaseOptions(contentType: 'application/json'))).getGooglePlace(endPoint);
+    Dio dio = Dio(BaseOptions(contentType: 'application/json'));
+    dio.interceptors.add(LogInterceptor(
+      request: true,
+      requestBody: true,
+      requestHeader: true,
+      responseBody: true,
+      responseHeader: true,
+      error: true
+    ));
+    model = await GooglePlaceApiClient(dio).getGooglePlace(endPoint);
      return model;
   }
 }

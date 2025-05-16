@@ -8,8 +8,6 @@
  *   @link https://store.webkul.com/license.html
  */
 
-
-
 import 'package:bagisto_app_demo/screens/cms_screen/utils/index.dart';
 
 class CmsBloc extends Bloc<CmsBaseEvent, CmsBaseState> {
@@ -23,14 +21,12 @@ class CmsBloc extends Bloc<CmsBaseEvent, CmsBaseState> {
     if (event is FetchCmsDataEvent) {
       try {
         CmsPage? cmsData = await repository?.callCmsData(event.id ?? "");
-        if(cmsData != null){
+        if (cmsData != null) {
           emit(FetchCmsDataState.success(cmsData: cmsData));
         }
-        else{
-          emit(FetchCmsDataState.fail(error: cmsData?.success ?? ""));
-        }
       } catch (e) {
-        emit(FetchCmsDataState.fail(error: e.toString()));
+        emit(FetchCmsDataState.fail(
+            error: StringConstants.somethingWrong.localized()));
       }
     }
   }

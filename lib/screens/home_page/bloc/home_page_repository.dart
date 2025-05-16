@@ -8,12 +8,12 @@
  *   @link https://store.webkul.com/license.html
  */
 
+import 'package:bagisto_app_demo/screens/home_page/utils/index.dart';
 
 import '../../../data_model/add_to_wishlist_model/add_wishlist_model.dart';
 import '../../cart_screen/cart_model/cart_data_model.dart';
 import '../../cms_screen/data_model/cms_model.dart';
 import '../data_model/theme_customization.dart';
-import 'package:bagisto_app_demo/screens/home_page/utils/index.dart';
 
 abstract class HomePageRepository {
   Future<AddToCartModel?> callAddToCartAPi(int productId, int quantity);
@@ -23,23 +23,22 @@ abstract class HomePageRepository {
   Future<ThemeCustomDataModel?> getThemeCustomizationData();
   Future<CartModel?> cartCountApi();
   Future<CmsData?> callCmsData(String id);
-  Future<AddToCartModel?>  removeItemFromWishlist(String? wishListProductId);
+  Future<AddToCartModel?> removeItemFromWishlist(String? wishListProductId);
   Future<AccountInfoModel?> callAccountDetailsApi();
   Future<NewProductsModel?> getAllProducts(
       {List<Map<String, dynamic>>? filters});
   Future<GetDrawerCategoriesData?> getHomeCategoriesList(
       {List<Map<String, dynamic>>? filters});
-
 }
 
 class HomePageRepositoryImp implements HomePageRepository {
-
   @override
   Future<GetDrawerCategoriesData?> getHomeCategoriesList(
       {List<Map<String, dynamic>>? filters}) async {
     GetDrawerCategoriesData? getDrawerCategoriesData;
     try {
-      getDrawerCategoriesData = await ApiClient().homeCategories(filters: filters);
+      getDrawerCategoriesData =
+          await ApiClient().homeCategories(filters: filters);
     } catch (error, stacktrace) {
       debugPrint("Error --> $error");
       debugPrint("StackTrace --> $stacktrace");
@@ -48,19 +47,16 @@ class HomePageRepositoryImp implements HomePageRepository {
   }
 
   @override
-  Future<AddToCartModel?> callAddToCartAPi(
-      int productId,int quantity ) async {
+  Future<AddToCartModel?> callAddToCartAPi(int productId, int quantity) async {
     AddToCartModel? addToCartModel;
-    addToCartModel = await ApiClient().addToCart(quantity,productId.toString(),[] ,[],[],[],null);
+    addToCartModel = await ApiClient()
+        .addToCart(quantity, productId.toString(), [], [], [], [], null);
 
     return addToCartModel;
   }
 
-
   @override
-  Future<AddWishListModel?> addItemToWishlist(
-      var wishListProductId) async {
-
+  Future<AddWishListModel?> addItemToWishlist(var wishListProductId) async {
     AddWishListModel? addWishListModel;
     try {
       addWishListModel = await ApiClient().addToWishlist(wishListProductId);
@@ -121,33 +117,33 @@ class HomePageRepositoryImp implements HomePageRepository {
     return cartDetails;
   }
 
-
   @override
-  Future<AddToCartModel?> removeItemFromWishlist(String? wishListProductId) async {
-
+  Future<AddToCartModel?> removeItemFromWishlist(
+      String? wishListProductId) async {
     AddToCartModel? removeFromWishlist;
-    try{
-      removeFromWishlist=await ApiClient().removeFromWishlist(wishListProductId);
-
-    }catch(error, stacktrace){
+    try {
+      removeFromWishlist =
+          await ApiClient().removeFromWishlist(wishListProductId);
+    } catch (error, stacktrace) {
       debugPrint("Error -->${error.toString()}");
-      debugPrint("StackTrace -->${ stacktrace.toString()}");
+      debugPrint("StackTrace -->${stacktrace.toString()}");
     }
     return removeFromWishlist;
   }
+
   @override
   Future<AccountInfoModel?> callAccountDetailsApi() async {
-
     AccountInfoModel? accountInfoDetails;
-    try{
+    try {
       accountInfoDetails = await ApiClient().getCustomerData();
-    }catch(error, stacktrace){
+    } catch (error, stacktrace) {
       debugPrint("Error --> $error");
       debugPrint("StackTrace --> $stacktrace");
     }
     return accountInfoDetails;
   }
 
+  //todo
   @override
   Future<NewProductsModel?> getAllProducts(
       {List<Map<String, dynamic>>? filters}) async {
@@ -160,13 +156,13 @@ class HomePageRepositoryImp implements HomePageRepository {
     }
     return newProductsData;
   }
+
   @override
   Future<CmsData?> callCmsData(String id) async {
     CmsData? cmsData;
-    try{
-      cmsData=await ApiClient().getCmsPagesData();
-    }
-    catch(error,stacktrace){
+    try {
+      cmsData = await ApiClient().getCmsPagesData();
+    } catch (error, stacktrace) {
       debugPrint("Error --> $error");
       debugPrint("StackTrace --> $stacktrace");
     }
