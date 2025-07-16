@@ -45,8 +45,8 @@ class DrawerSubCategoryRepo implements DrawerSubCategoryRepository {
       {List<Map<String, dynamic>>? filters, int? page}) async {
     NewProductsModel? categoriesData;
     try {
-      categoriesData =
-          await ApiClient().getAllProducts(filters: filters, page: page, limit: 3);
+      categoriesData = await ApiClient()
+          .getAllProducts(filters: filters, page: page, limit: 3);
     } catch (error, stacktrace) {
       debugPrint("Error --> $error");
       debugPrint("StackTrace --> $stacktrace");
@@ -58,8 +58,8 @@ class DrawerSubCategoryRepo implements DrawerSubCategoryRepository {
   Future<AddToCartModel?> callAddToCartAPi(int productId, int quantity) async {
     AddToCartModel? addToCartModel;
     try {
-      addToCartModel = await ApiClient()
-          .addToCart(quantity, productId.toString(), [], [], [], [], null);
+      addToCartModel = await ApiClient().addToCart(
+          quantity, productId.toString(), [], [], [], [], null, null);
     } catch (error, stacktrace) {
       debugPrint("Error --> $error");
       debugPrint("StackTrace --> $stacktrace");

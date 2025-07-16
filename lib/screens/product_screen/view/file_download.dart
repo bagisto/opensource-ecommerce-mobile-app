@@ -29,14 +29,12 @@ class DownloadFile {
       Dio dio = Dio();
       var status = await Permission.storage.status;
       if (status.isGranted) {
-        debugPrint("$url, $fileNames permission is granted");
         String fileName = fileNames ?? "product";
         savePath = await getFilePath(fileName);
 
         await dio.download(url, savePath,
             onReceiveProgress: (received, total) async {
               int progress = ((received / total) * 100).toInt();
-              debugPrint("$progress Download started received$received total $total");
               if(progress%5 == 0 || progress < 20){
                 PushNotificationsManager.instance.createDownloadNotification(100, progress,
                     fileName, Platform.isAndroid ? savePath : fileName);
@@ -44,7 +42,6 @@ class DownloadFile {
             });
       } else if (status.isDenied) {
         Permission.storage.request();
-        debugPrint("permission is denied ->requesting");
       }
     } catch (e) {
       debugPrint("exception while downloading $e");
@@ -83,7 +80,6 @@ class DownloadFile {
             _createFileFromString(stringUrl, fileName);
           } else if (status.isDenied) {
             Permission.storage.request();
-            debugPrint(" permission is denied ->requesting");
           }
         } else {
           _createFileFromString(stringUrl, fileName);
@@ -102,7 +98,6 @@ class DownloadFile {
     if (!(await file.parent.exists())) {
       await file.parent.create(recursive: true);
     }
-    debugPrint("create file from string ${file.path}* $fileName");
     await file.writeAsBytes(bytes);
     PushNotificationsManager.instance.createDownloadNotification(100, 100,
         fileName, Platform.isAndroid ? _localPath : fileName);

@@ -28,7 +28,6 @@ class _AboutProductViewState extends State<AboutProductView> {
   bool? isExpansion = true;
   bool? isExpansionDetail = true;
 
-
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -50,7 +49,8 @@ class _AboutProductViewState extends State<AboutProductView> {
               children: [
                 Container(
                   width: MediaQuery.of(context).size.width,
-                  padding: const EdgeInsets.only(bottom: 16, left: 16),
+                  padding:
+                      const EdgeInsets.only(bottom: 16, left: 16, right: 16),
                   child: HtmlWidget(
                     widget.productData?.description ?? "",
                   ),

@@ -8,10 +8,12 @@
  *   @link https://store.webkul.com/license.html
  */
 
-// Application Specific Constants
 const int defaultSplashDelay = 3;
 
-const String baseUrl = "";
+/////base domain of the server
+const String baseDomain = "";
+
+const String baseUrl = "$baseDomain/graphql";
 
 ///default channel id
 const String defaultChannelId = "1";
@@ -43,4 +45,6 @@ const bool isPreFetchingEnable = true;
 const availablePaymentMethods = [
   "cashondelivery",
   "moneytransfer",
+  "paypal_standard",
+  "paypal_smart_button"
 ];

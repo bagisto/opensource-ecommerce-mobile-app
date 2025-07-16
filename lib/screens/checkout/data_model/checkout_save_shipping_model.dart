@@ -1,4 +1,3 @@
-
 /*
  *   Webkul Software.
  *   @package Mobikul Application Code.
@@ -8,7 +7,6 @@
  *   @license https://store.webkul.com/license.html
  *   @link https://store.webkul.com/license.html
  */
-
 
 import 'package:json_annotation/json_annotation.dart';
 
@@ -21,47 +19,41 @@ class CheckoutSaveShippingModel {
   Data? data;
 
   CheckoutSaveShippingModel({this.data});
-
-
 }
 
 class Data {
   PaymentMethods? paymentMethods;
   Data({this.paymentMethods});
-
-
 }
 
 @JsonSerializable()
-class PaymentMethods extends GraphQlBaseErrorModel{
-  String? cartTotal;
-  int? cartCount;
-  @JsonKey(name:"paymentMethods")
+class PaymentMethods extends GraphQlBaseErrorModel {
+  // String? cartTotal;
+  // int? cartCount;
+  @JsonKey(name: "paymentMethods")
   List<PaymentMethodsList>? paymentMethods;
   CartModel? cart;
 
-  PaymentMethods(
-      {this.cartTotal, this.cartCount, this.paymentMethods, this.cart});
+  PaymentMethods({this.paymentMethods, this.cart});
 
   factory PaymentMethods.fromJson(Map<String, dynamic> json) =>
       _$PaymentMethodsFromJson(json);
 
   @override
   Map<String, dynamic> toJson() => _$PaymentMethodsToJson(this);
-
 }
+
 @JsonSerializable()
 class PaymentMethodsList {
   String? method;
   String? methodTitle;
-  String? description;
-  int? sort;
+  // String? description;
+  // int? sort;
 
-  PaymentMethodsList({this.method, this.methodTitle, this.description, this.sort});
+  PaymentMethodsList({this.method, this.methodTitle});
 
   factory PaymentMethodsList.fromJson(Map<String, dynamic> json) =>
       _$PaymentMethodsListFromJson(json);
 
   Map<String, dynamic> toJson() => _$PaymentMethodsListToJson(this);
-
 }

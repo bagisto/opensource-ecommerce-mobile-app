@@ -61,39 +61,39 @@ class HomeCategories extends HiveObject {
   Map<String, dynamic> toJson() => _$HomeCategoriesToJson(this);
 }
 
-@JsonSerializable()
-class FilterableAttributes {
-  String? id;
-  String? adminName;
-  String? code;
-  String? type;
-  int? position;
+// @JsonSerializable()
+// class FilterableAttributes {
+//   String? id;
+//   String? adminName;
+//   String? code;
+//   String? type;
+//   int? position;
 
-  FilterableAttributes(
-      {this.id, this.adminName, this.code, this.type, this.position});
+//   FilterableAttributes(
+//       {this.id, this.adminName, this.code, this.type, this.position});
 
-  factory FilterableAttributes.fromJson(Map<String, dynamic> json) =>
-      _$FilterableAttributesFromJson(json);
+//   factory FilterableAttributes.fromJson(Map<String, dynamic> json) =>
+//       _$FilterableAttributesFromJson(json);
 
-  Map<String, dynamic> toJson() => _$FilterableAttributesToJson(this);
-}
+//   Map<String, dynamic> toJson() => _$FilterableAttributesToJson(this);
+// }
 
-@JsonSerializable()
-class Translations {
-  String? id;
-  String? name;
-  String? description;
-  String? localeId;
-  String? locale;
+// @JsonSerializable()
+// class Translations {
+//   String? id;
+//   String? name;
+//   String? description;
+//   String? localeId;
+//   String? locale;
 
-  Translations(
-      {this.id, this.name, this.description, this.localeId, this.locale});
+//   Translations(
+//       {this.id, this.name, this.description, this.localeId, this.locale});
 
-  factory Translations.fromJson(Map<String, dynamic> json) =>
-      _$TranslationsFromJson(json);
+//   factory Translations.fromJson(Map<String, dynamic> json) =>
+//       _$TranslationsFromJson(json);
 
-  Map<String, dynamic> toJson() => _$TranslationsToJson(this);
-}
+//   Map<String, dynamic> toJson() => _$TranslationsToJson(this);
+// }
 
 @JsonSerializable()
 class Children {

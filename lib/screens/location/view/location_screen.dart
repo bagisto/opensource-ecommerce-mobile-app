@@ -12,7 +12,7 @@ import 'package:bagisto_app_demo/screens/location/utils/index.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:location/location.dart' as location;
 import 'package:location/location.dart';
-
+import 'package:geocoding/geocoding.dart' as geocoding;
 export 'package:location/location.dart';
 
 class LocationScreen extends StatefulWidget {
@@ -29,6 +29,7 @@ class _LocationScreenState extends State<LocationScreen> {
   double? longitude;
   late LatLng position;
   location.Location currentLocation = location.Location();
+
   GoogleMapController? _controller;
   String address = '';
   Map<String, dynamic> addressMap = {};
@@ -40,6 +41,7 @@ class _LocationScreenState extends State<LocationScreen> {
     if (widget.address != null) {
       address = widget.address ?? "";
     }
+
     getCurrentLocation();
 
     super.initState();
@@ -214,15 +216,23 @@ class _LocationScreenState extends State<LocationScreen> {
   void getCurrentLocation() async {
     LocationData? location;
     try {
-      location = await currentLocation.getLocation();
+      List<geocoding.Location> locations = await locationFromAddress(address);
+      if (locations.isNotEmpty) {
+        var location = locations?.firstOrNull;
+        latitude = location?.latitude;
+        longitude = location?.longitude;
+      } else {
+        location = await currentLocation.getLocation();
+        latitude = location?.latitude;
+        longitude = location?.longitude;
+      }
     } catch (e) {
       if (!mounted) return;
       Navigator.pop(context);
     }
-    setState(() {
-      latitude = location?.latitude;
-      longitude = location?.longitude;
-    });
+
+    setState(() {});
+
     position =
         LatLng(latitude ?? defaultLatitude, longitude ?? defaultLongitude);
     _controller?.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(

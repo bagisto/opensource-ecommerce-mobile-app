@@ -49,20 +49,12 @@ class RefundItems {
   String? name;
   String? sku;
   int? qty;
-  int? discountAmount;
-  int? productId;
-  OrderProduct? product;
+  // int? discountAmount;
+  // int? productId;
+  // OrderProduct? product;
   FormattedPrice? formattedPrice;
 
-  RefundItems(
-      {this.id,
-      this.name,
-      this.sku,
-      this.qty,
-      this.discountAmount,
-      this.productId,
-      this.product,
-      this.formattedPrice});
+  RefundItems({this.id, this.name, this.sku, this.qty, this.formattedPrice});
 
   factory RefundItems.fromJson(Map<String, dynamic> json) =>
       _$RefundItemsFromJson(json);

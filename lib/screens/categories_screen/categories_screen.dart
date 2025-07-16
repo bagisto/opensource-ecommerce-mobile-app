@@ -8,10 +8,6 @@
  *   @link https://store.webkul.com/license.html
  */
 
-
-
-
-
 import 'package:bagisto_app_demo/screens/categories_screen/utils/index.dart';
 
 class SubCategoryScreen extends StatefulWidget {
@@ -20,14 +16,16 @@ class SubCategoryScreen extends StatefulWidget {
   final String? categorySlug;
   final String? id;
   final String? metaDescription;
+  final List<Map<String, dynamic>>? filters;
 
   const SubCategoryScreen(
-      {Key? key,
+      {super.key,
       this.title,
       this.image,
       this.categorySlug,
-      this.metaDescription, this.id})
-      : super(key: key);
+      this.metaDescription,
+      this.id,
+      this.filters});
 
   @override
   State<SubCategoryScreen> createState() => _SubCategoryScreenState();
@@ -49,7 +47,19 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
   @override
   void initState() {
     appStoragePref.setSortName("");
-    filters.add({"key": '"category_id"', "value": '"${widget.id}"'});
+
+    if ((widget.filters ?? []).isNotEmpty) {
+      List<Map<String, String>> formattedFilters = filters.map((filter) {
+        return {
+          "key": '"${filter['key']}"',
+          "value": '"${filter['value']}"',
+        };
+      }).toList();
+      filters.addAll(formattedFilters);
+    } else {
+      filters.add({"key": '"category_id"', "value": '"${widget.id}"'});
+    }
+
     isLoggedIn = appStoragePref.getCustomerLoggedIn();
     _scrollController = ScrollController();
     _scrollController?.addListener(() => _setItemScrollListener());
@@ -57,7 +67,6 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
     subCategoryBloc?.add(FilterFetchEvent(widget.categorySlug));
     super.initState();
   }
-
 
   _setItemScrollListener() {
     if (_scrollController!.hasClients &&
@@ -74,8 +83,6 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
     var total = categoriesData?.paginatorInfo?.total ?? 0;
     return (total > (categoriesData?.data?.length ?? 0) && !isLoading);
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -115,7 +122,8 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
           if (state.status == CategoriesStatus.fail) {
             ShowMessage.errorNotification(state.error ?? "", context);
           } else if (state.status == CategoriesStatus.success) {
-            GlobalData.cartCountController.sink.add(state.response?.cart?.itemsQty ?? 0);
+            GlobalData.cartCountController.sink
+                .add(state.response?.cart?.itemsQty ?? 0);
             addToCartModel = state.response;
             ShowMessage.successNotification(state.successMsg ?? "", context);
           }
@@ -169,8 +177,7 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
       isLoading = state.isReqToShowLoader ?? false;
     }
     if (state is FilterFetchState) {
-      subCategoryBloc?.add(FetchSubCategoryEvent(
-          filters, page));
+      subCategoryBloc?.add(FetchSubCategoryEvent(filters, page));
       data = state.filterModel;
     }
     return buildHomePageUI();
@@ -198,7 +205,8 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
           categoriesData,
           isLoggedIn,
           data,
-          filters, isPreCatching),
+          filters,
+          isPreCatching),
     );
   }
 }

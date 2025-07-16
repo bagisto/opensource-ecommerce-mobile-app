@@ -19,9 +19,11 @@ class CategoriesArguments {
   String? id;
   String? metaDescription;
   String? parentId;
+  List<Map<String, dynamic>>? filters;
 
   CategoriesArguments(
-      {this.title, this.categorySlug, this.image, this.metaDescription, this.id, this.parentId});
+      {this.title, this.categorySlug, this.image, this.metaDescription, this.id, this.parentId,
+        this.filters});
 }
 
 ///class use to pass data on cms screens

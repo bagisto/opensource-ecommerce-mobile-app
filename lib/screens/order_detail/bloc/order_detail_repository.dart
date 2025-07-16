@@ -28,8 +28,8 @@ class OrderDetailRepositoryImp implements OrderDetailRepository {
       orderDetailModel=await ApiClient().getOrderDetail(orderId);
     }
     catch(error,stacktrace){
-      print("Error --> $error");
-      print("StackTrace --> $stacktrace");
+      debugPrint("Error --> $error");
+      debugPrint("StackTrace --> $stacktrace");
     }
     return orderDetailModel!;
   }
@@ -42,8 +42,8 @@ class OrderDetailRepositoryImp implements OrderDetailRepository {
       baseModel = await ApiClient().cancelOrder(id);
     }
     catch(error,stacktrace){
-      print("Error --> $error");
-      print("StackTrace --> $stacktrace");
+      debugPrint("Error --> $error");
+      debugPrint("StackTrace --> $stacktrace");
     }
     return baseModel!;
   }
@@ -55,8 +55,8 @@ class OrderDetailRepositoryImp implements OrderDetailRepository {
       baseModel = await ApiClient().reOrderCustomerOrder(id);
     }
     catch(error,stacktrace){
-      print("Error --> $error");
-      print("StackTrace --> $stacktrace");
+      debugPrint("Error --> $error");
+      debugPrint("StackTrace --> $stacktrace");
     }
     return baseModel!;
   }

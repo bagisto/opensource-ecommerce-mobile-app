@@ -417,8 +417,9 @@ class _SignInScreenState extends State<SignInScreen> with EmailValidator {
             }
           }
         }
-        catch(e) {
+        catch(e,stackTrace) {
           debugPrint("error --> ${e.toString()}");
+          debugPrint("StackTrace --> $stackTrace");
         }
       } else {
           ShowMessage.errorNotification(

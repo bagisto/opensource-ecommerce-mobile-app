@@ -150,8 +150,8 @@ class _WishlistItemListState extends State<WishlistItemList> {
                               MediaQuery.of(context).size.width,
                               (item?.product?.isSaleable ?? false)
                                   ? () {
-                                if (item?.product?.type == StringConstants.simple ||
-                                    item?.product?.type == StringConstants.virtual) {
+                                if ((item?.product?.type == StringConstants.simple ||
+                                    item?.product?.type == StringConstants.virtual)&& ((item?.product?.customizableOptions??[]).length ==0) ) {
                                   widget.wishListBloc?.add(
                                       OnClickWishListLoaderEvent(
                                           isReqToShowLoader: true));
@@ -164,6 +164,15 @@ class _WishlistItemListState extends State<WishlistItemList> {
                                     StringConstants.addOptions.localized(),
                                     Colors.yellow,
                                     const Icon(Icons.warning_amber),
+                                  );
+                                  Navigator.pushNamed(
+                                    context,
+                                    productScreen,
+                                    arguments: PassProductData(
+                                      title: item?.product?.name ?? "",
+                                      urlKey: item?.product?.urlKey,
+                                      productId: int.parse(item?.product?.id ?? ""),
+                                    ),
                                   );
                                 }
                               }

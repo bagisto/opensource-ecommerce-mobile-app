@@ -18,12 +18,11 @@ class CurrencyLanguageList {
   List<Currencies>? currencies;
   Currencies? baseCurrency;
   String? id;
-  String? name;
+  // String? name;
   int? rootCategoryId;
 
   CurrencyLanguageList({
     this.locales,
-    this.name,
     this.id,
     this.currencies,
     this.baseCurrency,
@@ -60,7 +59,7 @@ class Currencies {
   String? id;
   String? name;
   String? code;
-  String? symbol;
+  // String? symbol;
   Currencies({
     this.id,
     this.name,

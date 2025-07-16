@@ -57,3 +57,4 @@ export 'package:dio/dio.dart';
 export 'package:flutter/services.dart';
 export 'package:path_provider/path_provider.dart';
 export 'package:permission_handler/permission_handler.dart';
+export 'package:bagisto_app_demo/screens/product_screen/view/booking_option_view.dart';

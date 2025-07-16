@@ -35,7 +35,7 @@ class DownloadableProductModel extends BaseModel {
 class DownloadableLinkPurchases {
   String? id;
   String? productName;
-  String? name;
+  // String? name;
   int? downloadBought;
   int? downloadUsed;
   String? orderId;
@@ -46,7 +46,6 @@ class DownloadableLinkPurchases {
   DownloadableLinkPurchases(
       {this.id,
       this.productName,
-      this.name,
       this.downloadBought,
       this.downloadUsed,
       this.orderId,
@@ -60,48 +59,48 @@ class DownloadableLinkPurchases {
   Map<String, dynamic> toJson() => _$DownloadableLinkPurchasesToJson(this);
 }
 
-@JsonSerializable()
-class Customer {
-  String? id;
-  String? firstName;
-  String? lastName;
-  String? name;
-  dynamic gender;
-  dynamic dateOfBirth;
-  String? email;
-  dynamic phone;
-  String? password;
-  String? apiToken;
-  int? customerGroupId;
-  bool? subscribedToNewsLetter;
-  bool? isVerified;
-  String? token;
-  dynamic notes;
-  bool? status;
+// @JsonSerializable()
+// class Customer {
+//   String? id;
+// String? firstName;
+// String? lastName;
+// String? name;
+// dynamic gender;
+// dynamic dateOfBirth;
+//   String? email;
+//   dynamic phone;
+//   String? password;
+//   String? apiToken;
+//   int? customerGroupId;
+//   bool? subscribedToNewsLetter;
+//   bool? isVerified;
+//   String? token;
+//   dynamic notes;
+//   bool? status;
 
-  Customer(
-      {this.id,
-      this.firstName,
-      this.lastName,
-      this.name,
-      this.gender,
-      this.dateOfBirth,
-      this.email,
-      this.phone,
-      this.password,
-      this.apiToken,
-      this.customerGroupId,
-      this.subscribedToNewsLetter,
-      this.isVerified,
-      this.token,
-      this.notes,
-      this.status});
+//   Customer(
+//       {this.id,
+//       this.firstName,
+//       this.lastName,
+//       this.name,
+//       this.gender,
+//       this.dateOfBirth,
+//       this.email,
+//       this.phone,
+//       this.password,
+//       this.apiToken,
+//       this.customerGroupId,
+//       this.subscribedToNewsLetter,
+//       this.isVerified,
+//       this.token,
+//       this.notes,
+//       this.status});
 
-  factory Customer.fromJson(Map<String, dynamic> json) {
-    return _$CustomerFromJson(json);
-  }
-  Map<String, dynamic> toJson() => _$CustomerToJson(this);
-}
+//   factory Customer.fromJson(Map<String, dynamic> json) {
+//     return _$CustomerFromJson(json);
+//   }
+//   Map<String, dynamic> toJson() => _$CustomerToJson(this);
+// }
 
 @JsonSerializable()
 class Order {

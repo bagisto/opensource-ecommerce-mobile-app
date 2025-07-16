@@ -80,8 +80,6 @@ class _CollectionListTypeState extends State<CollectionListType> {
     for (var element in (optionArray ?? [])) {
       val = (element["attributeOptionId"].toString() == id.toString());
       if (val) {
-        debugPrint(
-            "break --> ${id.toString()} * ${(element["attributeOptionId"].toString() == id.toString())} ");
         break;
       }
     }

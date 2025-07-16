@@ -17,7 +17,8 @@ class CountriesData {
 
   CountriesData({this.data});
 
-  factory CountriesData.fromJson(Map<String, dynamic> json) => _$CountriesDataFromJson(json);
+  factory CountriesData.fromJson(Map<String, dynamic> json) =>
+      _$CountriesDataFromJson(json);
 
   Map<String, dynamic> toJson() => _$CountriesDataToJson(this);
 }
@@ -36,21 +37,22 @@ class Data {
 
   Map<String, dynamic> toJson() => _$DataToJson(this);
 }
+
 @JsonSerializable()
 class Translations {
   String? id;
   String? locale;
   String? name;
-  String? title;
-  String? countryId;
-  String? defaultName;
-  String? countryStateId;
+  // String? title;
+  // String? countryId;
+  // String? defaultName;
+  // String? countryStateId;
 
-  Translations({this.id,this.title, this.locale, this.name, this.countryId,this.defaultName,this.countryStateId});
-  factory Translations.fromJson(Map<String, dynamic> json) => _$TranslationsFromJson(json);
+  Translations({this.id, this.locale, this.name});
+  factory Translations.fromJson(Map<String, dynamic> json) =>
+      _$TranslationsFromJson(json);
 
   Map<String, dynamic> toJson() => _$TranslationsToJson(this);
-
 }
 
 @JsonSerializable()
@@ -59,20 +61,17 @@ class States {
   String? countryCode;
   String? code;
   String? defaultName;
-  String? countryId;
+  // String? countryId;
   List<Translations>? translations;
 
   States(
       {this.id,
-        this.countryCode,
-        this.code,
-        this.defaultName,
-        this.countryId,
-        this.translations});
+      this.countryCode,
+      this.code,
+      this.defaultName,
+      this.translations});
 
   factory States.fromJson(Map<String, dynamic> json) => _$StatesFromJson(json);
 
   Map<String, dynamic> toJson() => _$StatesToJson(this);
 }
-
-

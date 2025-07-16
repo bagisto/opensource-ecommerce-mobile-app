@@ -1,6 +1,24 @@
-# CHANGELOG for v2.3.0-alpha
-
 #### This changelog consists the bug & security fixes and new features being included in the releases listed below.
+
+# CHANGELOG for v2.3.0
+## **v2.3.0 (16th of July, 2025)** - *Release*
+
+# CHANGELOG for v2.3.0
+* [Enhancement] Features as per Bagisto v2.3.0.
+* [Enhancement] HomePage Similar to web with respect to dynamic html content.
+* [Enhancement] Booking Product Support Added
+* [Enhancement] Customizable Options feature added
+* [Enhancement] Paypal Support Added
+* [Improvement] Optimized GraphQL queries across the project to improve data retrieval performance.
+* [Compatibility] Compatibility with Xcode 16.3.
+* [Compatibility] Compatibility with Flutter Version 3.32.5.
+
+
+## **Bug Fixes**
+
+[Fixed] Support For Multipart Request for file upload
+[Fixed] Better Filter Support for collections
+
 
 ## **v2.3.0-alpha (16th of May, 2025)** - *Release*
 
@@ -14,7 +32,7 @@
 
 ## **Bug Fixes**
 
-[Fixed] Resolved customer account update issue.
+[Fixed] Resolved customer account update failure.
 [Fixed] Fixed issue with product review submission.
 
 # CHANGELOG for v2.2.2

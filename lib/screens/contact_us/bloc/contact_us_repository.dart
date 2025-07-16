@@ -27,7 +27,6 @@ class ContactUsScreenRepositoryImp implements ContactUsScreenRepository {
       String?  email,
       String?  phone,
       String? describe)async {
-    print("ContactUsRepo is called ");
     BaseModel? baseModel;
     baseModel = await ApiClient().contactUsApiClient(name,email,phone,describe);
     return baseModel!;

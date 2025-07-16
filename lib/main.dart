@@ -59,11 +59,16 @@ Future<void> main() async {
       ?.createNotificationChannel(channel);
   await initHiveForFlutter();
   hiveRegisterAdapter();
+  loadWebContent();
   runApp(
     RestartWidget(
       child: BagistoApp(GlobalData.locale),
     ),
   );
+}
+
+void loadWebContent() async {
+  GlobalData.style = await rootBundle.loadString('assets/web/style.css');
 }
 
 Future<void> hiveRegisterAdapter() async {
@@ -116,8 +121,6 @@ class _RestartWidgetState extends State<RestartWidget> {
   }
 }
 
-/// BagistoApp class is the main class of the application. It is responsible for
-/// initializing the app,setting up the theme, routes, and localization settings.
 class BagistoApp extends StatefulWidget {
   const BagistoApp(
     this.selectedLanguage, {
@@ -133,16 +136,39 @@ class _BagistoAppState extends State<BagistoApp> {
   Locale? _locale;
   String appRoot = splash;
 
-  /// Initialize the app with default values like language, currency, currency symbol
   @override
   void initState() {
+    try {
+      ApiClient().getCoreConfigs().then((config) {
+        GlobalData.configData = config;
+      });
+    } catch (e) {
+      debugPrint("Error in config --> $e");
+    }
     GlobalData.locale = appStoragePref.getCustomerLanguage();
     GlobalData.currencyCode = appStoragePref.getCurrencyCode();
     GlobalData.currencySymbol = appStoragePref.getCurrencySymbol();
     _locale = Locale(GlobalData.locale);
     PushNotificationsManager.instance.setUpFirebase(context);
     notification();
+    getDeviceName().then((value){
+      GlobalData.deviceName = value;
+    });
     super.initState();
+  }
+
+  Future<String> getDeviceName() async {
+    final deviceInfoPlugin = DeviceInfoPlugin();
+
+    if (Platform.isAndroid) {
+      final androidInfo = await deviceInfoPlugin.androidInfo;
+      return "${androidInfo.manufacturer} ${androidInfo.model}";
+    } else if (Platform.isIOS) {
+      final iosInfo = await deviceInfoPlugin.iosInfo;
+      return "${iosInfo.name} ${iosInfo.model}";
+    } else {
+      return "Unknown Device";
+    }
   }
 
   // Permission for notification
@@ -154,12 +180,7 @@ class _BagistoAppState extends State<BagistoApp> {
     });
   }
 
-  /// Builds the MaterialApp widget with the specified theme, routes, and localization settings.
-  /// Returns a ChangeNotifierProvider that provides a ThemeProvider to the widget tree. The
-  /// ThemeProvider is used to manage the theme of the app. The MaterialApp widget is wrapped
-  /// in an OverlaySupport widget to enable overlay notifications. The supportedLocales property
-  /// specifies the locales that the app supports. The localeResolutionCallback property is used
-  /// to resolve the locale based on the user's preferred locale. The locale property specifies the current locale of the app.
+
   @override
   Widget build(BuildContext context) {
     return OverlaySupport.global(
@@ -199,7 +220,6 @@ class _BagistoAppState extends State<BagistoApp> {
   }
 }
 
-/// HttpOverrides class to bypass SSL certificate verification for HTTPS requests to localhost. This is useful for testing purposes when using a local server.
 class MyHttpOverrides extends HttpOverrides {
   @override
   HttpClient createHttpClient(SecurityContext? context) {

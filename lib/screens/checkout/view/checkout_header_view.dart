@@ -8,15 +8,21 @@
  *   @link https://store.webkul.com/license.html
  */
 
-
 import 'package:bagisto_app_demo/screens/checkout/utils/index.dart';
+
 class CheckoutHeaderView extends StatefulWidget {
- final String? total;
- final int curStep;
- final ValueChanged<int>? didSelect;
- final BuildContext? context;
+  final String? total;
+  final int curStep;
+  final ValueChanged<int>? didSelect;
+  final BuildContext? context;
+  final bool isDownloadable;
   const CheckoutHeaderView(
-      {Key? key, this.curStep = 1, this.didSelect, this.total, this.context})
+      {Key? key,
+      this.curStep = 1,
+      this.didSelect,
+      this.total,
+      this.context,
+      this.isDownloadable = false})
       : super(key: key);
   @override
   State<StatefulWidget> createState() {
@@ -25,37 +31,63 @@ class CheckoutHeaderView extends StatefulWidget {
 }
 
 class _CheckoutHeaderViewState extends State<CheckoutHeaderView> {
-  late List<String>? titles = [
-    StringConstants.addressCheckout.localized(),
-    StringConstants.shipping.localized(),
-    StringConstants.payment.localized(),
-    StringConstants.checkout.localized(),
-  ];
-  List<IconData> stepIcons = [
-    Icons.person,
-    Icons.local_shipping,
-    Icons.payment,
-    Icons.add_shopping_cart_sharp
-  ];
+  late List<String>? titles;
+  late List<IconData> stepIcons;
   final Color _activeColor = MobiKulTheme.accentColor;
   final Color _inactiveColor = Colors.grey.shade400;
   final double lineWidth = AppSizes.spacingSmall;
 
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    stepIcons = widget.isDownloadable
+        ? [
+            Icons.person,
+            // Icons.local_shipping,
+            Icons.payment,
+            Icons.add_shopping_cart_sharp
+          ]
+        : [
+            Icons.person,
+            Icons.local_shipping,
+            Icons.payment,
+            Icons.add_shopping_cart_sharp
+          ];
+
+    titles = widget.isDownloadable
+        ? [
+            StringConstants.addressCheckout.localized(),
+            // StringConstants.shipping.localized(),
+            StringConstants.payment.localized(),
+            StringConstants.checkout.localized()
+          ]
+        : [
+            StringConstants.addressCheckout.localized(),
+            StringConstants.shipping.localized(),
+            StringConstants.payment.localized(),
+            StringConstants.checkout.localized()
+          ];
+  }
+
+  @override
   Widget build(BuildContext context) {
-    debugPrint(widget.curStep.toString());
     return Card(
       elevation: 2,
-      margin: const EdgeInsets.fromLTRB(0, AppSizes.spacingSmall, 0, AppSizes.spacingSmall),
+      margin: const EdgeInsets.fromLTRB(
+          0, AppSizes.spacingSmall, 0, AppSizes.spacingSmall),
       child: Container(
-          padding: const EdgeInsets.symmetric(vertical: AppSizes.spacingNormal, horizontal: AppSizes.spacingMedium),
+          padding: const EdgeInsets.symmetric(
+              vertical: AppSizes.spacingNormal,
+              horizontal: AppSizes.spacingMedium),
           width: MediaQuery.of(context).size.width,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSizes.spacingSmall),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: AppSizes.spacingSmall),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: _iconViews(),
@@ -87,12 +119,13 @@ class _CheckoutHeaderViewState extends State<CheckoutHeaderView> {
 
       list.add(InkWell(
         child: Container(
-          width: AppSizes.spacingLarge*2,
-          height: AppSizes.spacingLarge*2,
+          width: AppSizes.spacingLarge * 2,
+          height: AppSizes.spacingLarge * 2,
           padding: const EdgeInsets.all(0),
           decoration: BoxDecoration(
             color: circleColor,
-            borderRadius: const BorderRadius.all(Radius.circular(AppSizes.spacingMedium*2)),
+            borderRadius: const BorderRadius.all(
+                Radius.circular(AppSizes.spacingMedium * 2)),
           ),
           child: Icon(
             icon,

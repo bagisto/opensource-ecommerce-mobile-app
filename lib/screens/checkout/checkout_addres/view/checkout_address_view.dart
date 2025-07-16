@@ -205,7 +205,6 @@ class _CheckoutAddressViewState extends State<CheckoutAddressView> {
   }
 
   void callAddressCallback() {
-    print("vrgeg ${type}");
     if (widget.callBack != null) {
       widget.callBack!(
           billingAddress?.companyName,

@@ -31,12 +31,12 @@ class OrdersListModel extends BaseModel {
 
 @JsonSerializable()
 class PaginatorInfo {
-  int? count;
+  // int? count;
   int? currentPage;
   int? lastPage;
-  int? total;
+  // int? total;
 
-  PaginatorInfo({this.count, this.currentPage, this.lastPage, this.total});
+  PaginatorInfo({this.currentPage, this.lastPage});
   factory PaginatorInfo.fromJson(Map<String, dynamic> json) =>
       _$PaginatorInfoFromJson(json);
 

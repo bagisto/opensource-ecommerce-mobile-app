@@ -77,7 +77,7 @@ class BillingAddress {
   String? city;
   String? state;
   String? country;
-  String? email;
+  // String? email;
   String? phone;
 
   BillingAddress({
@@ -89,7 +89,7 @@ class BillingAddress {
     this.city,
     this.state,
     this.country,
-    this.email,
+    // this.email,
     this.phone,
   });
 
@@ -110,7 +110,7 @@ class Items {
   int? qtyInvoiced;
   int? qtyCanceled;
   int? qtyRefunded;
-  String? productId;
+  // String? productId;
   OrderProduct? product;
   FormattedPrice? formattedPrice;
   dynamic additional;
@@ -125,7 +125,6 @@ class Items {
       this.qtyInvoiced,
       this.qtyCanceled,
       this.qtyRefunded,
-      this.productId,
       this.product,
       this.additional});
 
@@ -138,13 +137,12 @@ class Items {
 class OrderProduct {
   String? id;
   String? sku;
-  String? name;
+  // String? name;
   List<Images>? images;
 
   OrderProduct({
     this.id,
     this.sku,
-    this.name,
   });
 
   factory OrderProduct.fromJson(Map<String, dynamic> json) =>
@@ -155,10 +153,10 @@ class OrderProduct {
 
 @JsonSerializable()
 class SuperAttributes {
-  int? attributeId;
-  int? optionId;
+  // int? attributeId;
+  // int? optionId;
 
-  SuperAttributes({this.attributeId, this.optionId});
+  SuperAttributes();
   factory SuperAttributes.fromJson(Map<String, dynamic> json) {
     return _$SuperAttributesFromJson(json);
   }
@@ -168,13 +166,12 @@ class SuperAttributes {
 @JsonSerializable()
 class Options {
   String? id;
-  String? label;
-  String? swatchType;
-  String? swatchValue;
-  bool? isSelect = false;
+  // String? label;
+  // String? swatchType;
+  // String? swatchValue;
+  // bool? isSelect = false;
 
-  Options(
-      {this.id, this.label, this.swatchType, this.isSelect, this.swatchValue});
+  Options({this.id});
 
   factory Options.fromJson(Map<String, dynamic> json) =>
       _$OptionsFromJson(json);

@@ -8,10 +8,6 @@
  *   @link https://store.webkul.com/license.html
  */
 
-
-
-
-
 import 'package:bagisto_app_demo/screens/add_review/utils/index.dart';
 
 abstract class AddReviewBaseState {}
@@ -38,7 +34,6 @@ class AddReviewFetchState extends AddReviewBaseState {
 }
 
 class ImagePickerState extends AddReviewBaseState {
-  String? image;
-  ImagePickerState(this.image);
-  List<Object> get props => [];
+  List<XFile?>? pickedFile;
+  ImagePickerState(this.pickedFile);
 }

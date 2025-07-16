@@ -16,56 +16,34 @@ import 'package:json_annotation/json_annotation.dart';
 part 'signup_model.g.dart';
 
 @JsonSerializable()
-class SignUpResponseModel extends BaseModel{
-  String? token;
-  Data? data;
-  // dynamic error;
-
-  SignUpResponseModel({this.token,  this.data/*,this.error,*/});
-
-  factory SignUpResponseModel.fromJson(Map<String, dynamic> json) =>
-      _$SignUpResponseModelFromJson(json);
-
-  @override
-  Map<String, dynamic> toJson() =>
-      _$SignUpResponseModelToJson(this);
-}
-@JsonSerializable()
 class Data {
   int? id;
   String? email;
   String? firstName;
   String? lastName;
-  String?name;
+  String? name;
   Group? group;
 
-  Data(
-      {
-        this.id,
-        this.email,
-        this.firstName,
-        this.lastName,
-        this.name,
-       });
+  Data({
+    this.id,
+    this.email,
+    this.firstName,
+    this.lastName,
+    this.name,
+  });
 
+  factory Data.fromJson(Map<String, dynamic> json) => _$DataFromJson(json);
 
-  factory Data.fromJson(Map<String, dynamic> json) =>
-      _$DataFromJson(json);
-
-  Map<String, dynamic> toJson() =>
-      _$DataToJson(this);
-
+  Map<String, dynamic> toJson() => _$DataToJson(this);
 }
+
 @JsonSerializable()
 class Group {
   int? id;
   String? name;
   Group({this.id, this.name});
 
-  factory Group.fromJson(Map<String, dynamic> json) =>
-      _$GroupFromJson(json);
+  factory Group.fromJson(Map<String, dynamic> json) => _$GroupFromJson(json);
 
-  Map<String, dynamic> toJson() =>
-      _$GroupToJson(this);
-
+  Map<String, dynamic> toJson() => _$GroupToJson(this);
 }

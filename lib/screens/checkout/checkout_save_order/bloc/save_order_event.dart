@@ -14,4 +14,6 @@ abstract class SaveOrderBaseEvent{}
 
 
 class SaveOrderFetchDataEvent extends SaveOrderBaseEvent{
+  Map<String, dynamic>? serverPayload;
+  SaveOrderFetchDataEvent({this.serverPayload});
 }

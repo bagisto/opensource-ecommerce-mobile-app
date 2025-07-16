@@ -8,11 +8,9 @@
  *   @link https://store.webkul.com/license.html
  */
 
-
-
-
 import '../../../data_model/account_models/account_update_model.dart';
 import '../utils/index.dart';
+
 abstract class AccountInfoRepository {
   Future<AccountInfoModel> callAccountDetailsApi();
 
@@ -26,7 +24,7 @@ abstract class AccountInfoRepository {
       String oldPassword,
       String password,
       String confirmPassword,
-      String avatar,
+      String? avatar,
       bool subscribedToNewsLetter);
 
   Future<BaseModel> callDeleteAccountApi(String password);
@@ -38,7 +36,6 @@ class AccountInfoRepositoryImp implements AccountInfoRepository {
     AccountInfoModel? accountInfoDetails;
     try {
       accountInfoDetails = await ApiClient().getCustomerData();
-      print("resposne is getting ><>> ${accountInfoDetails?.firstName}");
     } catch (error, stacktrace) {
       debugPrint("Error --> $error");
       debugPrint("StackTrace --> $stacktrace");
@@ -57,9 +54,8 @@ class AccountInfoRepositoryImp implements AccountInfoRepository {
       String oldPassword,
       String password,
       String confirmPassword,
-      String avatar,
-      bool subscribedToNewsLetter
-      ) async {
+      String? avatar,
+      bool subscribedToNewsLetter) async {
     AccountUpdate? accountUpdate;
     try {
       accountUpdate = await ApiClient().updateCustomerData(
@@ -73,13 +69,11 @@ class AccountInfoRepositoryImp implements AccountInfoRepository {
           confirmPassword,
           oldPassword,
           avatar,
-          subscribedToNewsLetter
-      );
+          subscribedToNewsLetter);
     } catch (error, stacktrace) {
       debugPrint("Error --> $error");
       debugPrint("StackTrace --> $stacktrace");
     }
-    print("accountreposcreen---$subscribedToNewsLetter");
     return accountUpdate!;
   }
 

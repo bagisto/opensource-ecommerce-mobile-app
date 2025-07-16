@@ -24,8 +24,8 @@ class OrderShipmentsRepositoryImp implements OrderShipmentsRepository {
       shipmentData=await ApiClient().getShipmentsList(orderId);
     }
     catch(error,stacktrace){
-      print("Error --> $error");
-      print("StackTrace --> $stacktrace");
+      debugPrint("Error --> $error");
+      debugPrint("StackTrace --> $stacktrace");
     }
     return shipmentData!;
   }

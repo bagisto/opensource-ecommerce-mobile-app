@@ -8,7 +8,6 @@
  *   @link https://store.webkul.com/license.html
  */
 
-
 import 'package:bagisto_app_demo/screens/compare/utils/index.dart';
 
 class CompareLoaderView extends StatelessWidget {
@@ -25,7 +24,7 @@ class CompareLoaderView extends StatelessWidget {
               highlightColor: Theme.of(context).highlightColor,
               baseColor: Theme.of(context).scaffoldBackgroundColor,
               direction: SkeletonDirection.ttb,
-              builder:SizedBox(
+              builder: SizedBox(
                 height: MediaQuery.of(context).size.height / 2.1,
                 child: ListView.builder(
                     shrinkWrap: true,
@@ -33,32 +32,31 @@ class CompareLoaderView extends StatelessWidget {
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: 5,
                     itemBuilder: (context, index) {
-                      return  Container(
+                      return Container(
                           padding: const EdgeInsets.only(right: 1),
                           decoration: const BoxDecoration(
                               border: Border(
-                                right: BorderSide(
-                                  color: Colors.black,
-                                  width:1.5,
-                                ),
-                              )),
+                            right: BorderSide(
+                              color: Colors.black,
+                              width: 1.5,
+                            ),
+                          )),
                           child: Container(
                             width: MediaQuery.of(context).size.width / 2.2,
                             color: Colors.red,
-                          )
-                      );
+                          ));
                     }),
-              )
-          ),
+              )),
           SizedBox(
             height: 30,
-            width:MediaQuery.of(context).size.width ,
+            width: MediaQuery.of(context).size.width,
             child: Container(
-              decoration:
-              BoxDecoration(border: Border.all(color: Colors.grey,)),
+              decoration: BoxDecoration(
+                  border: Border.all(
+                color: Colors.grey,
+              )),
               child: Padding(
-                padding:
-                const EdgeInsets.only(left: 12.0, top: 6, bottom: 2),
+                padding: const EdgeInsets.only(left: 12.0, top: 0, bottom: 2),
                 child: Text(
                   StringConstants.sku.localized().toUpperCase(),
                   style: TextStyle(
@@ -86,12 +84,14 @@ class CompareLoaderView extends StatelessWidget {
                       width: MediaQuery.of(context).size.width / 2.2,
                       decoration: const BoxDecoration(
                           border: Border(
-                            right: BorderSide(
-                              color: Colors.black,
-                              width: 1.5,
-                            ),
-                          )),
-                      child: Container(color: Colors.red,),
+                        right: BorderSide(
+                          color: Colors.black,
+                          width: 1.5,
+                        ),
+                      )),
+                      child: Container(
+                        color: Colors.red,
+                      ),
                     );
                   }),
             ),
@@ -101,11 +101,12 @@ class CompareLoaderView extends StatelessWidget {
             width: MediaQuery.of(context).size.width,
             child: Container(
               decoration: BoxDecoration(
-                // color: Colors.white,
-                  border: Border.all(color: Colors.grey,)),
+                  // color: Colors.white,
+                  border: Border.all(
+                color: Colors.grey,
+              )),
               child: Padding(
-                padding:
-                const EdgeInsets.only(left: 12.0, top: 6, bottom: 2),
+                padding: const EdgeInsets.only(left: 12.0, top: 6, bottom: 2),
                 child: Text(
                   StringConstants.description.localized(),
                   style: TextStyle(
@@ -133,12 +134,14 @@ class CompareLoaderView extends StatelessWidget {
                       width: MediaQuery.of(context).size.width / 2.2,
                       decoration: const BoxDecoration(
                           border: Border(
-                            right: BorderSide(
-                              color: Colors.black,
-                              width: 1.5,
-                            ),
-                          )),
-                      child: Container(color: Colors.red,),
+                        right: BorderSide(
+                          color: Colors.black,
+                          width: 1.5,
+                        ),
+                      )),
+                      child: Container(
+                        color: Colors.red,
+                      ),
                     );
                   }),
             ),

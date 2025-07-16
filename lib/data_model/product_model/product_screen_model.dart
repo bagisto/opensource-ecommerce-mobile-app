@@ -18,17 +18,6 @@ import '../graphql_base_error_model.dart';
 part 'product_screen_model.g.dart';
 
 @JsonSerializable()
-class Data {
-  ProductData? product;
-
-  Data({this.product});
-
-  factory Data.fromJson(Map<String, dynamic> json) => _$DataFromJson(json);
-
-  Map<String, dynamic> toJson() => _$DataToJson(this);
-}
-
-@JsonSerializable()
 class ProductData extends GraphQlBaseErrorModel {
   String? shareURL;
   List<AdditionalData>? additionalData;
@@ -319,7 +308,7 @@ class FilterableAttributes {
 
 @JsonSerializable()
 class Translations {
-  String? id;
+  dynamic id;
   String? name;
   String? description;
   String? localeId;
@@ -329,6 +318,7 @@ class Translations {
   String? productDownloadableSampleId;
   String? productDownloadableLinkId;
   String? productBundleOptionId;
+  String? productCustomizableOptionId;
 
   Translations(
       {this.id,
@@ -340,7 +330,8 @@ class Translations {
       this.title,
       this.productDownloadableLinkId,
       this.productDownloadableSampleId,
-      this.productBundleOptionId});
+      this.productBundleOptionId,
+      this.productCustomizableOptionId});
 
   factory Translations.fromJson(Map<String, dynamic> json) =>
       _$TranslationsFromJson(json);

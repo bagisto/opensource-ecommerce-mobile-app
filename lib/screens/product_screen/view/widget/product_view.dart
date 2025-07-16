@@ -8,12 +8,12 @@
  *   @link https://store.webkul.com/license.html
  */
 
-
+import 'package:bagisto_app_demo/data_model/product_model/booking_slots_modal.dart';
 import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
-
 
 //ignore: must_be_immutable
 class ProductView extends StatefulWidget {
+  final BookingSlotsData? bookingSlotsData;
   final NewProducts? productData;
   final bool isLoading;
   final ProductScreenBLoc? productScreenBLoc;
@@ -24,18 +24,20 @@ class ProductView extends StatefulWidget {
   final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey;
   final ScrollController? scrollController;
   Function(
-      List configurableParams,
-      List bundleParams,
-      List selectList,
-      List selectParam,
-      List groupedParams,
-      List downloadLinks,
-      int qty,
-      dynamic configurableProductId,
-      )? callback;
+    List configurableParams,
+    List bundleParams,
+    List selectList,
+    List selectParam,
+    List groupedParams,
+    List downloadLinks,
+    int qty,
+    dynamic configurableProductId,
+    Map<String, dynamic> bookingParams,
+    Map<String, dynamic> customizableOptionsSelection, // <-- add this
+  )? callback;
 
   ProductView(
-      {Key? key,
+      {super.key,
       required this.productData,
       required this.isLoading,
       this.productScreenBLoc,
@@ -43,9 +45,10 @@ class ProductView extends StatefulWidget {
       this.price,
       required this.scaffoldMessengerKey,
       this.configurableProductId,
-      this.productId, this.callback,
-      this.scrollController})
-      : super(key: key);
+      this.productId,
+      this.callback,
+      this.scrollController,
+      required this.bookingSlotsData});
 
   @override
   State<ProductView> createState() => _ProductViewState();
@@ -59,11 +62,11 @@ class _ProductViewState extends State<ProductView> {
   List configurableParams = [];
   List selectList = [];
   List selectParam = [];
-
+  Map<String, dynamic> bookingParams = {};
+  Map<String, dynamic> customizableOptionsSelection = {}; // <-- add this
   dynamic productFlats;
-  callback(){
-    return
-      widget.callback!(
+  callback() {
+    return widget.callback!(
         configurableParams,
         bundleParams,
         selectList,
@@ -72,20 +75,26 @@ class _ProductViewState extends State<ProductView> {
         downloadLinks,
         qty,
         widget.configurableProductId,
-      );
+        bookingParams,
+        customizableOptionsSelection // <-- add here
+    );
   }
+
   @override
   void initState() {
-    productFlats = widget.productData?.productFlats?.firstWhereOrNull((e) => e.locale==GlobalData.locale );
+    productFlats = widget.productData?.productFlats
+        ?.firstWhereOrNull((e) => e.locale == GlobalData.locale);
     super.initState();
   }
+
   @override
   Widget build(BuildContext context) {
     return RefreshIndicator(
       color: Theme.of(context).colorScheme.onPrimary,
       onRefresh: () {
         return Future.delayed(const Duration(seconds: 1), () {
-          widget.productScreenBLoc?.add(FetchProductEvent(widget.productData?.urlKey ??""));
+          widget.productScreenBLoc
+              ?.add(FetchProductEvent(widget.productData?.urlKey ?? ""));
         });
       },
       child: Stack(
@@ -98,9 +107,10 @@ class _ProductViewState extends State<ProductView> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   ProductImageView(
-                    imgList:
-                        widget.productData?.images?.map((e) => e.url ?? "").toList() ??
-                            [],
+                    imgList: widget.productData?.images
+                            ?.map((e) => e.url ?? "")
+                            .toList() ??
+                        [],
                     callBack: (type) {
                       ProductScreenBLoc productScreenBLoc =
                           context.read<ProductScreenBLoc>();
@@ -112,7 +122,7 @@ class _ProductViewState extends State<ProductView> {
                               widget.productData?.id ?? "", ""));
                         } else {
                           ShowMessage.warningNotification(
-                              StringConstants.pleaseLogin.localized(),context);
+                              StringConstants.pleaseLogin.localized(), context);
                         }
                       } else if (type == StringConstants.wishlist) {
                         if (widget.isLoggedIn == true) {
@@ -126,33 +136,49 @@ class _ProductViewState extends State<ProductView> {
                                 isReqToShowLoader: true));
                           } else {
                             productScreenBLoc.add(AddToWishListProductEvent(
-                                widget.productData?.id ?? "", widget.productData));
+                                widget.productData?.id ?? "",
+                                widget.productData));
                             productScreenBLoc.add(OnClickProductLoaderEvent(
                                 isReqToShowLoader: true));
                           }
                         } else {
                           ShowMessage.warningNotification(
-                              StringConstants.pleaseLogin.localized(),context);
+                              StringConstants.pleaseLogin.localized(), context);
                           productScreenBLoc.add(OnClickProductLoaderEvent(
                               isReqToShowLoader: false));
                         }
                       }
                     },
                     productData: widget.productData,
-                    product: productFlats ?? widget.productData?.productFlats?[0],
+                    product:
+                        productFlats ?? widget.productData?.productFlats?[0],
                   ),
                   CommonWidgets().getHeightSpace(AppSizes.spacingSmall),
                   ProductTypeView(
+                    bookingSlotsData: widget.bookingSlotsData,
+                    productScreenBLoc: widget.productScreenBLoc,
                     scaffoldMessengerKey: widget.scaffoldMessengerKey,
-                    callback: (configurableParams, bundleParams, selectList, selectParam, groupedParams, downloadLinks, qty,configurableProductId){
-                        this.configurableParams=configurableParams;
-                        this.bundleParams=bundleParams;
-                        this.selectList=selectList;
-                        this.selectParam=selectParam;
-                        this.groupedParams=groupedParams;
-                        this.downloadLinks=downloadLinks;
-                        this.qty=qty;
-                        widget.configurableProductId=configurableProductId;
+                    callback: (configurableParams,
+                        bundleParams,
+                        selectList,
+                        selectParam,
+                        groupedParams,
+                        downloadLinks,
+                        qty,
+                        configurableProductId,
+                        bookingParams,
+                        customizableOptionsSelection
+                        ) {
+                      this.configurableParams = configurableParams;
+                      this.bundleParams = bundleParams;
+                      this.selectList = selectList;
+                      this.selectParam = selectParam;
+                      this.groupedParams = groupedParams;
+                      this.downloadLinks = downloadLinks;
+                      this.qty = qty;
+                      this.bookingParams = bookingParams;
+                      widget.configurableProductId = configurableProductId;
+                      this.customizableOptionsSelection = customizableOptionsSelection;
                       callback();
                       setState(() {
 
@@ -178,7 +204,8 @@ class _ProductViewState extends State<ProductView> {
                           StringConstants.reviews.localized(),
                           style: TextStyle(
                               color: Colors.grey.shade600,
-                              fontWeight: FontWeight.w600,fontSize: AppSizes.spacingLarge),
+                              fontWeight: FontWeight.w600,
+                              fontSize: AppSizes.spacingLarge),
                         ),
                         initiallyExpanded: true,
                         children: [
@@ -186,7 +213,8 @@ class _ProductViewState extends State<ProductView> {
                             child: ListView.builder(
                                 shrinkWrap: true,
                                 physics: const NeverScrollableScrollPhysics(),
-                                itemCount: widget.productData?.reviews?.length ?? 0,
+                                itemCount:
+                                    widget.productData?.reviews?.length ?? 0,
                                 itemBuilder: (BuildContext context, int index) {
                                   return Column(
                                     mainAxisAlignment: MainAxisAlignment.start,
@@ -197,7 +225,8 @@ class _ProductViewState extends State<ProductView> {
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 16.0, vertical: 4),
                                         child: Text(
-                                          widget.productData?.reviews?[index].title ??
+                                          widget.productData?.reviews?[index]
+                                                  .title ??
                                               "",
                                           style: const TextStyle(
                                               fontSize: 16,
@@ -205,25 +234,29 @@ class _ProductViewState extends State<ProductView> {
                                         ),
                                       ),
                                       Padding(
-                                        padding: const EdgeInsets.only(left: AppSizes.spacingMedium),
+                                        padding: const EdgeInsets.only(
+                                            left: AppSizes.spacingMedium),
                                         child: RatingBar(
                                           starCount: 5,
                                           isCenter: false,
-                                          size:AppSizes.spacingLarge,
-                                          color: Theme.of(context).colorScheme.onPrimary,
-                                          rating: num.tryParse(
-                                              widget.productData
-                                                  ?.reviews?[index]
-                                                  .rating
-                                                  .toString() ??
-                                                  '0.0')
-                                              ?.toDouble() ??
+                                          size: AppSizes.spacingLarge,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onPrimary,
+                                          rating: num.tryParse(widget
+                                                          .productData
+                                                          ?.reviews?[index]
+                                                          .rating
+                                                          .toString() ??
+                                                      '0.0')
+                                                  ?.toDouble() ??
                                               0.0,
                                         ),
                                       ),
                                       Padding(
                                         padding: const EdgeInsets.symmetric(
-                                            horizontal: AppSizes.spacingLarge, vertical: AppSizes.spacingSmall),
+                                            horizontal: AppSizes.spacingLarge,
+                                            vertical: AppSizes.spacingSmall),
                                         child: Text(widget.productData
                                                 ?.reviews?[index].comment ??
                                             ""),
@@ -231,7 +264,8 @@ class _ProductViewState extends State<ProductView> {
                                       Padding(
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 16.0, vertical: 4),
-                                        child: Text("${StringConstants.reviewBy.localized()} ${widget.productData?.reviews?[index].customerName ?? ""} , ${widget.productData?.reviews?[index].createdAt ?? ""}"),
+                                        child: Text(
+                                            "${StringConstants.reviewBy.localized()} ${widget.productData?.reviews?[index].customerName ?? ""} , ${widget.productData?.reviews?[index].createdAt ?? ""}"),
                                       ),
                                       const SizedBox(
                                         height: 8,
@@ -250,9 +284,7 @@ class _ProductViewState extends State<ProductView> {
           if (widget.isLoading)
             const Align(
               alignment: Alignment.center,
-              child: SizedBox(
-                  child:
-                      Loader()),
+              child: SizedBox(child: Loader()),
             )
         ],
       ),

@@ -8,7 +8,6 @@
  *   @link https://store.webkul.com/license.html
  */
 
-
 const String splash = 'splashScreen';
 const String home = 'homeScreen';
 const String categoryScreen = 'categoryScreen';
@@ -41,12 +40,6 @@ const String refundDetails = "refundDetails";
 const String currencyScreen = "currencyScreen";
 const String languageScreen = "languageScreen";
 const String contactUsScreen = "contactUsScreen";
-
-
-
-
-
-
-
-
-
+const String commonWebView = "commonWebView";
+const String gdpr = "gdpr";
+const String gdprWebView = "gdprWebView";

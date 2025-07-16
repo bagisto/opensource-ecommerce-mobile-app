@@ -8,17 +8,21 @@
  *   @link https://store.webkul.com/license.html
  */
 
-import 'dart:developer';
-
 import 'package:bagisto_app_demo/data_model/account_models/account_update_model.dart';
+import 'package:bagisto_app_demo/data_model/gdpr_models/gdpr_pdf_model.dart';
+import 'package:bagisto_app_demo/data_model/gdpr_models/gdpr_request_model.dart';
+import 'package:bagisto_app_demo/data_model/gdpr_models/gdpr_request_search_model.dart';
 import 'package:bagisto_app_demo/data_model/order_model/order_detail_model.dart';
 import 'package:bagisto_app_demo/data_model/order_model/order_refund_model.dart';
 import 'package:bagisto_app_demo/data_model/order_model/orders_list_data_model.dart';
+import 'package:bagisto_app_demo/data_model/product_model/booking_slots_modal.dart';
 import 'package:bagisto_app_demo/data_model/review_model/review_model.dart';
 import 'package:bagisto_app_demo/data_model/sign_in_model/signin_model.dart';
+import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
 import '../data_model/account_models/account_info_details.dart';
+import '../data_model/core_configs_model.dart';
 import '../data_model/currency_language_model.dart';
 import '../data_model/order_model/order_invoices_model.dart';
 import '../data_model/order_model/shipment_model.dart';
@@ -44,6 +48,7 @@ import '../screens/product_screen/data_model/download_sample_model.dart';
 import '../screens/wishList/data_model/wishlist_model.dart';
 import 'graph_ql.dart';
 import 'mutation_query.dart';
+import 'package:http/http.dart' as http;
 
 typedef Parser<T> = T Function(Map<String, dynamic> json);
 
@@ -57,9 +62,6 @@ class ApiClient {
     String operation,
     Parser<T> parser,
   ) async {
-    log("\nDATA -> ${result.data}\n\n");
-    log("\n COOKIE DATA -> ${result.context.entry<HttpLinkResponseContext>()?.headers?['set-cookie']}\n\n");
-
     String responseCookie = result.context
             .entry<HttpLinkResponseContext>()
             ?.headers?['set-cookie'] ??
@@ -71,15 +73,16 @@ class ApiClient {
       appStoragePref.setCookieGet(responseCookie);
     }
 
-    log("\nEXCEPTION -> ${result.exception}\n\n");
-
     Map<String, dynamic>? data = {};
     // Handle exception if any
-    if (result.hasException) {
+    if (result.hasException && (result.data?[operation]) == null) {
       data.putIfAbsent(
-        "graphqlErrors",
-        () => result.exception?.graphqlErrors.first.message,
-      );
+          "graphqlErrors",
+          () =>
+              (result!.exception!.graphqlErrors!.isNotEmpty
+                  ? result.exception?.graphqlErrors.first.message
+                  : null) ??
+              "Some this went wrong connecting to server!");
       data.putIfAbsent("status", () => false);
     } else {
       // Handle data if no exception
@@ -91,6 +94,7 @@ class ApiClient {
       data?.putIfAbsent("status", () => true);
       data?.putIfAbsent("responseStatus", () => true);
     }
+
     return parser(data ?? {});
   }
 
@@ -144,7 +148,8 @@ class ApiClient {
         document: gql(
           mutation.themeCustomizationData(),
         ),
-        fetchPolicy: FetchPolicy.networkOnly));
+        fetchPolicy: FetchPolicy.noCache,
+        cacheRereadPolicy: CacheRereadPolicy.ignoreAll));
 
     return handleResponse(
       response,
@@ -177,24 +182,147 @@ class ApiClient {
       List groupedParams,
       List bundleParams,
       List configurableParams,
-      String? configurableId) async {
-    var response = await (client.clientToQuery()).mutate(MutationOptions(
-        document: gql(
-          mutation.addToCart(
-              quantity: quantity,
-              productId: productId,
-              downloadableLinks: downloadLinks,
-              groupedParams: groupedParams,
-              bundleParams: bundleParams,
-              configurableParams: configurableParams,
-              configurableId: configurableId),
-        ),
-        fetchPolicy: FetchPolicy.networkOnly));
-    return handleResponse(
-      response,
-      'addItemToCart',
-      (json) => AddToCartModel.fromJson(json),
-    );
+      String? configurableId,
+      Map<String, dynamic>? bookingParams,
+      [List<Map<String, dynamic>>? customizableOptions,
+      List? customizableFiles]) async {
+    // If there are files, use multipart, else normal mutation
+    if (customizableFiles != null && customizableFiles.isNotEmpty) {
+      // Prepare multipart request
+      final uri = Uri.parse(baseUrl);
+      final request = http.MultipartRequest('POST', uri);
+
+      request.headers.addAll({
+        "Cookie": appStoragePref.getCookieGet(),
+        "x-currency": GlobalData.currencyCode,
+        "x-locale": GlobalData.locale,
+        'Authorization': appStoragePref.getCustomerToken(),
+      });
+
+      // Prepare GraphQL mutation and variables
+      final mutationString = '''
+      mutation addItemToCart(\$input: AddItemToCartInput!) {
+        addItemToCart(input: \$input) {
+          success
+          message
+          cart {
+            id
+            itemsCount
+            couponCode
+            itemsQty
+            taxTotal
+          }
+        }
+      }
+      ''';
+
+      // Prepare input map, wrap all options inside customizableOptions
+      final inputMap = {
+        "productId": productId,
+        "quantity": quantity,
+        "selectedConfigurableOption": configurableId,
+        "superAttribute": configurableParams,
+        "qty": groupedParams,
+        "links": downloadLinks,
+        "bundleOptions": bundleParams,
+        "booking": bookingParams,
+        "customizableOptions": customizableOptions?.map((opt) {
+          final map = {
+            "id": opt["id"],
+          };
+          if (opt.containsKey("value")) {
+            map["value"] = opt["value"];
+          }
+          if (opt.containsKey("file")) {
+            map["file"] =
+                null; // Placeholder, will be replaced by Upload variable
+          }
+          return map;
+        }).toList(),
+      };
+
+      // Prepare operations and map for multipart
+      // Only use 'file' keys inside customizableOptions, not as a separate variable
+      final operations = json.encode({
+        "query": mutationString,
+        "variables": {
+          "input": inputMap,
+        }
+      });
+
+      // Map files to variables inside customizableOptions
+      final fileMap = <String, List<String>>{};
+      int fileIndex = 0;
+      for (int i = 0; i < (customizableOptions?.length ?? 0); i++) {
+        if (customizableOptions![i].containsKey("file")) {
+          fileMap["$fileIndex"] = [
+            "variables.input.customizableOptions.$i.file"
+          ];
+          fileIndex++;
+        }
+      }
+
+      request.fields['operations'] = operations;
+      request.fields['map'] = json.encode(fileMap);
+
+      // Attach files
+      for (int i = 0; i < customizableFiles.length; i++) {
+        final file = customizableFiles[i];
+        if (file != null) {
+          final multipartFile = await http.MultipartFile.fromPath(
+            "$i",
+            file.path,
+            filename: file.name,
+          );
+          request.files.add(multipartFile);
+        }
+      }
+
+      final response = await request.send();
+      final respStr = await response.stream.bytesToString();
+      final Map<String, dynamic> jsonResponse = json.decode(respStr);
+
+      final QueryResult queryResult = QueryResult(
+        options: QueryOptions(document: gql('')),
+        source: QueryResultSource.network,
+        data: jsonResponse['data'],
+        exception: jsonResponse['errors'] != null
+            ? OperationException(
+                graphqlErrors: (jsonResponse['errors'] as List)
+                    .map((e) => GraphQLErrorFromJson.fromJson(
+                        e as Map<String, dynamic>))
+                    .toList(),
+              )
+            : null,
+      );
+
+      return handleResponse(
+        queryResult,
+        'addItemToCart',
+        (json) => AddToCartModel.fromJson(json),
+      );
+    } else {
+      // No files, normal mutation
+      var response = await (client.clientToQuery()).mutate(MutationOptions(
+          document: gql(
+            mutation.addToCart(
+                quantity: quantity,
+                productId: productId,
+                downloadableLinks: downloadLinks,
+                groupedParams: groupedParams,
+                bundleParams: bundleParams,
+                configurableParams: configurableParams,
+                configurableId: configurableId,
+                booking: bookingParams,
+                customizableOptions: customizableOptions),
+          ),
+          fetchPolicy: FetchPolicy.networkOnly));
+      return handleResponse(
+        response,
+        'addItemToCart',
+        (json) => AddToCartModel.fromJson(json),
+      );
+    }
   }
 
   Future<AddWishListModel?> addToWishlist(
@@ -324,27 +452,25 @@ class ApiClient {
 
   Future<NewProductsModel?> getAllProducts(
       {List<Map<String, dynamic>>? filters, int? page, int limit = 15}) async {
-    var response = await (client.clientToQuery()).query(QueryOptions(
-        document: gql(
-          mutation.allProductsList(
-              filters: filters ?? [], page: page ?? 1, limit: limit),
-        ),
-        cacheRereadPolicy: CacheRereadPolicy.mergeOptimistic,
-        fetchPolicy: FetchPolicy.noCache));
-    NewProductsModel? model = await handleResponse(
-      response,
-      'allProducts',
-      (json) => NewProductsModel.fromJson(json),
-    );
+    try {
+      var response = await (client.clientToQuery()).query(QueryOptions(
+          document: gql(
+            mutation.allProductsList(
+                filters: filters ?? [], page: page ?? 1, limit: limit),
+          ),
+          cacheRereadPolicy: CacheRereadPolicy.ignoreAll,
+          fetchPolicy: FetchPolicy.noCache));
 
-    if (model != null && (model.data ?? []).isNotEmpty) {
-      model.data = model.data?.where((product) => product.type?.toLowerCase() != 'booking'
-          &&
-          (product.customizableOptions == null || (product.customizableOptions ?? []).isEmpty))
-          .toList();
+      NewProductsModel? model = await handleResponse(
+        response,
+        'allProducts',
+        (json) => NewProductsModel.fromJson(json),
+      );
+      // log("modall data: ${model?.data?.map((item) => item.toJson()).toList()}");
+      return model;
+    } catch (e) {
+      return null;
     }
-
-    return model;
   }
 
   Future<CartModel?> getCartDetails() async {
@@ -503,7 +629,6 @@ class ApiClient {
           ),
           fetchPolicy: FetchPolicy.networkOnly),
     );
-    print("response >>>b $response");
     return handleResponse(
       response,
       'customerSocialSignUp',
@@ -574,24 +699,77 @@ class ApiClient {
       String? oldpassword,
       String? avatar,
       bool? subscribedToNewsLetter) async {
-    var response = await (client.clientToQuery()).mutate(MutationOptions(
-        document: gql(
-          mutation.updateAccount(
-              firstName: firstName,
-              lastName: lastName,
-              email: email,
-              gender: gender,
-              dateOfBirth: dateOfBirth,
-              phone: phone,
-              oldPassword: oldpassword,
-              password: password,
-              confirmPassword: confirmPassword,
-              avatar: avatar,
-              subscribedToNewsLetter: subscribedToNewsLetter),
-        ),
-        fetchPolicy: FetchPolicy.networkOnly));
+    bool attachImage = false;
+    String? imageField;
+    final QueryResult queryResult;
+
+    if (avatar == null) {
+      imageField = 'omit';
+    } else if (avatar == 'delete') {
+      imageField = "delete";
+    } else {
+      attachImage = true;
+    }
+
+    final operations = mutation.updateAccount(
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        gender: gender,
+        dateOfBirth: dateOfBirth,
+        phone: phone,
+        oldpassword: oldpassword,
+        password: password,
+        confirmPassword: confirmPassword,
+        subscribedToNewsLetter: subscribedToNewsLetter,
+        imageField: imageField);
+
+    if (attachImage) {
+      final uri = Uri.parse(baseUrl);
+      final request = http.MultipartRequest('POST', uri);
+
+      request.headers.addAll({
+        "Cookie": appStoragePref.getCookieGet(),
+        "x-currency": GlobalData.currencyCode,
+        "x-locale": GlobalData.locale,
+        'Authorization': appStoragePref.getCustomerToken(),
+      });
+
+      final map = json.encode({
+        "0": ["variables.input.image"]
+      });
+
+      request.fields['operations'] = operations;
+      request.fields['map'] = map;
+      final multipartFile = await http.MultipartFile.fromPath("0", avatar ?? "",
+          filename: avatar?.split('/').last ?? "",
+          contentType: DioMediaType('image', 'png'));
+
+      request.files.add(multipartFile);
+
+      final response = await request.send();
+      final respStr = await response.stream.bytesToString();
+
+      final Map<String, dynamic> jsonResponse = json.decode(respStr);
+      queryResult = QueryResult(
+        options:
+            QueryOptions(document: gql('')), // Provide appropriate QueryOptions
+        source: QueryResultSource.network, // Specify the source
+        data: jsonResponse['data'],
+        exception: jsonResponse['errors'] != null
+            ? OperationException(graphqlErrors: jsonResponse['errors'])
+            : null,
+      );
+    } else {
+      queryResult = await (client.clientToQuery()).mutate(MutationOptions(
+          document: gql(
+            operations,
+          ),
+          fetchPolicy: FetchPolicy.networkOnly));
+    }
+
     return handleResponse(
-      response,
+      queryResult,
       'updateAccount',
       (json) => AccountUpdate.fromJson(json),
     );
@@ -640,8 +818,6 @@ class ApiClient {
           mutation.getReviewList(page),
         ),
         fetchPolicy: FetchPolicy.networkOnly));
-    debugPrint("$response");
-    debugPrint("${response.data}");
     return handleResponse(
       response,
       'reviewsList',
@@ -870,11 +1046,13 @@ class ApiClient {
   }
 
   //place order
-  Future<SaveOrderModel?> placeOrder() async {
+  Future<SaveOrderModel?> placeOrder(
+      {Map<String, dynamic>? serverPayload}) async {
     var response = await (client.clientToQuery()).mutate(MutationOptions(
         document: gql(
           mutation.placeOrder(),
         ),
+        variables: serverPayload ?? {},
         fetchPolicy: FetchPolicy.networkOnly));
 
     return handleResponse(
@@ -951,17 +1129,27 @@ class ApiClient {
     );
   }
 
-  Future<CompareProductsData?> getCompareProducts() async {
-    var response = await (client.clientToQuery()).query(QueryOptions(
+  Future<CompareProductsData?> getCompareProducts(page, limit) async {
+    try {
+      var response = await (client.clientToQuery()).query(QueryOptions(
         document: gql(
           mutation.getCompareProducts(),
         ),
-        fetchPolicy: FetchPolicy.networkOnly));
-    return handleResponse(
-      response,
-      'compareProducts',
-      (json) => CompareProductsData.fromJson(json),
-    );
+        variables: {
+          'page': page, // <-- Dynamic value
+          'first': limit,
+        },
+        fetchPolicy: FetchPolicy.networkOnly,
+      ));
+
+      return handleResponse(
+        response,
+        'compareProducts',
+        (json) => CompareProductsData.fromJson(json),
+      );
+    } catch (e) {
+      return null;
+    }
   }
 
   Future<BaseModel?> removeFromCompare(
@@ -1002,17 +1190,114 @@ class ApiClient {
       int rating,
       String comment,
       int productId,
-      List<Map<String, String>> attachments) async {
+      List<http.MultipartFile> attachments) async {
+    //   final String createReviewMutation = r'''
+    //   mutation CreateReview($input: CreateReviewInput!) {
+    //     createReview(input: $input) {
+    //       success
+    //       message
+    //       review {
+    //         id
+    //         title
+    //         rating
+    //         comment
+    //         status
+    //         createdAt
+    //         updatedAt
+    //         productId
+    //         customerId
+    //         customer {
+    //           id
+    //           firstName
+    //           lastName
+    //           name
+    //           gender
+    //           dateOfBirth
+    //           email
+    //           phone
+    //           image
+    //           imageUrl
+    //           status
+    //           password
+    //           apiToken
+    //           customerGroupId
+    //           subscribedToNewsLetter
+    //           isVerified
+    //           isSuspended
+    //           token
+    //           rememberToken
+    //           createdAt
+    //           updatedAt
+    //           customerGroup {
+    //             id
+    //             code
+    //             name
+    //             isUserDefined
+    //             createdAt
+    //             updatedAt
+    //           }
+    //         }
+    //         images {
+    //           id
+    //           reviewId
+    //           type
+    //           mimeType
+    //           path
+    //           url
+    //         }
+    //         product {
+    //           id
+    //           sku
+    //           type
+    //           parentId
+    //           attributeFamilyId
+    //           productNumber
+    //           name
+    //           shortDescription
+    //           description
+    //           urlKey
+    //           shareURL
+    //           new
+    //           featured
+    //           status
+    //           guestCheckout
+    //           visibleIndividually
+    //           metaTitle
+    //           metaKeywords
+    //           metaDescription
+    //           price
+    //           specialPrice
+    //           specialPriceFrom
+    //           specialPriceTo
+    //           weight
+    //           parentId
+    //           attributeFamilyId
+    //           createdAt
+    //           updatedAt
+    //         }
+    //       }
+    //     }
+    //   }
+    // ''';
     var response = await (client.clientToQuery()).mutate(MutationOptions(
-        document: gql(
-          mutation.addReview(
-              name = name,
-              title = title,
-              rating = rating,
-              comment = comment,
-              productId = productId,
-              attachments = attachments),
-        ),
+        document: gql(mutation.addReview()),
+        variables: {
+          "input": {
+            "name": name,
+            "title": title,
+            "rating": rating,
+            "comment": comment,
+            "productId": productId,
+            "attachments": attachments,
+          },
+        },
+        // mutation.addReview(
+        //     name = name,
+        //     title = title,
+        //     rating = rating,
+        //     comment = comment,
+        //     productId = productId,
+        //     attachments = attachments),
         fetchPolicy: FetchPolicy.networkOnly));
 
     return handleResponse(
@@ -1171,6 +1456,145 @@ class ApiClient {
       response,
       'downloadSample',
       (json) => DownloadSampleModel.fromJson(json),
+    );
+  }
+
+  Future<CoreConfigs?> getCoreConfigs() async {
+    var response = await (client.clientToQuery()).mutate(MutationOptions(
+        document: gql(
+          mutation.getCoreConfigs(),
+        ),
+        fetchPolicy: FetchPolicy.networkOnly));
+
+    return handleResponse(
+      response,
+      'coreConfigs',
+      (json) => CoreConfigs.fromJson(json),
+    );
+  }
+
+  Future<BaseModel?> subscribeNewsletter(String email) async {
+    var response = await (client.clientToQuery()).mutate(MutationOptions(
+        document: gql(
+          mutation.subscribeNewsletter(email),
+        ),
+        fetchPolicy: FetchPolicy.networkOnly));
+    return handleResponse(
+      response,
+      'subscribe',
+      (json) => BaseModel.fromJson(json),
+    );
+  }
+
+  Future<BookingSlotsData?> getSlots(
+      {required int id, required String date}) async {
+    var response = await (client.clientToQuery()).query(QueryOptions(
+      document: gql(
+        mutation.getSlots(id: id, date: date),
+      ),
+      fetchPolicy: FetchPolicy.networkOnly,
+    ));
+    return handleResponse(
+      response,
+      'getSlots',
+      (json) => BookingSlotsData.fromJson(json),
+    );
+  }
+
+  Future<GdprRequestModel?> getGdprRequests() async {
+    var response = await (client.clientToQuery()).query(QueryOptions(
+      document: gql(
+        mutation.gdprRequests(appStoragePref.getCustomerId() ?? 0),
+      ),
+      fetchPolicy: FetchPolicy.networkOnly,
+    ));
+
+    return handleResponse(
+      response,
+      'gdprRequests',
+      (json) => GdprRequestModel.fromJson(json),
+    );
+  }
+
+  Future<BaseModel?> createGdprRequest(Enum type, String? message) async {
+    // Ensure the type matches the expected enum value
+
+    var response = await (client.clientToQuery()).mutate(MutationOptions(
+        document: gql(
+          mutation.createGdprRequestMutation,
+        ),
+        variables: {
+          "input": {
+            "type": type.toString().split('.').last,
+            "message": message,
+          }
+        },
+        fetchPolicy: FetchPolicy.networkOnly));
+
+    return handleResponse(
+      response,
+      'createGdprRequest',
+      (json) => BaseModel.fromJson(json),
+    );
+  }
+
+  Future<BaseModel?> revokeGdprRequest(int id) async {
+    var response = await (client.clientToQuery()).mutate(MutationOptions(
+        document: gql(
+          mutation.revokeGdprRequest(id),
+        ),
+        fetchPolicy: FetchPolicy.networkOnly));
+
+    return handleResponse(
+      response,
+      'revokeGdprRequest',
+      (json) => BaseModel.fromJson(json),
+    );
+  }
+
+  Future<GdprSearchModal?> gdprSearchRequest(int id) async {
+    var response = await (client.clientToQuery()).query(QueryOptions(
+      document: gql(
+        mutation.gdprSearchRequest(id),
+      ),
+      fetchPolicy: FetchPolicy.networkOnly,
+    ));
+
+    return handleResponse(
+      response,
+      'gdprRequest',
+      (json) => GdprSearchModal.fromJson(json),
+    );
+  }
+
+  Future<GdprPdfModel?> downloadGdprData() async {
+    var response = await (client.clientToQuery()).mutate(MutationOptions(
+      document: gql(
+        mutation.downloadGdprData(),
+      ),
+      fetchPolicy: FetchPolicy.networkOnly,
+    ));
+
+    return handleResponse(
+      response,
+      'downloadGdprData',
+      (json) => GdprPdfModel.fromJson(json),
+    );
+  }
+}
+
+extension GraphQLErrorFromJson on GraphQLError {
+  static GraphQLError fromJson(Map<String, dynamic> json) {
+    return GraphQLError(
+      message: json['message'] as String? ?? '',
+      locations: (json['locations'] as List?)
+          ?.map((loc) => ErrorLocation(
+                line: loc['line'] as int? ?? 0,
+                column: loc['column'] as int? ?? 0,
+              ))
+          .toList(),
+      path: json['path'] as List?,
+      extensions: json['extensions'] as Map<String, dynamic>?,
     );
   }
 }

@@ -25,7 +25,7 @@ class SaveOrderBloc extends Bloc<SaveOrderBaseEvent, SaveOrderBaseState> {
   void mapEventToState(SaveOrderBaseEvent event,Emitter<SaveOrderBaseState> emit) async {
     if (event is SaveOrderFetchDataEvent) {
       try {
-        SaveOrderModel? saveOrderModel = await repository?.savePaymentReview();
+        SaveOrderModel? saveOrderModel = await repository?.savePaymentReview(serverPayload: event.serverPayload);
         if(saveOrderModel?.success==true) {
           emit (SaveOrderFetchDataState.success(saveOrderModel: saveOrderModel));
         }else{

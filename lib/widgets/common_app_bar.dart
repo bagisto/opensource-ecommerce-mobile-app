@@ -15,60 +15,65 @@ import '../utils/app_global_data.dart';
 import '../utils/badge_helper.dart';
 import '../utils/shared_preference_helper.dart';
 
-
-class CommonAppBar extends StatelessWidget implements PreferredSizeWidget{
+class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final int? index;
-  const CommonAppBar(this.title, {Key? key, this.index}) : super(key: key);
+  final bool isInCartScreen;
+  const CommonAppBar(this.title,
+      {Key? key, this.index, this.isInCartScreen = false})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
       elevation: 4,
+      centerTitle: false,
       title: Text(
         title,
         style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: AppSizes.spacingLarge),
+            fontWeight: FontWeight.bold, fontSize: AppSizes.spacingLarge),
       ),
       actions: [
-        IconButton(
-            onPressed: () {
-              if(index != 0){
-                Navigator.pushNamed(context, searchScreen);
-              }
-            },
-            icon: const Icon(
-              Icons.search,
-            )),
-        IconButton(
-            onPressed: () {
-              if(index != 1){
-                Navigator.pushNamed(context, compareScreen);
-              }
-            },
-            icon: const Icon(
-              Icons.compare_arrows,
-            )),
-        StreamBuilder(
-          stream: GlobalData.cartCountController.stream,
-          builder: (BuildContext context, snapshot) {
-            int count = snapshot.data ?? 0;
+        if (!isInCartScreen)
+          IconButton(
+              onPressed: () {
+                if (index != 0) {
+                  Navigator.pushNamed(context, searchScreen);
+                }
+              },
+              icon: const Icon(
+                Icons.search,
+              )),
+        if (!isInCartScreen)
+          IconButton(
+              onPressed: () {
+                if (index != 1) {
+                  Navigator.pushNamed(context, compareScreen);
+                }
+              },
+              icon: const Icon(
+                Icons.compare_arrows,
+              )),
+        if (!isInCartScreen)
+          StreamBuilder(
+            stream: GlobalData.cartCountController.stream,
+            builder: (BuildContext context, snapshot) {
+              int count = snapshot.data ?? 0;
 
-            appStoragePref.setCartCount(count);
-            return BadgeIcon(
-              badgeCount: count,
-              icon: IconButton(
-                icon: const Icon(Icons.shopping_bag_outlined),
-                onPressed: () {
-                  if(index != 2){
-                    Navigator.pushNamed(context, cartScreen);
-                  }
-                },
-              ),
-            );
-          },
-        ),
+              appStoragePref.setCartCount(count);
+              return BadgeIcon(
+                badgeCount: count,
+                icon: IconButton(
+                  icon: const Icon(Icons.shopping_bag_outlined),
+                  onPressed: () {
+                    if (index != 2) {
+                      Navigator.pushNamed(context, cartScreen);
+                    }
+                  },
+                ),
+              );
+            },
+          ),
       ],
     );
   }

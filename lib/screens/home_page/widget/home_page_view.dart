@@ -10,6 +10,10 @@
 
 import 'package:bagisto_app_demo/screens/home_page/data_model/theme_customization.dart';
 import 'package:bagisto_app_demo/screens/home_page/utils/index.dart';
+import 'package:bagisto_app_demo/screens/home_page/widget/service_content.dart';
+import 'package:bagisto_app_demo/screens/home_page/widget/static_content_widget.dart';
+import 'footer_links.dart';
+import 'dart:developer';
 
 class HomePageView extends StatefulWidget {
   final ThemeCustomDataModel? customHomeData;
@@ -78,8 +82,6 @@ class _HomePageViewState extends State<HomePageView> {
   }
 
   Widget buildCategories(Size size) {
-
-
     return (widget.getCategoriesData?.data ?? []).isNotEmpty
         ? Container(
             color: Theme.of(context).colorScheme.secondaryContainer,
@@ -92,17 +94,19 @@ class _HomePageViewState extends State<HomePageView> {
                 scrollDirection: Axis.horizontal,
                 itemCount: widget.getCategoriesData?.data?.length ?? 0,
                 itemBuilder: (context, index) {
-                   HomeCategories? item = widget.getCategoriesData?.data?[index];
+                  HomeCategories? item = widget.getCategoriesData?.data?[index];
 
                   return GestureDetector(
                     onTap: () {
-                      if((item?.children ?? []).isNotEmpty){
-                        Navigator.pushNamed(context, drawerSubCategoryScreen, arguments:
-                        CategoriesArguments(categorySlug: item?.slug,
-                            title: item?.name, id: item?.id.toString(),
-                            image: item?.bannerUrl ?? "", parentId: "1"));
-                      }
-                      else{
+                      if ((item?.children ?? []).isNotEmpty) {
+                        Navigator.pushNamed(context, drawerSubCategoryScreen,
+                            arguments: CategoriesArguments(
+                                categorySlug: item?.slug,
+                                title: item?.name,
+                                id: item?.id.toString(),
+                                image: item?.bannerUrl ?? "",
+                                parentId: "1"));
+                      } else {
                         Navigator.pushNamed(context, categoryScreen,
                             arguments: CategoriesArguments(
                                 categorySlug: item?.slug,
@@ -115,64 +119,36 @@ class _HomePageViewState extends State<HomePageView> {
                       margin: const EdgeInsets.only(top: AppSizes.spacingWide),
                       padding: const EdgeInsets.symmetric(
                           horizontal: AppSizes.spacingNormal),
-                      child: item?.id != "1"? Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          SizedBox(
-                            height: AppSizes.spacingWide * 5,
-                            width: AppSizes.spacingWide * 5,
-                            child: ClipOval(
-                              child: ImageView(
-                                url: item?.logoUrl ?? "",
-                              ),
-                            ),
-                          ),
-                          const SizedBox(
-                            height: AppSizes.spacingLarge,
-                          ),
-                          Text(item?.name ?? "",
-                              style: Theme.of(context).textTheme.labelLarge,
-                              textAlign: TextAlign.center,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis)
-                        ],
-                      ):Container(),
+                      child: item?.id != "1"
+                          ? Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                SizedBox(
+                                  height: AppSizes.spacingWide * 5,
+                                  width: AppSizes.spacingWide * 5,
+                                  child: ClipOval(
+                                    child: ImageView(
+                                      url: item?.logoUrl ?? "",
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(
+                                  height: AppSizes.spacingLarge,
+                                ),
+                                Text(item?.name ?? "",
+                                    style:
+                                        Theme.of(context).textTheme.labelLarge,
+                                    textAlign: TextAlign.center,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis)
+                              ],
+                            )
+                          : Container(),
                     ),
                   );
                 }),
           )
         : const SizedBox();
-  }
-
-  Widget staticContentView(int index, {required String heading, String? css}) {
-    return Container();
-
-    // String html = getHtmlView(heading, css ?? "");
-    //
-    // return SizedBox(
-    //     height: htmlHeight[index],
-    //     width: MediaQuery.of(context).size.width,
-    //     child: InAppWebView(
-    //       initialData: InAppWebViewInitialData(data: html),
-    //       onLoadStop: (controller, url){
-    //         controller.evaluateJavascript(source: '''(() => { return document.body.scrollHeight;})()''').then((value) {
-    //           if(value == null || value == '') {
-    //             return;
-    //           }
-    //           setState(() {
-    //             htmlHeight[index] = (double.parse('$value')/MediaQuery.of(context).devicePixelRatio);
-    //             print("Loaded height --> $value $index");
-    //           });
-    //         });
-    //       },
-    //       initialOptions: InAppWebViewGroupOptions(
-    //           crossPlatform: InAppWebViewOptions(
-    //               useShouldOverrideUrlLoading: true,
-    //               supportZoom: false,
-    //               javaScriptEnabled: true,
-    //
-    //           )),
-    //     ));
   }
 
   List<Widget> getHomepageView(
@@ -183,16 +159,44 @@ class _HomePageViewState extends State<HomePageView> {
 
     customHomeData?.themeCustomization?.forEach((element) {
       switch (element.type) {
+        case 'footer_links':
+          homeWidgets.add(Column(
+            children: [
+              RecentView(
+                isLogin: widget.isLogin,
+              ),
+              const SizedBox(
+                height: AppSizes.spacingNormal,
+              ),
+              if (GlobalData.allProducts?.isNotEmpty == true)
+                buildReachBottomView(context, _scrollController)
+            ],
+          ));
+          homeWidgets.add(FooterColumnsScreen(
+            element.translations?.firstOrNull?.options,
+            title: element.name,
+            homePageBloc: widget.homePageBloc,
+          ));
+          break;
+        case 'services_content':
+          homeWidgets.add(ServiceGridScreen(
+              element.translations?.firstOrNull?.options?.services));
+          break;
         case "image_carousel":
           homeWidgets.add(CarousalSlider(
             sliders: element,
           ));
           break;
-
         case "static_content":
-          homeWidgets.add(staticContentView(index,
-              heading: element.translations?.firstOrNull?.options?.html ?? "",
-              css: element.translations?.firstOrNull?.options?.css ?? ""));
+          log("Static Content: ${element.translations?.firstOrNull?.options?.css}");
+          log("Static html: ${element.translations?.firstOrNull?.options?.html}");
+          log("links: ${element.translations?.firstOrNull?.options?.links}");
+          homeWidgets.add(StaticContentWidget(
+              key: ValueKey('static_${element.id}'),
+              html: element.translations?.firstOrNull?.options?.html ?? "",
+              css: element.translations?.firstOrNull?.options?.css ?? "",
+              links: element.translations?.firstOrNull?.options?.links));
+
           break;
 
         case "category_carousel":
@@ -218,6 +222,10 @@ class _HomePageViewState extends State<HomePageView> {
                         isLogin: widget.isLogin,
                         model: GlobalData.allProducts?[productIndex]?.data,
                         callPreCache: widget.callPreCache,
+                        filters: element
+                            .translations?.firstOrNull?.options?.filters
+                            ?.map((f) => f.toJson())
+                            .toList(),
                       )
                     : Container()));
             productIndex++;
@@ -227,52 +235,6 @@ class _HomePageViewState extends State<HomePageView> {
       index++;
     });
 
-    homeWidgets.add(Column(
-      children: [
-        RecentView(
-          isLogin: widget.isLogin,
-        ),
-        const SizedBox(
-          height: AppSizes.spacingNormal,
-        ),
-        if (GlobalData.allProducts?.isNotEmpty == true)
-          buildReachBottomView(context, _scrollController)
-      ],
-    ));
-
     return homeWidgets;
-  }
-
-  String getHtmlView(String html, String css) {
-    css = """${css}div {
-    flex-direction: column;
-    column-count: 1 !important;
-    width: 100%;
-   gap: 2vw;
-
-  }
-  .top-collection-card{
-    width: 100vw;
-  }
-  .top-collection-card img{
-    width: 90vw;
-    height: 90vw;
-  }
-  .top-collection-card h3{
-    font-size: 7vw;
-    font-weight: bold;
-  }
-  """;
-
-    return """
-    <html><head>
-        <style>
-            $css
-        </style>
-    </head>
-    <body>
-    $html
-    </body></html>
-    """;
   }
 }

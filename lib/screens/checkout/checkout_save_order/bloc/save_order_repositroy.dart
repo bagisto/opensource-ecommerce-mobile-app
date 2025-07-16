@@ -15,15 +15,15 @@ import 'package:bagisto_app_demo/screens/checkout/utils/index.dart';
 import '../../data_model/save_order_model.dart';
 
 abstract class SaveOrderRepository{
-  Future<SaveOrderModel>savePaymentReview();
+  Future<SaveOrderModel>savePaymentReview({Map<String, dynamic>? serverPayload});
 
 }
 class SaveOrderRepositoryImp implements SaveOrderRepository {
   @override
-  Future<SaveOrderModel> savePaymentReview() async {
+  Future<SaveOrderModel> savePaymentReview({Map<String, dynamic>? serverPayload}) async {
     SaveOrderModel? saveOrderModel;
     try {
-      saveOrderModel = await ApiClient().placeOrder();
+      saveOrderModel = await ApiClient().placeOrder(serverPayload: serverPayload);
     } catch (error, stacktrace) {
       debugPrint("Error --> $error");
       debugPrint("StackTrace --> $stacktrace");

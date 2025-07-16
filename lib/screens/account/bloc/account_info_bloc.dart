@@ -30,7 +30,7 @@ class AccountInfoBloc extends Bloc<AccountInfoBaseEvent, AccountInfoBaseState> {
     }else if(event is AccountInfoUpdateEvent){
       try{
         AccountUpdate accountUpdate=await repository!.callAccountUpdateApi(event.firstName??"", event.lastName??"", event.email??"", event.gender??"",event.dob??"",event.phone??"",event.oldPassword??"",
-            event.password??"",event.confirmPassword??"",event.avatar!,event.subscribedToNewsLetter?? false);
+            event.password??"",event.confirmPassword??"",event.avatar,event.subscribedToNewsLetter?? false);
         emit (AccountInfoUpdateState.success(accountUpdate: accountUpdate,successMsg: accountUpdate.message));
       }catch(e){
         emit (AccountInfoUpdateState.fail(error: e.toString()));

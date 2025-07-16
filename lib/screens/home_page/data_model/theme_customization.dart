@@ -63,6 +63,14 @@ class Options {
   String? title;
   List<Images>? images;
   List<Filters>? filters;
+  List<ServiceModel>? services;
+  List<LinkModel>? links;
+  @JsonKey(name: "column_1")
+  List<ColumnModel>? column1;
+  @JsonKey(name: "column_2")
+  List<ColumnModel>? column2;
+  @JsonKey(name: "column_3")
+  List<ColumnModel>? column3;
 
   Options({
     this.css,
@@ -76,6 +84,81 @@ class Options {
       _$OptionsFromJson(json);
 
   Map<String, dynamic> toJson() => _$OptionsToJson(this);
+}
+
+@JsonSerializable()
+class ServiceModel {
+  @JsonKey(name: "title")
+  String? title;
+  @JsonKey(name: "description")
+  String? description;
+  @JsonKey(name: "serviceIcon")
+  String? serviceIcon;
+
+  ServiceModel({
+    this.title,
+    this.description,
+    this.serviceIcon,
+  });
+
+  factory ServiceModel.fromJson(Map<String, dynamic> json) =>
+      _$ServiceModelFromJson(json);
+
+  Map<String, dynamic> toJson() => _$ServiceModelToJson(this);
+}
+
+@JsonSerializable()
+class LinkModel {
+  @JsonKey(name: "title")
+  dynamic title;
+  @JsonKey(name: "link")
+  dynamic link;
+  @JsonKey(name: "image")
+  dynamic image;
+  @JsonKey(name: "imageUrl")
+  dynamic imageUrl;
+  @JsonKey(name: "url")
+  String? url;
+  @JsonKey(name: "slug")
+  String? slug;
+  @JsonKey(name: "type")
+  String? type;
+  String? id;
+
+  LinkModel(
+      {this.title,
+      this.link,
+      this.image,
+      this.imageUrl,
+      this.url,
+      this.slug,
+      this.type,
+      this.id});
+
+  factory LinkModel.fromJson(Map<String, dynamic> json) =>
+      _$LinkModelFromJson(json);
+
+  Map<String, dynamic> toJson() => _$LinkModelToJson(this);
+}
+
+@JsonSerializable()
+class ColumnModel {
+  @JsonKey(name: "url")
+  String? url;
+  @JsonKey(name: "title")
+  String? title;
+  // @JsonKey(name: "sortOrder")
+  // String? sortOrder;
+
+  ColumnModel({
+    this.url,
+    this.title,
+  });
+
+  factory ColumnModel.fromJson(Map<String, dynamic> json) =>
+      _$ColumnModelFromJson(json);
+
+  Map<String, dynamic> toJson() => _$ColumnModelToJson(this);
 }
 
 @JsonSerializable()

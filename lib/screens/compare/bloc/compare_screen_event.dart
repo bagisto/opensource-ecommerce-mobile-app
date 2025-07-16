@@ -1,4 +1,3 @@
-
 /*
  *   Webkul Software.
  *   @package Mobikul Application Code.
@@ -11,37 +10,32 @@
 
 // ignore_for_file: file_names
 
-
 import 'package:bagisto_app_demo/screens/compare/utils/index.dart';
 
-abstract class CompareScreenBaseEvent{}
+abstract class CompareScreenBaseEvent {}
 
-class OnClickCompareLoaderEvent extends CompareScreenBaseEvent{
+class OnClickCompareLoaderEvent extends CompareScreenBaseEvent {
   final bool? isReqToShowLoader;
   OnClickCompareLoaderEvent({this.isReqToShowLoader});
-
 }
 
-class AddToCartCompareEvent extends CompareScreenBaseEvent{
+class AddToCartCompareEvent extends CompareScreenBaseEvent {
   String? productId;
   int quantity;
   String? message;
-  AddToCartCompareEvent(this.productId,this.quantity,this.message);
-
+  AddToCartCompareEvent(this.productId, this.quantity, this.message);
 }
 
-class AddToWishlistCompareEvent extends CompareScreenBaseEvent{
+class AddToWishlistCompareEvent extends CompareScreenBaseEvent {
   CompareProducts? data;
   String? productId;
-  AddToWishlistCompareEvent(this.productId,this.data);
-
+  AddToWishlistCompareEvent(this.productId, this.data);
 }
 
-class FetchDeleteWishlistItemEvent extends CompareScreenBaseEvent{
+class FetchDeleteWishlistItemEvent extends CompareScreenBaseEvent {
   CompareProducts? datum;
   int productId;
-  FetchDeleteWishlistItemEvent(this.productId,this.datum);
-
+  FetchDeleteWishlistItemEvent(this.productId, this.datum);
 }
 
 class RemoveFromCompareListEvent extends CompareScreenBaseEvent {
@@ -49,13 +43,12 @@ class RemoveFromCompareListEvent extends CompareScreenBaseEvent {
   final String? message;
 
   RemoveFromCompareListEvent(this.productId, this.message);
-
 }
 
 class RemoveAllCompareListEvent extends CompareScreenBaseEvent {
   final String? message;
 
-  RemoveAllCompareListEvent( this.message);
+  RemoveAllCompareListEvent(this.message);
 }
 
 class CompareScreenFetchEvent extends CompareScreenBaseEvent {

@@ -59,7 +59,7 @@ class ItemsModel {
   // double? basePrice;
   // double? total;
   // double? baseTotal;
-  String? productId;
+  // String? productId;
   // String? productType;
   // String? orderItemId;
   // String? shipmentId;
@@ -67,18 +67,18 @@ class ItemsModel {
   // dynamic additional;
   // String? createdAt;
   // String? updatedAt;
-  OrderProduct? product;
+  // OrderProduct? product;
 
-  ItemsModel(
-      {this.id,
-      this.name,
-      this.sku,
-      this.qty,
-      // this.price,
-      // this.total,
-      this.productId,
-      // this.shipmentId,
-      this.product});
+  ItemsModel({
+    this.id,
+    this.name,
+    this.sku,
+    this.qty,
+    // this.price,
+    // this.total,
+
+    // this.shipmentId,
+  });
 
   factory ItemsModel.fromJson(Map<String, dynamic> json) =>
       _$ItemsModelFromJson(json);

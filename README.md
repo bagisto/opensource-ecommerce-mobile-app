@@ -9,16 +9,16 @@
 
 # Open Source eCommerce Mobile App
 
-
 [Bagisto](https://bagisto.com/en/) revolutionizes the world of mobile commerce with its open-source eCommerce mobile app solution. This open-source mobile ecommerce app seamlessly transforms your Bagisto store into a powerful mobile platform, providing real-time synchronization of products and categories. With a user-friendly interface, managing orders becomes a breeze, making it an essential tool for tech-savvy individuals and those new to eCommerce.
 
 This mobile app, built on the foundation of the Bagisto eCommerce framework and leveraging the robust Laravel stack, offers many features for a comprehensive and efficient mobile shopping experience. The app ensures easy product information management and accelerates time-to-market for your products, all while giving you complete control over your store.
 
 # Live Demo
 
-Android: https://play.google.com/store/apps/details?id=com.webkul.bagisto.mobikul
+Android: <https://play.google.com/store/apps/details?id=com.webkul.bagisto.mobikul>
 
-iOS: https://apps.apple.com/us/app/mobikul-bagisto-laravel-app/id6447519140
+iOS: <https://apps.apple.com/us/app/mobikul-bagisto-laravel-app/id6447519140>
+
 # Features
 
 The open-source ecommerce mobile app comes with an array of features to improve your customers' shopping experience.
@@ -53,8 +53,8 @@ Before beginning with the installation, you will need the following with the men
 
 - Bagisto Version - v2.3.0
 - Android Studio Meerkat | 2024.3.1 Patch 2
-- Flutter Version - 3.29.3
-- Dart - 3.7.2
+- Flutter Version - 3.32.5
+- Dart - 3.8.1
 - Xcode - 16.3
 - Swift - 6.1
 
@@ -73,6 +73,7 @@ Make sure you have installed the API module and set this up properly on your bag
 ```sh
 git clone https://github.com/bagisto/opensource-ecommerce-mobile-app.git
 ```
+
 ### Install dependencies
 
 - Navigate to the project's directory
@@ -86,6 +87,7 @@ cd <repository-name>
 ```sh
 flutter pub get
 ```
+
 ### Generate Required files
 
 - Navigate to the project's directory
@@ -102,12 +104,12 @@ flutter pub run build_runner build --delete-conflicting-outputs
 
 ### Connect a device or emulator
 
-* Physical Device
+- Physical Device
 
   1. Enable USB debugging on your device
   2. Connect it to your computer using a USB cable.
 
-* Emulator
+- Emulator
 
   1. Start an Android or iOS emulator using your preferred IDE or tools.
 
@@ -118,6 +120,7 @@ flutter pub run build_runner build --delete-conflicting-outputs
 ```sh
 flutter run
 ```
+
 ## Minimum Versions
 
 - Android: 22
@@ -127,14 +130,15 @@ flutter run
 
 ### For Setup
 
-Change the baseUrl  as per your store
+Change the baseDomain  as per your store
 
 **Path:** lib/utils/server_configuration.dart
 
 ```sh
-static const String baseUrl = ‘....’;
+static const String baseDomain = ‘....’;
 ```
-> Note: Add the value of the complete URL ending with the GraphQL API endpoint. E.g - https://example.com/graphql
+
+> Note: Add the value of the complete URL ending with the GraphQL API endpoint. E.g - <https://example.com/graphql>
 
 ### For Theme
 
@@ -152,24 +156,25 @@ static const Color accentColor = Color(***********);
 - Android
 
 Replace "google-services.json".
+
 - iOS
 
 Replace "GoogleService-Info.plist".
 
 > Helpful Articles
 
-> Android  → https://mobikul.com/knowledgebase/generating-google-service-file-enable-fcm-firebase-cloud-messaging-android-application/
+> Android  → <https://mobikul.com/knowledgebase/generating-google-service-file-enable-fcm-firebase-cloud-messaging-android-application/>
 
-> iOS → https://mobikul.com/knowledgebase/generating-new-googleservice-info-plist-file-fcm-based-project-ios-app/
+> iOS → <https://mobikul.com/knowledgebase/generating-new-googleservice-info-plist-file-fcm-based-project-ios-app/>
 
 ### For Application Title
 
-* Android
+- Android
 
   1. **Path:** android/app/src/main/AndroidManifest.xml
   2. **Change app name:** android:label="***********"
 
-* iOS
+- iOS
 
   1. Go to the general tab and identity change the display name to your app name
 
@@ -178,7 +183,7 @@ Replace "GoogleService-Info.plist".
 
 ### For Splash Screen
 
-* For adding Lottie as Splash Screen
+- For adding Lottie as Splash Screen
 
   1. **Path:** assets/lottie/splash_screen.json
   2. After updating the Lottie file, update the ‘splashLottie’ in lib/utils/assets_constants.
@@ -187,7 +192,7 @@ Replace "GoogleService-Info.plist".
  static const String splashLottie = "assets/lottie/splash_screen.json";
 ```
 
-* For adding an Image as a Splash Screen
+- For adding an Image as a Splash Screen
 
   1. **Path:** assets/images/splash.png
   2. After updating the Image file, update the ‘splashImage’ in lib/utils/assets_constants.
@@ -195,19 +200,19 @@ Replace "GoogleService-Info.plist".
 ```sh
   static const String splashImage = "assets/images/splash.png";
 ```
+
 ### For App Icon
 
-* **Android:** Open the android folder in Android Studio and then right click app > new > Image Asset set Image.
-* **iOS:** Replace the icons over the path > ios/Runner/Assets.xcassets/AppIcon.appiconset
+- **Android:** Open the android folder in Android Studio and then right click app > new > Image Asset set Image.
+- **iOS:** Replace the icons over the path > ios/Runner/Assets.xcassets/AppIcon.appiconset
 
 ## Installation Video
 
 [![Watch the video](https://i.ibb.co/c6qd31t/thumbnail-1.jpg)](https://www.youtube.com/watch?v=tvm2NUZP9ks)
 
-
 ## API Documentation
 
-For the API Documentation, please go through - https://github.com/bagisto/headless-ecommerce/
+For the API Documentation, please go through - <https://github.com/bagisto/headless-ecommerce/>
 
 ## Usage
 
@@ -220,5 +225,3 @@ Contributions are welcome! Follow the contribution guidelines to get started.
 ## License
 
 Bagisto is open-sourced software licensed under the MIT license.
-
-

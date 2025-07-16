@@ -35,9 +35,10 @@ final phoneController = TextEditingController();
 AccountInfoModel? _accountInfoDetails;
 AccountUpdate? _accountUpdate;
 bool isLoad = true;
-String? base64string;
+XFile? imageFile;
 AccountInfoBloc? accountInfoBloc;
 bool subscribeNewsletter = false;
+bool isDelete = false;
 
 GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
     GlobalKey<ScaffoldMessengerState>();
@@ -196,11 +197,10 @@ class _AccountScreenState extends State<AccountScreen>
         onChanged: (value) {
           setState(() {
             subscribeNewsletter = value; // Update local state
-            // You can perform any additional logic here if needed
-            print(
-                "Newsletter subscription status changed: $subscribeNewsletter");
           });
-        },
+        }, onDelete: (bool delete) {
+          isDelete = delete;
+      },
       ),
     );
   }
@@ -268,7 +268,7 @@ class _AccountScreenState extends State<AccountScreen>
           password: newPasswordController.text,
           confirmPassword: confirmNewPasswordController.text,
           oldPassword: currentPasswordController.text,
-          avatar: base64string ?? "",
+          avatar: isDelete ? 'delete' : imageFile?.path,
           subscribedToNewsLetter: subscribeNewsletter));
       Future.delayed(const Duration(seconds: 3)).then((value) {
         Navigator.pop(context);

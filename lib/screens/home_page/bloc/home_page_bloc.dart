@@ -8,6 +8,8 @@
  *   @link https://store.webkul.com/license.html
  */
 
+import 'dart:developer';
+
 import 'package:bagisto_app_demo/screens/home_page/utils/index.dart';
 
 import '../../../data_model/add_to_wishlist_model/add_wishlist_model.dart';
@@ -172,6 +174,20 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageBaseState> {
         emit(FetchCMSDataState.success(cmsData: cmsData));
       } catch (e) {
         emit(FetchCMSDataState.fail(
+            error: StringConstants.somethingWrong.localized()));
+      }
+    }
+    if (event is SubscribeNewsLetterEvent) {
+      try {
+        BaseModel? baseModel =
+            await repository?.subscribeNewsletter(event.email);
+        if (baseModel?.success == true) {
+          emit(SubscribeNewsLetterState.success(baseModel: baseModel));
+        } else {
+          emit(SubscribeNewsLetterState.fail(baseModel: baseModel));
+        }
+      } catch (e) {
+        emit(SubscribeNewsLetterState.fail(
             error: StringConstants.somethingWrong.localized()));
       }
     }

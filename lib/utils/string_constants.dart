@@ -8,6 +8,8 @@
  *   @link https://store.webkul.com/license.html
  */
 
+import 'package:bagisto_app_demo/screens/checkout/utils/index.dart';
+
 class StringConstants {
   static const String builderAppName = "builderAppName";
   static const String categoryType = "category";
@@ -18,13 +20,14 @@ class StringConstants {
   static const String hotCategories = "hot-categories";
   static const String productPolicy = "product-policy";
   static const String customerReview = "customer-reviews";
-  static const String invoiceDetails="invoiceDetails";
+  static const String invoiceDetails = "invoiceDetails";
   static const String popularCategories = "popular-categories";
   static const String select = 'select';
   static const String radioText = "radio";
   static const String checkBoxText = 'checkbox';
   static const String multiSelect = 'multiselect';
   static const String grouped = 'grouped';
+  static const String booking = 'booking';
   static const String downloadable = 'downloadable';
   static const String virtual = 'virtual';
   static const String configurable = 'configurable';
@@ -39,7 +42,7 @@ class StringConstants {
   static const String compare = 'compare';
   static const String wishlist = 'wishlist';
   static const String cancel = 'cancel';
-  static const String imageUrl = "http://192.168.15.204/Bagisto2.0/Mobikul/headless_2.0/public/";
+  static const String imageUrl = "$baseDomain/";
 
   //Order status Strings
   static const String completed = "completed";
@@ -112,7 +115,8 @@ class StringConstants {
   static const String confirmPasswordHint = "confirmPasswordHint";
   static const String validPasswordLabel = "validPasswordLabel";
   static const String validEmailLabel = "validEmailLabel";
-  static const String signUpConfirmPasswordWarningMsg = "signUpConfirmPasswordWarningMsg";
+  static const String signUpConfirmPasswordWarningMsg =
+      "signUpConfirmPasswordWarningMsg";
   static const String signInEmailLabel = "signInEmailLabel";
   static const String signInEmailHint = "signInEmailHint";
 
@@ -172,11 +176,13 @@ class StringConstants {
   static const String shippingAddress = "shippingAddress";
   static const String shippingMethods = "shippingMethods";
   static const String applyCode = "applyCode";
-  static const String cartPageEnterDiscountCodeLabel = "cartPageEnterDiscountCodeLabel";
+  static const String cartPageEnterDiscountCodeLabel =
+      "cartPageEnterDiscountCodeLabel";
   static const String couponEmpty = "couponEmpty";
   static const String couponCode = "couponCode";
   static const String apply = "apply";
-  static const String cartPageAmountToBePaidLabel = "cartPageAmountToBePaidLabel";
+  static const String cartPageAmountToBePaidLabel =
+      "cartPageAmountToBePaidLabel";
   static const String updateCartWarning = "updateCartWarning";
   static const String proceed = "proceed";
   static const String checkoutAs = "checkoutAs";
@@ -297,7 +303,8 @@ class StringConstants {
   static const String contactAdmin = "contactAdmin";
   static const String noCategoryFound = "noCategoryFound";
   static const String viewAllLabel = "viewAllLabel";
-  static const String youHaveReachedToTheBottomOfThePage = "youHaveReachedToTheBottomOfThePage";
+  static const String youHaveReachedToTheBottomOfThePage =
+      "youHaveReachedToTheBottomOfThePage";
   static const String backToTop = "backToTop";
   static const String categories = "categories";
   static const String networkError = "networkError";
@@ -377,8 +384,41 @@ class StringConstants {
   static const String subCategories = "subCategories";
   static const String agreeTerms = "agreeTermsMsg";
   static const String agreementFieldRequired = "agreementFieldRequired";
+  static const String orderNote = "orderNote";
+  static const String subscribe = "subscribe";
+  static const String chooseFile = "chooseFile";
 
+  // GDPR
+  static const String gdprComplianceTitle = "gdprComplianceTitle";
+  static const String gdprDataRequestTitle = "gdprDataRequestTitle";
+  static const String requestCreated = "requestCreated";
+  static const String createRequest = "createRequest";
+  static const String createNewRequest = "createNewRequest";
+  static const String pdf = "pdf";
+  static const String html = "html";
+  static const String revoked = "revoked";
+  static const String revoke = "revoke";
+  static const String selectType = "selectType";
+  static const String delete = "delete";
+  static const String update = "update";
+  static const String message = "message";
+  //booking
+  static const String location = "location";
+  static const String viewOnMap = "view_on_map";
+  static const String seeDetails = "seeDetails";
+  static const String dailyBasis = "dailyBasis";
+  static const String daily = "daily";
+  static const String hourlyBasis = "hourlyBasis";
+  static const String hourly = "hourly";
+  static const String selectDate = "selectDate";
+  static const String noSlotsAvailable = "noSlotsAvailable";
+  static const String selectSlot = "selectSlot";
+  static const String selectTimeSlot = "selectTimeSlot";
+  static const String specialRequestNotes = "specialRequestNotes";
+  static const String specialRequestNotesRequired =
+      "specialRequestNotesRequired";
+
+  static const String eventOn = "eventOn";
+  static const String bookYourTickets = "bookYourTickets";
+  static const String isRequired = "isRequired";
 }
-
-
-

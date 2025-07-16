@@ -139,8 +139,6 @@ class _BillingAndShippingAddressViewState
                             });
                           }
 
-                          print("htrhr 1 ${value.toJson()}");
-
                           if (widget.callBack != null) {
                             widget.callBack!(
                               widget.billingAddress?.companyName,
@@ -229,8 +227,6 @@ class _BillingAndShippingAddressViewState
                                       widget.shippingAddress = value;
                                     });
                                   }
-
-                                  print("htrhr 2 ${value.toJson()}");
 
                                   if (widget.callBack != null) {
                                     widget.callBack!(
@@ -322,8 +318,6 @@ class _BillingAndShippingAddressViewState
                                       widget.shippingAddress = value;
                                     });
                                   }
-
-                                  print("htrhr 3 ${value.toJson()}");
 
                                   if (widget.callBack != null) {
                                     widget.callBack!(

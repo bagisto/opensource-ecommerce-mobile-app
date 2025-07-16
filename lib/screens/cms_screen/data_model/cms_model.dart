@@ -51,12 +51,14 @@ class Translations {
   String? pageTitle;
   String? name;
   String? locale;
+  String? urlKey;
 
   Translations({
     this.id,
     this.locale,
     this.name,
     this.pageTitle,
+    this.urlKey
   });
 
   factory Translations.fromJson(Map<String, dynamic> json) =>

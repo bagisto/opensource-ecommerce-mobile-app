@@ -13,8 +13,11 @@ import '../cart_model/cart_data_model.dart';
 
 bool checkVirtualDownloadable(List<Items>? items) {
   for (Items product in (items ?? [])) {
-    if (product.type?.toLowerCase() != StringConstants.downloadable.toLowerCase() &&
-        (product.type?.toLowerCase() != StringConstants.virtual.toLowerCase())) {
+    if (product.type?.toLowerCase() !=
+            StringConstants.downloadable.toLowerCase() &&
+        (product.type?.toLowerCase() !=
+            StringConstants.virtual.toLowerCase()) &&
+        product.type?.toLowerCase() != StringConstants.booking.toLowerCase()) {
       return false;
     }
   }
@@ -23,7 +26,8 @@ bool checkVirtualDownloadable(List<Items>? items) {
 
 bool checkDownloadable(List<Items>? items) {
   for (Items product in (items ?? [])) {
-    if (product.type?.toLowerCase() == StringConstants.downloadable.toLowerCase()) {
+    if (product.type?.toLowerCase() ==
+        StringConstants.downloadable.toLowerCase()) {
       return true;
     }
   }

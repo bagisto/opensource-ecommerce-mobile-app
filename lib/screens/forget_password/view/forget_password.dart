@@ -59,7 +59,6 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen>
               Navigator.of(context).pop();
             });
           } else if (state.status == ForgetPasswordStatus.success) {
-            debugPrint("password status --> ${state.baseModel?.toJson()}");
             BaseModel? baseModel = state.baseModel;
             (baseModel?.error != null || baseModel?.status==false)
                 ? ShowMessage.errorNotification(state.error ?? "",context)

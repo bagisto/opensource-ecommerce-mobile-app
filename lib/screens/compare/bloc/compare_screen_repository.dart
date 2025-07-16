@@ -8,27 +8,24 @@
  *   @link https://store.webkul.com/license.html
  */
 
-
 import 'package:bagisto_app_demo/screens/compare/utils/index.dart';
 
-
-abstract class CompareScreenRepository{
-  Future<CompareProductsData> callCompareApi();
+abstract class CompareScreenRepository {
+  Future<CompareProductsData> callCompareApi(int? page, int? limit);
   Future<BaseModel> removeFromCompareList(int productId);
   Future<AddToCartModel> callAddToCartAPi(int productId, int quantity);
   Future<AddWishListModel?> callWishListAddDeleteItem(var wishListProductId);
   Future<AddToCartModel> removeItemFromWishlist(var wishListProductId);
   Future<BaseModel> removeAllCompareProducts();
-
 }
+
 class CompareScreenRepositoryImp implements CompareScreenRepository {
   @override
-  Future<CompareProductsData> callCompareApi() async {
+  Future<CompareProductsData> callCompareApi(page, limit) async {
     CompareProductsData? compareScreenModel;
-    try{
-      compareScreenModel=await ApiClient().getCompareProducts();
-    }
-    catch(error,stacktrace){
+    try {
+      compareScreenModel = await ApiClient().getCompareProducts(page, limit);
+    } catch (error, stacktrace) {
       debugPrint("Error --> $error");
       debugPrint("StackTrace --> $stacktrace");
     }
@@ -36,7 +33,7 @@ class CompareScreenRepositoryImp implements CompareScreenRepository {
   }
 
   @override
-  Future<BaseModel> removeFromCompareList(int productId)async{
+  Future<BaseModel> removeFromCompareList(int productId) async {
     BaseModel? baseModel;
     baseModel = await ApiClient().removeFromCompare(productId);
 
@@ -44,12 +41,14 @@ class CompareScreenRepositoryImp implements CompareScreenRepository {
   }
 
   @override
-  Future<AddToCartModel> callAddToCartAPi(int productId,int quantity ) async {
+  Future<AddToCartModel> callAddToCartAPi(int productId, int quantity) async {
     AddToCartModel? graphQlBaseModel;
-    graphQlBaseModel = await ApiClient().addToCart(quantity,productId.toString(),[] ,[],[],[],null);
+    graphQlBaseModel = await ApiClient()
+        .addToCart(quantity, productId.toString(), [], [], [], [], null, null);
 
     return graphQlBaseModel!;
   }
+
   ///WISHLIST ITEM DELETE/ADD API CALL///
 //
   @override
@@ -57,7 +56,8 @@ class CompareScreenRepositoryImp implements CompareScreenRepository {
       var wishListProductId) async {
     AddWishListModel? addWishListModel;
     try {
-      addWishListModel = await ApiClient().addToWishlist(wishListProductId ?? "");
+      addWishListModel =
+          await ApiClient().addToWishlist(wishListProductId ?? "");
     } catch (error, stacktrace) {
       debugPrint("Error -->${error.toString()}");
       debugPrint("StackTrace -->${stacktrace.toString()}");
@@ -68,22 +68,21 @@ class CompareScreenRepositoryImp implements CompareScreenRepository {
   @override
   Future<AddToCartModel> removeItemFromWishlist(var wishListProductId) async {
     AddToCartModel? removeFromWishlist;
-    try{
-      removeFromWishlist=await ApiClient().removeFromWishlist(wishListProductId.toString());
-
-    }catch(error, stacktrace){
+    try {
+      removeFromWishlist =
+          await ApiClient().removeFromWishlist(wishListProductId.toString());
+    } catch (error, stacktrace) {
       debugPrint("Error -->${error.toString()}");
-      debugPrint("StackTrace -->${ stacktrace.toString()}");
+      debugPrint("StackTrace -->${stacktrace.toString()}");
     }
     return removeFromWishlist!;
   }
 
   @override
-  Future<BaseModel> removeAllCompareProducts()async{
+  Future<BaseModel> removeAllCompareProducts() async {
     BaseModel? baseModel;
     baseModel = await ApiClient().removeAllCompareProducts();
 
     return baseModel!;
   }
-
 }

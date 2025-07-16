@@ -10,30 +10,41 @@
 
 import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
 
-
-
- class AddToCartView extends StatelessWidget {
-  final List ? downloadLinks;
-  final List ? groupedParams;
-  final List ? bundleParams ;
-  final List ?  configurableParams ;
-  final List ? selectList ;
-  final List ? selectParam;
+class AddToCartView extends StatelessWidget {
+  final List? downloadLinks;
+  final List? groupedParams;
+  final List? bundleParams;
+  final List? configurableParams;
+  final List? selectList;
+  final List? selectParam;
   final dynamic configurableProductId;
   final String? price;
   final NewProducts? productData;
-  final int ? qty;
-   const AddToCartView({Key? key, this.productData,this.price,required this.configurableParams,required this.bundleParams,required this.selectList,required this.selectParam,required this.groupedParams,required this.downloadLinks,this.configurableProductId,required this.qty}) : super(key: key);
+  final int? qty;
+  final Map<String, dynamic>? bookingParams;
+  const AddToCartView(
+      {Key? key,
+      this.productData,
+      this.price,
+      required this.configurableParams,
+      required this.bundleParams,
+      required this.selectList,
+      required this.selectParam,
+      required this.groupedParams,
+      required this.downloadLinks,
+      this.configurableProductId,
+      required this.qty,
+      this.bookingParams})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return  Card(
       elevation: 10,
       child: SizedBox(
         height: 80,
         child: Padding(
-          padding:
-          const EdgeInsets.symmetric(vertical: 14.0, horizontal: 12),
+          padding: const EdgeInsets.symmetric(vertical: 14.0, horizontal: 12),
           child: MaterialButton(
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8.0)),
@@ -44,9 +55,9 @@ import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
               textColor: Theme.of(context).colorScheme.onBackground,
               onPressed: () {
                 ProductScreenBLoc productBloc =
-                context.read<ProductScreenBLoc>();
-                productBloc.add(
-                    OnClickProductLoaderEvent(isReqToShowLoader: true));
+                    context.read<ProductScreenBLoc>();
+                productBloc
+                    .add(OnClickProductLoaderEvent(isReqToShowLoader: true));
                 _addToCart(context);
               },
               child: Row(
@@ -62,8 +73,7 @@ import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
                   Text(
                     StringConstants.addToCart.localized().toUpperCase(),
                     style: const TextStyle(
-                        fontSize: AppSizes.spacingLarge,
-                        color: Colors.white),
+                        fontSize: AppSizes.spacingLarge, color: Colors.white),
                   ),
                 ],
               )),
@@ -86,10 +96,14 @@ import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
             bundleParams ?? [],
             configurableParams ?? [],
             configurableProductId,
-            ""));
+            "",
+            bookingParams));
       } else {
-        ShowMessage.showNotification(StringConstants.warning.localized(),StringConstants.atLeastOneWarning.localized(),
-            Colors.yellow, const Icon(Icons.warning_amber));
+        ShowMessage.showNotification(
+            StringConstants.warning.localized(),
+            StringConstants.atLeastOneWarning.localized(),
+            Colors.yellow,
+            const Icon(Icons.warning_amber));
         productScreenBLoc
             .add(OnClickProductLoaderEvent(isReqToShowLoader: false));
 
@@ -97,20 +111,24 @@ import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
       }
     } else if (productData?.type == StringConstants.bundle) {
       productData?.bundleOptions?.forEach((element) {
-        if ((bundleParams?? []).isNotEmpty) {
+        if ((bundleParams ?? []).isNotEmpty) {
           list.add(bundleParams);
           productScreenBLoc.add(AddToCartProductEvent(
               qty ?? 1,
               productData?.id ?? "",
               downloadLinks ?? [],
-              groupedParams ??[],
+              groupedParams ?? [],
               bundleParams ?? [],
               configurableParams ?? [],
               configurableProductId,
-              ""));
+              "",
+              bookingParams));
         } else {
-          ShowMessage.showNotification(StringConstants.warning.localized(),StringConstants.atLeastOneWarning.localized(),
-              Colors.yellow, const Icon(Icons.warning_amber));
+          ShowMessage.showNotification(
+              StringConstants.warning.localized(),
+              StringConstants.atLeastOneWarning.localized(),
+              Colors.yellow,
+              const Icon(Icons.warning_amber));
 
           productScreenBLoc
               .add(OnClickProductLoaderEvent(isReqToShowLoader: false));
@@ -118,33 +136,38 @@ import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
         }
       });
     } else if (productData?.type == StringConstants.downloadable) {
-      if ((downloadLinks?? []).isNotEmpty) {
+      if ((downloadLinks ?? []).isNotEmpty) {
         productScreenBLoc.add(AddToCartProductEvent(
             qty ?? 1,
             productData?.id ?? "",
-            downloadLinks ??  [],
+            downloadLinks ?? [],
             groupedParams ?? [],
             bundleParams ?? [],
             configurableParams ?? [],
             configurableProductId,
-            ""));
+            "",
+            bookingParams));
       } else {
-        ShowMessage.showNotification(StringConstants.warning.localized(), StringConstants.linkRequired.localized(),
-            Colors.yellow, const Icon(Icons.warning_amber));
+        ShowMessage.showNotification(
+            StringConstants.warning.localized(),
+            StringConstants.linkRequired.localized(),
+            Colors.yellow,
+            const Icon(Icons.warning_amber));
         productScreenBLoc
             .add(OnClickProductLoaderEvent(isReqToShowLoader: false));
 
         return;
       }
     } else if (productData?.type == StringConstants.configurable) {
-      debugPrint("param --> $configurableParams");
-      debugPrint("param --> $configurableProductId");
 
       String? id = getId(productData, configurableParams);
 
       if (configurableProductId == null) {
-        ShowMessage.showNotification(StringConstants.warning.localized(), StringConstants.pleaseSelectVariants.localized(),
-            Colors.yellow, const Icon(Icons.warning_amber));
+        ShowMessage.showNotification(
+            StringConstants.warning.localized(),
+            StringConstants.pleaseSelectVariants.localized(),
+            Colors.yellow,
+            const Icon(Icons.warning_amber));
 
         productScreenBLoc
             .add(OnClickProductLoaderEvent(isReqToShowLoader: false));
@@ -157,7 +180,8 @@ import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
             bundleParams ?? [],
             configurableParams ?? [],
             id,
-            ""));
+            "",
+            bookingParams));
       }
     } else {
       productScreenBLoc.add(AddToCartProductEvent(
@@ -168,7 +192,8 @@ import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
           bundleParams ?? [],
           configurableParams ?? [],
           configurableProductId,
-          ""));
+          "",
+          bookingParams));
     }
   }
 
@@ -179,8 +204,8 @@ import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
     }
 
     for (var indexData = 0;
-    indexData < (productData?.configurableData?.index?.length ?? 0);
-    indexData++) {
+        indexData < (productData?.configurableData?.index?.length ?? 0);
+        indexData++) {
       List map = [];
 
       Index? data = productData?.configurableData?.index?[indexData];
@@ -190,7 +215,7 @@ import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
         for (int j = 0; j < (configurableParams?.length ?? 0); j++) {
           var param = configurableParams?[j];
           if (item?.attributeId.toString() ==
-              param?["attributeId"].toString() &&
+                  param?["attributeId"].toString() &&
               item?.attributeOptionId.toString() ==
                   param?["attributeOptionId"].toString()) {
             map.add(j);
@@ -200,7 +225,6 @@ import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
       }
 
       if (map.length == configurableParams?.length) {
-        debugPrint("map ==> $map ${data?.id}");
         return data?.id;
       }
     }

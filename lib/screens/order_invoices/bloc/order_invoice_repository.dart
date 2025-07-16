@@ -24,8 +24,8 @@ class OrderInvoiceRepositoryImp implements OrderInvoiceRepository {
       invoiceList=await ApiClient().getInvoicesList(orderId);
     }
     catch(error,stacktrace){
-      print("Error --> $error");
-      print("StackTrace --> $stacktrace");
+      debugPrint("Error --> $error");
+      debugPrint("StackTrace --> $stacktrace");
     }
     return invoiceList!;
   }

@@ -14,13 +14,13 @@ import 'package:bagisto_app_demo/screens/compare/utils/index.dart';
 
 class CompareScreen extends StatefulWidget {
   const CompareScreen({Key? key}) : super(key: key);
-
   @override
   State<CompareScreen> createState() => _CompareScreenState();
 }
 
 class _CompareScreenState extends State<CompareScreen>
     with OrderStatusBGColorHelper {
+  final _scrollController = ScrollController();
   CompareProductsData? _compareScreenModel;
   final StreamController streamController = StreamController.broadcast();
   CompareScreenBloc? compareScreenBloc;
@@ -28,7 +28,8 @@ class _CompareScreenState extends State<CompareScreen>
   final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
       GlobalKey<ScaffoldMessengerState>();
   bool isLoading = false;
-
+  final int limit = 3;
+  int page = 1;
   @override
   void initState() {
     getSharePreferenceCartCount().then((value) {
@@ -37,12 +38,20 @@ class _CompareScreenState extends State<CompareScreen>
     compareScreenBloc = context.read<CompareScreenBloc>();
     compareScreenBloc?.add(CompareScreenFetchEvent());
     super.initState();
+
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels ==
+          _scrollController.position.maxScrollExtent) {
+        compareScreenBloc?.add(CompareScreenFetchEvent());
+      }
+    });
   }
 
   @override
   void dispose() {
     super.dispose();
     streamController.close();
+    _scrollController.dispose();
   }
 
   ///method to get cart count save in share pref
@@ -57,6 +66,7 @@ class _CompareScreenState extends State<CompareScreen>
       child: Scaffold(
         appBar: AppBar(
           title: Text(StringConstants.compare.localized()),
+          centerTitle: false,
           actions: [
             StreamBuilder(
               stream: GlobalData.cartCountController.stream,
@@ -205,7 +215,6 @@ class _CompareScreenState extends State<CompareScreen>
           // GlobalData.cartCountController.sink
           //     .add(_compareScreenModel?.data?[0].cart?.itemsQty ?? 0);
         }
-
         return _compareScreen(state.compareScreenModel, isLoading);
       }
       if (state.status == CompareStatusStatus.fail) {
@@ -282,6 +291,7 @@ class _CompareScreenState extends State<CompareScreen>
           children: [
             SingleChildScrollView(
                 child: CompareView(
+              scrollController: _scrollController,
               compareScreenBloc: compareScreenBloc,
               compareScreenModel: compareScreenModel,
             )),

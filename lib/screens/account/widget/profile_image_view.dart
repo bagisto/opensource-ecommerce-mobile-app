@@ -11,7 +11,7 @@
 import 'package:bagisto_app_demo/screens/account/utils/index.dart';
 
 class ProfileImageView extends StatefulWidget {
-  final Function(String? base64string)? callback;
+  final Function(XFile? imageFile, {bool isDelete})? callback;
 
   const ProfileImageView({Key? key, this.callback}) : super(key: key);
 
@@ -24,7 +24,7 @@ class _ProfileImageViewState extends State<ProfileImageView> {
   String? base64string;
   XFile? image;
   XFile selectedImage = XFile("");
-
+  File? imageFile;
   @override
   void initState() {
     image = null;
@@ -45,35 +45,62 @@ class _ProfileImageViewState extends State<ProfileImageView> {
         children: [
           GestureDetector(
               onTap: () {
-                // _showChoiceBottomSheet(context);
+                _showChoiceBottomSheet(context);
               },
               child: CircleAvatar(
                 radius: AppSizes.screenWidth * 0.13,
-                backgroundImage: const AssetImage(AssetConstants.customerProfilePlaceholder),
+                backgroundImage:
+                    const AssetImage(AssetConstants.customerProfilePlaceholder),
                 backgroundColor: Colors.white,
                 foregroundImage: (image != null)
                     ? FileImage(File(image!.path))
                     : (profileImageEdit.isNotEmpty)
-                        ? NetworkImage('$profileImageEdit?${DateTime.now().millisecondsSinceEpoch.toString()}')
-                        : Image.asset(AssetConstants.customerProfilePlaceholder).image,
+                        ? NetworkImage(
+                            '$profileImageEdit?${DateTime.now().millisecondsSinceEpoch.toString()}')
+                        : Image.asset(AssetConstants.customerProfilePlaceholder)
+                            .image,
               )),
-          // GestureDetector(
-          //   onTap: () {
-          //     _showChoiceBottomSheet(context);
-          //   },
-          //   child: Container(
-          //     padding: const EdgeInsets.all(AppSizes.spacingNormal),
-          //     decoration: BoxDecoration(
-          //       borderRadius: BorderRadius.circular(AppSizes.spacingLarge),
-          //       color: Theme.of(context).colorScheme.onBackground,
-          //     ),
-          //     child:  Icon(
-          //       Icons.camera_alt,
-          //       size: 18,
-          //       color: Theme.of(context).colorScheme.secondaryContainer,
-          //     ),
-          //   ),
-          // )
+          Positioned(
+            top: 0,
+            right: 0,
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  profileImageEdit = "";
+                });
+                widget.callback!(null, isDelete: true);
+              },
+              child: Container(
+                padding: const EdgeInsets.all(AppSizes.spacingNormal),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(AppSizes.spacingLarge),
+                  color: Theme.of(context).colorScheme.onBackground,
+                ),
+                child: Icon(
+                  Icons.delete_forever,
+                  size: 18,
+                  color: Theme.of(context).colorScheme.secondaryContainer,
+                ),
+              ),
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              _showChoiceBottomSheet(context);
+            },
+            child: Container(
+              padding: const EdgeInsets.all(AppSizes.spacingNormal),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(AppSizes.spacingLarge),
+                color: Theme.of(context).colorScheme.onBackground,
+              ),
+              child: Icon(
+                Icons.camera_alt,
+                size: 18,
+                color: Theme.of(context).colorScheme.secondaryContainer,
+              ),
+            ),
+          )
         ],
       ),
     );
@@ -89,7 +116,8 @@ class _ProfileImageViewState extends State<ProfileImageView> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(AppSizes.spacingLarge, AppSizes.spacingLarge, 0, AppSizes.spacingLarge),
+                padding: const EdgeInsets.fromLTRB(AppSizes.spacingLarge,
+                    AppSizes.spacingLarge, 0, AppSizes.spacingLarge),
                 child: Text(
                   StringConstants.chooseOption.localized(),
                   style: Theme.of(context).textTheme.labelMedium,
@@ -128,40 +156,42 @@ class _ProfileImageViewState extends State<ProfileImageView> {
   }
 
   void _openCamera(BuildContext context) async {
-    await ImagePicker()
-        .pickImage(
-      source: ImageSource.camera,
-    )
-        .then((value) async {
-      selectedImage = XFile(value?.path ?? "");
-      Uint8List imageBytes =
-          await selectedImage.readAsBytes(); //convert to bytes
-      base64string = base64.encode(imageBytes);
-      widget.callback!(base64string);
+    final pickedFile =
+        await ImagePicker().pickImage(source: ImageSource.camera);
+    if (pickedFile != null) {
+      selectedImage = pickedFile;
+      imageFile = File(pickedFile.path); // 👈 Convert XFile to File
+
+      if (imageFile != null) {
+        widget.callback!(pickedFile); // 🔄 Send the file back via callback
+      }
+
       setState(() {
-        image = value;
+        image = pickedFile;
       });
-    });
+    }
     if (!context.mounted) return;
     Navigator.pop(context);
   }
 
   void _openGallery(BuildContext context) async {
-    await ImagePicker()
-        .pickImage(
-      source: ImageSource.gallery,
-    )
-        .then((value) async {
-      selectedImage = XFile(value?.path ?? "");
-      Uint8List imageBytes =
-          await selectedImage.readAsBytes(); //convert to bytes
-      base64string = base64.encode(imageBytes);
-      widget.callback!(base64string);
+    final pickedFile =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      selectedImage = pickedFile;
+      imageFile = File(pickedFile.path); // 👈 Convert XFile to File
+
+      if (imageFile != null) {
+        widget.callback!(pickedFile); // 🔄 Send the file back via callback
+      }
+
       setState(() {
-        image = value;
+        image = pickedFile;
       });
-    });
-    if(context.mounted){
+    }
+
+    if (context.mounted) {
       Navigator.pop(context);
     }
   }

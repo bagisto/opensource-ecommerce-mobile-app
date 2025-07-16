@@ -51,7 +51,6 @@ class PushNotificationsManager {
         onDidReceiveNotificationResponse: (NotificationResponse response) {
       final String? payload = response.payload;
       if ((payload ?? "").isNotEmpty) {
-        debugPrint("payload ---> $payload");
         Map<String, dynamic> payloadData = jsonDecode(payload ?? "");
         if (payloadData["type"] == "openFile") {
           openFile(payloadData["path"].toString());
@@ -98,8 +97,9 @@ class PushNotificationsManager {
   }
 
   Future<String?> createFcmToken() async {
-    debugPrint("token---->${await _firebaseMessaging.getToken()}");
-    return await _firebaseMessaging.getToken();
+    String token = await _firebaseMessaging.getToken() ?? "";
+    GlobalData.fcmToken = token;
+    return token;
   }
 
   subscribeToTopic() {
@@ -119,8 +119,6 @@ class PushNotificationsManager {
     //When app is in Working state
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
       RemoteNotification? notification = message.notification;
-      debugPrint('on message ${message.data}');
-      debugPrint("onMessageNotification${message.notification?.body}");
       String title = notification?.title ?? "";
       String body = notification?.body ?? "";
 
@@ -148,7 +146,6 @@ class PushNotificationsManager {
     _firebaseMessaging.getInitialMessage().then((RemoteMessage? message) {
       debugPrint("open app data");
       debugPrint(message?.data.toString());
-      if (message?.data != null) {}
     });
   }
 
@@ -203,7 +200,7 @@ class PushNotificationsManager {
       sound: true,
     )
         .then((value) {
-      debugPrint("Settings registered: $value");
+
     });
   }
 }
