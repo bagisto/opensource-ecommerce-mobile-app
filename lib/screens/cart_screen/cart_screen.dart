@@ -8,7 +8,6 @@
  *   @link https://store.webkul.com/license.html
  */
 
-
 import 'package:bagisto_app_demo/screens/cart_screen/utils/cart_index.dart';
 
 class CartScreen extends StatefulWidget {
@@ -44,13 +43,15 @@ class _CartScreenState extends State<CartScreen> {
     return buildUI();
   }
 
-
   Widget buildUI() {
     return ScaffoldMessenger(
       key: scaffoldMessengerKey,
       child: Scaffold(
-        appBar: CommonAppBar(StringConstants.cart.localized(),
-        index: 2),
+        appBar: CommonAppBar(
+          StringConstants.cart.localized(),
+          index: 2,
+          isInCartScreen: true,
+        ),
         body: _cartScreenData(context),
       ),
     );
@@ -62,60 +63,54 @@ class _CartScreenState extends State<CartScreen> {
       listener: (BuildContext context, CartScreenBaseState state) {
         if (state is RemoveCartItemState) {
           if (state.status == CartStatus.fail) {
-            ShowMessage.errorNotification(
-                state.error ?? "",context);
+            ShowMessage.errorNotification(state.error ?? "", context);
           } else if (state.status == CartStatus.success) {
             ShowMessage.successNotification(
-                state.removeCartProductModel?.message ?? "",context);
-            GlobalData.cartCountController.sink.add(state.removeCartProductModel?.cart?.itemsQty ?? 0);
+                state.removeCartProductModel?.message ?? "", context);
+            GlobalData.cartCountController.sink
+                .add(state.removeCartProductModel?.cart?.itemsQty ?? 0);
           }
         }
         if (state is RemoveAllCartItemState) {
           if (state.status == CartStatus.fail) {
-            ShowMessage.errorNotification(
-                state.error ?? "",context);
+            ShowMessage.errorNotification(state.error ?? "", context);
           } else if (state.status == CartStatus.success) {
             ShowMessage.successNotification(
-                state.removeAllCartProductModel!.message ?? "",context);
+                state.removeAllCartProductModel!.message ?? "", context);
             GlobalData.cartCountController.sink.add(0);
           }
         }
         if (state is AddCouponState) {
           if (state.status == CartStatus.fail) {
-            ShowMessage.errorNotification(
-                state.error ?? "",context);
+            ShowMessage.errorNotification(state.error ?? "", context);
           } else if (state.status == CartStatus.success) {
             ShowMessage.successNotification(
-                state.baseModel?.message ?? "",context);
+                state.baseModel?.message ?? "", context);
           }
         }
         if (state is RemoveCouponCartState) {
           if (state.status == CartStatus.fail) {
-            ShowMessage.errorNotification(
-                state.error ?? "",context);
+            ShowMessage.errorNotification(state.error ?? "", context);
           } else if (state.status == CartStatus.success) {
             ShowMessage.successNotification(
-                state.baseModel?.message ?? "",context);
+                state.baseModel?.message ?? "", context);
           }
         }
         if (state is MoveToCartState) {
           if (state.status == CartStatus.fail) {
-            ShowMessage.errorNotification(
-                state.error ?? "",context);
+            ShowMessage.errorNotification(state.error ?? "", context);
           } else if (state.status == CartStatus.success) {
             ShowMessage.successNotification(
-                StringConstants.addedToWishlist.localized(),context);
+                StringConstants.addedToWishlist.localized(), context);
           }
         }
         if (state is UpdateCartState) {
           if (state.status == CartStatus.fail) {
-            ShowMessage.errorNotification(
-                state.error ?? "",
-               context);
+            ShowMessage.errorNotification(state.error ?? "", context);
           } else if (state.status == CartStatus.success) {
             quantityChanged = false;
             ShowMessage.successNotification(
-                StringConstants.updateCartSuccess.localized(),context);
+                StringConstants.updateCartSuccess.localized(), context);
           }
         }
       },
@@ -137,11 +132,13 @@ class _CartScreenState extends State<CartScreen> {
       if (state.status == CartStatus.success) {
         _cartDetailsModel = state.cartDetailsModel;
         _discountController.text = _cartDetailsModel?.couponCode ?? "";
-        GlobalData.cartCountController.sink.add(state.cartDetailsModel?.itemsQty ?? 0);
+        GlobalData.cartCountController.sink
+            .add(state.cartDetailsModel?.itemsQty ?? 0);
         return _cartScreenBody(_cartDetailsModel);
       }
       if (state.status == CartStatus.fail) {
-        return ErrorMessage.errorMsg(StringConstants.somethingWrong.localized());
+        return ErrorMessage.errorMsg(
+            StringConstants.somethingWrong.localized());
       }
     }
     if (state is UpdateCartState) {
@@ -152,7 +149,8 @@ class _CartScreenState extends State<CartScreen> {
         }
       }
       if (state.status == CartStatus.fail) {
-        return ErrorMessage.errorMsg(StringConstants.somethingWrong.localized());
+        return ErrorMessage.errorMsg(
+            StringConstants.somethingWrong.localized());
       }
     }
     if (state is RemoveCartItemState) {
@@ -161,8 +159,7 @@ class _CartScreenState extends State<CartScreen> {
         if (_cartDetailsModel != null) {
           _cartDetailsModel!.items!
               .removeWhere((element) => element.id == productId);
-          appStoragePref.setCartCount(
-              _cartDetailsModel?.itemsCount ?? 0);
+          appStoragePref.setCartCount(_cartDetailsModel?.itemsCount ?? 0);
           fetchCartData();
           return _cartScreenBody(_cartDetailsModel!);
         } else {}
@@ -174,7 +171,8 @@ class _CartScreenState extends State<CartScreen> {
         appStoragePref.setCartCount(_cartDetailsModel?.itemsCount ?? 0);
         fetchCartData();
         if (_cartDetailsModel != null) {
-          _cartDetailsModel?.items?.removeWhere((element) => element.id == productId.toString());
+          _cartDetailsModel?.items
+              ?.removeWhere((element) => element.id == productId.toString());
           return _cartScreenBody(_cartDetailsModel!);
         } else {}
       }
@@ -182,9 +180,9 @@ class _CartScreenState extends State<CartScreen> {
     if (state is RemoveAllCartItemState) {
       if (state.status == CartStatus.success) {
         if (_cartDetailsModel != null) {
-          _cartDetailsModel!.items!.removeWhere((element) => element.id == StringConstants.productId);
-          appStoragePref.setCartCount(
-              _cartDetailsModel?.itemsCount ?? 0);
+          _cartDetailsModel!.items!.removeWhere(
+              (element) => element.id == StringConstants.productId);
+          appStoragePref.setCartCount(_cartDetailsModel?.itemsCount ?? 0);
           fetchCartData();
           return _cartScreenBody(_cartDetailsModel!);
         } else {}
@@ -250,7 +248,8 @@ class _CartScreenState extends State<CartScreen> {
               },
               child: SingleChildScrollView(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: AppSizes.spacingNormal),
+                  padding: const EdgeInsets.symmetric(
+                      vertical: AppSizes.spacingNormal),
                   child: Column(
                     children: [
                       CartListItem(
@@ -262,18 +261,18 @@ class _CartScreenState extends State<CartScreen> {
                               this.quantityChanged = quantityChanged;
                             });
                           }),
-                      const SizedBox(height:AppSizes.spacingSmall),
+                      const SizedBox(height: AppSizes.spacingSmall),
                       ApplyCouponView(
                         discountController: _discountController,
                         cartScreenBloc: cartScreenBloc,
                         cartDetailsModel: _cartDetailsModel,
                       ),
-                      const SizedBox(height:AppSizes.spacingSmall),
+                      const SizedBox(height: AppSizes.spacingSmall),
                       ButtonView(
                         selectedItems: _selectedItems,
                         cartScreenBloc: cartScreenBloc,
                       ),
-                      const SizedBox(height:AppSizes.spacingSmall),
+                      const SizedBox(height: AppSizes.spacingSmall),
                       PriceDetailView(
                         cartDetailsModel: cartDetailsModel,
                       ),

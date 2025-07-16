@@ -1,43 +1,43 @@
 {
   "project_info": {
-    "project_number": "1076699867652",
-    "project_id": "bagisto-mobikul-app",
-    "storage_bucket": "bagisto-mobikul-app.appspot.com"
+    "project_number": "10787652",
+    "project_id": "bagisto",
+    "storage_bucket": "bagisto"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1076699867652:android:7627738ab9478170f06351",
+        "mobilesdk_app_id": "d:7627738ab9478170f06351",
         "android_client_info": {
-          "package_name": "com.webkul.bagisto.marketplace"
+          "package_name": "bagisto"
         }
       },
       "oauth_client": [
         {
-          "client_id": "1076699867652-6nijb4tlissq470kebt6ij3bh4drm3fb.apps.googleusercontent.com",
+          "client_id": "rm3fb.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyD9oLzksLYsYpJnPvW9-5oXYo2jTKzGt_A"
+          "current_key": "ksLYsYpJnPvW9-5oXYo2jTKzGt_A"
         },
         {
-          "current_key": "AIzaSyDL5pg-OdSNY31ekS9CjVEbk9_pK0j1avU"
+          "current_key": "A-OdSNY31ekS9CjVEbk9_pK0j1avU"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "1076699867652-6nijb4tlissq470kebt6ij3bh4drm3fb.apps.googleusercontent.com",
+              "client_id": "107nijb4tlissq470kebt6ij3bh4drm3fb.apps.googleusercontent.com",
               "client_type": 3
             },
             {
-              "client_id": "1076699867652-cofvnvlt7i0bfbp9h7n66jsvkllpmuqq.apps.googleusercontent.com",
+              "client_id": "1076699t7i0bfbp9hsvkllpmuqq.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.webkul.bagisto.iOS"
+                "bundle_id": "bagisto.iOS"
               }
             }
           ]
@@ -46,53 +46,53 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1076699867652:android:dc081e4de9130a48f06351",
+        "mobilesdk_app_id": "1:10766:dc081e4de9130a48f06351",
         "android_client_info": {
-          "package_name": "com.webkul.bagisto.mobikul"
+          "package_name": "bagisto"
         }
       },
       "oauth_client": [
         {
-          "client_id": "1076699867652-ggevn4e5hp8qvcd8d64f9r1rv3h0ecva.apps.googleusercontent.com",
+          "client_id": "107669988qvcd8d64f9.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.webkul.bagisto.mobikul",
-            "certificate_hash": "742ec4289323a0b2cc7e731b1fc7011a46869290"
+            "package_name": "bagisto",
+            "certificate_hash": "742ec421b1fc7011a46869290"
           }
         },
         {
-          "client_id": "1076699867652-o456sfuqsbcan4svdhpt6rg12loq9jbq.apps.googleusercontent.com",
+          "client_id": "1076699sbcan4svdhpt6rgq.apps.googent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.webkul.bagisto.mobikul",
-            "certificate_hash": "61a253a049223dac296ae6ac3a733f744db12235"
+            "package_name": "bagisto",
+            "certificate_hash": "61a3a733f744db12235"
           }
         },
         {
-          "client_id": "1076699867652-6nijb4tlissq470kebt6ij3bh4drm3fb.apps.googleusercontent.com",
+          "client_id": "107669986kebt6ij3bh4drm3fb.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyD9oLzksLYsYpJnPvW9-5oXYo2jTKzGt_A"
+          "current_key": "AIzaSyDnPvW9-5oXYo2jTKzGt_A"
         },
         {
-          "current_key": "AIzaSyDL5pg-OdSNY31ekS9CjVEbk9_pK0j1avU"
+          "current_key": "AIzaSyDCjVEbk9_pK0j1avU"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "1076699867652-6nijb4tlissq470kebt6ij3bh4drm3fb.apps.googleusercontent.com",
+              "client_id": "1076699860kebt6ij3bh4drm3fb.apps.googl",
               "client_type": 3
             },
             {
-              "client_id": "1076699867652-cofvnvlt7i0bfbp9h7n66jsvkllpmuqq.apps.googleusercontent.com",
+              "client_id": "1076699867n66jsvkllpmuqq.apps.gooontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.webkul.bagisto.iOS"
+                "bundle_id": "bagisto"
               }
             }
           ]

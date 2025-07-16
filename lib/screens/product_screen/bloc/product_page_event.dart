@@ -8,12 +8,11 @@
  *   @link https://store.webkul.com/license.html
  */
 
-
 import 'package:bagisto_app_demo/screens/home_page/data_model/new_product_data.dart';
 
 abstract class ProductScreenBaseEvent {}
 
-class OnClickProductLoaderEvent extends ProductScreenBaseEvent{
+class OnClickProductLoaderEvent extends ProductScreenBaseEvent {
   final bool? isReqToShowLoader;
 
   OnClickProductLoaderEvent({this.isReqToShowLoader});
@@ -24,14 +23,14 @@ class FetchProductEvent extends ProductScreenBaseEvent {
   FetchProductEvent(this.sku);
 }
 
-class AddToWishListProductEvent extends ProductScreenBaseEvent{
+class AddToWishListProductEvent extends ProductScreenBaseEvent {
   NewProducts? productData;
   String? productId;
 
-  AddToWishListProductEvent(this.productId,this.productData);
+  AddToWishListProductEvent(this.productId, this.productData);
 }
 
-class RemoveFromWishlistEvent extends ProductScreenBaseEvent{
+class RemoveFromWishlistEvent extends ProductScreenBaseEvent {
   NewProducts? productData;
   String? productId;
 
@@ -43,21 +42,32 @@ class AddToCompareListEvent extends ProductScreenBaseEvent {
   final String? message;
 
   AddToCompareListEvent(this.productId, this.message);
-
 }
 
-class AddToCartProductEvent extends ProductScreenBaseEvent{
+class AddToCartProductEvent extends ProductScreenBaseEvent {
   List downloadLinks = [];
   List groupedParams = [];
   List bundleParams = [];
   List configurableParams = [];
+  Map<String, dynamic>? bookingParams;
   String? configurableId;
   String? productId;
   int quantity;
   final String? message;
+  List<Map<String, dynamic>>? customizableOptions;
+  List? customizableFiles;
 
-  AddToCartProductEvent(this.quantity,this.productId,this.downloadLinks,this.groupedParams,this.bundleParams,this.configurableParams,this.configurableId,this.message,);
-
+  AddToCartProductEvent(
+      this.quantity,
+      this.productId,
+      this.downloadLinks,
+      this.groupedParams,
+      this.bundleParams,
+      this.configurableParams,
+      this.configurableId,
+      this.message,
+      this.bookingParams,
+      [this.customizableOptions, this.customizableFiles]);
 }
 
 class DownloadProductSampleEvent extends ProductScreenBaseEvent {
@@ -65,6 +75,12 @@ class DownloadProductSampleEvent extends ProductScreenBaseEvent {
   String? id;
   String? fileName;
 
-  DownloadProductSampleEvent(this.type, this.id,this.fileName);
+  DownloadProductSampleEvent(this.type, this.id, this.fileName);
+}
 
+class GetSlotEvent extends ProductScreenBaseEvent {
+  final int bookingId;
+  final String selectedDate;
+
+  GetSlotEvent(this.bookingId, this.selectedDate);
 }

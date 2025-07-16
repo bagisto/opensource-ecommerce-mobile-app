@@ -27,7 +27,9 @@ class CommonWidgets with EmailValidator {
           Widget? suffixIcon,
           bool? readOnly,
           EdgeInsetsGeometry? contentPadding,
-          VoidCallback? onTap}) =>
+          VoidCallback? onTap,
+            int? maxLines =1
+          }) =>
       TextFormField(
         readOnly: readOnly ?? false,
         style: Theme.of(context).textTheme.bodyMedium,
@@ -35,6 +37,7 @@ class CommonWidgets with EmailValidator {
         keyboardType: keyboardType,
         obscureText: !showPassword,
         onTap: onTap,
+        maxLines: maxLines,
         decoration: InputDecoration(
             label: isRequired
                 ? Text.rich(TextSpan(
@@ -206,7 +209,6 @@ class CommonWidgets with EmailValidator {
               }
             },
             onChanged: (String? newValue) {
-              print(">> $newValue");
               if (callBack != null) {
                 callBack(newValue ?? '', key);
               }

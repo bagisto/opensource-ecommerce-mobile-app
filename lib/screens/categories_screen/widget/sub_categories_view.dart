@@ -1,4 +1,3 @@
-
 /*
  *   Webkul Software.
  *   @package Mobikul Application Code.
@@ -9,15 +8,9 @@
  *   @link https://store.webkul.com/license.html
  */
 
-
-
-
 import 'package:bagisto_app_demo/screens/cart_screen/utils/cart_index.dart';
 import 'package:bagisto_app_demo/screens/categories_screen/utils/index.dart';
 import 'package:bagisto_app_demo/screens/drawer/utils/index.dart';
-
-import '../../../utils/prefetching_helper.dart';
-
 
 //ignore: must_be_immutable
 class SubCategoriesView extends StatefulWidget {
@@ -46,7 +39,9 @@ class SubCategoriesView extends StatefulWidget {
       this.metaDescription,
       this.categoriesData,
       this.isLoggedIn,
-      this.data, this.filters, this.isPreCatching,
+      this.data,
+      this.filters,
+      this.isPreCatching,
       {Key? key})
       : super(key: key);
 
@@ -64,8 +59,8 @@ class _SubCategoriesViewState extends State<SubCategoriesView> {
       color: Theme.of(context).colorScheme.onPrimary,
       onRefresh: () {
         return Future.delayed(const Duration(seconds: 1), () {
-          widget.subCategoryBloc?.add(FetchSubCategoryEvent(
-              widget.filters, widget.page));
+          widget.subCategoryBloc
+              ?.add(FetchSubCategoryEvent(widget.filters, widget.page));
         });
       },
       child: Stack(
@@ -81,110 +76,150 @@ class _SubCategoriesViewState extends State<SubCategoriesView> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      if(widget.image != "" && widget.image != null)
-                      const SizedBox(height:AppSizes.spacingMedium),
+                      if (widget.image != "" && widget.image != null)
+                        const SizedBox(height: AppSizes.spacingMedium),
                       widget.image != "" && widget.image != null
                           ? ImageView(
-                          url: widget.image ?? "",
-                          height: MediaQuery.of(context).size.height/3.5,
-                          width: MediaQuery.of(context).size.width)
+                              url: widget.image ?? "",
+                              height: MediaQuery.of(context).size.height / 3.5,
+                              width: MediaQuery.of(context).size.width)
                           : const SizedBox(
-                        height: 0,
-                      ),
-                      if(widget.categoriesData?.data?.isNotEmpty ?? false)
-                      Column(
-                        children: [
-                          (isGrid ?? false) ?
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: AppSizes.spacingNormal),
-                            child: GridView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: widget.categoriesData?.data?.length ?? 0,
-                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                mainAxisExtent: (MediaQuery.of(context).size.height / 3) + 170,
-                                crossAxisCount: 2,),
-                              itemBuilder: (BuildContext context, int index) {
-                                if(widget.isPreCatching){
-                                  // preCacheProductDetails(widget.categoriesData?.data?[index].urlKey ?? "");
-                                }
-                                if (index == widget.categoriesData?.data?.length) {
-                                  if (widget.categoriesData?.data?.length.toString() ==
-                                      widget.categoriesData?.paginatorInfo?.total
-                                          .toString()) {
-                                    return const SizedBox(
-                                      height: AppSizes.spacingNormal,
-                                    );
-                                  } else {
-                                    return const Padding(
-                                      padding:
-                                      EdgeInsets.symmetric(vertical: AppSizes.spacingMedium/2),
-                                      child: Center(
-                                        child: SizedBox(
-                                          width: AppSizes.spacingLarge*2,
-                                          height: AppSizes.spacingLarge*2,
-                                          child: CircularProgressIndicator(
-                                            color: MobiKulTheme.accentColor,
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  }
-                                }
-                                return SubCategoriesGridView(
-                                    isLogin: widget.isLoggedIn,
-                                    data: widget.categoriesData?.data?[index],
-                                    subCategoryBloc: widget.subCategoryBloc);
-                              },
+                              height: 0,
                             ),
-                          )
-                        : ListView.builder(
-                        physics: const NeverScrollableScrollPhysics(),
-                        scrollDirection: Axis.vertical,
-                        shrinkWrap: true,
-                        itemCount: (widget.categoriesData?.data!.length ?? 0),
-                        itemBuilder: (context, index) {
-                          if(widget.isPreCatching){
-                            // preCacheProductDetails(widget.categoriesData?.data?[index].urlKey ?? "");
-                          }
-                          if (index == widget.categoriesData?.data?.length) {
-                            if (widget.categoriesData?.data?.length.toString() ==
-                                widget.categoriesData?.paginatorInfo?.total
-                                    .toString()) {
-                              return const SizedBox(
-                                height: AppSizes.spacingNormal,
-                              );
-                            } else {
-                              return const Padding(
-                                padding:
-                                EdgeInsets.symmetric(vertical: AppSizes.spacingMedium/2),
-                                child: Center(
-                                  child: SizedBox(
-                                    width: AppSizes.spacingLarge*2,
-                                    height: AppSizes.spacingLarge*2,
-                                    child: CircularProgressIndicator(
-                                      color: MobiKulTheme.accentColor,
+                      if (widget.categoriesData?.data?.isNotEmpty ?? false)
+                        Column(
+                          children: [
+                            (isGrid ?? false)
+                                ? Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: AppSizes.spacingNormal),
+                                    child: GridView.builder(
+                                      shrinkWrap: true,
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
+                                      itemCount:
+                                          widget.categoriesData?.data?.length ??
+                                              0,
+                                      gridDelegate:
+                                          SliverGridDelegateWithFixedCrossAxisCount(
+                                        mainAxisExtent: (MediaQuery.of(context)
+                                                    .size
+                                                    .height /
+                                                3) +
+                                            100,
+                                        crossAxisCount: 2,
+                                      ),
+                                      itemBuilder:
+                                          (BuildContext context, int index) {
+                                        if (widget.isPreCatching) {
+                                          // preCacheProductDetails(widget.categoriesData?.data?[index].urlKey ?? "");
+                                        }
+                                        if (index ==
+                                            widget
+                                                .categoriesData?.data?.length) {
+                                          if (widget
+                                                  .categoriesData?.data?.length
+                                                  .toString() ==
+                                              widget.categoriesData
+                                                  ?.paginatorInfo?.total
+                                                  .toString()) {
+                                            return const SizedBox(
+                                              height: AppSizes.spacingNormal,
+                                            );
+                                          } else {
+                                            return const Padding(
+                                              padding: EdgeInsets.symmetric(
+                                                  vertical:
+                                                      AppSizes.spacingMedium /
+                                                          2),
+                                              child: Center(
+                                                child: SizedBox(
+                                                  width:
+                                                      AppSizes.spacingLarge * 2,
+                                                  height:
+                                                      AppSizes.spacingLarge * 2,
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                    color: MobiKulTheme
+                                                        .accentColor,
+                                                  ),
+                                                ),
+                                              ),
+                                            );
+                                          }
+                                        }
+                                        return SubCategoriesGridView(
+                                            isLogin: widget.isLoggedIn,
+                                            data: widget
+                                                .categoriesData?.data?[index],
+                                            subCategoryBloc:
+                                                widget.subCategoryBloc);
+                                      },
                                     ),
-                                  ),
-                                ),
-                              );
-                            }
-                          }
-                          return SubCategoriesList(
-                              isLogin: widget.isLoggedIn,
-                              data: widget.categoriesData?.data?[index],
-                              subCategoryBloc: widget.subCategoryBloc);
-                        }),
-                        ],
-                      ),
+                                  )
+                                : ListView.builder(
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
+                                    scrollDirection: Axis.vertical,
+                                    shrinkWrap: true,
+                                    itemCount:
+                                        (widget.categoriesData?.data!.length ??
+                                            0),
+                                    itemBuilder: (context, index) {
+                                      if (widget.isPreCatching) {
+                                        // preCacheProductDetails(widget.categoriesData?.data?[index].urlKey ?? "");
+                                      }
+                                      if (index ==
+                                          widget.categoriesData?.data?.length) {
+                                        if (widget.categoriesData?.data?.length
+                                                .toString() ==
+                                            widget.categoriesData?.paginatorInfo
+                                                ?.total
+                                                .toString()) {
+                                          return const SizedBox(
+                                            height: AppSizes.spacingNormal,
+                                          );
+                                        } else {
+                                          return const Padding(
+                                            padding: EdgeInsets.symmetric(
+                                                vertical:
+                                                    AppSizes.spacingMedium / 2),
+                                            child: Center(
+                                              child: SizedBox(
+                                                width:
+                                                    AppSizes.spacingLarge * 2,
+                                                height:
+                                                    AppSizes.spacingLarge * 2,
+                                                child:
+                                                    CircularProgressIndicator(
+                                                  color:
+                                                      MobiKulTheme.accentColor,
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      }
+                                      return SubCategoriesList(
+                                          isLogin: widget.isLoggedIn,
+                                          data: widget
+                                              .categoriesData?.data?[index],
+                                          subCategoryBloc:
+                                              widget.subCategoryBloc);
+                                    }),
+                          ],
+                        ),
                     ],
                   ),
                 ),
               ),
               Visibility(
-                visible: (superAttributes ?? []).isNotEmpty || (widget.categoriesData?.data ?? []).isNotEmpty,
+                visible: (superAttributes ?? []).isNotEmpty ||
+                    (widget.categoriesData?.data ?? []).isNotEmpty,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: AppSizes.spacingMedium, horizontal: AppSizes.spacingLarge),
+                  padding: const EdgeInsets.symmetric(
+                      vertical: AppSizes.spacingMedium,
+                      horizontal: AppSizes.spacingLarge),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -194,15 +229,15 @@ class _SubCategoriesViewState extends State<SubCategoriesView> {
                               backgroundColor: Theme.of(context).cardColor,
                               context: context,
                               builder: (ctx) => BlocProvider(
-                                create: (context) => FilterBloc(
-                                    FilterRepositoryImp()),
-                                child: SortBottomSheet(
-                                  categorySlug: widget.categorySlug ?? "",
-                                  page: widget.page,
-                                  filters: widget.filters,
-                                  subCategoryBloc: widget.subCategoryBloc,
-                                ),
-                              ));
+                                    create: (context) =>
+                                        FilterBloc(FilterRepositoryImp()),
+                                    child: SortBottomSheet(
+                                      categorySlug: widget.categorySlug ?? "",
+                                      page: widget.page,
+                                      filters: widget.filters,
+                                      subCategoryBloc: widget.subCategoryBloc,
+                                    ),
+                                  ));
                         },
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.end,
@@ -214,7 +249,7 @@ class _SubCategoriesViewState extends State<SubCategoriesView> {
                             Text(
                               StringConstants.sort.localized().toUpperCase(),
                               style:
-                              const TextStyle(fontWeight: FontWeight.w600),
+                                  const TextStyle(fontWeight: FontWeight.w600),
                             )
                           ],
                         ),
@@ -236,28 +271,34 @@ class _SubCategoriesViewState extends State<SubCategoriesView> {
                             ),
                             Text(
                               isGrid ?? false
-                                  ? StringConstants.grid.localized().toUpperCase()
-                                  : StringConstants.list.localized().toUpperCase(),
+                                  ? StringConstants.grid
+                                      .localized()
+                                      .toUpperCase()
+                                  : StringConstants.list
+                                      .localized()
+                                      .toUpperCase(),
                               style:
-                              const TextStyle(fontWeight: FontWeight.w600),
+                                  const TextStyle(fontWeight: FontWeight.w600),
                             )
                           ],
                         ),
                       ),
                       GestureDetector(
                         onTap: () {
-                          Navigator.of(context).push(MaterialPageRoute(builder: (context)=>
-                              SubCategoriesFilterScreen(
+                          Navigator.of(context)
+                              .push(
+                            MaterialPageRoute(
+                              builder: (context) => SubCategoriesFilterScreen(
                                 categorySlug: widget.categorySlug ?? "",
                                 subCategoryBloc: widget.subCategoryBloc,
                                 page: widget.page,
                                 data: widget.data,
                                 superAttributes: superAttributes,
                                 filters: widget.filters,
-
                               ),
-                          ),
-                          ).then((value) {
+                            ),
+                          )
+                              .then((value) {
                             superAttributes = value;
                           });
                         },
@@ -271,7 +312,7 @@ class _SubCategoriesViewState extends State<SubCategoriesView> {
                             Text(
                               StringConstants.filter.localized().toUpperCase(),
                               style:
-                              const TextStyle(fontWeight: FontWeight.w600),
+                                  const TextStyle(fontWeight: FontWeight.w600),
                             )
                           ],
                         ),

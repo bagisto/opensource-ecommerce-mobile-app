@@ -32,7 +32,6 @@ class ContactUsScreenBloc
       Emitter<ContactUsBaseState> emit) async {
 
     if (event is ContactUsEvent) {
-      print("ContactUsEvent is emit ");
       try {
         BaseModel baseModel = await repository!.contactUsRepoScreen(event.name??'',event.email??'',event.phone??'',event.describe ??'');
         if (baseModel.success == true) {

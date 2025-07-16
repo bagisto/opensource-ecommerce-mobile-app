@@ -51,9 +51,9 @@ class ReviewData {
   String? comment;
   String? status;
   String? createdAt;
-  String? updatedAt;
+  // String? updatedAt;
   String? productId;
-  String? customerId;
+  // String? customerId;
   // String? customerName;
   ProductData? product;
   Customer? customer;
@@ -62,11 +62,11 @@ class ReviewData {
       this.title,
       this.rating,
       this.comment,
-      this.status,
+      // this.status,
       this.createdAt,
-      this.updatedAt,
+      // this.updatedAt,
       this.productId,
-      this.customerId,
+      // this.customerId,
       // this.customerName,
       this.product});
 
@@ -79,18 +79,14 @@ class ReviewData {
 @JsonSerializable()
 class Customer {
   String? id;
-  String? firstName;
-  String? lastName;
+  // String? firstName;
+  // String? lastName;
   String? name;
-  String? gender;
-  String? email;
+  // String? gender;
+  // String? email;
   Customer({
     this.id,
-    this.firstName,
-    this.lastName,
     this.name,
-    this.gender,
-    this.email,
   });
   factory Customer.fromJson(Map<String, dynamic> json) =>
       _$CustomerFromJson(json);
@@ -101,27 +97,18 @@ class Customer {
 @JsonSerializable()
 class ProductData {
   String? id;
-  String? type;
-  var attributeFamilyId;
-  String? sku;
+  // String? type;
+  // var attributeFamilyId;
+  // String? sku;
   String? urlKey;
-  String? createdAt;
-  String? updatedAt;
+  // String? createdAt;
+  // String? updatedAt;
   List<ProductFlats>? productFlats;
   List<Images>? images;
   String? name;
 
   ProductData(
-      {this.id,
-      this.type,
-      this.attributeFamilyId,
-      this.sku,
-      this.createdAt,
-      this.updatedAt,
-      this.productFlats,
-      this.urlKey,
-      this.images,
-      this.name});
+      {this.id, this.productFlats, this.urlKey, this.images, this.name});
 
   factory ProductData.fromJson(Map<String, dynamic> json) =>
       _$ProductDataFromJson(json);
@@ -131,10 +118,10 @@ class ProductData {
 
 @JsonSerializable()
 class Images {
-  String? path;
+  // String? path;
   String? url;
 
-  Images({this.url, this.path});
+  Images({this.url});
 
   factory Images.fromJson(Map<String, dynamic> json) => _$ImagesFromJson(json);
 
@@ -146,65 +133,40 @@ class ProductFlats {
   String? id;
   String? sku;
   String? name;
-  String? description;
-  String? shortDescription;
-  String? urlKey;
-  bool? featured;
-  bool? status;
-  bool? visibleIndividually;
-  var price;
-  var cost;
-  var specialPrice;
-  var specialPriceFrom;
-  var specialPriceTo;
-  var weight;
-  int? color;
-  String? colorLabel;
-  int? size;
-  String? sizeLabel;
+  // String? description;
+  // String? shortDescription;
+  // String? urlKey;
+  // bool? featured;
+  // bool? status;
+  // bool? visibleIndividually;
+  // var price;
+  // var cost;
+  // var specialPrice;
+  // var specialPriceFrom;
+  // var specialPriceTo;
+  // var weight;
+  // int? color;
+  // String? colorLabel;
+  // int? size;
+  // String? sizeLabel;
   String? locale;
-  String? channel;
-  String? productId;
-  var minPrice;
-  var maxPrice;
-  String? metaTitle;
-  String? metaKeywords;
-  String? metaDescription;
-  int? width;
-  String? createdAt;
-  String? updatedAt;
+  // String? channel;
+  // String? productId;
+  // var minPrice;
+  // var maxPrice;
+  // String? metaTitle;
+  // String? metaKeywords;
+  // String? metaDescription;
+  // int? width;
+  // String? createdAt;
+  // String? updatedAt;
 
-  ProductFlats(
-      {this.id,
-      this.sku,
-      this.name,
-      this.description,
-      this.shortDescription,
-      this.urlKey,
-      this.featured,
-      this.status,
-      this.visibleIndividually,
-      this.price,
-      this.cost,
-      this.specialPrice,
-      this.specialPriceFrom,
-      this.specialPriceTo,
-      this.weight,
-      this.color,
-      this.colorLabel,
-      this.size,
-      this.sizeLabel,
-      this.locale,
-      this.channel,
-      this.productId,
-      this.minPrice,
-      this.maxPrice,
-      this.metaTitle,
-      this.metaKeywords,
-      this.metaDescription,
-      this.width,
-      this.createdAt,
-      this.updatedAt});
+  ProductFlats({
+    this.id,
+    this.sku,
+    this.name,
+    this.locale,
+  });
 
   factory ProductFlats.fromJson(Map<String, dynamic> json) =>
       _$ProductFlatsFromJson(json);

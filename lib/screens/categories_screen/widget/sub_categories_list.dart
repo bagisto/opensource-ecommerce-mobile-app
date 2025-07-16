@@ -8,11 +8,7 @@
  *   @link https://store.webkul.com/license.html
  */
 
-
-
-
 import 'package:bagisto_app_demo/screens/categories_screen/utils/index.dart';
-
 
 //ignore: must_be_immutable
 class SubCategoriesList extends StatelessWidget {
@@ -26,12 +22,12 @@ class SubCategoriesList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return InkWell(
       onTap: () {
         Navigator.pushNamed(context, productScreen,
             arguments: PassProductData(
-                title: data?.name ?? data?.productFlats?.firstOrNull?.name ?? "",
+                title:
+                    data?.name ?? data?.productFlats?.firstOrNull?.name ?? "",
                 urlKey: data?.urlKey,
                 productId: int.parse(data?.id ?? "")));
       },
@@ -107,7 +103,8 @@ class SubCategoriesList extends StatelessWidget {
                                               top: AppSizes.spacingSmall / 2,
                                               bottom: AppSizes.spacingSmall),
                                           child: Text(
-                                            StringConstants.statusNew.localized(),
+                                            StringConstants.statusNew
+                                                .localized(),
                                             style: const TextStyle(
                                                 color: Colors.white),
                                           )),
@@ -137,7 +134,8 @@ class SubCategoriesList extends StatelessWidget {
                                   style:
                                       Theme.of(context).textTheme.labelMedium)),
                           const SizedBox(height: AppSizes.spacingNormal),
-                          PriceWidgetHtml(priceHtml: data?.priceHtml?.priceHtml ?? ""),
+                          PriceWidgetHtml(
+                              priceHtml: data?.priceHtml?.priceHtml ?? ""),
                           const SizedBox(height: AppSizes.spacingNormal),
                           if ((data?.reviews ?? []).isNotEmpty &&
                               data?.reviews != null)
@@ -177,33 +175,56 @@ class SubCategoriesList extends StatelessWidget {
                                               ))),
                               ],
                             ),
-                          const SizedBox(height:AppSizes.spacingNormal),
+                          const SizedBox(height: AppSizes.spacingNormal),
                           Opacity(
                             opacity: (data?.isSaleable ?? false) ? 1 : 0.4,
                             child: CommonWidgets().appButton(
-                                context, StringConstants.addToCart.localized(),
-                                AppSizes.buttonWidth, (data?.isSaleable ?? false) ? () {
-                              subCategoryBloc?.add(
-                                  OnClickSubCategoriesLoaderEvent(
-                                      isReqToShowLoader: true));
-                              if (data?.type == StringConstants.simple || data?.type == StringConstants.virtual) {
-                                CategoryBloc subCategories =
-                                    context.read<CategoryBloc>();
+                                context,
+                                StringConstants.addToCart.localized(),
+                                AppSizes.buttonWidth,
+                                (data?.isSaleable ?? false)
+                                    ? () {
+                                        subCategoryBloc?.add(
+                                            OnClickSubCategoriesLoaderEvent(
+                                                isReqToShowLoader: true));
+                                        if ((data?.type ==
+                                                    StringConstants.simple ||
+                                                data?.type ==
+                                                    StringConstants.virtual) &&
+                                            ((data?.customizableOptions ?? [])
+                                                    .length ==
+                                                0)) {
+                                          CategoryBloc subCategories =
+                                              context.read<CategoryBloc>();
 
-                                var dict = <String, dynamic>{};
-                                dict['product_id'] = data?.id ?? '';
-                                dict['quantity'] = 1;
-                                subCategories.add(AddToCartSubCategoriesEvent(
-                                    (data?.id ?? ""), 1, ""));
-                              } else {
-                                ShowMessage.warningNotification(
-                                    StringConstants.addOptions.localized(), context,
-                                    title: "");
-                                subCategoryBloc?.add(
-                                    OnClickSubCategoriesLoaderEvent(
-                                        isReqToShowLoader: false));
-                              }
-                            } : (){}),
+                                          var dict = <String, dynamic>{};
+                                          dict['product_id'] = data?.id ?? '';
+                                          dict['quantity'] = 1;
+                                          subCategories.add(
+                                              AddToCartSubCategoriesEvent(
+                                                  (data?.id ?? ""), 1, ""));
+                                        } else {
+                                          ShowMessage.warningNotification(
+                                              StringConstants.addOptions
+                                                  .localized(),
+                                              context,
+                                              title: "");
+                                          Navigator.pushNamed(
+                                              context, productScreen,
+                                              arguments: PassProductData(
+                                                  title: data?.name ??
+                                                      data?.productFlats
+                                                          ?.firstOrNull?.name ??
+                                                      "",
+                                                  urlKey: data?.urlKey,
+                                                  productId: int.parse(
+                                                      data?.id ?? "")));
+                                          subCategoryBloc?.add(
+                                              OnClickSubCategoriesLoaderEvent(
+                                                  isReqToShowLoader: false));
+                                        }
+                                      }
+                                    : () {}),
                           )
                         ],
                       ),
@@ -226,7 +247,8 @@ class SubCategoriesList extends StatelessWidget {
                                 }
                               } else {
                                 ShowMessage.warningNotification(
-                                    StringConstants.pleaseLogin.localized(), context,
+                                    StringConstants.pleaseLogin.localized(),
+                                    context,
                                     title: "");
                                 subCategoryBloc?.add(
                                     OnClickSubCategoriesLoaderEvent(
@@ -245,10 +267,12 @@ class SubCategoriesList extends StatelessWidget {
                                   OnClickSubCategoriesLoaderEvent(
                                       isReqToShowLoader: true));
                               subCategoryBloc?.add(AddToCompareSubCategoryEvent(
-                                  data?.id ?? "",
-                                  ""));
+                                  data?.id ?? "", ""));
                             } else {
-                              ShowMessage.warningNotification(StringConstants.pleaseLogin.localized(), context, title: "");
+                              ShowMessage.warningNotification(
+                                  StringConstants.pleaseLogin.localized(),
+                                  context,
+                                  title: "");
                             }
                           },
                           child: compareIcon(context),

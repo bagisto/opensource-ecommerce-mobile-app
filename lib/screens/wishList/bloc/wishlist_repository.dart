@@ -43,7 +43,7 @@ class WishListRepositoryImp implements WishListRepository {
           await ApiClient().removeFromWishlist(wishListProductId);
     } catch (error, stacktrace) {
       debugPrint("Error -->${error.toString()}");
-      debugPrint("StackTrace -->${stacktrace.toString()}");
+      debugPrint("StackTrace -->${stacktrace}");
     }
     return removeFromWishlist;
   }
@@ -57,7 +57,7 @@ class WishListRepositoryImp implements WishListRepository {
       );
     } catch (error, stacktrace) {
       debugPrint("Error -->${error.toString()}");
-      debugPrint("StackTrace -->${stacktrace.toString()}");
+      debugPrint("StackTrace -->${stacktrace}");
     }
     return baseModel;
   }

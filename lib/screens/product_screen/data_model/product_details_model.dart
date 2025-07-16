@@ -20,7 +20,7 @@ class Product {
   String? type;
   String? name;
   String? sku;
-  String? parentId;
+  // String? parentId;
   bool? isInWishlist;
   bool? isSaleable;
   PriceHtml? priceHtml;
@@ -28,12 +28,12 @@ class Product {
   String? averageRating;
   String? urlKey;
   String? description;
+  List<ProductCustomizableOptions>? customizableOptions;
 
   Product({
     this.id,
     this.type,
     this.sku,
-    this.parentId,
     this.isInWishlist,
     this.isSaleable,
     this.priceHtml,
@@ -66,4 +66,16 @@ class PriceHtml {
       _$PriceHtmlFromJson(json);
 
   Map<String, dynamic> toJson() => _$PriceHtmlToJson(this);
+}
+
+@JsonSerializable()
+class ProductCustomizableOptions {
+  final int? id;
+
+  ProductCustomizableOptions({this.id});
+
+  factory ProductCustomizableOptions.fromJson(Map<String, dynamic> json) =>
+      _$ProductCustomizableOptionsFromJson(json);
+
+  Map<String, dynamic> toJson() => _$ProductCustomizableOptionsToJson(this);
 }

@@ -26,8 +26,8 @@ class ForgetPasswordRepositoryImp implements ForgetPasswordRepository {
     }
     catch(e, stacktrace){
 
-      print("Error --> $e");
-      print("StackTrace --> $stacktrace");
+      debugPrint("Error --> $e");
+      debugPrint("StackTrace --> $stacktrace");
 
     }
     return baseModel!;

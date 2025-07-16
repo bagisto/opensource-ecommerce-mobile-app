@@ -48,9 +48,9 @@ class AddressData {
   String? phone;
   @JsonKey(name: "defaultAddress", defaultValue: false)
   bool? isDefault;
-  String? createdAt;
-  String? updatedAt;
-  String? addressType;
+  // String? createdAt;
+  // String? updatedAt;
+  // String? addressType;
   int? billingAddressId;
   int? shippingAddressId;
 
@@ -69,9 +69,6 @@ class AddressData {
       this.postcode,
       this.phone,
       this.isDefault,
-      this.createdAt,
-      this.updatedAt,
-      this.addressType,
       this.shippingAddressId,
       this.billingAddressId,
       this.email});

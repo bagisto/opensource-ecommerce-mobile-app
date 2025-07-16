@@ -71,7 +71,6 @@ class _SaveAddressButtonState extends State<SaveAddressButton> {
                 onChanged: (bool? value) {
                   setState(() {
                     widget.isDefault = value ?? false;
-                    debugPrint("${widget.isDefault}");
                   });
                 }),
             Text(StringConstants.defaultAddress.localized()),

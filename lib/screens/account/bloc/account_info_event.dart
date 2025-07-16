@@ -8,12 +8,9 @@
  *   @link https://store.webkul.com/license.html
  */
 
-
-
 abstract class AccountInfoBaseEvent {}
 
-class AccountInfoDetailsEvent extends AccountInfoBaseEvent {
-}
+class AccountInfoDetailsEvent extends AccountInfoBaseEvent {}
 
 class AccountInfoDeleteEvent extends AccountInfoBaseEvent {
   String? password;
@@ -36,15 +33,14 @@ class AccountInfoUpdateEvent extends AccountInfoBaseEvent {
 
   AccountInfoUpdateEvent(
       {this.firstName,
-        this.lastName,
-        this.email,
-        this.gender,
-        this.dob,
-        this.phone,
-        this.password,
-        this.confirmPassword,
-        this.oldPassword,
-        this.avatar,
-        this.subscribedToNewsLetter
-      });
+      this.lastName,
+      this.email,
+      this.gender,
+      this.dob,
+      this.phone,
+      this.password,
+      this.confirmPassword,
+      this.oldPassword,
+      this.avatar,
+      this.subscribedToNewsLetter});
 }

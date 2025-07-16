@@ -29,6 +29,7 @@ abstract class HomePageRepository {
       {List<Map<String, dynamic>>? filters});
   Future<GetDrawerCategoriesData?> getHomeCategoriesList(
       {List<Map<String, dynamic>>? filters});
+  Future<BaseModel?> subscribeNewsletter(String email);
 }
 
 class HomePageRepositoryImp implements HomePageRepository {
@@ -50,7 +51,7 @@ class HomePageRepositoryImp implements HomePageRepository {
   Future<AddToCartModel?> callAddToCartAPi(int productId, int quantity) async {
     AddToCartModel? addToCartModel;
     addToCartModel = await ApiClient()
-        .addToCart(quantity, productId.toString(), [], [], [], [], null);
+        .addToCart(quantity, productId.toString(), [], [], [], [], null, null);
 
     return addToCartModel;
   }
@@ -167,5 +168,17 @@ class HomePageRepositoryImp implements HomePageRepository {
       debugPrint("StackTrace --> $stacktrace");
     }
     return cmsData;
+  }
+
+  @override
+  Future<BaseModel?> subscribeNewsletter(String email) async{
+    BaseModel? model;
+    try {
+      model = await ApiClient().subscribeNewsletter(email);
+    } catch (error, stacktrace) {
+      debugPrint("Error --> $error");
+      debugPrint("StackTrace --> $stacktrace");
+    }
+    return model;
   }
 }

@@ -88,7 +88,7 @@ class _AddNewAddressState extends State<AddNewAddress> {
     widget.isEdit ?? false
         ? editCountryName = widget.addressModel?.countryName ?? ""
         : "";
-    widget.isEdit ?? false ? stateName = stateNameController.text ?? "" : null;
+    widget.isEdit ?? false ? stateName = stateNameController.text : null;
     widget.isEdit ?? false
         ? countryCode = widget.addressModel?.country ?? ""
         : "";
@@ -114,8 +114,6 @@ class _AddNewAddressState extends State<AddNewAddress> {
 
   @override
   Widget build(BuildContext context) {
-    print(
-        "tr --> ${widget.addressModel?.stateName} ${stateNameController.text} $stateName");
     return ScaffoldMessenger(
       key: scaffoldMessengerKey,
       child: Scaffold(
@@ -131,9 +129,7 @@ class _AddNewAddressState extends State<AddNewAddress> {
                     context,
                     MaterialPageRoute(
                         builder: (_) => const LocationScreen())).then((value) {
-                  debugPrint('values 1123332----- $value');
                   if (value is Map) {
-                    debugPrint('values ----- $value');
                     street1Controller.text =
                         "${value['street1'] ?? ""} ${value['street2'] ?? ""} ${value['street3'] ?? ""}";
                     cityController.text = value['city'] ?? "";

@@ -18,7 +18,7 @@ class AccountInfoModel {
   String? email;
   String? firstName;
   String? lastName;
-  String? name;
+  // String? name;
   String? imageUrl;
   String? dateOfBirth;
   String? phone;
@@ -29,7 +29,7 @@ class AccountInfoModel {
       this.email,
       this.firstName,
       this.lastName,
-      this.name,
+      // this.name,
       this.imageUrl,
       this.dateOfBirth,
       this.phone,

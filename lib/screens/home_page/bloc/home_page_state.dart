@@ -26,6 +26,8 @@ class OnClickLoaderState extends HomePageBaseState {
 
 class ShowLoaderState extends HomePageBaseState {}
 
+class HideLoaderState extends HomePageBaseState {}
+
 class FetchHomeCustomDataState extends HomePageBaseState {
   Status? status;
   String? error;
@@ -133,6 +135,7 @@ class FetchHomeCategoriesState extends HomePageBaseState {
 
   FetchHomeCategoriesState.fail({this.error}) : status = Status.fail;
 }
+
 class FetchCMSDataState extends HomePageBaseState {
   Status? status;
   String? error;
@@ -141,4 +144,14 @@ class FetchCMSDataState extends HomePageBaseState {
   FetchCMSDataState.success({this.cmsData}) : status = Status.success;
 
   FetchCMSDataState.fail({this.error}) : status = Status.fail;
+}
+
+class SubscribeNewsLetterState extends HomePageBaseState {
+  Status? status;
+  String? error;
+  BaseModel? baseModel;
+
+  SubscribeNewsLetterState.success({this.baseModel}) : status = Status.success;
+  SubscribeNewsLetterState.fail({this.error, this.baseModel})
+      : status = Status.fail;
 }

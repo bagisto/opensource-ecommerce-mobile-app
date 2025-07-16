@@ -98,7 +98,9 @@ class _SearchScreenState extends State<SearchScreen>
           if (state is FetchSearchDataState) {
             searchBloc?.add(CircularBarEvent(isReqToShowLoader: false));
             if (state.status == Status.success) {
-              products = state.products!;
+              if (state.products != null) {
+                products = state.products;
+              }
             }
             if (state.status == Status.fail) {
               return (state.products?.data ?? []).isEmpty

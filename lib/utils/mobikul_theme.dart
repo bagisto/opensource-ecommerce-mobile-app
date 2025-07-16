@@ -30,7 +30,11 @@ class MobiKulTheme {
   static const Color skeletonLoaderColorLight = Color(0xFFE0E0E0);
   static const Color skeletonLoaderColorDark = Color(0xFF424242);
   static const Color appbarTextColor = Color(0xFF000000);
-
+  static final Color linkColor = Colors.blue[900] as Color;
+  static const Color transparentColor = Colors.transparent;
+  static const Color errorColor = Color(0xFFE51A1A);
+  static final Color warningColor = Colors.orange[700] as Color;
+  static const MaterialColor greyColor = Colors.grey;
   static const Color _lightPrimaryColor = Colors.white24;
   static const Color _lightPrimaryVariantColor = Colors.white;
   static const Color _lightOnPrimaryColor = Colors.black;
@@ -41,23 +45,26 @@ class MobiKulTheme {
 
   static final ThemeData lightTheme = ThemeData(
       highlightColor: skeletonLoaderColorLight,
-      scaffoldBackgroundColor: _lightPrimaryVariantColor,
+      scaffoldBackgroundColor: const Color.fromRGBO(255, 255, 255, 1),
       appBarTheme: AppBarTheme(
         elevation: 2,
         actionsIconTheme: const IconThemeData(
-          color:MobiKulTheme.appbarTextColor,
+          color: MobiKulTheme.appbarTextColor,
         ),
         backgroundColor: primaryColor,
-        shadowColor:const Color(0xFFBDBDBD),
+        shadowColor: const Color(0xFFBDBDBD),
         titleTextStyle: TextStyle(
           color: MobiKulTheme.appbarTextColor,
           fontSize: 16,
           fontFamily: fontFamily,
-          fontWeight: FontWeight.bold,),
-
-        iconTheme: const IconThemeData(color: MobiKulTheme.appbarTextColor,),
+          fontWeight: FontWeight.bold,
+        ),
+        iconTheme: const IconThemeData(
+          color: MobiKulTheme.appbarTextColor,
+        ),
       ),
-      textSelectionTheme: const TextSelectionThemeData(selectionColor: Colors.black12, cursorColor: Colors.green),
+      textSelectionTheme: const TextSelectionThemeData(
+          selectionColor: Colors.black12, cursorColor: Colors.green),
       colorScheme: const ColorScheme.light(
         primary: _lightPrimaryColor,
         secondary: primaryColor,
@@ -66,7 +73,8 @@ class MobiKulTheme {
         onPrimary: Colors.black,
       ),
       checkboxTheme: CheckboxThemeData(
-        side: MaterialStateBorderSide.resolveWith((states) => const BorderSide(color: accentColor)),
+        side: MaterialStateBorderSide.resolveWith(
+            (states) => const BorderSide(color: accentColor)),
       ),
       iconTheme: const IconThemeData(
         color: _lightOnPrimaryColor,
@@ -151,26 +159,27 @@ class MobiKulTheme {
             fontFamily: fontFamily),
       ),
       dividerTheme: const DividerThemeData(color: Colors.black12),
-      bottomAppBarTheme: const BottomAppBarTheme(color: Color(0xFF2A65B3),));
+      bottomAppBarTheme: const BottomAppBarTheme(
+        color: Color(0xFF2A65B3),
+      ));
 
   static final ThemeData darkTheme = ThemeData(
       scaffoldBackgroundColor: _darkPrimaryVariantColor,
       highlightColor: skeletonLoaderColorDark,
       appBarTheme: AppBarTheme(
         titleTextStyle: TextStyle(
-          fontSize: 16,
-          fontFamily: fontFamily,
-          fontWeight: FontWeight.bold),
+            fontSize: 16, fontFamily: fontFamily, fontWeight: FontWeight.bold),
       ),
       checkboxTheme: CheckboxThemeData(
-        side: MaterialStateBorderSide.resolveWith((states) => const BorderSide(color: _darkOnPrimaryColor)),
+        side: MaterialStateBorderSide.resolveWith(
+            (states) => const BorderSide(color: _darkOnPrimaryColor)),
       ),
       colorScheme: const ColorScheme.dark(
         primary: _darkPrimaryColor,
         secondary: accentColor,
         secondaryContainer: _darkPrimaryVariantColor,
         onPrimary: Colors.white,
-        onBackground:_darkOnPrimaryColor,
+        onBackground: _darkOnPrimaryColor,
         background: Colors.black,
       ),
       iconTheme: const IconThemeData(

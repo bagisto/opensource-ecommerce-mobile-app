@@ -9,6 +9,7 @@
  */
 
 import 'package:bagisto_app_demo/utils/extension.dart';
+import 'package:bagisto_app_demo/utils/server_configuration.dart';
 
 import '../utils/cart_index.dart';
 
@@ -148,22 +149,54 @@ class CartListItem extends StatelessWidget {
                                         0,
                                     itemBuilder:
                                         (BuildContext context, int index) {
-                                      return Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        mainAxisAlignment: MainAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                              "${getAttributeKeyValueFromAdditional(cartDetailsModel.items?[itemIndex].additional, index, 'attribute_name')}  - "
-                                              "${getAttributeKeyValueFromAdditional(cartDetailsModel.items?[itemIndex].additional, index, 'option_label')}",
+                                      final attribute = getAttributesValueFromAdditional(cartDetailsModel.items?[itemIndex].additional)?[index];
+                                      final attributeType = attribute?['attribute_type'];
+                                      final optionLabel = attribute?['option_label'] ?? '';
+                                      final attributeName = attribute?['attribute_name'] ?? '';
+                                      if (attributeType == 'file' && optionLabel.isNotEmpty) {
+                                        final fileUrl = '$baseDomain/storage/$optionLabel';
+                                        final fileName = optionLabel.split('/').last;
+                                        return Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          mainAxisAlignment: MainAxisAlignment.start,
+                                          children: [
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                border: Border.all(color: Colors.grey, width: 1),
+                                                borderRadius: BorderRadius.circular(1),
+                                              ),
+                                              child: Image.network(
+                                                fileUrl,
+                                                height: 60,
+                                                width: 60,
+                                                fit: BoxFit.cover,
+                                                errorBuilder: (context, error, stackTrace) => const Icon(Icons.insert_drive_file, size: 60),
+                                              ),
+                                            ),
+                                            const SizedBox(height: 8),
+                                            Text(
+                                              "${attributeName} - ${fileName}",
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
+                                            ),
+                                            const SizedBox(height: AppSizes.spacingSmall),
+                                          ],
+                                        );
+                                      } else {
+                                        return Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          mainAxisAlignment: MainAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              "${attributeName}  - ${optionLabel}",
                                               maxLines: 2,
-                                              style: const TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.grey)),
-                                          const SizedBox(
-                                            height: AppSizes.spacingSmall,
-                                          ),
-                                        ],
-                                      );
+                                              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
+                                            ),
+                                            const SizedBox(height: AppSizes.spacingSmall),
+                                          ],
+                                        );
+                                      }
                                     })
                                 : const SizedBox(),
                             const SizedBox(

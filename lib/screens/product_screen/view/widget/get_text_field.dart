@@ -81,7 +81,6 @@ class _GetTextFieldState extends State<GetTextField> {
   _updateCallBack() {
     if (widget.callback != null) {
       Map<String, dynamic> dict = {};
-      debugPrint("optionArray updateCallback --> ${widget.optionArray}");
       dict["superAttribute"] = widget.optionArray;
       widget.callback!(widget.optionArray, _getId());
     }

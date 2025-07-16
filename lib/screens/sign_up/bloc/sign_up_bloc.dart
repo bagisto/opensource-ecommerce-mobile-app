@@ -32,7 +32,6 @@ class SignUpBloc extends Bloc<SignUpBaseEvent, SignUpBaseState> {
           event.newsLetter ?? false,
           event.agreement ?? false
         );
-      print("newsssletter----${event.newsLetter}");
 
         if (signUpResponseModel?.status == true) {
           emit(FetchSignUpState.success(signUpModel: signUpResponseModel));

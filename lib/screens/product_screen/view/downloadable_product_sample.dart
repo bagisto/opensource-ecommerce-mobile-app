@@ -81,7 +81,6 @@ class _DownloadProductSampleState extends State<DownloadProductSample> {
 
 
                                 productScreenBLoc?.add(DownloadProductSampleEvent("file", widget.samples?[i].id,widget.samples?[i].fileName ));
-                                print("hellokinkkkk---${widget.samples?[i].fileName}");
                               },
                               child: Text(
                                 widget.samples?[i].translations
@@ -98,7 +97,6 @@ class _DownloadProductSampleState extends State<DownloadProductSample> {
   }
 
   Future<void> downloadFile(String url, [String? filename]) async {
-    print("file name url --> $url, $filename");
     if (url.isEmpty) {
       debugPrint("Mobikul Download error: URL is empty");
       return;
@@ -155,18 +153,17 @@ class _DownloadProductSampleState extends State<DownloadProductSample> {
             showLoader = false;
           });
         } catch (e, stacktrace) {
-          debugPrint("Mobikul Download error 1 : $e");
-          debugPrint("Mobikul Download stack trace 1 : $stacktrace");
+          debugPrint("Mobikul Download error inner : $e");
+          debugPrint("Mobikul Download stack trace inner : $stacktrace");
         }
       }
     } catch (e, stacktrace) {
-      debugPrint("Mobikul Download error 2 : $e");
-      debugPrint("Mobikul Download stack trace 2 : $stacktrace");
+      debugPrint("Mobikul Download error outer : $e");
+      debugPrint("Mobikul Download stack trace outer : $stacktrace");
     }
   }
 
   void _showSnackbar(String message, String? filePath) {
-    print('SHOW SNACKBAR FILE DOWNLOAD - $message * $filePath');
     widget.scaffoldMessengerKey?.currentState?.hideCurrentSnackBar();
     final snackBar = SnackBar(
       content: StreamBuilder<double>(

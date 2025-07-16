@@ -8,6 +8,8 @@
  *   @link https://store.webkul.com/license.html
  */
 
+import 'package:flutter/material.dart';
+
 class AssetConstants {
 
   //Lottie assets
@@ -28,4 +30,13 @@ class AssetConstants {
   static const String splashImage = "assets/images/splash.png";
   static const String customerProfilePlaceholder = "assets/images/customer_profile_placeholder.png";
   static const String customerBannerPlaceholder = "assets/images/customer_banner_placeholder.png";
+}
+
+class IcoMoonIcons {
+  static const String _fontFamily = 'IcoMoon';
+
+  static const IconData truck = IconData(0xe943, fontFamily: _fontFamily);
+  static const IconData product = IconData(0xe95d, fontFamily: _fontFamily);
+  static const IconData dollarSign = IconData(0xe9b0, fontFamily: _fontFamily);
+  static const IconData support = IconData(0xea2e, fontFamily: _fontFamily);
 }

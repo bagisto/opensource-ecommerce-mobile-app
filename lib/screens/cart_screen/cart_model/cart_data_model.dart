@@ -21,6 +21,7 @@ class CartModel extends BaseModel {
   String? couponCode;
   int? itemsCount;
   int? itemsQty;
+  double? grandTotal;
   dynamic taxTotal;
   FormattedPrice? formattedPrice;
   List<Items>? items;
@@ -30,20 +31,20 @@ class CartModel extends BaseModel {
   Payment? payment;
   List<AppliedTaxRate>? appliedTaxRates;
 
-  CartModel({
-    this.items,
-    this.id,
-    this.couponCode,
-    this.itemsCount,
-    this.itemsQty,
-    this.taxTotal,
-    this.appliedTaxRates,
-    this.formattedPrice,
-    this.shippingAddress,
-    this.billingAddress,
-    this.selectedShippingRate,
-    this.payment,
-  });
+  CartModel(
+      {this.items,
+      this.id,
+      this.couponCode,
+      this.itemsCount,
+      this.itemsQty,
+      this.taxTotal,
+      this.appliedTaxRates,
+      this.formattedPrice,
+      this.shippingAddress,
+      this.billingAddress,
+      this.selectedShippingRate,
+      this.payment,
+      this.grandTotal});
 
   factory CartModel.fromJson(Map<String, dynamic> json) {
     return _$CartModelFromJson(json);
@@ -88,22 +89,23 @@ class Items {
   String? id;
   String? type;
   String? name;
-  String? appliedTaxRate;
+  // String? appliedTaxRate;
   int? quantity;
-  String? productId;
+  double? price;
+  // String? productId;
   dynamic additional;
   Product? product;
   FormattedPrice? formattedPrice;
 
-  Items({
-    this.id,
-    this.quantity,
-    this.type,
-    this.name,
-    this.additional,
-    this.product,
-    this.formattedPrice,
-  });
+  Items(
+      {this.id,
+      this.quantity,
+      this.type,
+      this.name,
+      this.additional,
+      this.product,
+      this.formattedPrice,
+      this.price});
 
   factory Items.fromJson(Map<String, dynamic> json) => _$ItemsFromJson(json);
 

@@ -9,6 +9,7 @@
  */
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 extension HexColor on Color {
   /// String is in the format "aabbcc" or "ffaabbcc" with an optional leading "#".
@@ -25,6 +26,14 @@ extension HexColor on Color {
       '${red.toRadixString(16).padLeft(2, '0')}'
       '${green.toRadixString(16).padLeft(2, '0')}'
       '${blue.toRadixString(16).padLeft(2, '0')}';
+
+  String toCssHex() {
+    final r = red.toRadixString(16).padLeft(2, '0');
+    final g = green.toRadixString(16).padLeft(2, '0');
+    final b = blue.toRadixString(16).padLeft(2, '0');
+    final a = alpha.toRadixString(16).padLeft(2, '0');
+    return '#$r$g$b$a';
+  }
 }
 
 //todo there is some problem here which is not letting attributes to be fetched from additional
@@ -87,4 +96,9 @@ dynamic getValueFromDynamic(dynamic data, String key) {
   } else {
     return null;
   }
+}
+
+String formatCurrency(double amount, String currencyCode) {
+  final format = NumberFormat.simpleCurrency(name: currencyCode);
+  return format.format(amount);
 }

@@ -116,19 +116,19 @@ class Translation {
 @JsonSerializable()
 class SortOrder {
   String? key;
-  String? label;
+  // String? label;
   String? value;
   String? title;
-  String? sort;
+  // String? sort;
   String? order;
   String? position;
 
   SortOrder(
       {this.key,
-      this.label,
+      // this.label,
       this.value,
       this.title,
-      this.sort,
+      // this.sort,
       this.order,
       this.position});
 
@@ -140,13 +140,10 @@ class SortOrder {
 
 @JsonSerializable()
 class Value {
-  String? sort;
-  String? order;
+  // String? sort;
+  // String? order;
 
-  Value({
-    this.sort,
-    this.order,
-  });
+  Value();
 
   factory Value.fromJson(Map<String, dynamic> json) => _$ValueFromJson(json);
 

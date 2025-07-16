@@ -25,7 +25,6 @@ class SignInBloc extends Bloc<SignInBaseEvent, SignInBaseState> {
       try {
         SignInModel signInModel = await repository!
             .callSignInApi(event.email ?? "", event.password ?? "");
-        print("graph ql eror ${signInModel?.success}");
         if (signInModel.success == true) {
           emit(FetchSignInState.success(
               signInModel: signInModel, successMsg: signInModel.message ?? "", fingerPrint: event.fingerPrint));

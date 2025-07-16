@@ -17,7 +17,7 @@ import 'package:bagisto_app_demo/screens/checkout/data_model/save_payment_model.
 class CheckoutOrderReviewView extends StatefulWidget {
   final  String? paymentId;
   final Function(
-    String,
+    String, CartModel?
   )? callBack;
 
   final CartScreenBloc? cartScreenBloc;
@@ -72,7 +72,7 @@ class _CheckoutOrderReviewViewState extends State<CheckoutOrderReviewView> {
           widget.callBack!(state
                   .savePaymentModel?.cart?.formattedPrice?.grandTotal
                   .toString() ??
-              "");
+              "", state.savePaymentModel?.cart);
         }
 
         return _reviewOrder(state.savePaymentModel!);

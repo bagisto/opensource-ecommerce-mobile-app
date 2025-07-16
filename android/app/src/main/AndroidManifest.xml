@@ -69,6 +69,24 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
 
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:host="demo.bagisto.com"
+                    android:pathPrefix="/mobikul-common"
+                    android:scheme="https" />
+
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="com.webkul.bagisto.mobikul"/>
+            </intent-filter>
+
         </activity>
 
         <activity android:name="webkul.bagisto_app_demo.mlkit.activities.CameraSearchActivity"
@@ -82,7 +100,7 @@
             android:value="2" />
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyDL5pg-OdSNY31ekS9CjVEbk9_pK034567" />
+            android:value="YOUR_GOOGLE_MAPS_API_KEY" />
 
         <meta-data
             android:name="com.google.ar.core"

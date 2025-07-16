@@ -577,7 +577,7 @@ class _DrawerSubCategoryViewState extends State<DrawerSubCategoryView> {
                                                   checkInternetConnection()
                                                       .then((value) {
                                                     if (value) {
-                                                      if ((val?.priceHtml
+                                                      if (((val?.priceHtml
                                                                   ?.type) ==
                                                               StringConstants
                                                                   .simple ||
@@ -586,7 +586,7 @@ class _DrawerSubCategoryViewState extends State<DrawerSubCategoryView> {
                                                                   .simple ||
                                                           val?.type ==
                                                               StringConstants
-                                                                  .virtual) {
+                                                                  .virtual)&& ((val?.customizableOptions??[]).length ==0) ) {
                                                         bloc?.add(
                                                             AddToCartEvent(
                                                                 int.parse(
@@ -600,6 +600,11 @@ class _DrawerSubCategoryViewState extends State<DrawerSubCategoryView> {
                                                                     .addOptions
                                                                     .localized(),
                                                                 context);
+                                                        Navigator.pushNamed(context, productScreen,
+                                                            arguments: PassProductData(
+                                                                title: val?.name ?? "",
+                                                                urlKey: val?.urlKey,
+                                                                productId: int.parse(val?.id ?? "")));
                                                       }
                                                     } else {
                                                       ShowMessage

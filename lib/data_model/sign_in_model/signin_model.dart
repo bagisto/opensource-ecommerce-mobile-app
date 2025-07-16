@@ -8,7 +8,6 @@
  *   @link https://store.webkul.com/license.html
  */
 
-
 import 'package:bagisto_app_demo/data_model/graphql_base_model.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -16,16 +15,16 @@ part 'signin_model.g.dart';
 
 @JsonSerializable()
 class SignInModel extends BaseModel {
-  SignInModel({
-    /*  this.error,*/
-    this.token,
-    // required this.message,
-    this.data,
-    this.tokenType
-  });
+  SignInModel(
+      {
+      /*  this.error,*/
+      this.token,
+      // required this.message,
+      this.data,
+      this.tokenType});
 
   // String?error;
-  @JsonKey(name:'accessToken')
+  @JsonKey(name: 'accessToken')
   String? token;
 
   String? tokenType;
@@ -46,30 +45,24 @@ class Data {
   Data({
     this.id,
     this.email,
-    this.firstName,
-    this.lastName,
+    // this.firstName,
+    // this.lastName,
     this.name,
-    this.gender,
-    this.dateOfBirth,
-    this.phone,
-    this.group,
-    this.createdAt,
-    this.updatedAt,
     this.imageUrl,
   });
 
   String? id;
   String? email;
-  String? firstName;
-  String? lastName;
+  // String? firstName;
+  // String? lastName;
   String? name;
-  String? gender;
-  String? dateOfBirth;
-  dynamic phone;
-  Group? group;
+  // String? gender;
+  // String? dateOfBirth;
+  // dynamic phone;
+  // Group? group;
   String? imageUrl;
-  String? createdAt;
-  String? updatedAt;
+  // String? createdAt;
+  // String? updatedAt;
 
   factory Data.fromJson(Map<String, dynamic> json) => _$DataFromJson(json);
   Map<String, dynamic> toJson() => _$DataToJson(this);

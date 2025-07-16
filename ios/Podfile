@@ -33,6 +33,7 @@ target 'Runner' do
   pod 'GoogleMLKit/TextRecognition'
   pod 'GoogleMLKit/ImageLabeling'
   pod 'GoogleMLKit/ImageLabelingCustom'
+  pod 'PayPalCheckout'
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
 end

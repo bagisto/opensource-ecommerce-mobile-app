@@ -121,8 +121,6 @@ class _CheckboxGroupState extends State<CheckboxGroup> {
                     "link",
                     widget.data?[label].id,
                     widget.data?[label].sampleFileName));
-                print(
-                    "DownloadProductSampleEvent is clicked with id ${widget.data?[label].id} and ${widget.data?[label].fileUrl}");
               },
               child: Text(
                 StringConstants.sample.localized(),
@@ -160,7 +158,6 @@ class _CheckboxGroupState extends State<CheckboxGroup> {
   }
 
   Future<void> downloadFile(String url, [String? filename]) async {
-    print("file name url --> $url, $filename");
     if (url.isEmpty) {
       debugPrint("Mobikul Download error: URL is empty");
       return;
@@ -214,18 +211,17 @@ class _CheckboxGroupState extends State<CheckboxGroup> {
             showLoader = false;
           });
         } catch (e, stacktrace) {
-          debugPrint("Mobikul Download error 1 : $e");
-          debugPrint("Mobikul Download stack trace 1 : $stacktrace");
+          debugPrint("Mobikul Download error inner : $e");
+          debugPrint("Mobikul Download stack trace inner : $stacktrace");
         }
       }
     } catch (e, stacktrace) {
-      debugPrint("Mobikul Download error 2 : $e");
-      debugPrint("Mobikul Download stack trace 2 : $stacktrace");
+      debugPrint("Mobikul Download error outer : $e");
+      debugPrint("Mobikul Download stack trace outer : $stacktrace");
     }
   }
 
   void _showSnackbar(String message, String? filePath) {
-    print('SHOW SNACKBAR FILE DOWNLOAD - $message * $filePath');
     widget.scaffoldMessengerKey?.currentState?.hideCurrentSnackBar();
     final snackBar = SnackBar(
       content: StreamBuilder<double>(

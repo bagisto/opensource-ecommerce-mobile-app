@@ -8,7 +8,6 @@
  *   @link https://store.webkul.com/license.html
  */
 
-
 import 'package:json_annotation/json_annotation.dart';
 
 import '../../../data_model/graphql_base_error_model.dart';
@@ -18,7 +17,7 @@ import 'checkout_save_shipping_model.dart';
 part 'checkout_save_address_model.g.dart';
 
 @JsonSerializable()
-class CheckOutSaveAddressDataModel extends BaseModel{
+class CheckOutSaveAddressDataModel extends BaseModel {
   Data? data;
   CheckOutSaveAddressDataModel({this.data});
 
@@ -27,36 +26,33 @@ class CheckOutSaveAddressDataModel extends BaseModel{
 
   @override
   Map<String, dynamic> toJson() => _$CheckOutSaveAddressDataModelToJson(this);
-
 }
+
 @JsonSerializable()
 class Data {
   SaveCheckoutAddresses? saveCheckoutAddresses;
 
   Data({this.saveCheckoutAddresses});
 
-  factory Data.fromJson(Map<String, dynamic> json) =>
-      _$DataFromJson(json);
+  factory Data.fromJson(Map<String, dynamic> json) => _$DataFromJson(json);
 
   Map<String, dynamic> toJson() => _$DataToJson(this);
 }
-@JsonSerializable()
-class SaveCheckoutAddresses  extends GraphQlBaseErrorModel{
 
-  String? cartTotal;
-  int? cartCount;
+@JsonSerializable()
+class SaveCheckoutAddresses extends GraphQlBaseErrorModel {
+  // String? cartTotal;
+  // int? cartCount;
   List<ShippingMethods>? shippingMethods;
   List<PaymentMethodsList>? paymentMethods;
   String? jumpToSection;
   CartModel? cart;
 
   SaveCheckoutAddresses(
-      {
-        this.cartTotal,
-        this.cartCount,
-        this.shippingMethods,
-        this.paymentMethods,
-        this.jumpToSection,this.cart});
+      {this.shippingMethods,
+      this.paymentMethods,
+      this.jumpToSection,
+      this.cart});
 
   factory SaveCheckoutAddresses.fromJson(Map<String, dynamic> json) =>
       _$SaveCheckoutAddressesFromJson(json);
@@ -64,6 +60,7 @@ class SaveCheckoutAddresses  extends GraphQlBaseErrorModel{
   @override
   Map<String, dynamic> toJson() => _$SaveCheckoutAddressesToJson(this);
 }
+
 @JsonSerializable()
 class ShippingMethods {
   String? title;
@@ -74,24 +71,21 @@ class ShippingMethods {
       _$ShippingMethodsFromJson(json);
 
   Map<String, dynamic> toJson() => _$ShippingMethodsToJson(this);
-
 }
+
 @JsonSerializable()
 class Methods {
   String? code;
-  String? label;
-  int? price;
+  // String? label;
+  // int? price;
   String? formattedPrice;
-  int? basePrice;
-  String? formattedBasePrice;
+  // int? basePrice;
+  // String? formattedBasePrice;
 
-  Methods(
-      {this.code,
-        this.label,
-        this.price,
-        this.formattedPrice,
-        this.basePrice,
-        this.formattedBasePrice});
+  Methods({
+    this.code,
+    this.formattedPrice,
+  });
 
   factory Methods.fromJson(Map<String, dynamic> json) =>
       _$MethodsFromJson(json);
@@ -99,19 +93,18 @@ class Methods {
   Map<String, dynamic> toJson() => _$MethodsToJson(this);
 }
 
-@JsonSerializable()
-class Payment {
-  int? id;
-  String ?method;
-  String? methodTitle;
+// @JsonSerializable()
+// class Payment {
+//   int? id;
+//   String? method;
+//   String? methodTitle;
 
-  Payment({this.id, this.method, this.methodTitle});
+//   Payment({
+//     this.id,
+//   });
 
-  factory Payment.fromJson(Map<String, dynamic> json) =>
-      _$PaymentFromJson(json);
+//   factory Payment.fromJson(Map<String, dynamic> json) =>
+//       _$PaymentFromJson(json);
 
-  Map<String, dynamic> toJson() =>
-      _$PaymentToJson(this);
-}
-
-
+//   Map<String, dynamic> toJson() => _$PaymentToJson(this);
+// }

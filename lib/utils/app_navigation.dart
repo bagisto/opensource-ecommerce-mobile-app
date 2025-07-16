@@ -26,6 +26,7 @@ import 'package:bagisto_app_demo/screens/drawer/bloc/drawer_repository.dart';
 import 'package:bagisto_app_demo/screens/forget_password/bloc/forget_password_bloc.dart';
 import 'package:bagisto_app_demo/screens/forget_password/bloc/forget_password_repository.dart';
 import 'package:bagisto_app_demo/screens/forget_password/view/forget_password.dart';
+import 'package:bagisto_app_demo/screens/gdpr/view/gdpr_screen.dart';
 import 'package:bagisto_app_demo/screens/home_page/bloc/home_page_bloc.dart';
 import 'package:bagisto_app_demo/screens/home_page/bloc/home_page_repository.dart';
 import 'package:bagisto_app_demo/screens/home_page/home_page.dart';
@@ -44,6 +45,7 @@ import 'package:bagisto_app_demo/screens/sign_up/bloc/sign_up_repository.dart';
 import 'package:bagisto_app_demo/screens/sign_up/view/sign_up.dart';
 import 'package:bagisto_app_demo/screens/splash_screen/view/splash_screen.dart';
 import 'package:bagisto_app_demo/utils/route_constants.dart';
+import 'package:bagisto_app_demo/widgets/gdpr_webview.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -54,6 +56,7 @@ import '../screens/add_review/view/add_review.dart';
 import '../screens/address_list/data_model/address_model.dart';
 import '../screens/cart_screen/bloc/cart_screen_bloc.dart';
 import '../screens/cart_screen/bloc/cart_screen_repository.dart';
+import '../screens/cart_screen/cart_model/cart_data_model.dart';
 import '../screens/cart_screen/cart_screen.dart';
 import '../screens/checkout/checkout_addres/bloc/checkout_address_bloc.dart';
 import '../screens/checkout/checkout_addres/bloc/checkout_address_repository.dart';
@@ -79,6 +82,7 @@ import '../screens/downloadable_products/view/downloadable_products.dart';
 import '../screens/drawer_sub_categories/bloc/drawer_sub_categories_bloc.dart';
 import '../screens/drawer_sub_categories/bloc/drawer_sub_categories_repository.dart';
 import '../screens/drawer_sub_categories/drawer_sub_categories.dart';
+import '../screens/home_page/data_model/theme_customization.dart';
 import '../screens/home_page/utils/route_argument_helper.dart';
 import '../screens/language/language_view.dart';
 import '../screens/order_invoices/bloc/order_invoice_repository.dart';
@@ -101,9 +105,15 @@ import '../screens/search_screen/view/search_screen.dart';
 import '../screens/wishList/bloc/wishlist_bloc.dart';
 import '../screens/wishList/bloc/wishlist_repository.dart';
 import '../screens/wishList/view/wishlist_screen.dart';
+import '../widgets/common_webview.dart';
+import '../screens/gdpr/bloc/gdpr_bloc.dart';
+import '../screens/gdpr/bloc/gdpr_repository.dart';
 
 /// Route generator for generating routes based on route name passed in MaterialApp widget in main.dart
-Route<dynamic> generateRoute(RouteSettings settings) {
+Route<dynamic>? generateRoute(RouteSettings settings) {
+  if (settings.name != null && settings.name!.contains('paypal-sdk')) {
+    return null;
+  }
   switch (settings.name) {
     case splash:
       return MaterialPageRoute(builder: (_) => const SplashScreen());
@@ -131,7 +141,8 @@ Route<dynamic> generateRoute(RouteSettings settings) {
               image: data.image,
               categorySlug: data.categorySlug,
               metaDescription: data.metaDescription,
-              id: data.id),
+              id: data.id,
+              filters: data.filters),
         ),
       );
 
@@ -265,10 +276,11 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       );
 
     case orderPlacedScreen:
+      CartModel? data = settings.arguments as CartModel?;
       return MaterialPageRoute(
           builder: (_) => BlocProvider(
                 create: (context) => SaveOrderBloc(SaveOrderRepositoryImp()),
-                child: const CheckOutSaveOrder(),
+                child: CheckOutSaveOrder(cartModel: data),
               ));
 
     case checkoutScreen:
@@ -376,6 +388,27 @@ Route<dynamic> generateRoute(RouteSettings settings) {
                   ContactUsScreenBloc(ContactUsScreenRepositoryImp()),
               child: const ContactUsPage()));
 
+    case commonWebView:
+      ColumnModel? item = settings.arguments as ColumnModel?;
+      return MaterialPageRoute(
+          builder: (_) => CommonWebView(
+                redirectUrl: item?.url,
+                title: item?.title,
+              ));
+    case gdpr:
+      return MaterialPageRoute(
+          builder: (_) => BlocProvider(
+                create: (context) => GdprBloc(GdprRequestRepo()),
+                child: const GdprScreen(),
+              ));
+
+    case gdprWebView:
+      ColumnModel? args = settings.arguments as ColumnModel?;
+      return MaterialPageRoute(
+          builder: (_) => GdprWebView(
+                redirectUrl: args?.url,
+                title: args?.title,
+              ));
     default:
       return MaterialPageRoute(
           builder: (_) => Scaffold(

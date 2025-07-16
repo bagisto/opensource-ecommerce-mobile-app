@@ -23,8 +23,8 @@ class ReviewsRepositoryImp implements ReviewsRepository {
     try {
       reviewModel = await ApiClient().getReviewList(page);
     } catch (error, stacktrace) {
-      print("Error --> $error");
-      print("StackTrace --> $stacktrace");
+      debugPrint("Error --> $error");
+      debugPrint("StackTrace --> $stacktrace");
     }
     return reviewModel!;
   }

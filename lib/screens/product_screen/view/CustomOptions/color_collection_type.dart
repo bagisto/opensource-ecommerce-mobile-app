@@ -94,8 +94,6 @@ class _ColorCollectionTypeState extends State<ColorCollectionType> {
     for (var element in (optionArray ?? [])) {
       val = (element["attributeOptionId"].toString() == id.toString());
       if (val) {
-        debugPrint(
-            "break --> ${id.toString()} * ${(element["attributeOptionId"].toString() == id.toString())} ");
         break;
       }
     }

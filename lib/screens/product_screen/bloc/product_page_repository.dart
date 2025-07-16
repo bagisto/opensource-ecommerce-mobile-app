@@ -8,6 +8,8 @@
  *   @link https://store.webkul.com/license.html
  */
 
+import 'package:bagisto_app_demo/data_model/product_model/booking_slots_modal.dart';
+
 import '../../../data_model/add_to_wishlist_model/add_wishlist_model.dart';
 import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
 
@@ -15,7 +17,7 @@ import '../data_model/download_sample_model.dart';
 
 abstract class ProductScreenRepository {
   Future<NewProductsModel?> getProductDetails(
-  List<Map<String, dynamic>>? filters);
+      List<Map<String, dynamic>>? filters);
 
   Future<AddToCartModel?> callAddToCartAPi(
       int quantity,
@@ -24,7 +26,8 @@ abstract class ProductScreenRepository {
       List groupedParams,
       List bundleParams,
       List configurableParams,
-      String? configurableId);
+      String? configurableId,
+      Map<String, dynamic>? booking);
 
   Future<BaseModel?> callAddToCompareListApi(
     String productId,
@@ -44,7 +47,6 @@ class ProductScreenRepo implements ProductScreenRepository {
     NewProductsModel? productData;
     try {
       productData = await ApiClient().getAllProducts(filters: filters);
-      debugPrint("productData ${productData?.toJson()}");
     } catch (error, stacktrace) {
       debugPrint("Error --> $error");
       debugPrint("StackTrace --> $stacktrace");
@@ -60,9 +62,11 @@ class ProductScreenRepo implements ProductScreenRepository {
       List groupedParams,
       List bundleParams,
       List configurableParams,
-      String? configurableId) async {
+      String? configurableId,
+      Map<String, dynamic>? bookingParams,
+      [List<Map<String, dynamic>>? customizableOptions,
+      List? customizableFiles]) async {
     AddToCartModel? addToCartModel;
-
     try {
       addToCartModel = await ApiClient().addToCart(
           quantity,
@@ -71,9 +75,12 @@ class ProductScreenRepo implements ProductScreenRepository {
           groupedParams,
           bundleParams,
           configurableParams,
-          configurableId);
+          configurableId,
+          bookingParams,
+          customizableOptions,
+          customizableFiles);
     } catch (error, stacktrace) {
-      debugPrint("Error --> $error");
+      debugPrint("Error --> >>>>>$error");
       debugPrint("StackTrace --> $stacktrace");
     }
     return addToCartModel;
@@ -115,7 +122,7 @@ class ProductScreenRepo implements ProductScreenRepository {
           await ApiClient().removeFromWishlist(wishListProductId);
     } catch (error, stacktrace) {
       debugPrint("Error -->${error.toString()}");
-      debugPrint("StackTrace -->${stacktrace.toString()}");
+      debugPrint("StackTrace -->$stacktrace");
     }
     return removeFromWishlist;
   }
@@ -127,8 +134,20 @@ class ProductScreenRepo implements ProductScreenRepository {
       model = await ApiClient().downloadSample(type, id);
     } catch (error, stacktrace) {
       debugPrint("Error -->${error.toString()}");
-      debugPrint("StackTrace -->${stacktrace.toString()}");
+      debugPrint("StackTrace -->$stacktrace");
     }
     return model;
+  }
+
+  @override
+  Future<BookingSlotsData?> getSlots(bookingId, date) async {
+    BookingSlotsData? slotModel;
+    try {
+      slotModel = await ApiClient().getSlots(id: bookingId, date: date);
+    } catch (error, stacktrace) {
+      debugPrint("Error -->${error.toString()}");
+      debugPrint("StackTrace -->$stacktrace");
+    }
+    return slotModel;
   }
 }

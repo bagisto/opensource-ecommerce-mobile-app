@@ -21,33 +21,28 @@ class SavePaymentModel {
   factory SavePaymentModel.fromJson(Map<String, dynamic> json) =>
       _$SavePaymentModelFromJson(json);
 
-  Map<String, dynamic> toJson() =>
-      _$SavePaymentModelToJson(this);
+  Map<String, dynamic> toJson() => _$SavePaymentModelToJson(this);
 }
+
 @JsonSerializable()
 class Data {
   SavePayment? savePayment;
 
   Data({this.savePayment});
-  factory Data.fromJson(Map<String, dynamic> json) =>
-      _$DataFromJson(json);
+  factory Data.fromJson(Map<String, dynamic> json) => _$DataFromJson(json);
 
-  Map<String, dynamic> toJson() =>
-      _$DataToJson(this);
-
+  Map<String, dynamic> toJson() => _$DataToJson(this);
 }
 
 @JsonSerializable()
 class SavePayment {
-  String? success;
-  String? jumpToSection;
+  // String? success;
+  // String? jumpToSection;
   CartModel? cart;
-  SavePayment({this.success,this.cart,this.jumpToSection});
+  SavePayment({this.cart});
 
   factory SavePayment.fromJson(Map<String, dynamic> json) =>
       _$SavePaymentFromJson(json);
 
-  Map<String, dynamic> toJson() =>
-      _$SavePaymentToJson(this);
+  Map<String, dynamic> toJson() => _$SavePaymentToJson(this);
 }
-

@@ -58,3 +58,8 @@ class OnClickLoaderEvent extends HomePageEvent {
   OnClickLoaderEvent({this.isReqToShowLoader});
 }
 class FetchCMSDataEvent extends HomePageEvent {}
+
+class SubscribeNewsLetterEvent extends HomePageEvent {
+  String email;
+  SubscribeNewsLetterEvent(this.email);
+}

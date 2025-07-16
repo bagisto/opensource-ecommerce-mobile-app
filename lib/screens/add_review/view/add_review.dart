@@ -9,6 +9,9 @@
  */
 
 import 'package:bagisto_app_demo/screens/add_review/utils/index.dart';
+import 'package:dio/dio.dart';
+export 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class AddReview extends StatefulWidget {
   final String? imageUrl;
@@ -32,7 +35,8 @@ class _AddReviewState extends State<AddReview> {
   final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
       GlobalKey<ScaffoldMessengerState>();
   AddReviewBloc? addReviewBloc;
-  List<Map<String, String>> images = [];
+  List<http.MultipartFile> images = [];
+  List<XFile?>? pickedImages = [];
 
   @override
   void initState() {
@@ -95,17 +99,28 @@ class _AddReviewState extends State<AddReview> {
       return _reviewForm();
     }
     if (state is ImagePickerState) {
-      String? image = state.image;
+      pickedImages = state.pickedFile;
       images.clear();
-      if (image != null) {
-        images.add({
-          "uploadType": '"base64"',
-          "imageUrl": '"data:image/png;base64,$image"'
-        });
+
+      for(int i=0; i<(pickedImages ?? []).length; i++){
+        var image = pickedImages?[i];
+        if (image != null) {
+          getMultipartFile(image.path, i);
+        }
       }
       return _reviewForm();
     }
     return const SizedBox();
+  }
+
+  getMultipartFile(String? image, int index) async {
+    final multipartFile = await http.MultipartFile.fromPath(
+      "$index",
+      image ?? "",
+      filename: image?.split('/').last ?? "",
+      contentType: DioMediaType('image', 'png'),
+    );
+    images.add(multipartFile);
   }
 
   /// review form
@@ -216,7 +231,7 @@ class _AddReviewState extends State<AddReview> {
                       keyboardType: TextInputType.emailAddress,
                     ),
                     const SizedBox(height: AppSizes.spacingMedium * 2),
-                    // AddImageView(addReviewBloc: addReviewBloc),
+                    AddImageView(addReviewBloc: addReviewBloc, images: pickedImages),
                     const SizedBox(height: AppSizes.spacingWide),
                     MaterialButton(
                       shape: const RoundedRectangleBorder(
@@ -257,59 +272,59 @@ class _AddReviewState extends State<AddReview> {
   _onPressSubmitButton() {
     if (_reviewFormKey.currentState!.validate()) {
       // if (images.isNotEmpty) {
-        if ((rating) > 0) {
-          showDialog(
-              context: context,
-              barrierDismissible: false,
-              builder: (BuildContext context) {
-                return Dialog(
-                  child: Container(
-                    padding: const EdgeInsets.all(AppSizes.spacingWide),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const SizedBox(
-                          height: AppSizes.spacingMedium,
-                        ),
-                        const Loader(),
-                        const SizedBox(
-                          height: AppSizes.spacingWide,
-                        ),
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width / 2.5,
-                          child: Center(
-                            child: Text(
-                              StringConstants.processWaitingMsg.localized(),
-                              softWrap: true,
-                            ),
+      if ((rating) > 0) {
+        showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (BuildContext context) {
+              return Dialog(
+                child: Container(
+                  padding: const EdgeInsets.all(AppSizes.spacingWide),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const SizedBox(
+                        height: AppSizes.spacingMedium,
+                      ),
+                      const Loader(),
+                      const SizedBox(
+                        height: AppSizes.spacingWide,
+                      ),
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width / 2.5,
+                        child: Center(
+                          child: Text(
+                            StringConstants.processWaitingMsg.localized(),
+                            softWrap: true,
                           ),
                         ),
-                        const SizedBox(
-                          height: AppSizes.spacingMedium,
-                        ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(
+                        height: AppSizes.spacingMedium,
+                      ),
+                    ],
                   ),
-                );
-              });
-          addReviewBloc?.add(AddReviewFetchEvent(
-              productId: int.parse(widget.productId ?? ''),
-              rating: rating,
-              title: titleController.text,
-              comment: commentController.text,
-              name: "",
-              attachments: images));
-          Future.delayed(const Duration(seconds: 3)).then((value) {
-            Navigator.pop(context);
-            Navigator.pop(context);
-          });
-        } else {
-          ShowMessage.showNotification(
-              StringConstants.warning.localized(),
-              StringConstants.pleaseAddRating.localized(),
-              Colors.yellow,
-              const Icon(Icons.warning_amber));
-        }
+                ),
+              );
+            });
+        addReviewBloc?.add(AddReviewFetchEvent(
+            productId: int.parse(widget.productId ?? ''),
+            rating: rating,
+            title: titleController.text,
+            comment: commentController.text,
+            name: "",
+            attachments: images));
+        Future.delayed(const Duration(seconds: 3)).then((value) {
+          Navigator.pop(context);
+          Navigator.pop(context);
+        });
+      } else {
+        ShowMessage.showNotification(
+            StringConstants.warning.localized(),
+            StringConstants.pleaseAddRating.localized(),
+            Colors.yellow,
+            const Icon(Icons.warning_amber));
+      }
       // } else {
       //   ShowMessage.showNotification(
       //       StringConstants.warning.localized(),

@@ -8,17 +8,18 @@
  *   @link https://store.webkul.com/license.html
  */
 
-
 import 'package:bagisto_app_demo/screens/search_screen/utils/index.dart';
 
 abstract class SearchRepository {
   Future<NewProductsModel?> callSearchAPi(List<Map<String, dynamic>>? filters);
-  Future<GetDrawerCategoriesData> getCategoriesList({List<Map<String, dynamic>>? filters});
+  Future<GetDrawerCategoriesData> getCategoriesList(
+      {List<Map<String, dynamic>>? filters});
 }
 
 class SearchRepositoryImp implements SearchRepository {
   @override
-  Future<NewProductsModel?> callSearchAPi(List<Map<String, dynamic>>? filters) async {
+  Future<NewProductsModel?> callSearchAPi(
+      List<Map<String, dynamic>>? filters) async {
     NewProductsModel? searchData;
 
     try {
@@ -35,8 +36,9 @@ class SearchRepositoryImp implements SearchRepository {
       {List<Map<String, dynamic>>? filters}) async {
     GetDrawerCategoriesData? getDrawerCategoriesData;
     try {
-      getDrawerCategoriesData = await ApiClient().homeCategories(filters: filters);
-    }catch (error, stacktrace) {
+      getDrawerCategoriesData =
+          await ApiClient().homeCategories(filters: filters);
+    } catch (error, stacktrace) {
       debugPrint("Error --> $error");
       debugPrint("StackTrace --> $stacktrace");
     }

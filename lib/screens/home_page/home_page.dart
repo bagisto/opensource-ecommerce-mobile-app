@@ -95,23 +95,23 @@ class _HomeScreenState extends State<HomeScreen> {
         }
 
         return DrawerListView(
-                isLoggedIn: isLoggedIn,
-                customerUserName: customerUserName,
-                image: image,
-                customerCurrency: customerCurrency,
-                currencyLanguageList: currencyLanguageList,
-                customerDetails: customerDetails,
-                customerLanguage: customerLanguage,
-                loginCallback: (isLogged) {
-                  setState(() {
-                    isLoggedIn = isLogged;
-                    if (isLogged == false) {
-                      GlobalData.cartCountController.sink
-                          .add(appStoragePref.getCartCount());
-                    }
-                  });
-                },
-              );
+          isLoggedIn: isLoggedIn,
+          customerUserName: customerUserName,
+          image: image,
+          customerCurrency: customerCurrency,
+          currencyLanguageList: currencyLanguageList,
+          customerDetails: customerDetails,
+          customerLanguage: customerLanguage,
+          loginCallback: (isLogged) {
+            setState(() {
+              isLoggedIn = isLogged;
+              if (isLogged == false) {
+                GlobalData.cartCountController.sink
+                    .add(appStoragePref.getCartCount());
+              }
+            });
+          },
+        );
       },
     );
   }
@@ -153,6 +153,18 @@ class _HomeScreenState extends State<HomeScreen> {
             ShowMessage.errorNotification(state.error ?? "", context);
           } else if (state.status == Status.success) {
             ShowMessage.successNotification(state.successMsg ?? "", context);
+          }
+        }
+        if (state is SubscribeNewsLetterState) {
+          if (state.status == Status.fail) {
+            ShowMessage.errorNotification(
+                state.baseModel?.message ??
+                    state.baseModel?.graphqlErrors ??
+                    "",
+                context);
+          } else if (state.status == Status.success) {
+            ShowMessage.successNotification(
+                state.baseModel?.message ?? "", context);
           }
         }
       },
@@ -230,7 +242,6 @@ class _HomeScreenState extends State<HomeScreen> {
       if (state.status == Status.success) {
         GlobalData.allProducts?.clear();
         customHomeData = state.homepageSliders;
-
         getHomePageData(customHomeData);
       } else if (state.status == Status.fail) {}
     }
@@ -315,34 +326,35 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> getHomePageData(ThemeCustomDataModel? customHomeData) async {
     customHomeData?.themeCustomization ??= [];
-    await Future.wait(customHomeData!.themeCustomization!.map((element) async {
-      List<Map<String, dynamic>>? filters = [];
+    if (customHomeData?.themeCustomization != null) {
+      await Future.wait(
+          customHomeData!.themeCustomization!.map((element) async {
+        List<Map<String, dynamic>>? filters = [];
 
-      if (element.type == "category_carousel") {
-        filters.clear();
-        element.translations
-            ?.firstWhereOrNull((e) => e.localeCode == GlobalData.locale)
-            ?.options
-            ?.filters
-            ?.forEach((element) {
-          filters
-              .add({"key": '"${element.key}"', "value": '"${element.value}"'});
-        });
-        homePageBloc?.add(FetchHomePageCategoriesEvent(filters: filters));
-      } else if (element.type == "product_carousel") {
-        filters.clear();
-        element.translations
-            ?.firstWhereOrNull((e) => e.localeCode == GlobalData.locale)
-            ?.options
-            ?.filters
-            ?.forEach((element) {
-          filters
-              .add({"key": '"${element.key}"', "value": '"${element.value}"'});
-        });
-        homePageBloc?.add(FetchAllProductsEvent(filters));
-      }
-
-      await Future.delayed(const Duration(seconds: 0));
-    }));
+        if (element.type == "category_carousel") {
+          filters.clear();
+          element.translations
+              ?.firstWhereOrNull((e) => e.localeCode == GlobalData.locale)
+              ?.options
+              ?.filters
+              ?.forEach((element) {
+            filters.add(
+                {"key": '"${element.key}"', "value": '"${element.value}"'});
+          });
+          homePageBloc?.add(FetchHomePageCategoriesEvent(filters: filters));
+        } else if (element.type == "product_carousel") {
+          filters.clear();
+          element.translations
+              ?.firstWhereOrNull((e) => e.localeCode == GlobalData.locale)
+              ?.options
+              ?.filters
+              ?.forEach((element) {
+            filters.add(
+                {"key": '"${element.key}"', "value": '"${element.value}"'});
+          });
+          homePageBloc?.add(FetchAllProductsEvent(filters));
+        }
+      }));
+    }
   }
 }

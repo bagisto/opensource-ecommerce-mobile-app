@@ -58,22 +58,4 @@ class SignUpRepositoryImp implements SignUpRepository {
     }
     return SignUpResponseModel;
   }
-
-  // @override
-  // Future<Subscribe?> subscribeNewsLetter(
-  //     String email,
-  //     ) async {
-  //   Subscribe? subscribeNewsletterModel;
-  //
-  //   try {
-  //     subscribeNewsletterModel = await ApiClient().subscribeNewsLetter(
-  //       email,
-  //     );
-  //
-  //   } catch (error, stacktrace) {
-  //     debugPrint("Error --> $error");
-  //     debugPrint("StackTrace --> $stacktrace");
-  //   }
-  //   return subscribeNewsletterModel;
-  // }
 }

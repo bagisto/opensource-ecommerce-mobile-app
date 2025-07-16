@@ -19,13 +19,16 @@ import '../../../../utils/string_constants.dart';
 import '../../../../widgets/common_widgets.dart';
 import '../../bloc/add_review_event.dart';
 import '../../bloc/add_review_bloc.dart';
+import 'package:http/http.dart' as http;
 
 class AddImageView extends StatefulWidget {
   final AddReviewBloc? addReviewBloc;
+  final List<XFile?>? images;
 
-  const AddImageView({
+  AddImageView({
     Key? key,
     this.addReviewBloc,
+    required this.images
   }) : super(key: key);
 
   @override
@@ -41,42 +44,39 @@ class _AddImageViewState extends State<AddImageView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Card(
-          child: (imageFile == null)
-              ? const SizedBox()
-              : Stack(
-                  children: [
-                    SizedBox(
-                      height: 200,
-                      width: 200,
-                      child: Image.file(File(imageFile?.path ?? "")),
-                    ),
-                    IconButton(
-                      onPressed: () {
-                        widget.addReviewBloc?.add(ImagePickerEvent());
-                        setState(() {
-                          imageFile = null;
-                        });
-                      },
-                      icon: const Icon(Icons.cancel_outlined),
-                    ),
-                  ],
+        Wrap(
+          children: [
+            ...?widget.images?.map((image) => Stack(
+              children: [
+                SizedBox(
+                  height: 100,
+                  width: 100,
+                  child: Image.file(File(image?.path ?? "")),
                 ),
+                IconButton(
+                  onPressed: () {
+                    widget.addReviewBloc?.add(ImagePickerEvent(isDelete: true,
+                      deleteImage: image
+                    ));
+                  },
+                  icon: const Icon(Icons.cancel_outlined),
+                ),
+              ],
+            ))
+          ],
         ),
-        if (imageFile != null) const SizedBox(height:AppSizes.spacingWide),
+        if (imageFile != null) const SizedBox(height: AppSizes.spacingWide),
         SizedBox(
           height: AppSizes.buttonHeight,
           width: MediaQuery.of(context).size.width,
           child: OutlinedButton(
-            style: OutlinedButton.styleFrom(side:  BorderSide(color: Theme.of(context).colorScheme.onBackground)),
-            child: Text(
-              imageFile == null
-                  ? StringConstants.addImage.localized().toUpperCase()
-                  : StringConstants.replaceImage.localized().toUpperCase(),
-              style:  TextStyle(
-                fontSize: AppSizes.spacingLarge,
-                  color: Theme.of(context).colorScheme.onBackground
-              ),
+            style: OutlinedButton.styleFrom(
+                side: BorderSide(
+                    color: Theme.of(context).colorScheme.onBackground)),
+            child: Text(StringConstants.addImage.localized().toUpperCase(),
+              style: TextStyle(
+                  fontSize: AppSizes.spacingLarge,
+                  color: Theme.of(context).colorScheme.onBackground),
             ),
             onPressed: () {
               _onPressAddImage(context);
@@ -104,8 +104,8 @@ class _AddImageViewState extends State<AddImageView> {
                     onTap: () {
                       _openGallery();
                     },
-                    title: CommonWidgets()
-                        .getDrawerTileText(StringConstants.gallery.localized(), context),
+                    title: CommonWidgets().getDrawerTileText(
+                        StringConstants.gallery.localized(), context),
                     leading: Icon(
                       Icons.account_box,
                       color: Theme.of(context).colorScheme.onPrimary,
@@ -137,11 +137,13 @@ class _AddImageViewState extends State<AddImageView> {
       source: ImageSource.gallery,
     );
     imageFile = pickedFile;
-    if(imageFile != null){
+    if (imageFile != null) {
       Uint8List imageBytes = await imageFile!.readAsBytes(); //convert to bytes
       base64string = base64.encode(imageBytes);
+      widget.addReviewBloc
+          ?.add(ImagePickerEvent(pickedFile: pickedFile));
     }
-    widget.addReviewBloc?.add(ImagePickerEvent(pickedFile: pickedFile, image: base64string));
+
     // ignore: use_build_context_synchronously
     Navigator.pop(context);
   }
@@ -151,12 +153,14 @@ class _AddImageViewState extends State<AddImageView> {
       source: ImageSource.camera,
     );
     imageFile = pickedFile;
-    if(imageFile != null){
+    if (imageFile != null) {
       Uint8List imageBytes = await imageFile!.readAsBytes(); //convert to bytes
       base64string = base64.encode(imageBytes);
+      widget.addReviewBloc
+          ?.add(ImagePickerEvent(pickedFile: pickedFile));
     }
-    widget.addReviewBloc?.add(ImagePickerEvent(pickedFile: pickedFile, image: base64string));
-    if(!mounted) return;
+
+    if (!mounted) return;
     Navigator.pop(context);
   }
 }

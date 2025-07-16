@@ -1,4 +1,3 @@
-
 /*
  *   Webkul Software.
  *   @package Mobikul Application Code.
@@ -9,17 +8,18 @@
  *   @link https://store.webkul.com/license.html
  */
 
-
-
-
 import 'package:bagisto_app_demo/screens/compare/utils/index.dart';
 
 class CompareView extends StatelessWidget {
   final CompareProductsData compareScreenModel;
   final CompareScreenBloc? compareScreenBloc;
+  final ScrollController? scrollController;
 
   const CompareView(
-      {Key? key, required this.compareScreenModel, this.compareScreenBloc})
+      {Key? key,
+      required this.compareScreenModel,
+      this.compareScreenBloc,
+      required this.scrollController})
       : super(key: key);
 
   @override
@@ -27,6 +27,7 @@ class CompareView extends StatelessWidget {
     return Stack(
       children: [
         SingleChildScrollView(
+          controller: scrollController,
           scrollDirection: Axis.horizontal,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -38,22 +39,28 @@ class CompareView extends StatelessWidget {
               SizedBox(
                 height: 30,
                 width: (compareScreenModel.data?.length ?? 0) *
-                      MediaQuery.of(context).size.width / 2.0,
+                    MediaQuery.of(context).size.width /
+                    2.0,
                 child: Container(
-                  decoration:
-                      BoxDecoration(border: Border.all(color: Colors.grey,width: 1.5)),
+                  decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey, width: 1)),
                   child: Padding(
-                    padding:
-                        const EdgeInsets.only(left:AppSizes.spacingMedium, top: AppSizes.spacingNormal, bottom: AppSizes.spacingSmall),
+                    padding: const EdgeInsets.only(
+                        left: AppSizes.spacingMedium,
+                        top: AppSizes.spacingNormal,
+                        bottom: AppSizes.spacingSmall),
                     child: Text(
-                      StringConstants.sku,
-                      style: Theme.of(context).textTheme.labelMedium?.copyWith(color: Colors.grey[500]),
+                      StringConstants.sku.localized(),
+                      style: Theme.of(context)
+                          .textTheme
+                          .labelMedium
+                          ?.copyWith(color: Colors.grey[500]),
                     ),
                   ),
                 ),
               ),
               SizedBox(
-                height: AppSizes.spacingLarge*2,
+                height: AppSizes.spacingLarge * 2,
                 child: ListView.builder(
                     padding: EdgeInsets.zero,
                     shrinkWrap: true,
@@ -71,8 +78,7 @@ class CompareView extends StatelessWidget {
                                   urlKey: compareScreenModel
                                       .data?[index].product?.urlKey,
                                   productId: int.parse(compareScreenModel
-                                          .data?[index].product
-                                          ?.id ??
+                                          .data?[index].product?.id ??
                                       "")));
                         },
                         child: Container(
@@ -86,12 +92,13 @@ class CompareView extends StatelessWidget {
                           )),
                           child: Padding(
                             padding: const EdgeInsets.only(
-                                left: AppSizes.spacingNormal, top: AppSizes.spacingNormal, right: AppSizes.spacingNormal),
+                                left: AppSizes.spacingNormal,
+                                top: AppSizes.spacingNormal,
+                                right: AppSizes.spacingNormal),
                             child: SizedBox(
                               width: MediaQuery.of(context).size.width / 2,
                               child: Text(
-                                compareScreenModel
-                                        .data?[index].product?.sku ??
+                                compareScreenModel.data?[index].product?.sku ??
                                     "",
                                 maxLines: 1,
                               ),
@@ -114,7 +121,7 @@ class CompareView extends StatelessWidget {
                     padding:
                         const EdgeInsets.only(left: 12.0, top: 6, bottom: 2),
                     child: Text(
-                      StringConstants.description,
+                      StringConstants.description.localized(),
                       style: TextStyle(
                           color: Colors.grey[500],
                           fontSize: 14,
@@ -142,9 +149,7 @@ class CompareView extends StatelessWidget {
                                   urlKey: compareScreenModel
                                       .data?[index].product?.urlKey,
                                   productId: int.parse(compareScreenModel
-                                          .data?[index]
-                                          .product
-                                          ?.id ??
+                                          .data?[index].product?.id ??
                                       "")));
                         },
                         child: Container(

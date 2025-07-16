@@ -244,18 +244,16 @@ class CompareList extends StatelessWidget {
                                         .data?[index].product?.isSaleable ??
                                     false)
                                 ? () {
-                                    debugPrint(compareScreenModel
-                                            .data?[index].product?.type ??
-                                        "");
                                     compareScreenBloc?.add(
                                         OnClickCompareLoaderEvent(
                                             isReqToShowLoader: true));
-                                    if (compareScreenModel
+                                    if ((compareScreenModel
                                                 .data?[index].product?.type ==
                                             StringConstants.simple ||
                                         compareScreenModel
                                                 .data?[index].product?.type ==
-                                            StringConstants.virtual) {
+                                            StringConstants.virtual)&& ((compareScreenModel
+                                        .data?[index].product?.customizableOptions??[]).length ==0)) {
                                       compareScreenBloc?.add(
                                           AddToCartCompareEvent(
                                               (compareScreenModel.data?[index]
@@ -270,6 +268,16 @@ class CompareList extends StatelessWidget {
                                           "",
                                           Colors.yellow,
                                           const Icon(Icons.warning_amber));
+                                      Navigator.pushNamed(context, productScreen,
+                                          arguments: PassProductData(
+                                              title:
+                                              compareScreenModel.data?[index].product?.name ?? "",
+                                              urlKey:
+                                              compareScreenModel.data?[index].product?.urlKey ??
+                                                  "",
+                                              productId: int.parse(
+                                                  compareScreenModel.data?[index].product?.id ??
+                                                      "")));
                                       compareScreenBloc?.add(
                                           OnClickCompareLoaderEvent(
                                               isReqToShowLoader: false));

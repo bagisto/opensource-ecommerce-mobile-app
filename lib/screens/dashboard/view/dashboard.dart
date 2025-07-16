@@ -47,6 +47,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       child: Scaffold(
         appBar: AppBar(
           title: Text(StringConstants.dashboard.localized()),
+          centerTitle: false,
         ),
         body: dashboardView(),
       ),
@@ -170,7 +171,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                                   ? Navigator.pushNamed(
                                       context, addAddressScreen,
                                       arguments: AddressNavigationData(
-                                          isEdit: false, addressModel: null, isCheckout: false))
+                                          isEdit: false,
+                                          addressModel: null,
+                                          isCheckout: false))
                                   : Navigator.of(context)
                                       .pushNamed(addressList);
                             },

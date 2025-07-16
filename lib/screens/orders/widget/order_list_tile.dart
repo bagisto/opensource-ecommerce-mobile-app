@@ -11,8 +11,8 @@
 import 'package:bagisto_app_demo/screens/orders/utils/index.dart';
 
 class OrdersListTile extends StatelessWidget with OrderStatusBGColorHelper {
- final Data? data;
- final VoidCallback? reload;
+  final Data? data;
+  final VoidCallback? reload;
 
   String capitalize(String str) => str[0].toUpperCase() + str.substring(1);
 
@@ -26,7 +26,7 @@ class OrdersListTile extends StatelessWidget with OrderStatusBGColorHelper {
         children: [
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
                 flex: 1,
@@ -45,67 +45,87 @@ class OrdersListTile extends StatelessWidget with OrderStatusBGColorHelper {
                               const SizedBox(height: AppSizes.spacingNormal),
                               Text(
                                 StringConstants.orderNo.localized(),
-                                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                  color: Colors.grey.shade600,
-                                  letterSpacing: 0.15
-                                ),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .labelMedium
+                                    ?.copyWith(
+                                        color: Colors.grey.shade600,
+                                        letterSpacing: 0.15),
                               ),
                               const SizedBox(height: AppSizes.spacingNormal),
                               Text(
                                 StringConstants.qty.localized(),
-                                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                    color: Colors.grey.shade600,
-                                    letterSpacing: 0.15
-                                ),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .labelMedium
+                                    ?.copyWith(
+                                        color: Colors.grey.shade600,
+                                        letterSpacing: 0.15),
                               ),
                               const SizedBox(height: AppSizes.spacingNormal),
                               Text(
                                 StringConstants.totalPrice.localized(),
-                                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                    color: Colors.grey.shade600,
-                                    letterSpacing: 0.15
-                                ),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .labelMedium
+                                    ?.copyWith(
+                                        color: Colors.grey.shade600,
+                                        letterSpacing: 0.15),
                               ),
                               const SizedBox(height: AppSizes.spacingNormal),
                               Text(
                                 StringConstants.date.localized(),
-                                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                    color: Colors.grey.shade600,
-                                    letterSpacing: 0.15
-                                ),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .labelMedium
+                                    ?.copyWith(
+                                        color: Colors.grey.shade600,
+                                        letterSpacing: 0.15),
                               ),
-                            ],
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(8.0,0,8,8),
-                          child: Column(
-                            children: [
-                              const SizedBox(height: AppSizes.spacingNormal),
-                              Text(":",
-                                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                      color: Colors.grey.shade600,
-                                  )),
-                              const SizedBox(height: AppSizes.spacingNormal),
-                              Text(":",
-                                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                    color: Colors.grey.shade600,
-                                  )),
-                              const SizedBox(height: AppSizes.spacingNormal),
-                              Text(":",
-                                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                    color: Colors.grey.shade600,
-                                  )),
-                              const SizedBox(height: AppSizes.spacingNormal),
-                              Text(":",
-                                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                    color: Colors.grey.shade600,
-                                  )),
                             ],
                           ),
                         ),
                         Padding(
                           padding: const EdgeInsets.fromLTRB(8.0, 0, 0, 8),
+                          child: Column(
+                            children: [
+                              const SizedBox(height: AppSizes.spacingNormal),
+                              Text(":",
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelMedium
+                                      ?.copyWith(
+                                        color: Colors.grey.shade600,
+                                      )),
+                              const SizedBox(height: AppSizes.spacingNormal),
+                              Text(":",
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelMedium
+                                      ?.copyWith(
+                                        color: Colors.grey.shade600,
+                                      )),
+                              const SizedBox(height: AppSizes.spacingNormal),
+                              Text(":",
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelMedium
+                                      ?.copyWith(
+                                        color: Colors.grey.shade600,
+                                      )),
+                              const SizedBox(height: AppSizes.spacingNormal),
+                              Text(":",
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelMedium
+                                      ?.copyWith(
+                                        color: Colors.grey.shade600,
+                                      )),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0.0, 0, 0, 8),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -116,8 +136,7 @@ class OrdersListTile extends StatelessWidget with OrderStatusBGColorHelper {
                               ),
                               const SizedBox(height: AppSizes.spacingNormal),
                               Text(
-                                data?.totalQtyOrdered.toString() ??
-                                    "",
+                                data?.totalQtyOrdered.toString() ?? "",
                                 style: Theme.of(context).textTheme.labelMedium,
                               ),
                               const SizedBox(height: AppSizes.spacingNormal),
@@ -128,11 +147,12 @@ class OrdersListTile extends StatelessWidget with OrderStatusBGColorHelper {
                               ),
                               const SizedBox(height: AppSizes.spacingNormal),
                               SizedBox(
-                              width: MediaQuery.of(context).size.width/3,
+                                width: MediaQuery.of(context).size.width / 3,
                                 child: Text(
                                   data?.createdAt.toString() ?? "",
                                   overflow: TextOverflow.ellipsis,
-                                  style: Theme.of(context).textTheme.labelMedium,
+                                  style:
+                                      Theme.of(context).textTheme.labelMedium,
                                 ),
                               ),
                             ],
@@ -158,10 +178,10 @@ class OrdersListTile extends StatelessWidget with OrderStatusBGColorHelper {
           ),
           const SizedBox(height: AppSizes.spacingNormal),
           Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: AppSizes.spacingWide/2, vertical: 5.0),
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppSizes.spacingWide / 2, vertical: 5.0),
             child: SizedBox(
-              height: AppSizes.spacingWide*2,
+              height: AppSizes.spacingWide * 2,
               child: MaterialButton(
                 shape: const RoundedRectangleBorder(
                     borderRadius: BorderRadius.all(Radius.circular(4))),
@@ -181,13 +201,15 @@ class OrdersListTile extends StatelessWidget with OrderStatusBGColorHelper {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.info_outline, color: Theme.of(context).colorScheme.background),
+                    Icon(Icons.info_outline,
+                        color: Theme.of(context).colorScheme.background),
                     const SizedBox(
                       width: 5,
                     ),
                     Text(
                       StringConstants.orderDetails.localized().toUpperCase(),
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Theme.of(context).colorScheme.background),
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: Theme.of(context).colorScheme.background),
                     ),
                   ],
                 ),

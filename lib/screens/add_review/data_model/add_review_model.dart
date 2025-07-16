@@ -1,4 +1,3 @@
-
 /*
  *   Webkul Software.
  *   @package Mobikul Application Code.
@@ -14,19 +13,18 @@
 // ignore_for_file: file_names, prefer_typing_uninitialized_variables
 import 'package:bagisto_app_demo/data_model/graphql_base_model.dart';
 import 'package:json_annotation/json_annotation.dart';
-import '../../../data_model/graphql_base_error_model.dart';
-
 
 part 'add_review_model.g.dart';
 
 @JsonSerializable()
-class AddReviewModel extends BaseModel{
+class AddReviewModel extends BaseModel {
   @override
   // String? success;
   Review? review;
 
-  AddReviewModel({ this.review});
-  factory AddReviewModel.fromJson(Map<String, dynamic> json) => _$AddReviewModelFromJson(json);
+  AddReviewModel({this.review});
+  factory AddReviewModel.fromJson(Map<String, dynamic> json) =>
+      _$AddReviewModelFromJson(json);
 
   @override
   Map<String, dynamic> toJson() => _$AddReviewModelToJson(this);
@@ -35,18 +33,20 @@ class AddReviewModel extends BaseModel{
 @JsonSerializable()
 class Review {
   String? id;
-  String? title;
-  int? rating;
-  String? comment;
-  String? status;
-  String? createdAt;
-  String? updatedAt;
-  String? productId;
-  String? customerId;
-  String? customerName;
-  Product? product;
+  // String? title;
+  // int? rating;
+  // String? comment;
+  // String? status;
+  // String? createdAt;
+  // String? updatedAt;
+  // String? productId;
+  // String? customerId;
+  // String? customerName;
+  // Product? product;
 
-  Review({this.id, this.title, this.rating, this.comment, this.status, this.createdAt, this.updatedAt, this.productId, this.customerId, this.customerName, this.product});
+  Review({
+    this.id,
+  });
 
   factory Review.fromJson(Map<String, dynamic> json) => _$ReviewFromJson(json);
 
@@ -64,8 +64,17 @@ class Product {
   String? updatedAt;
   List<ProductFlats>? productFlats;
 
-  Product({this.id, this.type, this.attributeFamilyId, this.sku, this.parentId, this.createdAt, this.updatedAt, this.productFlats});
-  factory Product.fromJson(Map<String, dynamic> json) => _$ProductFromJson(json);
+  Product(
+      {this.id,
+      this.type,
+      this.attributeFamilyId,
+      this.sku,
+      this.parentId,
+      this.createdAt,
+      this.updatedAt,
+      this.productFlats});
+  factory Product.fromJson(Map<String, dynamic> json) =>
+      _$ProductFromJson(json);
 
   Map<String, dynamic> toJson() => _$ProductToJson(this);
 }
@@ -90,7 +99,7 @@ class ProductFlats {
   String? channel;
   String? productId;
   var minPrice;
- var maxPrice;
+  var maxPrice;
   String? metaTitle;
   String? metaKeywords;
   String? metaDescription;
@@ -99,15 +108,36 @@ class ProductFlats {
   String? createdAt;
   String? updatedAt;
 
-  ProductFlats({this.id, this.sku, this.name, this.description, this.shortDescription, this.urlKey, this.featured,
-    this.status, this.visibleIndividually, this.price, this.color, this.colorLabel, this.size,
-    this.sizeLabel, this.locale, this.channel, this.productId,  this.minPrice, this.maxPrice, this.metaTitle,
-    this.metaKeywords, this.metaDescription, this.width, this.height,  this.createdAt, this.updatedAt});
+  ProductFlats(
+      {this.id,
+      this.sku,
+      this.name,
+      this.description,
+      this.shortDescription,
+      this.urlKey,
+      this.featured,
+      this.status,
+      this.visibleIndividually,
+      this.price,
+      this.color,
+      this.colorLabel,
+      this.size,
+      this.sizeLabel,
+      this.locale,
+      this.channel,
+      this.productId,
+      this.minPrice,
+      this.maxPrice,
+      this.metaTitle,
+      this.metaKeywords,
+      this.metaDescription,
+      this.width,
+      this.height,
+      this.createdAt,
+      this.updatedAt});
 
-  factory ProductFlats.fromJson(Map<String, dynamic> json) => _$ProductFlatsFromJson(json);
+  factory ProductFlats.fromJson(Map<String, dynamic> json) =>
+      _$ProductFlatsFromJson(json);
 
   Map<String, dynamic> toJson() => _$ProductFlatsToJson(this);
 }
-
-
-

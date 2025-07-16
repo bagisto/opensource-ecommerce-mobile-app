@@ -10,6 +10,7 @@
 
 import 'dart:async';
 
+import '../data_model/core_configs_model.dart';
 import '../data_model/currency_language_model.dart';
 import '../screens/cms_screen/data_model/cms_model.dart';
 import '../screens/home_page/data_model/get_categories_drawer_data_model.dart';
@@ -35,4 +36,9 @@ class GlobalData {
       StreamController<NewProductsModel?>.broadcast();
 
   static List<NewProductsModel?>? allProducts = [];
+  static CoreConfigs? configData;
+
+  static String style = "";
+  static String fcmToken = "";
+  static String deviceName = "";
 }

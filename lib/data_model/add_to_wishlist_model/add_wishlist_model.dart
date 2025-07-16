@@ -42,44 +42,28 @@ class Data {
 @JsonSerializable()
 class WishlistProduct {
   String? id;
-  String? sku;
-  String? type;
-  String? name;
-  String? urlKey;
-  PriceHtml? priceHtml;
-  dynamic price;
+  // String? sku;
+  // String? type;
+  // String? name;
+  // String? urlKey;
+  // PriceHtml? priceHtml;
+  // dynamic price;
   @JsonKey(name: "formatedPrice")
-  String? formattedPrice;
-  String? shortDescription;
-  String? description;
-  List<Images>? images;
-  BaseImage? baseImage;
-  List<Reviews>? reviews;
-  bool? inStock;
-  bool? isSaved;
-  bool? isInWishlist;
-  bool? isItemInCart;
-  bool? showQuantityChanger;
+  // String? formattedPrice;
+  // String? shortDescription;
+  // String? description;
+  // List<Images>? images;
+  // BaseImage? baseImage;
+  // List<Reviews>? reviews;
+  // bool? inStock;
+  // bool? isSaved;
+  // bool? isInWishlist;
+  // bool? isItemInCart;
+  // bool? showQuantityChanger;
 
-  WishlistProduct(
-      {this.id,
-      this.sku,
-      this.type,
-      this.name,
-      this.urlKey,
-      this.priceHtml,
-      this.price,
-      this.formattedPrice,
-      this.shortDescription,
-      this.description,
-      this.images,
-      this.baseImage,
-      this.reviews,
-      this.inStock,
-      this.isSaved,
-      this.isInWishlist,
-      this.isItemInCart,
-      this.showQuantityChanger});
+  WishlistProduct({
+    this.id,
+  });
 
   factory WishlistProduct.fromJson(Map<String, dynamic> json) {
     return _$WishlistProductFromJson(json);
@@ -103,21 +87,16 @@ class PriceHtml {
 @JsonSerializable()
 class Images {
   String? id;
-  String? path;
-  String? url;
-  String? originalImageUrl;
-  String? smallImageUrl;
-  String? mediumImageUrl;
-  String? largeImageUrl;
+  // String? path;
+  // String? url;
+  // String? originalImageUrl;
+  // String? smallImageUrl;
+  // String? mediumImageUrl;
+  // String? largeImageUrl;
 
-  Images(
-      {this.id,
-      this.path,
-      this.url,
-      this.originalImageUrl,
-      this.smallImageUrl,
-      this.mediumImageUrl,
-      this.largeImageUrl});
+  Images({
+    this.id,
+  });
 
   factory Images.fromJson(Map<String, dynamic> json) {
     return _$ImagesFromJson(json);
@@ -128,16 +107,12 @@ class Images {
 
 @JsonSerializable()
 class BaseImage {
-  String? smallImageUrl;
-  String? mediumImageUrl;
-  String? largeImageUrl;
-  String? originalImageUrl;
+  // String? smallImageUrl;
+  // String? mediumImageUrl;
+  // String? largeImageUrl;
+  // String? originalImageUrl;
 
-  BaseImage(
-      {this.smallImageUrl,
-      this.mediumImageUrl,
-      this.largeImageUrl,
-      this.originalImageUrl});
+  BaseImage();
 
   factory BaseImage.fromJson(Map<String, dynamic> json) {
     return _$BaseImageFromJson(json);
@@ -148,20 +123,14 @@ class BaseImage {
 
 @JsonSerializable()
 class Reviews {
-  String? id;
-  String? title;
-  String? comment;
-  String? status;
-  String? productId;
-  int? rating;
+  // String? id;
+  // String? title;
+  // String? comment;
+  // String? status;
+  // String? productId;
+  // int? rating;
 
-  Reviews(
-      {this.id,
-      this.title,
-      this.comment,
-      this.status,
-      this.productId,
-      this.rating});
+  Reviews();
 
   factory Reviews.fromJson(Map<String, dynamic> json) {
     return _$ReviewsFromJson(json);

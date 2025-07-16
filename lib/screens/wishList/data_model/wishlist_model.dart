@@ -46,49 +46,49 @@ class WishlistData {
   Map<String, dynamic> toJson() => _$WishlistDataToJson(this);
 }
 
-@JsonSerializable()
-class Customer {
-  String? id;
-  String? firstName;
-  String? lastName;
-  String? name;
-  String? gender;
-  String? dateOfBirth;
-  String? email;
-  String? phone;
-  String? password;
-  String? apiToken;
-  int? customerGroupId;
-  bool? subscribedToNewsLetter;
-  bool? isVerified;
-  String? token;
-  String? notes;
-  bool? status;
-  String? createdAt;
-  String? updatedAt;
+// @JsonSerializable()
+// class Customer {
+//   String? id;
+//   String? firstName;
+//   String? lastName;
+//   String? name;
+//   String? gender;
+//   String? dateOfBirth;
+//   String? email;
+//   String? phone;
+//   String? password;
+//   String? apiToken;
+//   int? customerGroupId;
+//   bool? subscribedToNewsLetter;
+//   bool? isVerified;
+//   String? token;
+//   String? notes;
+//   bool? status;
+//   String? createdAt;
+//   String? updatedAt;
 
-  Customer(
-      {this.id,
-      this.firstName,
-      this.lastName,
-      this.name,
-      this.gender,
-      this.dateOfBirth,
-      this.email,
-      this.phone,
-      this.password,
-      this.apiToken,
-      this.customerGroupId,
-      this.subscribedToNewsLetter,
-      this.isVerified,
-      this.token,
-      this.notes,
-      this.status,
-      this.createdAt,
-      this.updatedAt});
+//   Customer(
+//       {this.id,
+//       this.firstName,
+//       this.lastName,
+//       this.name,
+//       this.gender,
+//       this.dateOfBirth,
+//       this.email,
+//       this.phone,
+//       this.password,
+//       this.apiToken,
+//       this.customerGroupId,
+//       this.subscribedToNewsLetter,
+//       this.isVerified,
+//       this.token,
+//       this.notes,
+//       this.status,
+//       this.createdAt,
+//       this.updatedAt});
 
-  factory Customer.fromJson(Map<String, dynamic> json) =>
-      _$CustomerFromJson(json);
+//   factory Customer.fromJson(Map<String, dynamic> json) =>
+//       _$CustomerFromJson(json);
 
-  Map<String, dynamic> toJson() => _$CustomerToJson(this);
-}
+//   Map<String, dynamic> toJson() => _$CustomerToJson(this);
+// }

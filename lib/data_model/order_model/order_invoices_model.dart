@@ -50,18 +50,18 @@ class InvoicesItems {
   String? sku;
   String? name;
   int? qty;
-  String? productId;
-  OrderProduct? product;
+  // String? productId;
+  // OrderProduct? product;
   FormattedPrice? formattedPrice;
 
-  InvoicesItems(
-      {this.id,
-      this.sku,
-      this.name,
-      this.qty,
-      this.productId,
-      this.formattedPrice,
-      this.product});
+  InvoicesItems({
+    this.id,
+    this.sku,
+    this.name,
+    this.qty,
+    // this.productId,
+    this.formattedPrice,
+  });
 
   factory InvoicesItems.fromJson(Map<String, dynamic> json) =>
       _$InvoicesItemsFromJson(json);

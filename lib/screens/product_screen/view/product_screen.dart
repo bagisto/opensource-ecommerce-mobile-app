@@ -8,12 +8,14 @@
  *   @link https://store.webkul.com/license.html
  */
 
+import 'package:bagisto_app_demo/data_model/product_model/booking_slots_modal.dart';
 import 'package:bagisto_app_demo/screens/cart_screen/utils/cart_index.dart';
 import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
 import 'package:hive/hive.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../data_model/download_sample_model.dart';
+import 'dart:developer';
 
 class ProductScreen extends StatefulWidget {
   final int? productId;
@@ -36,6 +38,9 @@ class _ProductScreenState extends State<ProductScreen> {
   List configurableParams = [];
   List selectList = [];
   List selectParam = [];
+
+  Map<String, dynamic> bookingParams = {};
+  Map<String, dynamic> customizableOptionsSelection = {}; // <-- add this
   int bundleQty = 1;
   dynamic configurableProductId;
   String? price;
@@ -49,7 +54,7 @@ class _ProductScreenState extends State<ProductScreen> {
   final _scrollController = ScrollController();
   ProductScreenBLoc? productScreenBLoc;
   DownloadSampleModel? downloadSampleModel;
-
+  BookingSlotsData? bookingSlotsData;
   @override
   void initState() {
     isLoggedIn = appStoragePref.getCustomerLoggedIn();
@@ -231,13 +236,18 @@ class _ProductScreenState extends State<ProductScreen> {
       isLoading = false;
       if (state.status == ProductStatus.success) {}
     }
-
+    if (state is GetSlotState) {
+      isLoading = false;
+      bookingSlotsData = state.slotModel;
+      if (state.status == ProductStatus.success) {}
+    }
     return Stack(
       alignment: Alignment.bottomCenter,
       children: [
         Padding(
           padding: const EdgeInsets.only(bottom: AppSizes.spacingWide * 4),
           child: ProductView(
+            bookingSlotsData: bookingSlotsData,
             productData: productData,
             isLoading: isLoading,
             isLoggedIn: isLoggedIn,
@@ -248,7 +258,10 @@ class _ProductScreenState extends State<ProductScreen> {
                 groupedParams,
                 downloadLinks,
                 qty,
-                configurableProductId) {
+                configurableProductId,
+                bookingParams,
+                customizableOptionsSelection // <-- add here
+                ) {
               this.configurableParams = configurableParams;
               this.bundleParams = bundleParams;
               this.selectList = selectList;
@@ -257,6 +270,9 @@ class _ProductScreenState extends State<ProductScreen> {
               this.downloadLinks = downloadLinks;
               this.qty = qty;
               this.configurableProductId = configurableProductId;
+              this.bookingParams = bookingParams;
+              this.customizableOptionsSelection =
+                  customizableOptionsSelection; // <-- add here
             },
             scaffoldMessengerKey: scaffoldMessengerKey,
             productId: widget.productId,
@@ -324,6 +340,67 @@ class _ProductScreenState extends State<ProductScreen> {
   _addToCart(BuildContext context) {
     ProductScreenBLoc productScreenBLoc = context.read<ProductScreenBLoc>();
     List list = [];
+
+    // --- Customizable Option Required Check ---
+    final customOptions = productData?.customizableOptions ?? [];
+    bool hasCustomOptions = customOptions.isNotEmpty;
+    if (hasCustomOptions) {
+      for (final option in customOptions) {
+        if (option.isRequired == true) {
+          final selected = customizableOptionsSelection[option.id?.toString()];
+          bool isFilled = false;
+          switch (option.type) {
+            case 'text':
+            case 'textarea':
+            case 'date':
+            case 'datetime':
+            case 'time':
+              isFilled = (selected != null &&
+                  (selected['value']?.toString().isNotEmpty ?? false));
+              break;
+            case 'file':
+              isFilled = (selected != null && selected['value'] != null);
+              break;
+            case 'checkbox':
+            case 'multiselect':
+              isFilled = (selected != null &&
+                  (selected['priceOptionIds'] as Set?)?.isNotEmpty == true);
+              break;
+            case 'radio':
+            case 'select':
+              isFilled =
+                  (selected != null && selected['priceOptionId'] != null);
+              break;
+            default:
+              isFilled = true;
+          }
+          if (!isFilled) {
+            ShowMessage.warningNotification(
+              "${option.translations?.label ?? option.label ?? 'Option'} ${StringConstants.isRequired.localized()}",
+              context,
+            );
+            productScreenBLoc
+                .add(OnClickProductLoaderEvent(isReqToShowLoader: false));
+            return;
+          }
+        }
+      }
+    }
+    // --- End Customizable Option Required Check ---
+
+    // --- Prepare customizableOptions for server ---
+    final customizableOptionsPayload = _prepareCustomizableOptionsPayload(
+        customOptions, customizableOptionsSelection);
+
+    // --- Extract files for multipart upload ---
+    final List filesToUpload = [];
+    for (final item in customizableOptionsPayload) {
+      if (item.containsKey('file')) {
+        filesToUpload.add(item['file']);
+      }
+    }
+
+    // --- Add to cart event ---
     if (productData?.type == StringConstants.grouped) {
       if (groupedParams.isNotEmpty) {
         list.add(groupedParams);
@@ -335,18 +412,20 @@ class _ProductScreenState extends State<ProductScreen> {
             bundleParams,
             configurableParams,
             configurableProductId,
-            ""));
+            "",
+            bookingParams,
+            customizableOptionsPayload, // <-- pass here
+            filesToUpload // <-- pass files
+            ));
       } else {
         ShowMessage.warningNotification(
             StringConstants.atLeastOneWarning.localized(), context);
         productScreenBLoc
             .add(OnClickProductLoaderEvent(isReqToShowLoader: false));
-
         return;
       }
     } else if (productData?.type == StringConstants.bundle) {
       if (bundleParams.isNotEmpty) {
-        debugPrint("BundleParams-->$bundleParams");
         list.add(bundleParams);
         productScreenBLoc.add(AddToCartProductEvent(
             qty,
@@ -356,9 +435,12 @@ class _ProductScreenState extends State<ProductScreen> {
             bundleParams,
             configurableParams,
             configurableProductId,
-            ""));
+            "",
+            bookingParams,
+            customizableOptionsPayload, // <-- pass here
+            filesToUpload // <-- pass files
+            ));
       } else {
-        debugPrint("BundleParams-->$bundleParams");
         ShowMessage.warningNotification(
             StringConstants.atLeastOneWarning.localized(), context);
 
@@ -376,7 +458,11 @@ class _ProductScreenState extends State<ProductScreen> {
             bundleParams,
             configurableParams,
             configurableProductId,
-            ""));
+            "",
+            bookingParams,
+            customizableOptionsPayload, // <-- pass here
+            filesToUpload // <-- pass files
+            ));
       } else {
         ShowMessage.warningNotification(
             StringConstants.linkRequired.localized(), context);
@@ -405,7 +491,77 @@ class _ProductScreenState extends State<ProductScreen> {
             bundleParams,
             configurableParams,
             id,
-            ""));
+            "",
+            bookingParams,
+            customizableOptionsPayload,
+            filesToUpload));
+      }
+    } else if (productData?.type == StringConstants.booking) {
+      if (bookingParams.isNotEmpty &&
+          (productData?.booking?.firstOrNull?.type == "event" ||
+              (bookingParams["slot"].toString().trim().isNotEmpty &&
+                  bookingParams["slot"] != null))) {
+        if (productData?.booking?.firstOrNull?.type == "table") {
+          if (bookingParams.containsKey("note") &&
+              bookingParams["note"] != null &&
+              bookingParams["note"].toString() != '"null"' &&
+              bookingParams["note"].toString().trim().isNotEmpty) {
+            productScreenBLoc.add(AddToCartProductEvent(
+                qty,
+                productData?.id ?? "",
+                downloadLinks,
+                groupedParams,
+                bundleParams,
+                configurableParams,
+                configurableProductId ?? "0",
+                "",
+                bookingParams,
+                customizableOptionsPayload, // <-- pass here
+                filesToUpload // <-- pass files
+                ));
+          } else {
+            ShowMessage.warningNotification("Notes are  required", context);
+            productScreenBLoc
+                .add(OnClickProductLoaderEvent(isReqToShowLoader: false));
+          }
+        } else {
+          productScreenBLoc.add(AddToCartProductEvent(
+              qty,
+              productData?.id ?? "",
+              downloadLinks,
+              groupedParams,
+              bundleParams,
+              configurableParams,
+              configurableProductId,
+              "",
+              bookingParams,
+              customizableOptionsPayload, // <-- pass here
+              filesToUpload // <-- pass files
+              ));
+        }
+      } else if (bookingParams.isNotEmpty &&
+          bookingParams["dateFrom"] != null &&
+          bookingParams["dateFrom"].toString().trim().isNotEmpty &&
+          bookingParams["dateTo"] != null &&
+          bookingParams["dateTo"].toString().trim().isNotEmpty) {
+        productScreenBLoc.add(AddToCartProductEvent(
+            qty,
+            productData?.id ?? "",
+            downloadLinks,
+            groupedParams,
+            bundleParams,
+            configurableParams,
+            configurableProductId,
+            "",
+            bookingParams,
+            customizableOptionsPayload, // <-- pass here
+            filesToUpload // <-- pass files
+            ));
+      } else {
+        ShowMessage.warningNotification(
+            StringConstants.pleaseSelectVariants.localized(), context);
+        productScreenBLoc
+            .add(OnClickProductLoaderEvent(isReqToShowLoader: false));
       }
     } else {
       productScreenBLoc.add(AddToCartProductEvent(
@@ -416,8 +572,67 @@ class _ProductScreenState extends State<ProductScreen> {
           bundleParams,
           configurableParams,
           configurableProductId,
-          ""));
+          "",
+          bookingParams,
+          customizableOptionsPayload, // <-- pass here
+          filesToUpload // <-- pass files
+          ));
     }
+  }
+
+  /// Converts the selection map to the required server format
+  List<Map<String, dynamic>> _prepareCustomizableOptionsPayload(
+      List customOptions, Map<String, dynamic> selection) {
+    List<Map<String, dynamic>> result = [];
+    for (final option in customOptions) {
+      final selected = selection[option.id?.toString()];
+      if (selected == null) continue;
+      switch (option.type) {
+        case 'text':
+        case 'textarea':
+        case 'date':
+        case 'datetime':
+        case 'time':
+          if ((selected['value']?.toString().isNotEmpty ?? false)) {
+            result.add({
+              'id': option.id,
+              'value': ['"${selected['value'].toString()}"']
+            });
+          }
+          break;
+        case 'checkbox':
+        case 'multiselect':
+          final ids = (selected['priceOptionIds'] as Set?)
+                  ?.map((e) => '"${e.toString()}"')
+                  .toList() ??
+              [];
+
+          if (ids.isNotEmpty) {
+            result.add({'id': option.id, 'value': ids});
+          }
+          break;
+        case 'radio':
+        case 'select':
+          if (selected['priceOptionId'] != null) {
+            result.add({
+              'id': option.id,
+              'value': [selected['priceOptionId'].toString()]
+            });
+          }
+          break;
+        case 'file':
+          if (selected['value'] != null) {
+            result.add({
+              'id': option.id,
+              'file': selected['value'] // PlatformFile or File object
+            });
+          }
+          break;
+        default:
+          break;
+      }
+    }
+    return result;
   }
 
   String? getId(NewProducts? productData, List? configurableParams) {
@@ -447,7 +662,6 @@ class _ProductScreenState extends State<ProductScreen> {
       }
 
       if (map.length == configurableParams?.length) {
-        debugPrint("map ==> $map ${data?.id}");
         return data?.id;
       }
     }

@@ -26,7 +26,6 @@ class OrderInvoiceBloc
       try {
         InvoicesModel invoicesList =
             await repository!.getInvoicesList(event.orderId);
-        print("asdf-->${invoicesList.toJson()}");
         emit(OrderInvoiceListDataState.success(invoicesList: invoicesList));
       } catch (e) {
         emit(OrderInvoiceListDataState.fail(error: e.toString()));

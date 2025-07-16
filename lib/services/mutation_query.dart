@@ -8,6 +8,12 @@
  *   @link https://store.webkul.com/license.html
  */
 
+import 'dart:convert';
+
+import 'package:bagisto_app_demo/screens/cart_screen/utils/cart_index.dart';
+
+import '../utils/app_global_data.dart';
+
 /// This class contains all the graphql queries and mutations
 class MutationsData {
   String homeCategoriesFilters({List<Map<String, dynamic>>? filters}) {
@@ -37,7 +43,6 @@ class MutationsData {
     query getDefaultChannel {
       getDefaultChannel {
           id
-          name
           rootCategoryId
           locales {
               id
@@ -72,12 +77,42 @@ class MutationsData {
                 css
                 html
                 title
+                links {
+                    title 
+                    link
+                    image
+                    imageUrl
+                    url
+                    slug 
+                    type
+                    id
+                }
+                services {
+                    title
+                    description
+                    serviceIcon
+                }
                 images {
                     imageUrl
                 }
                 filters {
                     key
                     value
+                }
+                column_1 {
+                    url
+                    title
+                    sortOrder
+                }
+                column_2 {
+                    url
+                    title
+                    sortOrder
+                }
+                column_3 {
+                    url
+                    title
+                    sortOrder
                 }
             }
         }
@@ -98,21 +133,23 @@ class MutationsData {
                   id
                   pageTitle
                   locale
+                  urlKey
               }
           }
       }
     }""";
   }
 
-  String addToCart({
-    int? quantity,
-    String? productId,
-    List? downloadableLinks,
-    List? groupedParams,
-    List? bundleParams,
-    List? configurableParams,
-    var configurableId,
-  }) {
+  String addToCart(
+      {int? quantity,
+      String? productId,
+      List? downloadableLinks,
+      List? groupedParams,
+      List? bundleParams,
+      List? configurableParams,
+      var configurableId,
+      Map<String, dynamic>? booking,
+      List<Map<String, dynamic>>? customizableOptions}) {
     return """
     mutation addItemToCart {
       addItemToCart(input: {
@@ -132,6 +169,12 @@ class MutationsData {
 
         # Only use while adding bundled product to cart
         bundleOptions: $bundleParams
+
+        # Only use while adding booking product to cart
+        booking: $booking
+
+        # Customizable options
+        customizableOptions: $customizableOptions
       }) {
         success
         message
@@ -221,7 +264,6 @@ message
                 id
             firstName
             lastName
-            name
             dateOfBirth
             email
             phone
@@ -300,8 +342,6 @@ message
                 quantity
                 type
                 name
-                appliedTaxRate
-                productId
                 product {
                     id
                     type
@@ -427,9 +467,36 @@ message
             name
             shareURL
             urlKey
+            shortDescription
             description
             customizableOptions {
                 id
+                label
+                productId
+                type
+                isRequired
+                maxCharacters
+                supportedFileExtensions
+                sortOrder
+                product {
+                    id
+                }
+                translations {
+                    id
+                    locale
+                    label
+                    productCustomizableOptionId
+                }
+                customizableOptionPrices {
+                    id
+                    isDefault
+                    isUserDefined
+                    label
+                    price
+                    productCustomizableOptionId
+                    qty
+                    sortOrder
+                }
             }
             additionalData {
                 id
@@ -729,6 +796,99 @@ message
                 createdAt
                 updatedAt
             }
+         booking {
+        id
+        type
+        qty
+        location
+        showLocation
+        availableEveryWeek
+        availableFrom
+        availableTo
+        productId
+        product {
+          id
+        }
+        defaultSlot {
+          id
+          bookingType
+          duration
+          breakTime
+         slotManyDays {
+            to
+            from
+          }
+          slotOneDay {
+            id
+            to
+            from
+          }
+        }
+        appointmentSlot {
+          id
+          duration
+          breakTime
+          sameSlotAllDays
+           slotManyDays {
+            to
+            from
+          }
+          slotOneDay {
+            id
+            to
+            from
+          }
+        }
+        eventTickets {
+          id
+          price
+          qty
+          name
+          description
+          specialPrice
+          specialPriceFrom
+          specialPriceTo
+          translations {
+            locale
+            name
+            description
+          }
+        }
+        rentalSlot {
+          id
+          rentingType
+          dailyPrice
+          hourlyPrice
+          sameSlotAllDays
+           slotManyDays {
+            to
+            from
+          }
+          slotOneDay {
+            id
+            to
+            from
+          }
+        }
+        tableSlot {
+          id
+          priceType
+          guestLimit
+          duration
+          breakTime
+          preventSchedulingBefore
+          sameSlotAllDays
+          slotManyDays {
+            to
+            from
+          }
+          slotOneDay {
+            id
+            to
+            from
+          }
+        }
+      }
         }
       }
     }
@@ -753,10 +913,12 @@ message
                 sku
                 name
                 urlKey
-                parentId
                 priceHtml {
                 priceHtml
                 finalPrice
+                }
+                customizableOptions{
+                    id
                 }
                 images {
                     path
@@ -847,7 +1009,13 @@ message
     return """
     mutation customerLogin {
       customerLogin(
-        input: { email: "$email", password: "$password", remember: $remember }
+        input: { 
+        email: "$email", 
+        password: "$password", 
+        remember: $remember, 
+        deviceToken: "${GlobalData.fcmToken}",
+        deviceName: "${GlobalData.deviceName}"
+         }
       ) {
         message
         success
@@ -855,17 +1023,9 @@ message
         tokenType
         customer {
           id
-          firstName
-          lastName
           name
-          gender
-          dateOfBirth
           email
           imageUrl
-          phone
-          password
-          token
-          status
         }
       }
     }""";
@@ -890,6 +1050,8 @@ message
           passwordConfirmation: "$confirmPassword"
           subscribedToNewsLetter:    $subscribedToNewsLetter
           agreement: $agreement
+          deviceToken: "${GlobalData.fcmToken}"
+          deviceName: "${GlobalData.deviceName}"
         }
       ) {
         message
@@ -899,22 +1061,10 @@ message
         expiresIn
         customer {
             id
-            firstName
-            lastName
             name
-            gender
-            dateOfBirth
             email
-            phone
-            password
             apiToken
-            customerGroupId
-            isVerified
-            token
-        
-            status
-            createdAt
-            updatedAt
+            token   
         }
     }
 }""";
@@ -943,12 +1093,17 @@ message
       String? gender,
       String? dateOfBirth,
       String? phone,
-      String? oldPassword,
+      String? oldpassword,
       String? password,
       String? confirmPassword,
-      String? avatar,
-      bool? subscribedToNewsLetter}) {
-    return """
+      bool? subscribedToNewsLetter,
+      String? imageField}) {
+    final inputString = """
+  ${imageField == 'delete' ? 'image: null' : ''}  
+  """;
+
+    return imageField == 'omit' || imageField == 'delete'
+        ? """
       mutation updateAccount {
         updateAccount(
           input: {
@@ -956,41 +1111,56 @@ message
             lastName: "$lastName"
             email: "$email"
             gender: ${gender?.toUpperCase()}
-            # uploadType: BASE64
-            # imageUrl: "data:image/png;base64,$avatar"
             dateOfBirth: "$dateOfBirth"
             phone: "$phone"
-            currentPassword: "$oldPassword"
+            currentPassword: "$oldpassword"
             newPassword: "$password"
             newPasswordConfirmation: "$confirmPassword"
             newsletterSubscriber: $subscribedToNewsLetter
+            $inputString
           }
         ) {
           success
           message
           customer{
             id
-            firstName
-            lastName
             name
-            gender
-            dateOfBirth
             email
-            phone
-            password
-            apiToken
-            customerGroupId
-            subscribedToNewsLetter
-            isVerified
-            token
-          
             imageUrl
-            status
-            createdAt
-            updatedAt
           }
         }
-      }""";
+      }"""
+        : json.encode({
+            "query": """
+      mutation updateAccount(\$input: UpdateAccountInput!) {
+        updateAccount(input: \$input) {
+          success
+          message
+          customer {
+            id
+            name
+            email
+            imageUrl
+          }
+        }
+      }
+    """,
+            "variables": {
+              "input": {
+                "firstName": firstName,
+                "lastName": lastName,
+                "email": email,
+                "gender": gender?.toUpperCase(),
+                "dateOfBirth": dateOfBirth,
+                "phone": phone,
+                "currentPassword": oldpassword,
+                "newPassword": password,
+                "newPasswordConfirmation": confirmPassword,
+                "newsletterSubscriber": subscribedToNewsLetter,
+                "image": null // <- placeholder for file
+              }
+            }
+          });
   }
 
   //todo done
@@ -1029,41 +1199,16 @@ message
             comment
             status
             createdAt
-            updatedAt
             productId
-            customerId
-        
             customer {
                 id
-                firstName
-                lastName
                 name
-                gender
-                dateOfBirth
-                email
-                phone
-                image
-                imageUrl
-                status
-                customerGroup {
-                    id
-                    code
-                    name
-                    isUserDefined
-                    createdAt
-                    updatedAt
-                }
             }
             product {
                 id
-                type
-                attributeFamilyId
                 sku
                 name
                 urlKey
-                parentId
-                createdAt
-                updatedAt
                 images{
                     url
                 }
@@ -1129,7 +1274,6 @@ message
             qtyInvoiced
             qtyCanceled
             qtyRefunded
-            productId
             additional 
             formattedPrice {
                 price
@@ -1141,7 +1285,6 @@ message
             product {
                 id
                 sku
-                name
                 images {
                     id
                     type
@@ -1238,7 +1381,6 @@ message
         }
         data { 
             id
-            addressType
             parentAddressId
             customerId
             cartId
@@ -1259,8 +1401,7 @@ message
             vatId
             defaultAddress
             useForShipping
-            createdAt
-            updatedAt
+
         }
     }
 }""";
@@ -1362,19 +1503,16 @@ message
             id
             locale
             name
-            countryId
         }
         states {
             id
             countryCode
             code
             defaultName
-            countryId
             translations {
                 id
                 locale
-                defaultName
-                countryStateId
+              
             }
         }
       }
@@ -1427,6 +1565,7 @@ message
             couponCode
             itemsCount
             itemsQty
+            grandTotal
             appliedTaxRates {
             taxName
             totalAmount
@@ -1435,6 +1574,7 @@ message
                 id
                 quantity
                 appliedTaxRate
+                price
                 formattedPrice {
                 price
                 total
@@ -1496,20 +1636,34 @@ message
   }
 
   String placeOrder() {
-    return """
-    mutation placeOrder {
-    placeOrder {
+    String query = """
+    mutation placeOrder(
+  \$isPaymentCompleted: Boolean,
+  \$error: Boolean,
+  \$message: String,
+  \$transactionId: String,
+  \$paymentStatus: String,
+  \$paymentType: String,
+  \$paymentMethod: String,
+  \$orderID: String
+) {
+    placeOrder(isPaymentCompleted: \$isPaymentCompleted,
+    error: \$error,
+    message: \$message,
+    transactionId: \$transactionId,
+    paymentStatus: \$paymentStatus,
+    paymentType: \$paymentType,
+    paymentMethod: \$paymentMethod,
+    orderID: \$orderID
+    ) {
         success
         redirectUrl
-        selectedMethod
         order {
             id
-            customerEmail
-            customerFirstName
-            customerLastName
         }
       }
     }""";
+    return query;
   }
 
   String checkoutSaveAddress(
@@ -1579,19 +1733,13 @@ message
         shippingMethods {
             title
             methods {
-                code
-                label
-                price
+                code 
                 formattedPrice
-                basePrice
-                formattedBasePrice
             }
         }
         paymentMethods {
             method
             methodTitle
-            description
-            sort
         }
         cart {
             id
@@ -1619,50 +1767,51 @@ message
     """;
   }
 
-  String getCompareProducts({int page = 1}) {
-    return """
-   query compareProducts {
-    compareProducts (
-        page: $page
-        first: 10
-        input: {
-            
-        }
-    ) {
-        paginatorInfo {
-            count
-            currentPage
-            lastPage
-            total
-        }
-        data {
-            id
-            productId
-            product {
-            images {
-                        id
-                        type
-                        path
-                        url
-                        productId
-                    } 
-                    isSaleable
-                id
-                sku 
-                type
-                isInWishlist
-                name
-                description
-                urlKey
-                priceHtml {
-                    id
-                    priceHtml
-                    finalPrice
-                }
-            }
-        }
+  String getCompareProducts() {
+    return r'''
+query compareProducts($page: Int!, $first: Int!) {
+  compareProducts(
+    page: $page
+    first: $first
+    input: {
     }
-}""";
+  ) {
+    paginatorInfo {
+      count
+      currentPage
+      lastPage
+      total
+    }
+    data {
+      id
+      productId
+      customerId
+      product {
+      images {
+  id
+  type
+  path
+  url
+  productId
+}
+     isSaleable
+        id
+        sku
+        type
+        isInWishlist
+        name
+        description   
+        urlKey
+        priceHtml {
+          id
+          priceHtml
+          finalPrice
+        }
+      }
+    }
+  }
+}
+''';
   }
 
   String removeAllCompareProducts() {
@@ -1689,44 +1838,18 @@ message
     }""";
   }
 
-  String addReview(String name, String title, int rating, String comment,
-      int productId, List<Map<String, String>> attachments) {
-    return """
-    mutation createReview {
-    createReview(input: {
-        name: "$name"
-        title: "$title"
-        rating: $rating
-        comment: "$comment"
-        productId: $productId
-        #attachments : $attachments
-    }) {message
+  String addReview() {
+    return r'''
+    mutation CreateReview($input: CreateReviewInput!) {
+      createReview(input: $input) {
         success
+        message
         review {
-            id
-            title
-            rating
-            comment
-            status
-            createdAt
-            updatedAt
-            productId
-            customerId
-          
-            product {
-                id
-                type
-                attributeFamilyId
-                sku
-                parentId
-                createdAt
-                updatedAt
-               
-            }
-
+          id
         }
+      }
     }
-  }""";
+  ''';
   }
 
   String downloadableProductsCustomer(int page, int limit,
@@ -1762,21 +1885,12 @@ message
             
             id
             productName
-            name
-            url
-            file
-            fileName
-            type
             downloadBought
             downloadUsed
-            status
-            customerId
             orderId
-            orderItemId
             createdAt
             updatedAt
-            order {
-                
+            order {      
                 id
                 status
             }
@@ -1831,20 +1945,7 @@ message
     string
     download {
     id
-    productName
-    name
-    url
-    file
     fileName
-    type
-    downloadBought
-    downloadUsed
-    status
-    customerId
-    orderId
-    orderItemId
-    createdAt
-    updatedAt
     }
     }
     }""";
@@ -1890,7 +1991,6 @@ message
                 name
                 sku
                 qty
-                productId
              formattedPrice
             {
               total
@@ -1934,8 +2034,6 @@ message
                 name
                 sku
                 qty
-                priceInclTax
-                productId
             }
         }
     }
@@ -1974,8 +2072,6 @@ message
             name
             sku
             qty
-            discountAmount
-            productId
             formattedPrice
             {
               total
@@ -2060,6 +2156,153 @@ message
         success
         string
     }
+    }
+    """;
+  }
+
+  String getCoreConfigs({String code = "sales.payment_methods"}) {
+    return """
+    query coreConfigs {
+    coreConfigs (
+        first: 1000
+        page: 1
+        input: {
+            code: "$code"
+        }
+    ) {
+        paginatorInfo {
+            count
+            currentPage
+            lastPage
+            total
+        }
+        data {
+            id
+            code
+            value
+            channelCode
+            localeCode
+        }
+      }
+    }
+    """;
+  }
+
+  String getSlots({required int id, required String date}) {
+    return """
+    query getSlots {
+      getSlots (
+        id: $id, # Booking Product Id
+        date: "$date"
+      ) {
+        from
+        to
+        timestamp
+        qty # in case Appointment
+        # For Rental 
+        time
+        slots {
+          from
+          to
+          fromTimestamp
+          toTimestamp
+          qty
+        }
+      }
+    }
+    """;
+  }
+
+  String gdprRequests(int customerId) {
+    return """
+    query gdprRequests {
+      gdprRequests(input: { customerId: $customerId }) {
+        paginatorInfo {
+          count
+          currentPage
+          lastPage
+          total
+        }
+        data {
+          id
+          customerId
+          email
+          status
+          type
+          message
+          revokedAt
+          createdAt
+          updatedAt
+        }
+      }
+    }
+    """;
+  }
+
+  String createGdprRequestMutation = r'''
+mutation CreateGdprRequest($input: GdprRequestInput!) {
+  createGdprRequest(input: $input) {
+    status
+    message
+    gdprRequest {
+      id
+      customerId
+      email
+      status
+      type
+      message
+      revokedAt
+      createdAt
+      updatedAt
+    }
+  }
+}
+''';
+  String revokeGdprRequest(int id) {
+    return """
+  mutation revokeGdprRequest {
+    revokeGdprRequest(id: $id) {
+      status
+      message
+      gdprRequest {
+        id
+        status
+        revokedAt
+      }
+    }
+  }
+  """;
+  }
+
+  String gdprSearchRequest(int id) {
+    return """
+    query gdprRequest {
+      gdprRequest(id: $id) {
+        id
+        customerId
+        email
+        status
+        type
+        message
+        revokedAt
+        createdAt
+        updatedAt
+      }
+    }
+    """;
+  }
+
+  String downloadGdprData() {
+    return """
+    mutation downloadGdprData {
+      downloadGdprData {
+        success
+        string
+        download {
+          fileName
+          extension
+        }
+      }
     }
     """;
   }
