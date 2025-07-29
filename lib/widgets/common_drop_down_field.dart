@@ -59,7 +59,7 @@ class CommonDropDownField extends StatelessWidget {
                   if (callBack != null) {
                     callBack!(newValue ?? '', key);
                   }
-                } ,
+                },
                 items: itemList?.map<DropdownMenuItem<String>>((String value) {
                   return DropdownMenuItem<String>(
                     value: value,
@@ -67,7 +67,7 @@ class CommonDropDownField extends StatelessWidget {
                   );
                 }).toList(),
                 hint: Text(
-                  '${hintText ?? ""} * ',
+                  '${hintText ?? ""} ',
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 decoration: InputDecoration(
@@ -84,7 +84,7 @@ class CommonDropDownField extends StatelessWidget {
                       const WidgetSpan(
                         child: Text(
                           '*',
-                          style: TextStyle(color: Colors.red,fontSize: 18),
+                          style: TextStyle(color: Colors.red, fontSize: 18),
                         ),
                       ),
                     ],

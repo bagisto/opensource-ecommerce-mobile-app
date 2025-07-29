@@ -1,0 +1,6 @@
+appId: com.example.bagisto
+---
+- launchApp
+- assertVisible: "Featured"
+- assertVisible: "New"
+- assertVisible: "Best Selling"

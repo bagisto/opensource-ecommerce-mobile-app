@@ -1,0 +1,5 @@
+appId: com.example.bagisto
+---
+- runFlow: pdp/variant_selection.yaml
+- tapOn: "Add to Cart"
+- assertVisible: "Added"

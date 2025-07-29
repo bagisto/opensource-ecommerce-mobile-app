@@ -148,7 +148,13 @@ class _BagistoAppState extends State<BagistoApp> {
     GlobalData.locale = appStoragePref.getCustomerLanguage();
     GlobalData.currencyCode = appStoragePref.getCurrencyCode();
     GlobalData.currencySymbol = appStoragePref.getCurrencySymbol();
-    _locale = Locale(GlobalData.locale);
+    // Properly construct Locale from stored string
+    if (GlobalData.locale.contains('_')) {
+      var parts = GlobalData.locale.split('_');
+      _locale = Locale(parts[0], parts[1]);
+    } else {
+      _locale = Locale(GlobalData.locale);
+    }
     PushNotificationsManager.instance.setUpFirebase(context);
     notification();
     getDeviceName().then((value){
@@ -196,7 +202,7 @@ class _BagistoAppState extends State<BagistoApp> {
           onGenerateRoute: generateRoute,
           title: defaultAppTitle,
           debugShowCheckedModeBanner: false,
-          supportedLocales: supportedLocale.map((e) => Locale(e)),
+          supportedLocales: supportedLocale,
           localizationsDelegates: const [
             ApplicationLocalizations.delegate,
             GlobalMaterialLocalizations.delegate,
@@ -205,8 +211,7 @@ class _BagistoAppState extends State<BagistoApp> {
           ],
           localeResolutionCallback: (locale, supportedLocales) {
             for (var supportedLocaleLanguage in supportedLocales) {
-              if (supportedLocaleLanguage.languageCode ==
-                      locale?.languageCode &&
+              if (supportedLocaleLanguage.languageCode == locale?.languageCode &&
                   supportedLocaleLanguage.countryCode == locale?.countryCode) {
                 return supportedLocaleLanguage;
               }

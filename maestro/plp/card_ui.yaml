@@ -1,0 +1,5 @@
+appId: com.example.bagisto
+---
+- runFlow: plp/navigate_categories.yaml
+- assertVisible: id:product_image_0
+- assertVisible: id:product_price_0

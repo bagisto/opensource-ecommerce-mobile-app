@@ -1,0 +1,6 @@
+appId: com.webkul.bagisto.mobikul
+---
+- runFlow: login_valid.yaml
+- tapOn: "Profile"
+- tapOn: "Logout"
+- assertVisible: "Login"

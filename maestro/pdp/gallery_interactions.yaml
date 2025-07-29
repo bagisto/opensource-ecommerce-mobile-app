@@ -1,0 +1,7 @@
+appId: com.example.bagisto
+---
+- runFlow: plp/card_ui.yaml
+- tapOn: id:product_image_0
+- swipe: left
+- swipe: right
+- pinchOpen: center

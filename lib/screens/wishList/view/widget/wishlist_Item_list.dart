@@ -8,15 +8,14 @@
  *   @link https://store.webkul.com/license.html
  */
 
-
 import 'package:bagisto_app_demo/screens/wishList/utils/index.dart';
 
 import '../../../product_screen/view/quantity_view.dart';
 
 class WishlistItemList extends StatefulWidget {
- final WishListData? model;
- final bool isLoading;
- final WishListBloc? wishListBloc;
+  final WishListData? model;
+  final bool isLoading;
+  final WishListBloc? wishListBloc;
 
   const WishlistItemList(
       {Key? key,
@@ -30,7 +29,7 @@ class WishlistItemList extends StatefulWidget {
 }
 
 class _WishlistItemListState extends State<WishlistItemList> {
- Map<String, String> quantityMap = {};
+  Map<String, String> quantityMap = {};
 
   @override
   Widget build(BuildContext context) {
@@ -84,15 +83,19 @@ class _WishlistItemListState extends State<WishlistItemList> {
                               child: GestureDetector(
                                 onTap: () {
                                   widget.wishListBloc?.add(
-                                      OnClickWishListLoaderEvent(isReqToShowLoader: true));
+                                      OnClickWishListLoaderEvent(
+                                          isReqToShowLoader: true));
                                   widget.wishListBloc?.add(
                                       FetchDeleteAddItemEvent(item?.productId));
                                 },
                                 child: Container(
                                   padding: const EdgeInsets.all(1),
                                   decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.onBackground,
-                                    borderRadius: const BorderRadius.all(Radius.circular(20)),
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onBackground,
+                                    borderRadius: const BorderRadius.all(
+                                        Radius.circular(20)),
                                     boxShadow: [
                                       BoxShadow(
                                         color: Colors.grey.withOpacity(0.4),
@@ -102,7 +105,8 @@ class _WishlistItemListState extends State<WishlistItemList> {
                                       ),
                                     ],
                                   ),
-                                  child: Icon(Icons.close, color: Colors.grey[500]),
+                                  child: Icon(Icons.close,
+                                      color: Colors.grey[500]),
                                 ),
                               ),
                             ),
@@ -129,19 +133,22 @@ class _WishlistItemListState extends State<WishlistItemList> {
                         ),
                         const SizedBox(height: 4),
                         PriceWidgetHtml(
-                            priceHtml: item?.product?.priceHtml?.priceHtml ?? ""),
+                            priceHtml:
+                                item?.product?.priceHtml?.priceHtml ?? ""),
                         Padding(
                           padding: const EdgeInsets.only(left: 8.0),
                           child: QuantityView(
                             qty: quantityMap["${item?.product?.id}"] ?? "1",
                             callBack: (qty) {
-                              quantityMap["${item?.product?.id}"] = qty.toString();
+                              quantityMap["${item?.product?.id}"] =
+                                  qty.toString();
                             },
                             showTitle: false,
                           ),
                         ),
                         Opacity(
-                          opacity: (item?.product?.isSaleable ?? false) ? 1 : 0.4,
+                          opacity:
+                              (item?.product?.isSaleable ?? false) ? 1 : 0.4,
                           child: Padding(
                             padding: const EdgeInsets.all(8),
                             child: CommonWidgets().appButton(
@@ -150,32 +157,43 @@ class _WishlistItemListState extends State<WishlistItemList> {
                               MediaQuery.of(context).size.width,
                               (item?.product?.isSaleable ?? false)
                                   ? () {
-                                if ((item?.product?.type == StringConstants.simple ||
-                                    item?.product?.type == StringConstants.virtual)&& ((item?.product?.customizableOptions??[]).length ==0) ) {
-                                  widget.wishListBloc?.add(
-                                      OnClickWishListLoaderEvent(
-                                          isReqToShowLoader: true));
-                                  widget.wishListBloc?.add(AddToCartWishlistEvent(
-                                      item?.id,
-                                      quantityMap["${item?.product?.id}"] ?? "1"));
-                                } else {
-                                  ShowMessage.showNotification(
-                                    StringConstants.warning.localized(),
-                                    StringConstants.addOptions.localized(),
-                                    Colors.yellow,
-                                    const Icon(Icons.warning_amber),
-                                  );
-                                  Navigator.pushNamed(
-                                    context,
-                                    productScreen,
-                                    arguments: PassProductData(
-                                      title: item?.product?.name ?? "",
-                                      urlKey: item?.product?.urlKey,
-                                      productId: int.parse(item?.product?.id ?? ""),
-                                    ),
-                                  );
-                                }
-                              }
+                                      if ((item?.product?.type ==
+                                                  StringConstants.simple ||
+                                              item?.product?.type ==
+                                                  StringConstants.virtual) &&
+                                          ((item?.product?.customizableOptions ??
+                                                      [])
+                                                  .length ==
+                                              0)) {
+                                        widget.wishListBloc?.add(
+                                            OnClickWishListLoaderEvent(
+                                                isReqToShowLoader: true));
+                                        widget.wishListBloc?.add(
+                                            AddToCartWishlistEvent(
+                                                item?.id,
+                                                quantityMap[
+                                                        "${item?.product?.id}"] ??
+                                                    "1"));
+                                      } else {
+                                        ShowMessage.showNotification(
+                                          StringConstants.warning.localized(),
+                                          StringConstants.addOptions
+                                              .localized(),
+                                          Colors.yellow,
+                                          const Icon(Icons.warning_amber),
+                                        );
+                                        Navigator.pushNamed(
+                                          context,
+                                          productScreen,
+                                          arguments: PassProductData(
+                                            title: item?.product?.name ?? "",
+                                            urlKey: item?.product?.urlKey,
+                                            productId: int.parse(
+                                                item?.product?.id ?? ""),
+                                          ),
+                                        );
+                                      }
+                                    }
                                   : () {},
                             ),
                           ),
@@ -191,9 +209,7 @@ class _WishlistItemListState extends State<WishlistItemList> {
         if (widget.isLoading)
           const Align(
             alignment: Alignment.center,
-            child: SkeletonLoader(
-              builder: Loader(),
-            ),
+            child: Loader(),
           )
       ],
     );

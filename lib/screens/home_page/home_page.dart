@@ -276,7 +276,7 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     }
 
-    return (GlobalData.allProducts ?? []).isEmpty
+    return (GlobalData.allProducts.isEmpty)
         ? const HomePageLoader()
         : SafeArea(
             child: HomePageView(customHomeData, isLoading,
@@ -308,9 +308,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   _registerStreamListener() {
     GlobalData.productsStream.stream.listen((event) {
-      if ((event?.data ?? []).isNotEmpty) {
-        GlobalData.allProducts?.add(event);
-      }
+      if ((event?.data ?? []).isNotEmpty) {}
       if (mounted) {
         setState(() {});
       }
@@ -352,7 +350,8 @@ class _HomeScreenState extends State<HomeScreen> {
             filters.add(
                 {"key": '"${element.key}"', "value": '"${element.value}"'});
           });
-          homePageBloc?.add(FetchAllProductsEvent(filters));
+          final id = element.id?.toString() ?? '';
+          homePageBloc?.add(FetchAllProductsEvent(filters, id));
         }
       }));
     }

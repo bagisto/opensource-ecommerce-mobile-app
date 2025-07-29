@@ -1,0 +1,2 @@
+/Users/arshad/Documents/demos/Bagisto/laravel-mobile-app/android/app/.cxx/RelWithDebInfo/5l6c3a4s/x86/CMakeFiles/edit_cache.dir
+/Users/arshad/Documents/demos/Bagisto/laravel-mobile-app/android/app/.cxx/RelWithDebInfo/5l6c3a4s/x86/CMakeFiles/rebuild_cache.dir

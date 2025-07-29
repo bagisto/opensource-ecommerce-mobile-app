@@ -8,6 +8,9 @@
  *   @link https://store.webkul.com/license.html
  */
 
+import 'dart:developer';
+import 'dart:io';
+
 import 'package:bagisto_app_demo/data_model/account_models/account_update_model.dart';
 import 'package:bagisto_app_demo/data_model/gdpr_models/gdpr_pdf_model.dart';
 import 'package:bagisto_app_demo/data_model/gdpr_models/gdpr_request_model.dart';
@@ -62,6 +65,9 @@ class ApiClient {
     String operation,
     Parser<T> parser,
   ) async {
+    log("\nDATA -> ${result.data}\n\n");
+    log("\n COOKIE DATA -> ${result.context.entry<HttpLinkResponseContext>()?.headers?['set-cookie']}\n\n");
+
     String responseCookie = result.context
             .entry<HttpLinkResponseContext>()
             ?.headers?['set-cookie'] ??
@@ -73,6 +79,8 @@ class ApiClient {
       appStoragePref.setCookieGet(responseCookie);
     }
 
+    log("\nEXCEPTION -> ${result.exception}\n\n");
+    log("\nHasException -> ${result.hasException}\n\n");
     Map<String, dynamic>? data = {};
     // Handle exception if any
     if (result.hasException && (result.data?[operation]) == null) {
@@ -94,7 +102,7 @@ class ApiClient {
       data?.putIfAbsent("status", () => true);
       data?.putIfAbsent("responseStatus", () => true);
     }
-
+    log("\nDATA  before parsing -> $data\n\n");
     return parser(data ?? {});
   }
 
@@ -469,6 +477,7 @@ class ApiClient {
       // log("modall data: ${model?.data?.map((item) => item.toJson()).toList()}");
       return model;
     } catch (e) {
+      log("Error in getAllProducts: $e");
       return null;
     }
   }
@@ -1141,13 +1150,14 @@ class ApiClient {
         },
         fetchPolicy: FetchPolicy.networkOnly,
       ));
-
+      log("\nCompare Products Response: ${response.data}\n\n");
       return handleResponse(
         response,
         'compareProducts',
         (json) => CompareProductsData.fromJson(json),
       );
     } catch (e) {
+      log("Error in getCompareProducts: $e");
       return null;
     }
   }

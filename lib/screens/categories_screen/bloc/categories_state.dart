@@ -30,6 +30,7 @@ class OnClickSubCategoriesLoaderState extends CategoriesBaseState {
   @override
   List<Object> get props => [isReqToShowLoader!];
 }
+
 class FilterFetchState extends CategoriesBaseState {
   final CategoriesStatus? status;
   final String? error;
@@ -38,77 +39,93 @@ class FilterFetchState extends CategoriesBaseState {
   FilterFetchState.success({this.error, this.filterModel})
       : status = CategoriesStatus.success;
 
-  FilterFetchState.fail({this.filterModel, this.error}) : status = CategoriesStatus.fail;
+  FilterFetchState.fail({this.filterModel, this.error})
+      : status = CategoriesStatus.fail;
 
   @override
   List<Object> get props => [if (filterModel != null) filterModel! else ""];
 }
 
 class FetchSubCategoryState extends CategoriesBaseState {
-
   CategoriesStatus? status;
   String? error;
   NewProductsModel? categoriesData;
 
-  FetchSubCategoryState.success({this.categoriesData}) : status = CategoriesStatus.success;
+  FetchSubCategoryState.success({this.categoriesData})
+      : status = CategoriesStatus.success;
 
   FetchSubCategoryState.fail({this.error}) : status = CategoriesStatus.fail;
 
   @override
-  List<Object> get props => [if (categoriesData !=null) categoriesData! else ""];
+  List<Object> get props =>
+      [if (categoriesData != null) categoriesData! else ""];
 }
 
-class AddToCompareSubCategoryState extends CategoriesBaseState{
+class AddToCompareSubCategoryState extends CategoriesBaseState {
   CategoriesStatus? status;
   String? error;
   String? successMsg;
   BaseModel? baseModel;
-  AddToCompareSubCategoryState.success({ this.successMsg,this.baseModel}):status=CategoriesStatus.success;
-  AddToCompareSubCategoryState.fail({this.error}):status=CategoriesStatus.fail;
+  AddToCompareSubCategoryState.success({this.successMsg, this.baseModel})
+      : status = CategoriesStatus.success;
+  AddToCompareSubCategoryState.fail({this.error})
+      : status = CategoriesStatus.fail;
 
   @override
-  List<Object> get props => [successMsg??"",error??"",baseModel!];
-
+  List<Object> get props => [successMsg ?? "", error ?? "", baseModel!];
 }
 
-class AddToCartSubCategoriesState extends CategoriesBaseState{
+class AddToCartSubCategoriesState extends CategoriesBaseState {
   CategoriesStatus? status;
   String? error;
   String? successMsg;
   AddToCartModel? response;
-  AddToCartSubCategoriesState.success({this.response, this.successMsg}):status=CategoriesStatus.success;
-  AddToCartSubCategoriesState.fail({this.error}):status=CategoriesStatus.fail;
+  AddToCartSubCategoriesState.success({this.response, this.successMsg})
+      : status = CategoriesStatus.success;
+  AddToCartSubCategoriesState.fail({this.error})
+      : status = CategoriesStatus.fail;
 
   @override
-  List<Object> get props => [status!,successMsg!,error??"",response!];
-
+  List<Object> get props => [status!, successMsg!, error ?? "", response!];
 }
 
-class FetchDeleteAddItemCategoryState extends CategoriesBaseState{
+class FetchDeleteAddItemCategoryState extends CategoriesBaseState {
   CategoriesStatus? status;
-  String? successMsg="";
-  String? error="";
+  String? successMsg = "";
+  String? error = "";
   AddWishListModel? response;
   String? productDeletedId;
-  FetchDeleteAddItemCategoryState.success({this.response, this.productDeletedId,this.successMsg}):status=CategoriesStatus.success;
-  FetchDeleteAddItemCategoryState.fail({this.error}):status=CategoriesStatus.fail;
+  FetchDeleteAddItemCategoryState.success(
+      {this.response, this.productDeletedId, this.successMsg})
+      : status = CategoriesStatus.success;
+  FetchDeleteAddItemCategoryState.fail({this.error})
+      : status = CategoriesStatus.fail;
 
   @override
-  List<Object> get props => [productDeletedId ?? "",status!,successMsg!,error!];
-
+  List<Object> get props =>
+      [productDeletedId ?? "", status!, successMsg!, error!];
 }
 
-
-class RemoveWishlistState extends CategoriesBaseState{
+class RemoveWishlistState extends CategoriesBaseState {
   CategoriesStatus? status;
-  String? successMsg="";
-  String? error="";
+  String? successMsg = "";
+  String? error = "";
   AddToCartModel? response;
   String? productDeletedId;
-  RemoveWishlistState.success({this.response, this.productDeletedId,this.successMsg}):status=CategoriesStatus.success;
-  RemoveWishlistState.fail({this.error}):status=CategoriesStatus.fail;
+  RemoveWishlistState.success(
+      {this.response, this.productDeletedId, this.successMsg})
+      : status = CategoriesStatus.success;
+  RemoveWishlistState.fail({this.error}) : status = CategoriesStatus.fail;
 
   @override
-  List<Object> get props => [productDeletedId ?? 0,status!,successMsg ?? "",error ?? ""];
+  List<Object> get props =>
+      [productDeletedId ?? 0, status!, successMsg ?? "", error ?? ""];
+}
 
+// has more
+class HasMoreSubCategoryLoadingState extends CategoriesBaseState {
+  HasMoreSubCategoryLoadingState();
+
+  @override
+  List<Object> get props => [];
 }

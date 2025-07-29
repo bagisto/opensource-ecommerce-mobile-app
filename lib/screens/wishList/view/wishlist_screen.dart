@@ -172,8 +172,10 @@ class _WishListScreenState extends State<WishListScreen> {
     if (state is ShowLoaderWishListState) {
       return const WishListLoader();
     }
+
     if (state is FetchCartCountState) {
       if (state.status == WishListStatus.success) {
+        isLoading = false;
         if (state.cartDetails != null) {
           appStoragePref.setCartCount(state.cartDetails?.itemsQty ?? 0);
           GlobalData.cartCountController.sink
@@ -183,6 +185,7 @@ class _WishListScreenState extends State<WishListScreen> {
     }
     if (state is FetchDataState) {
       if (state.status == WishListStatus.success) {
+        isLoading = false;
         mWishList = state.wishListProducts;
         wishlistController.sink.add(mWishList?.data?.length ?? 0);
         return _showWishList(mWishList, context, isLoading);
@@ -192,15 +195,16 @@ class _WishListScreenState extends State<WishListScreen> {
       }
     }
     if (state is FetchDeleteAddItemState) {
-      isLoading = false;
       if (state.status == WishListStatus.success) {
+        wishListBloc?.add(OnClickWishListLoaderEvent(isReqToShowLoader: true));
         wishListBloc?.add(FetchWishListEvent());
+        isLoading = false;
         return _showWishList(mWishList, context, isLoading);
       }
     }
     if (state is RemoveAllWishlistProductState) {
-      isLoading = false;
       if (state.status == WishListStatus.success) {
+        isLoading = false;
         if (mWishList != null) {
           mWishList?.data?.clear();
           wishlistController.sink.add(0);
@@ -210,9 +214,10 @@ class _WishListScreenState extends State<WishListScreen> {
     }
     if (state is AddToCartWishlistState) {
       wishListBloc?.add(GetCartCountEvent());
-      isLoading = false;
       if (state.status == WishListStatus.success) {
+        wishListBloc?.add(OnClickWishListLoaderEvent(isReqToShowLoader: true));
         wishListBloc?.add(FetchWishListEvent());
+        isLoading = false;
         addToCartModel = state.response!;
         GlobalData.cartCountController.sink
             .add(addToCartModel?.cart?.itemsQty ?? 0);
@@ -220,7 +225,7 @@ class _WishListScreenState extends State<WishListScreen> {
       }
     }
     if (state is OnClickWishListLoaderState) {
-      isLoading = false;
+      isLoading = true;
       return _showWishList(mWishList, context, isLoading);
     }
     return _showWishList(mWishList, context, isLoading);

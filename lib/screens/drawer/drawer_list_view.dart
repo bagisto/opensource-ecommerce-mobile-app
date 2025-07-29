@@ -154,12 +154,35 @@ class _DrawerListViewState extends State<DrawerListView> {
         ),
       ),
     );
-
+    drawerList.add(Row(children: [
+      Padding(
+        padding: const EdgeInsets.only(
+            left: AppSizes.spacingNormal, top: AppSizes.spacingLarge),
+        child: Text(
+          StringConstants.categories.localized().toUpperCase(),
+          style: Theme.of(context).textTheme.titleLarge,
+          textAlign: TextAlign.left,
+        ),
+      ),
+    ]));
+    drawerList.add(Divider());
     GlobalData.categoriesDrawerData?.data?.forEach((element) {
       drawerList.add(DrawerCategoryItem(element));
     });
 
     if (widget.isLoggedIn) {
+      drawerList.add(Row(children: [
+        Padding(
+          padding: const EdgeInsets.only(
+              left: AppSizes.spacingNormal, top: AppSizes.spacingLarge),
+          child: Text(
+            StringConstants.yourInformation.localized().toUpperCase(),
+            style: Theme.of(context).textTheme.titleLarge,
+            textAlign: TextAlign.left,
+          ),
+        ),
+      ]));
+      drawerList.add(Divider());
       drawerList.add(DrawerAddItemList(
         onTap: () {
           checkInternetConnection().then((value) {
@@ -244,11 +267,34 @@ class _DrawerListViewState extends State<DrawerListView> {
     }
 
     if (GlobalData.cmsData != null) {
+      drawerList.add(Row(children: [
+        Padding(
+          padding: const EdgeInsets.only(
+              left: AppSizes.spacingNormal, top: AppSizes.spacingLarge),
+          child: Text(
+            StringConstants.other.localized().toUpperCase(),
+            style: Theme.of(context).textTheme.titleLarge,
+            textAlign: TextAlign.left,
+          ),
+        ),
+      ]));
+      drawerList.add(Divider());
       drawerList.add(CmsItemsList(
         cmsData: GlobalData.cmsData,
       ));
     }
-
+    drawerList.add(Row(children: [
+      Padding(
+        padding: const EdgeInsets.only(
+            left: AppSizes.spacingNormal, top: AppSizes.spacingLarge),
+        child: Text(
+          StringConstants.preferences.localized().toUpperCase(),
+          style: Theme.of(context).textTheme.titleLarge,
+          textAlign: TextAlign.left,
+        ),
+      ),
+    ]));
+    drawerList.add(Divider());
     drawerList.add(DrawerAddItemList(
         onTap: () {
           Navigator.pushNamed(context, languageScreen);
@@ -291,12 +337,8 @@ class _DrawerListViewState extends State<DrawerListView> {
           child: Padding(
             padding: EdgeInsets.only(top: AppSizes.safeAreaPadding),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  children: drawerList,
-                ),
-              ],
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: drawerList,
             ),
           ),
         ));

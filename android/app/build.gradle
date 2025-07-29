@@ -81,8 +81,8 @@ android {
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
         minSdkVersion 22
         targetSdkVersion 35
-        versionCode 118
-        versionName "2.3.0"
+        versionCode 232
+        versionName "2.3.2"
     }
     buildTypes {
         debug {
@@ -94,6 +94,7 @@ android {
             signingConfig signingConfigs.release
             minifyEnabled true
             shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 }

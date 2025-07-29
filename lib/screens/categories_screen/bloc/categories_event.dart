@@ -12,18 +12,16 @@
 
 import 'package:bagisto_app_demo/screens/categories_screen/utils/index.dart';
 
-abstract class CategoryBaseEvent extends Equatable{}
+abstract class CategoryBaseEvent extends Equatable {}
 
-class AddToCartSubCategoriesEvent extends CategoryBaseEvent{
-
+class AddToCartSubCategoriesEvent extends CategoryBaseEvent {
   String? productId;
   int quantity;
   String? message;
-  AddToCartSubCategoriesEvent(this.productId,this.quantity,this.message);
+  AddToCartSubCategoriesEvent(this.productId, this.quantity, this.message);
 
   @override
-  List<Object> get props => [productId ?? "", quantity,message ??""];
-
+  List<Object> get props => [productId ?? "", quantity, message ?? ""];
 }
 
 class FetchSubCategoryEvent extends CategoryBaseEvent {
@@ -36,24 +34,21 @@ class FetchSubCategoryEvent extends CategoryBaseEvent {
   List<Object> get props => [];
 }
 
-class FetchDeleteAddItemCategoryEvent extends CategoryBaseEvent{
+class FetchDeleteAddItemCategoryEvent extends CategoryBaseEvent {
   NewProducts? datum;
   String? productId;
-  FetchDeleteAddItemCategoryEvent(this.productId,this.datum);
+  FetchDeleteAddItemCategoryEvent(this.productId, this.datum);
 
   @override
-  List<Object> get props => [productId??"",datum??""];
-
+  List<Object> get props => [productId ?? "", datum ?? ""];
 }
 
-
-class FetchDeleteItemEvent extends CategoryBaseEvent{
+class FetchDeleteItemEvent extends CategoryBaseEvent {
   NewProducts? datum;
   String? productId;
-  FetchDeleteItemEvent(this.productId,this.datum);
+  FetchDeleteItemEvent(this.productId, this.datum);
   @override
   List<Object> get props => [];
-
 }
 
 class AddToCompareSubCategoryEvent extends CategoryBaseEvent {
@@ -65,7 +60,6 @@ class AddToCompareSubCategoryEvent extends CategoryBaseEvent {
 
   @override
   List<Object> get props => [productId ?? "", message ?? ""];
-
 }
 
 class OnClickSubCategoriesLoaderEvent extends CategoryBaseEvent {
@@ -82,6 +76,12 @@ class FilterFetchEvent extends CategoryBaseEvent {
 
   FilterFetchEvent(this.categorySlug);
 
+  @override
+  List<Object> get props => [];
+}
+
+// has more event
+class HasMoreSubCategoryLoadingEvent extends CategoryBaseEvent {
   @override
   List<Object> get props => [];
 }

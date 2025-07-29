@@ -27,6 +27,7 @@ class SubCategoriesView extends StatefulWidget {
   GetFilterAttribute? data;
   List<Map<String, dynamic>> filters;
   bool isPreCatching;
+  bool hasMoreLaoding;
 
   SubCategoriesView(
       this.isLoading,
@@ -42,6 +43,7 @@ class SubCategoriesView extends StatefulWidget {
       this.data,
       this.filters,
       this.isPreCatching,
+      this.hasMoreLaoding,
       {Key? key})
       : super(key: key);
 
@@ -106,7 +108,7 @@ class _SubCategoriesViewState extends State<SubCategoriesView> {
                                                     .size
                                                     .height /
                                                 3) +
-                                            100,
+                                            140,
                                         crossAxisCount: 2,
                                       ),
                                       itemBuilder:
@@ -207,6 +209,20 @@ class _SubCategoriesViewState extends State<SubCategoriesView> {
                                           subCategoryBloc:
                                               widget.subCategoryBloc);
                                     }),
+                            if (widget.hasMoreLaoding)
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: AppSizes.spacingMedium),
+                                child: Center(
+                                  child: SizedBox(
+                                    width: AppSizes.spacingLarge * 2,
+                                    height: AppSizes.spacingLarge * 2,
+                                    child: CircularProgressIndicator(
+                                      color: MobiKulTheme.accentColor,
+                                    ),
+                                  ),
+                                ),
+                              )
                           ],
                         ),
                     ],

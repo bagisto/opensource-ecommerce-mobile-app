@@ -1,0 +1,6 @@
+appId: com.example.bagisto
+---
+- runFlow: cart/apply_coupon.yaml
+- assertVisible: id:subtotal_value
+- assertVisible: id:discount_value
+- assertVisible: id:total_value

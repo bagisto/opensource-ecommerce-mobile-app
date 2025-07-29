@@ -1,0 +1,20 @@
+                        -H/Users/afzal/Downloads/flutter 3.29.2/packages/flutter_tools/gradle/src/main/groovy
+-DCMAKE_SYSTEM_NAME=Android
+-DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+-DCMAKE_SYSTEM_VERSION=22
+-DANDROID_PLATFORM=android-22
+-DANDROID_ABI=x86_64
+-DCMAKE_ANDROID_ARCH_ABI=x86_64
+-DANDROID_NDK=/Users/afzal/Library/Android/sdk/ndk/27.0.12077973
+-DCMAKE_ANDROID_NDK=/Users/afzal/Library/Android/sdk/ndk/27.0.12077973
+-DCMAKE_TOOLCHAIN_FILE=/Users/afzal/Library/Android/sdk/ndk/27.0.12077973/build/cmake/android.toolchain.cmake
+-DCMAKE_MAKE_PROGRAM=/Users/afzal/Library/Android/sdk/cmake/3.22.1/bin/ninja
+-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=/Users/afzal/Documents/demo/Bagisto_demo_new_projects/laravel-mobile-app-afzal_v2.2.2/build/app/intermediates/cxx/RelWithDebInfo/2u4g331s/obj/x86_64
+-DCMAKE_RUNTIME_OUTPUT_DIRECTORY=/Users/afzal/Documents/demo/Bagisto_demo_new_projects/laravel-mobile-app-afzal_v2.2.2/build/app/intermediates/cxx/RelWithDebInfo/2u4g331s/obj/x86_64
+-DCMAKE_BUILD_TYPE=RelWithDebInfo
+-B/Users/afzal/Documents/demo/Bagisto_demo_new_projects/laravel-mobile-app-afzal_v2.2.2/android/app/.cxx/RelWithDebInfo/2u4g331s/x86_64
+-GNinja
+-Wno-dev
+--no-warn-unused-cli
+                        Build command args: []
+                        Version: 2

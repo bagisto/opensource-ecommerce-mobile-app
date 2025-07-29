@@ -129,6 +129,8 @@ class HomePageBloc extends Bloc<HomePageEvent, HomePageBaseState> {
         NewProductsModel? products =
             await repository?.getAllProducts(filters: event.filters);
         GlobalData.productsStream.sink.add(products);
+        // Store the result in the map using the id
+        GlobalData.allProducts[event.id] = products;
         emit(FetchAllProductsState.success(allProducts: products));
         GlobalData.cartCountController.sink
             .add(products?.data?.firstOrNull?.cart?.itemsQty ?? 0);

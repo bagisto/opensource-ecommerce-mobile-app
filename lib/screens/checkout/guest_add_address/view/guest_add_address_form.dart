@@ -35,8 +35,10 @@ class GuestAddAddressForm extends StatefulWidget {
       String? shippingCity,
       String? shippingPostCode,
       String? shippingPhone)? callBack;
+  Function()? callbackNavigate;
 
-  GuestAddAddressForm({this.callBack, Key? key}) : super(key: key);
+  GuestAddAddressForm({this.callBack, this.callbackNavigate, Key? key})
+      : super(key: key);
 
   @override
   State<GuestAddAddressForm> createState() => _GuestAddAddressFormState();
@@ -447,6 +449,7 @@ class _GuestAddAddressFormState extends State<GuestAddAddressForm>
       _saveAddress();
       Future.delayed(const Duration(seconds: 1)).then((value) {
         Navigator.pop(context, true);
+        widget.callbackNavigate?.call();
         ShowMessage.showNotification(
             StringConstants.success.localized(),
             StringConstants.addressAdded.localized(),

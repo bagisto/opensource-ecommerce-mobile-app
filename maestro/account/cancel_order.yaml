@@ -1,0 +1,9 @@
+appId: com.example.bagisto
+---
+- runFlow: account/view_orders.yaml
+- tapOn: id:order_card_0
+- tapOn: "Cancel Order"
+- tapOn: "Reason"
+- tapOn: "I changed my mind"
+- tapOn: "Submit"
+- assertVisible: "Cancelled"

@@ -1,0 +1,7 @@
+appId: com.example.bagisto
+---
+- launchApp
+- tapOn: "Categories"
+- tapOn: "Women"
+- tapOn: "Dresses"
+- assertVisible: "Filters"

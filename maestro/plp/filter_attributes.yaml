@@ -1,0 +1,8 @@
+appId: com.example.bagisto
+---
+- runFlow: plp/navigate_categories.yaml
+- tapOn: "Filters"
+- tapOn: "Color"
+- tapOn: "Red"
+- tapOn: "Apply"
+- assertVisible: "Filtered"

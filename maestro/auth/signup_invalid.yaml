@@ -1,0 +1,6 @@
+appId: com.webkul.bagisto.mobikul
+---
+- launchApp
+- tapOn: "Create Account"
+- tapOn: "Sign Up"      # leave fields empty
+- assertVisible: "required"

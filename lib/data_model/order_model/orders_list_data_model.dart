@@ -46,6 +46,7 @@ class PaginatorInfo {
 @JsonSerializable()
 class Data {
   int? id;
+  String? incrementId;
   String? status;
   int? totalQtyOrdered;
   String? createdAt;
@@ -54,6 +55,7 @@ class Data {
   Data(
       {this.id,
       this.status,
+      this.incrementId,
       this.totalQtyOrdered,
       this.createdAt,
       this.formattedPrice});

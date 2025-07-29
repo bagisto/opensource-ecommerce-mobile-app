@@ -1,0 +1,1 @@
+/Users/arshad/Documents/demos/Bagisto/laravel-mobile-app/build/app/intermediates/cxx/Debug/1y601f29/obj/arm64-v8a

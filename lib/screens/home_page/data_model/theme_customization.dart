@@ -109,14 +109,14 @@ class ServiceModel {
 
 @JsonSerializable()
 class LinkModel {
-  @JsonKey(name: "title")
-  dynamic title;
-  @JsonKey(name: "link")
-  dynamic link;
-  @JsonKey(name: "image")
-  dynamic image;
-  @JsonKey(name: "imageUrl")
-  dynamic imageUrl;
+  // @JsonKey(name: "title")
+  // dynamic title;
+  // @JsonKey(name: "link")
+  // dynamic link;
+  // @JsonKey(name: "image")
+  // dynamic image;
+  // @JsonKey(name: "imageUrl")
+  // dynamic imageUrl;
   @JsonKey(name: "url")
   String? url;
   @JsonKey(name: "slug")
@@ -126,10 +126,11 @@ class LinkModel {
   String? id;
 
   LinkModel(
-      {this.title,
-      this.link,
-      this.image,
-      this.imageUrl,
+      {
+      // this.title,
+      // this.link,
+      // this.image,
+      // this.imageUrl,
       this.url,
       this.slug,
       this.type,

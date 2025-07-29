@@ -51,7 +51,7 @@ The open-source ecommerce mobile app comes with an array of features to improve 
 
 Before beginning with the installation, you will need the following with the mentioned versions
 
-- Bagisto Version - v2.3.0
+- Bagisto Version - v2.3.6
 - Android Studio Meerkat | 2024.3.1 Patch 2
 - Flutter Version - 3.32.5
 - Dart - 3.8.1

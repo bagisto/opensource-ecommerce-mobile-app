@@ -1,0 +1,8 @@
+appId: com.example.bagisto
+---
+- runFlow: pdp/gallery_interactions.yaml
+- tapOn: "Size"
+- tapOn: "L"
+- tapOn: "Color"
+- tapOn: "Blue"
+- assertVisible: id:price_label

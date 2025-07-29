@@ -1,0 +1,14 @@
+appId: com.webkul.bagisto.mobikul
+---
+- launchApp
+- tapOn: "Create Account"
+- tapOn: "Name"
+- inputText: "test"
+- tapOn: "Email"
+- inputText: "user@example.com"
+- tapOn: "Password"
+- inputText: "admin123"
+- tapOn: "Confirm Password"
+- inputText: "admin123"
+- tapOn: "Sign Up"
+- assertVisible: "Welcome"

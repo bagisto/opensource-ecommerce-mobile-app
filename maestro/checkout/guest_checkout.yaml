@@ -1,0 +1,9 @@
+appId: com.example.bagisto
+---
+- runFlow: pdp/add_to_cart.yaml
+- tapOn: "Cart"
+- tapOn: "Checkout"
+- tapOn: "Checkout as Guest"
+- inputText: "Email", "guest+${MAESTRO_RANDOM}@example.com"
+- tapOn: "Continue"
+- assertVisible: "Shipping"

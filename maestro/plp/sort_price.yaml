@@ -1,0 +1,6 @@
+appId: com.example.bagisto
+---
+- runFlow: plp/navigate_categories.yaml
+- tapOn: "Sort"
+- tapOn: "Price: Low to High"
+- assertVisible: "$"
