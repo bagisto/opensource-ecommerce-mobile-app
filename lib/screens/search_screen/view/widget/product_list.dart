@@ -8,9 +8,6 @@
  *   @link https://store.webkul.com/license.html
  */
 
-
-
-
 import 'package:bagisto_app_demo/screens/order_detail/utils/index.dart';
 import 'package:bagisto_app_demo/screens/search_screen/utils/index.dart';
 
@@ -18,7 +15,7 @@ import '../../../../utils/prefetching_helper.dart';
 
 class ProductList extends StatelessWidget {
   final NewProductsModel? model;
-  const ProductList({Key? key,required this.model}) : super(key: key);
+  const ProductList({Key? key, required this.model}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -47,26 +44,31 @@ class ProductList extends StatelessWidget {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    ((product?.images ?? []).isNotEmpty) ?
-                      ClipRRect(
-                        borderRadius: const BorderRadius.all(Radius.circular(8)),
-                        child: ImageView(url: product?.images?.first.url ?? "", fit: BoxFit.cover,
-                          width: MediaQuery.of(context).size.width / 3,
-                          height:
-                          MediaQuery.of(context).size.height * 0.2),
-                      ) :
-                    ClipRRect(
-                      borderRadius: const BorderRadius.all(Radius.circular(8)),
-                      child: ImageView(url: "",
-                          fit: BoxFit.cover,
-                          width: MediaQuery.of(context).size.width / 3,
-                          height:
-                          MediaQuery.of(context).size.height * 0.2),
-                    ),
+                    ((product?.images ?? []).isNotEmpty)
+                        ? ClipRRect(
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(8)),
+                            child: ImageView(
+                                url: product?.images?.first.url ?? "",
+                                fit: BoxFit.cover,
+                                width: MediaQuery.of(context).size.width / 3,
+                                height:
+                                    MediaQuery.of(context).size.height * 0.2),
+                          )
+                        : ClipRRect(
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(8)),
+                            child: ImageView(
+                                url: "",
+                                fit: BoxFit.cover,
+                                width: MediaQuery.of(context).size.width / 3,
+                                height:
+                                    MediaQuery.of(context).size.height * 0.2),
+                          ),
                     Expanded(
                         flex: 4,
                         child: Padding(
-                          padding:  const EdgeInsets.all(AppSizes.spacingNormal),
+                          padding: const EdgeInsets.all(AppSizes.spacingNormal),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -74,7 +76,9 @@ class ProductList extends StatelessWidget {
                               const SizedBox(
                                 height: 12,
                               ),
-                             Text(product?.priceHtml?.formattedFinalPrice ?? product?.priceHtml?.formattedRegularPrice ?? "")
+                              Text(product?.priceHtml?.formattedFinalPrice ??
+                                  product?.priceHtml?.formattedRegularPrice ??
+                                  "")
                             ],
                           ),
                         )),
@@ -85,5 +89,4 @@ class ProductList extends StatelessWidget {
           );
         });
   }
-
 }

@@ -37,6 +37,7 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
   AddToCartModel? addToCartModel;
   bool isLoading = false;
   bool? isGrid = true;
+  bool hasMoreLoading = false;
   int page = 1;
   List<Map<String, dynamic>> filters = [];
   CategoryBloc? subCategoryBloc;
@@ -49,7 +50,8 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
     appStoragePref.setSortName("");
 
     if ((widget.filters ?? []).isNotEmpty) {
-      List<Map<String, String>> formattedFilters = filters.map((filter) {
+      List<Map<String, String>> formattedFilters =
+          (widget.filters ?? []).map((filter) {
         return {
           "key": '"${filter['key']}"',
           "value": '"${filter['value']}"',
@@ -73,7 +75,9 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
         _scrollController?.position.maxScrollExtent ==
             _scrollController?.offset) {
       if (hasMoreData()) {
+        filters.removeWhere((element) => element["key"] == '"page"');
         page += 1;
+        subCategoryBloc?.add(HasMoreSubCategoryLoadingEvent());
         subCategoryBloc?.add(FetchSubCategoryEvent(filters, page));
       }
     }
@@ -141,8 +145,12 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
     if (state is ShowLoaderCategoryState) {
       return const SubCategoriesLoader();
     }
+    if (state is HasMoreSubCategoryLoadingState) {
+      hasMoreLoading = true;
+    }
     if (state is FetchSubCategoryState) {
       isPreCatching = true;
+      hasMoreLoading = false;
       if (state.status == CategoriesStatus.success) {
         if (page > 1) {
           categoriesData?.data?.addAll(state.categoriesData?.data ?? []);
@@ -177,6 +185,7 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
       isLoading = state.isReqToShowLoader ?? false;
     }
     if (state is FilterFetchState) {
+      hasMoreLoading = false;
       subCategoryBloc?.add(FetchSubCategoryEvent(filters, page));
       data = state.filterModel;
     }
@@ -184,11 +193,11 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
   }
 
   Widget buildHomePageUI() {
-    return _subCategoriesData(isLoading);
+    return _subCategoriesData(isLoading, hasMoreLoading);
   }
 
   ///Sub categories ui method
-  _subCategoriesData(bool isLoading) {
+  _subCategoriesData(bool isLoading, bool hasMoreLoading) {
     if (categoriesData?.data == null) {
       return const SubCategoriesLoader();
     }
@@ -206,7 +215,8 @@ class _SubCategoryScreenState extends State<SubCategoryScreen> {
           isLoggedIn,
           data,
           filters,
-          isPreCatching),
+          isPreCatching,
+          hasMoreLoading),
     );
   }
 }

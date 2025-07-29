@@ -1,0 +1,8 @@
+appId: com.example.bagisto
+---
+- runFlow: pdp/add_to_cart.yaml
+- tapOn: "Cart"
+- tapOn: "Apply Coupon"
+- inputText: "WELCOME10"
+- tapOn: "Apply"
+- assertVisible: "Coupon applied"

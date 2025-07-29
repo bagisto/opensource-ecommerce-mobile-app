@@ -1,0 +1,5 @@
+appId: com.example.bagisto
+---
+- runFlow: pdp/gallery_interactions.yaml
+- tapOn: id:wishlist_button
+- assertVisible: "Saved"

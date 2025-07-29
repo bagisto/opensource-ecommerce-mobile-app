@@ -30,6 +30,7 @@ class SaveOrderModel extends BaseModel {
 @JsonSerializable()
 class Order {
   int? id;
+  String? incrementId;
   // String? customerEmail;
   // String? customerFirstName;
   // String? customerLastName;

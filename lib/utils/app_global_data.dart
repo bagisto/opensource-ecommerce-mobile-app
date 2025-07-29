@@ -35,7 +35,7 @@ class GlobalData {
   static StreamController<NewProductsModel?> productsStream =
       StreamController<NewProductsModel?>.broadcast();
 
-  static List<NewProductsModel?>? allProducts = [];
+  static Map<String, NewProductsModel?> allProducts = {};
   static CoreConfigs? configData;
 
   static String style = "";

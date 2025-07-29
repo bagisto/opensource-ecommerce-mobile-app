@@ -1,0 +1,6 @@
+appId: com.example.bagisto
+---
+- runFlow: checkout/guest_checkout.yaml
+- tapOn: "Standard Shipping"
+- tapOn: "Continue"
+- assertVisible: "Payment"

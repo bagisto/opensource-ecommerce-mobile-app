@@ -1,0 +1,1 @@
+/Users/arshad/Documents/demos/Bagisto/laravel-mobile-app/build/app/intermediates/cxx/Debug/4t466v4m/obj/x86

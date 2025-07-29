@@ -491,7 +491,9 @@ class _BookingOptionViewState extends State<BookingOptionView> {
                       groupValue: selectedBooking["rentingType"],
                       onChanged: (String? value) {
                         setState(() {
+                          selectedBooking["date"] = null;
                           selectedBooking["rentingType"] = value;
+
                           widget.callBack?.call(selectedBooking);
                         });
                       },
@@ -507,8 +509,13 @@ class _BookingOptionViewState extends State<BookingOptionView> {
                       value: StringConstants.hourly.localized(),
                       groupValue: selectedBooking["rentingType"],
                       onChanged: (String? value) {
+                        debugPrint("Selected renting type: $value");
                         setState(() {
+                          selectedBooking["from"] = null;
+                          selectedBooking["to"] = null;
                           selectedBooking["rentingType"] = value;
+                          selectedBooking["availableBookingSlots"] = [];
+                          selectedBooking["slot"] = {};
                           widget.callBack?.call(selectedBooking);
                         });
                       },
@@ -525,7 +532,8 @@ class _BookingOptionViewState extends State<BookingOptionView> {
             ),
           const SizedBox(height: 12),
           if (bookingOptions?.type == "rental" &&
-              selectedBooking["rentingType"] == "daily")
+              selectedBooking["rentingType"].toString().toLowerCase() ==
+                  "daily")
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -539,7 +547,11 @@ class _BookingOptionViewState extends State<BookingOptionView> {
                     onTap: () async {
                       DateTime? pickedDate = await showDatePicker(
                         context: context,
-                        initialDate: DateTime.now(),
+                        initialDate: (selectedBooking["from"] != null &&
+                                selectedBooking["from"].toString().isNotEmpty)
+                            ? DateFormat('yyyy-MM-dd')
+                                .parse(selectedBooking["from"])
+                            : DateTime.now(),
                         firstDate: DateTime.now(),
                         lastDate: DateTime.now().add(const Duration(days: 365)),
                         builder: (BuildContext context, Widget? child) {
@@ -583,7 +595,11 @@ class _BookingOptionViewState extends State<BookingOptionView> {
                     onTap: () async {
                       DateTime? pickedDate = await showDatePicker(
                         context: context,
-                        initialDate: DateTime.now(),
+                        initialDate: (selectedBooking["to"] != null &&
+                                selectedBooking["to"].toString().isNotEmpty)
+                            ? DateFormat('yyyy-MM-dd')
+                                .parse(selectedBooking["to"])
+                            : DateTime.now(),
                         firstDate: DateTime.now(),
                         lastDate: DateTime.now().add(const Duration(days: 365)),
                         builder: (BuildContext context, Widget? child) {
@@ -627,7 +643,8 @@ class _BookingOptionViewState extends State<BookingOptionView> {
               ],
             ),
           if (bookingOptions?.type == "rental" &&
-              selectedBooking["rentingType"] == "hourly")
+              selectedBooking["rentingType"].toString().toLowerCase() ==
+                  "hourly")
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -641,7 +658,11 @@ class _BookingOptionViewState extends State<BookingOptionView> {
                   onTap: () async {
                     DateTime? pickedDate = await showDatePicker(
                       context: context,
-                      initialDate: DateTime.now(),
+                      initialDate: (selectedBooking["date"] != null &&
+                              selectedBooking["date"].toString().isNotEmpty)
+                          ? DateFormat('yyyy-MM-dd')
+                              .parse(selectedBooking["date"])
+                          : DateTime.now(),
                       firstDate: DateTime.now(),
                       lastDate: DateTime.now().add(const Duration(days: 365)),
                       builder: (BuildContext context, Widget? child) {
@@ -691,9 +712,9 @@ class _BookingOptionViewState extends State<BookingOptionView> {
                   hint: (widget.bookingSlotsData?.data?.isEmpty ?? true) &&
                           selectedBooking["date"] != null
                       ? Text(StringConstants.noSlotsAvailable.localized(),
-                          style: TextStyle(fontSize: 15))
+                          style: TextStyle(fontSize: 12))
                       : Text(StringConstants.selectSlot.localized(),
-                          style: TextStyle(fontSize: 15)),
+                          style: TextStyle(fontSize: 12)),
                   items: widget.bookingSlotsData?.data!
                       .map<DropdownMenuItem<String>>((slot) {
                     final slotLabel = "${slot.time}";
@@ -715,33 +736,33 @@ class _BookingOptionViewState extends State<BookingOptionView> {
                       labelStyle: Theme.of(context).textTheme.labelSmall,
                       border: OutlineInputBorder(),
                       focusedBorder: OutlineInputBorder()),
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
                 const SizedBox(height: 12),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Expanded(
+                    Flexible(
                       child: DropdownButtonFormField<String>(
                         value: selectedBooking["slot"]?["from"],
                         hint: (widget.bookingSlotsData?.data?.isEmpty ??
                                     true) &&
                                 selectedBooking["date"] != null
                             ? Text(StringConstants.noSlotsAvailable.localized(),
-                                style: TextStyle(fontSize: 15))
+                                style: TextStyle(fontSize: 12))
                             : Text(StringConstants.selectTimeSlot.localized(),
-                                style: TextStyle(fontSize: 15)),
+                                style: TextStyle(fontSize: 12)),
                         items: selectedBooking["availableBookingSlots"]
                             ?.map((slot) {
                               final from = slot["from"] ?? "";
                               final fromTimestamp = slot["fromTimestamp"] ?? "";
                               return MapEntry(fromTimestamp, from);
                             })
-                            .toSet() // ensure uniqueness
+                            .toSet()
                             .map<DropdownMenuItem<String>>((entry) {
                               final fromTimestamp = entry.key;
                               final fromLabel = entry.value;
                               return DropdownMenuItem<String>(
-                                value: fromTimestamp, // safe, clean
+                                value: fromTimestamp,
                                 child: Text(fromLabel),
                               );
                             })
@@ -764,28 +785,30 @@ class _BookingOptionViewState extends State<BookingOptionView> {
                           border: const OutlineInputBorder(),
                           focusedBorder: const OutlineInputBorder(),
                         ),
+                        style: Theme.of(context).textTheme.bodySmall,
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
+                    const SizedBox(
+                        width: 8), // reduced from 12 to prevent overflow
+                    Flexible(
                       child: DropdownButtonFormField<String>(
+                        padding: EdgeInsets.all(0),
                         value: selectedBooking["slot"]?["to"],
                         hint: (widget.bookingSlotsData?.data?.isEmpty ??
                                     true) &&
                                 selectedBooking["date"] != null
                             ? Text(StringConstants.noSlotsAvailable.localized(),
-                                style: TextStyle(fontSize: 15))
+                                style: TextStyle(fontSize: 12))
                             : Text(StringConstants.selectTimeSlot.localized(),
-                                style: TextStyle(fontSize: 15)),
+                                style: TextStyle(fontSize: 12)),
                         items: selectedBooking["availableBookingSlots"]
                             ?.map((slot) {
                               final to = slot["to"] ?? "";
                               final toTimestamp = slot["toTimestamp"] ?? "";
                               return MapEntry(toTimestamp, to);
                             })
-                            .toSet() // ensures uniqueness
+                            .toSet()
                             .map<DropdownMenuItem<String>>((entry) {
-                              // entry is a MapEntry of toTimestamp -> to
                               final toTimestamp = entry.key;
                               final toLabel = entry.value;
                               return DropdownMenuItem<String>(
@@ -812,6 +835,7 @@ class _BookingOptionViewState extends State<BookingOptionView> {
                           border: const OutlineInputBorder(),
                           focusedBorder: const OutlineInputBorder(),
                         ),
+                        style: Theme.of(context).textTheme.bodySmall,
                       ),
                     ),
                   ],
@@ -834,7 +858,11 @@ class _BookingOptionViewState extends State<BookingOptionView> {
                   onTap: () async {
                     DateTime? pickedDate = await showDatePicker(
                       context: context,
-                      initialDate: DateTime.now(),
+                      initialDate: (selectedBooking["date"] != null &&
+                              selectedBooking["date"].toString().isNotEmpty)
+                          ? DateFormat('yyyy-MM-dd')
+                              .parse(selectedBooking["date"])
+                          : DateTime.now(),
                       firstDate: DateTime.now(),
                       lastDate: DateTime.now().add(const Duration(days: 365)),
                       builder: (BuildContext context, Widget? child) {
@@ -1046,7 +1074,11 @@ class _BookingOptionViewState extends State<BookingOptionView> {
                   onTap: () async {
                     DateTime? pickedDate = await showDatePicker(
                       context: context,
-                      initialDate: DateTime.now(),
+                      initialDate: (selectedBooking["date"] != null &&
+                              selectedBooking["date"].toString().isNotEmpty)
+                          ? DateFormat('yyyy-MM-dd')
+                              .parse(selectedBooking["date"])
+                          : DateTime.now(),
                       firstDate: DateTime.now(),
                       lastDate: bookingOptions?.availableTo != null
                           ? DateTime.parse(bookingOptions!.availableTo!)

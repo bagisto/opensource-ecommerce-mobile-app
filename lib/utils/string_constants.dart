@@ -421,4 +421,7 @@ class StringConstants {
   static const String eventOn = "eventOn";
   static const String bookYourTickets = "bookYourTickets";
   static const String isRequired = "isRequired";
+
+  static const String preferences = "preferences";
+  static const String yourInformation = "yourInformation";
 }

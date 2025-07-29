@@ -1,0 +1,8 @@
+appId: com.example.bagisto
+---
+- launchApp
+- scrollUntilVisible:
+    id: category_grid
+    element: "Electronics"
+- assertVisible: "Electronics"
+- assertVisible: "Fashion"

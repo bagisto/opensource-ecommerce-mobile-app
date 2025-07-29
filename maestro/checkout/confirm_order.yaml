@@ -1,0 +1,4 @@
+appId: com.example.bagisto
+---
+- runFlow: checkout/payment_cod.yaml
+- assertVisible: "Thank you"

@@ -32,7 +32,7 @@ import PayPalCheckout
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    GMSServices.provideAPIKey("YOUR_GOOGLE_MAPS_API_KEY")
+    GMSServices.provideAPIKey("AIzaSyAHMKgHxLvPvRwmOaB8NHWcFwn6laFvwbM")
       let controller : FlutterViewController = window?.rootViewController as! FlutterViewController
               let mlkitChannel = FlutterMethodChannel(name:"com.webkul.bagisto_mobikul/channel",
                                                         binaryMessenger: controller.binaryMessenger)

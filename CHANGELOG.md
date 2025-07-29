@@ -1,9 +1,23 @@
-#### This changelog consists the bug & security fixes and new features being included in the releases listed below.
+#### This changelog consists the bug & security fixes and new features being included in the releases listed below
+
+# CHANGELOG for v2.3.6
+
+## **v2.3.6 (28th of July, 2025)** - *Release*
+
+# CHANGELOG for v2.3.6
+
+* [Enhancement] Features as per Bagisto v2.3.6.
+* [Improvement] Optimized GraphQL queries across the project to improve data retrieval performance.
+* [Improvement] Optimized overall user experience
+* [Compatibility] Compatibility with Xcode 16.3.
+* [Compatibility] Compatibility with Flutter Version 3.32.5.
 
 # CHANGELOG for v2.3.0
-## **v2.3.0 (16th of July, 2025)** - *Release*
+
+## **v2.3.0 (22nd of July, 2025)** - *Release*
 
 # CHANGELOG for v2.3.0
+
 * [Enhancement] Features as per Bagisto v2.3.0.
 * [Enhancement] HomePage Similar to web with respect to dynamic html content.
 * [Enhancement] Booking Product Support Added
@@ -13,12 +27,10 @@
 * [Compatibility] Compatibility with Xcode 16.3.
 * [Compatibility] Compatibility with Flutter Version 3.32.5.
 
-
 ## **Bug Fixes**
 
 [Fixed] Support For Multipart Request for file upload
 [Fixed] Better Filter Support for collections
-
 
 ## **v2.3.0-alpha (16th of May, 2025)** - *Release*
 
@@ -37,7 +49,7 @@
 
 # CHANGELOG for v2.2.2
 
-#### This changelog consists the bug & security fixes and new features being included in the releases listed below.
+#### This changelog consists the bug & security fixes and new features being included in the releases listed below
 
 ## **v2.2.2 (23rd of October 2024)** - *Release*
 
@@ -92,7 +104,6 @@
 * [Fixed] - Dark Mode issue on the search page.
 
 * [Fixed] - #20 Compatibility with latest graphql version
-
 
 ## **v2.0.0 (31st of January 2024)** - *Release*
 
@@ -158,14 +169,13 @@
 
 * [Fixed] - Add/Edit address on the address page is not updating immediately on the change address page.
 
-
 ## **v1.4.5 (5th of June 2023)** - *Release*
 
 * [Feature] Compatible with Bagisto version 1.4.5
 
 * [Feature] App Performance Enhanced
 
-* [Feature] voice search 
+* [Feature] voice search
 
 * [Feature] Add Filters on Order list
 
@@ -203,7 +213,6 @@
 
 * [Fixed] - guest user|| after added complete address by fetching current location,"country" is not showing correct on review and checkout page in app.
 
-
 ## **v1.3.3 (23rd November 2021)** - *Release*
 
 * [Feature] Compatible with Bagisto version 1.3.3
@@ -219,7 +228,6 @@
 * [Fixed] - Order date is showing wrong in the order-list
 
 * [Fixed] - User is not able to complete order from shipping page.
-
 
 ## **v1.3.2 (30th April 2021)** - *Release*
 

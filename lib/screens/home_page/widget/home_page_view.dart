@@ -85,10 +85,10 @@ class _HomePageViewState extends State<HomePageView> {
     return (widget.getCategoriesData?.data ?? []).isNotEmpty
         ? Container(
             color: Theme.of(context).colorScheme.secondaryContainer,
-            width: AppSizes.screenWidth,
-            height: AppSizes.screenHeight / 4,
-            margin:
-                const EdgeInsets.symmetric(vertical: AppSizes.spacingMedium),
+            constraints: BoxConstraints(
+              maxHeight: 160,
+              maxWidth: AppSizes.screenWidth,
+            ),
             child: ListView.builder(
                 shrinkWrap: true,
                 scrollDirection: Axis.horizontal,
@@ -155,7 +155,6 @@ class _HomePageViewState extends State<HomePageView> {
       ThemeCustomDataModel? customHomeData, Size size) {
     List<Widget> homeWidgets = [];
     int index = 0;
-    int productIndex = 0;
 
     customHomeData?.themeCustomization?.forEach((element) {
       switch (element.type) {
@@ -204,31 +203,22 @@ class _HomePageViewState extends State<HomePageView> {
           break;
 
         case "product_carousel":
-          if ((GlobalData.allProducts ?? []).isNotEmpty &&
-              productIndex < (GlobalData.allProducts ?? []).length) {
+          final id = element.id?.toString() ?? '';
+          final productsModel = GlobalData.allProducts[id];
+          if (productsModel?.data?.isNotEmpty ?? false) {
             homeWidgets.add(SizedBox(
-                height:
-                    (GlobalData.allProducts?[productIndex]?.data?.isNotEmpty ??
-                            false)
-                        ? (MediaQuery.of(context).size.width / 1.5) + 220
-                        : 0,
-                child: GlobalData
-                            .allProducts?[productIndex]?.data?.isNotEmpty ??
-                        false
-                    ? NewProductView(
-                        title:
-                            element.translations?.firstOrNull?.options?.title ??
-                                "",
-                        isLogin: widget.isLogin,
-                        model: GlobalData.allProducts?[productIndex]?.data,
-                        callPreCache: widget.callPreCache,
-                        filters: element
-                            .translations?.firstOrNull?.options?.filters
-                            ?.map((f) => f.toJson())
-                            .toList(),
-                      )
-                    : Container()));
-            productIndex++;
+                height: (MediaQuery.of(context).size.width / 1.5) + 220,
+                child: NewProductView(
+                  title: element.translations?.firstOrNull?.options?.title ?? "",
+                  isLogin: widget.isLogin,
+                  model: productsModel?.data,
+                  callPreCache: widget.callPreCache,
+                  filters: element.translations?.firstOrNull?.options?.filters
+                      ?.map((f) => f.toJson())
+                      .toList(),
+                )));
+          } else {
+            homeWidgets.add(const SizedBox.shrink());
           }
           break;
       }

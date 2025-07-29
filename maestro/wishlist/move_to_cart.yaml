@@ -1,0 +1,6 @@
+appId: com.example.bagisto
+---
+- runFlow: pdp/add_to_wishlist.yaml
+- tapOn: "Wishlist"
+- tapOn: id:move_to_cart_0
+- assertVisible: "Cart"

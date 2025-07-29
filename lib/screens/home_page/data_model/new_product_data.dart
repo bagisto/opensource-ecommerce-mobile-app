@@ -41,8 +41,8 @@ class NewProducts extends HiveObject {
   dynamic productId;
   // @HiveField(2)
   // int? totalQtyOrdered;
-  @HiveField(3)
-  dynamic redirectId;
+  // @HiveField(3)
+  // dynamic redirectId;
   @HiveField(4)
   String? name;
   // @HiveField(5)
@@ -52,8 +52,8 @@ class NewProducts extends HiveObject {
   // @HiveField(7)
   // int? totalQty;
   // @HiveField(8)
-  // String? sku;
-  // @HiveField(9)
+  String? sku;
+  @HiveField(9)
   // String? rating;
   @HiveField(10)
   dynamic price;
@@ -127,7 +127,7 @@ class NewProducts extends HiveObject {
       this.isNew,
       this.id,
       this.productId,
-      this.redirectId,
+      // this.redirectId,
       this.name,
       this.description,
       this.shortDescription,
@@ -322,14 +322,14 @@ class Images extends HiveObject {
   dynamic id;
   @HiveField(1)
   String? type;
-  @HiveField(2)
-  String? path;
+  // @HiveField(2)
+  // String? path;
   @HiveField(3)
   String? url;
   @HiveField(4)
   dynamic productId;
 
-  Images({this.id, this.type, this.path, this.url, this.productId});
+  Images({this.id, this.type, this.url, this.productId});
 
   factory Images.fromJson(Map<String, dynamic> json) => _$ImagesFromJson(json);
 
@@ -339,13 +339,12 @@ class Images extends HiveObject {
 @JsonSerializable()
 class AttributeFamily {
   String? id;
-  String? code;
-  String? name;
-  bool? status;
-  bool? isUserDefined;
+  // String? code;
+  // String? name;
+  // bool? status;
+  // bool? isUserDefined;
 
-  AttributeFamily(
-      {this.id, this.code, this.name, this.status, this.isUserDefined});
+  AttributeFamily({this.id});
 
   factory AttributeFamily.fromJson(Map<String, dynamic> json) =>
       _$AttributeFamilyFromJson(json);
@@ -356,31 +355,21 @@ class AttributeFamily {
 @JsonSerializable()
 class AttributeValues {
   String? id;
-  String? productId;
-  String? attributeId;
-  String? locale;
-  String? channel;
-  String? textValue;
-  bool? booleanValue;
-  int? integerValue;
-  dynamic floatValue;
-  dynamic dateTimeValue;
-  dynamic dateValue;
-  dynamic jsonValue;
+  // String? productId;
+  // String? attributeId;
+  // String? locale;
+  // String? channel;
+  // String? textValue;
+  // bool? booleanValue;
+  // int? integerValue;
+  // dynamic floatValue;
+  // dynamic dateTimeValue;
+  // dynamic dateValue;
+  // dynamic jsonValue;
 
-  AttributeValues(
-      {this.id,
-      this.productId,
-      this.attributeId,
-      this.locale,
-      this.channel,
-      this.textValue,
-      this.booleanValue,
-      this.integerValue,
-      this.floatValue,
-      this.dateTimeValue,
-      this.dateValue,
-      this.jsonValue});
+  AttributeValues({
+    this.id,
+  });
 
   factory AttributeValues.fromJson(Map<String, dynamic> json) =>
       _$AttributeValuesFromJson(json);
@@ -391,13 +380,12 @@ class AttributeValues {
 @JsonSerializable()
 class SuperAttributes {
   String? id;
-  String? code;
-  String? adminName;
+  // // String? code;
+  // String? adminName;
   String? type;
-  dynamic position;
+  // dynamic position;
 
-  SuperAttributes(
-      {this.id, this.code, this.adminName, this.type, this.position});
+  SuperAttributes({this.id, this.type});
 
   factory SuperAttributes.fromJson(Map<String, dynamic> json) =>
       _$SuperAttributesFromJson(json);
@@ -408,14 +396,13 @@ class SuperAttributes {
 @JsonSerializable()
 class AdditionalData {
   String? id;
-  String? code;
+  // String? code;
   String? label;
   String? value;
-  String? adminName;
+  // String? adminName;
   String? type;
 
-  AdditionalData(
-      {this.id, this.code, this.label, this.value, this.adminName, this.type});
+  AdditionalData({this.id, this.label, this.value, this.type});
 
   factory AdditionalData.fromJson(Map<String, dynamic> json) =>
       _$AdditionalDataFromJson(json);
@@ -425,24 +412,16 @@ class AdditionalData {
 
 @JsonSerializable()
 class BundlePrice {
-  String? finalPriceFrom;
-  String? formattedFinalPriceFrom;
-  String? regularPriceFrom;
-  String? formattedRegularPriceFrom;
-  String? finalPriceTo;
-  String? formattedFinalPriceTo;
-  String? regularPriceTo;
+  // String? finalPriceFrom;
+  // String? formattedFinalPriceFrom;
+  // String? regularPriceFrom;
+  // String? formattedRegularPriceFrom;
+  // String? finalPriceTo;
+  // String? formattedFinalPriceTo;
+  // String? regularPriceTo;
   String? formattedRegularPriceTo;
 
-  BundlePrice(
-      {this.finalPriceFrom,
-      this.formattedFinalPriceFrom,
-      this.regularPriceFrom,
-      this.formattedRegularPriceFrom,
-      this.finalPriceTo,
-      this.formattedFinalPriceTo,
-      this.regularPriceTo,
-      this.formattedRegularPriceTo});
+  BundlePrice({this.formattedRegularPriceTo});
 
   factory BundlePrice.fromJson(Map<String, dynamic> json) =>
       _$BundlePriceFromJson(json);
@@ -453,21 +432,20 @@ class BundlePrice {
 @JsonSerializable()
 class ConfigurableData {
   // List<dynamic>? variantVideos;
-  String? chooseText;
+  // String? chooseText;
   List<Attributes>? attributes;
   List<Index>? index;
   List<VariantPrices>? variantPrices;
   // List<VariantImages>? variantImages;
-  RegularPrice? regularPrice;
+  // RegularPrice? regularPrice;
 
-  ConfigurableData(
-      {this.chooseText,
-      this.attributes,
-      this.index,
-      this.variantPrices,
-      // this.variantImages,
-      // this.variantVideos,
-      this.regularPrice});
+  ConfigurableData({
+    this.attributes,
+    this.index,
+    this.variantPrices,
+    // this.variantImages,
+    // this.variantVideos,
+  });
 
   factory ConfigurableData.fromJson(Map<String, dynamic> json) {
     return _$ConfigurableDataFromJson(json);
@@ -543,18 +521,13 @@ class RegularPrice {
 class GroupedProducts {
   String? id;
   int? qty;
-  int? sortOrder;
-  String? productId;
+  // int? sortOrder;
+  // String? productId;
   String? associatedProductId;
   AssociatedProduct? associatedProduct;
 
   GroupedProducts(
-      {this.id,
-      this.qty,
-      this.sortOrder,
-      this.productId,
-      this.associatedProductId,
-      this.associatedProduct});
+      {this.id, this.qty, this.associatedProductId, this.associatedProduct});
 
   factory GroupedProducts.fromJson(Map<String, dynamic> json) =>
       _$GroupedProductsFromJson(json);
@@ -567,38 +540,26 @@ class DownloadableLinks {
   String? id;
   String? title;
   double? price;
-  String? url;
-  String? file;
-  String? fileName;
-  String? type;
-  String? sampleUrl;
-  String? sampleFile;
+  // String? url;
+  // String? file;
+  // String? fileName;
+  // String? type;
+  // String? sampleUrl;
+  // String? sampleFile;
   String? sampleFileName;
-  String? sampleType;
-  int? sortOrder;
-  String? productId;
-  int? downloads;
-  String? fileUrl;
+  // String? sampleType;
+  // int? sortOrder;
+  // String? productId;
+  // int? downloads;
+  // String? fileUrl;
   String? sampleFileUrl;
-  List<Translations>? translations;
+  // List<Translations>? translations;
 
   DownloadableLinks(
       {this.id,
       this.title,
       this.price,
-      this.url,
-      this.file,
-      this.fileName,
-      this.type,
-      this.sampleUrl,
-      this.sampleFile,
       this.sampleFileName,
-      this.sampleType,
-      this.sortOrder,
-      this.productId,
-      this.downloads,
-      this.translations,
-      this.fileUrl,
       this.sampleFileUrl});
 
   factory DownloadableLinks.fromJson(Map<String, dynamic> json) =>
@@ -611,20 +572,14 @@ class DownloadableLinks {
 class BundleOptions {
   String? id;
   String? type;
-  bool? isRequired;
-  int? sortOrder;
-  String? productId;
+  // bool? isRequired;
+  // int? sortOrder;
+  // String? productId;
   List<BundleOptionProducts>? bundleOptionProducts;
   List<Translations>? translations;
 
   BundleOptions(
-      {this.id,
-      this.type,
-      this.isRequired,
-      this.sortOrder,
-      this.productId,
-      this.bundleOptionProducts,
-      this.translations});
+      {this.id, this.type, this.bundleOptionProducts, this.translations});
   factory BundleOptions.fromJson(Map<String, dynamic> json) =>
       _$BundleOptionsFromJson(json);
 
@@ -635,22 +590,15 @@ class BundleOptions {
 class BundleOptionProducts {
   String? id;
   int? qty;
-  bool? isUserDefined;
-  int? sortOrder;
+  // bool? isUserDefined;
+  // int? sortOrder;
   bool? isDefault;
-  String? productBundleOptionId;
+  // String? productBundleOptionId;
   String? productId;
   NewProducts? product;
 
   BundleOptionProducts(
-      {this.id,
-      this.qty,
-      this.isUserDefined,
-      this.sortOrder,
-      this.isDefault,
-      this.productBundleOptionId,
-      this.productId,
-      this.product});
+      {this.id, this.qty, this.isDefault, this.productId, this.product});
 
   factory BundleOptionProducts.fromJson(Map<String, dynamic> json) =>
       _$BundleOptionProductsFromJson(json);
@@ -661,20 +609,17 @@ class BundleOptionProducts {
 @JsonSerializable()
 class AssociatedProduct {
   String? id;
-  String? type;
-  String? attributeFamilyId;
-  String? sku;
+  // String? type;
+  // String? attributeFamilyId;
+  // String? sku;
   String? name;
   PriceHtml? priceHtml;
-  dynamic parentId;
+  // dynamic parentId;
 
-  AssociatedProduct(
-      {this.id,
-      this.type,
-      this.attributeFamilyId,
-      this.sku,
-      this.priceHtml,
-      this.parentId});
+  AssociatedProduct({
+    this.id,
+    this.priceHtml,
+  });
 
   factory AssociatedProduct.fromJson(Map<String, dynamic> json) =>
       _$AssociatedProductFromJson(json);
@@ -686,12 +631,12 @@ class AssociatedProduct {
 class CustomizableOptions {
   final int? id;
   final dynamic label;
-  final dynamic productId;
+  // final dynamic productId;
   final dynamic type;
   final bool? isRequired;
   final dynamic maxCharacters;
   final dynamic supportedFileExtensions;
-  final int? sortOrder;
+  // final int? sortOrder;
   final Product? product;
   final Translations? translations;
   final List<CustomizableOptionPrices>? customizableOptionPrices;
@@ -699,15 +644,13 @@ class CustomizableOptions {
   CustomizableOptions({
     this.id,
     this.label,
-    this.productId,
     this.type,
     this.isRequired,
-    this.maxCharacters,
-    this.supportedFileExtensions,
-    this.sortOrder,
     this.product,
     this.translations,
     this.customizableOptionPrices,
+    this.supportedFileExtensions,
+    this.maxCharacters,
   });
 
   factory CustomizableOptions.fromJson(Map<String, dynamic> json) =>
@@ -751,23 +694,18 @@ class CustomizableOptions {
 @JsonSerializable()
 class CustomizableOptionPrices {
   final int? id;
-  final bool? isDefault;
-  final bool? isUserDefined;
+  // final bool? isDefault;
+  // final bool? isUserDefined;
   final String? label;
   final double? price;
-  final String? productCustomizableOptionId;
-  final int? qty;
-  final int? sortOrder;
+  // final String? productCustomizableOptionId;
+  // final int? qty;
+  // final int? sortOrder;
 
   CustomizableOptionPrices({
     this.id,
-    this.isDefault,
-    this.isUserDefined,
     this.label,
     this.price,
-    this.productCustomizableOptionId,
-    this.qty,
-    this.sortOrder,
   });
 
   factory CustomizableOptionPrices.fromJson(Map<String, dynamic> json) =>
@@ -960,8 +898,8 @@ class EventTicket {
 class TableSlot {
   @JsonKey(name: "id")
   final String? id;
-  @JsonKey(name: "priceType")
-  final String? priceType;
+  // @JsonKey(name: "priceType")
+  // final String? priceType;
   @JsonKey(name: "guestLimit")
   final int? guestLimit;
   @JsonKey(name: "duration")
@@ -979,7 +917,7 @@ class TableSlot {
 
   TableSlot({
     this.id,
-    this.priceType,
+    // this.priceType,
     this.guestLimit,
     this.duration,
     this.breakTime,

@@ -76,9 +76,13 @@ class _NewProductViewState extends State<NewProductView> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                widget.title,
-                style: Theme.of(context).textTheme.titleMedium,
+              Container(
+                width: AppSizes.screenWidth / 1.5,
+                child: Text(
+                  widget.title,
+                  softWrap: true,
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
               ),
               if (!widget.isRecentProduct)
                 viewAllButton(context, callback: () {
@@ -125,7 +129,7 @@ class _NewProductViewState extends State<NewProductView> {
                         elevation: 1,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          mainAxisAlignment: MainAxisAlignment.start,
                           children: [
                             Stack(
                               children: [
@@ -314,6 +318,7 @@ class _NewProductViewState extends State<NewProductView> {
                             ),
                             PriceWidgetHtml(
                                 priceHtml: val?.priceHtml?.priceHtml ?? ""),
+                            const Spacer(),
                             Padding(
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 6.0),

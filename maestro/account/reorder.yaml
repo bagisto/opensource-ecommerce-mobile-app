@@ -1,0 +1,6 @@
+appId: com.example.bagisto
+---
+- runFlow: account/view_orders.yaml
+- tapOn: "ORDER DETAILS"
+- tapOn: "Reorder"
+- assertVisible: "Added to cart"

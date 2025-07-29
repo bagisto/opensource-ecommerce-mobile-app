@@ -46,7 +46,7 @@ class _CheckOutSaveOrderState extends State<CheckOutSaveOrder> {
       saveOrderBloc?.add(SaveOrderFetchDataEvent());
     }
 
-    if(paymentMethod == "paypal_smart_button"){
+    if (paymentMethod == "paypal_smart_button") {
       launchPaypalNative();
     }
 
@@ -56,7 +56,7 @@ class _CheckOutSaveOrderState extends State<CheckOutSaveOrder> {
 
         String? orderId = result["orderID"];
 
-        if(orderId != null){
+        if (orderId != null) {
           var serverPayload = {
             "isPaymentCompleted": true,
             "error": false,
@@ -65,8 +65,8 @@ class _CheckOutSaveOrderState extends State<CheckOutSaveOrder> {
             "orderID": orderId ?? '',
           };
 
-          saveOrderBloc?.add(
-              SaveOrderFetchDataEvent(serverPayload: serverPayload));
+          saveOrderBloc
+              ?.add(SaveOrderFetchDataEvent(serverPayload: serverPayload));
         }
       }
     });
@@ -90,25 +90,27 @@ class _CheckOutSaveOrderState extends State<CheckOutSaveOrder> {
     }
   }
 
-  setCartData(){
+  setCartData() {
     var shipping = widget.cartModel?.shippingAddress;
 
     shippingAddress = {
-          "line1": "${shipping?.address1}",
-          "line2": "",
-          "city": "${shipping?.city}",
-          "country_code": "${shipping?.country}",
-          "postal_code": "${shipping?.postcode}",
-          "phone": "${shipping?.phone}",
-          "state": "${shipping?.state}"
-       };
+      "line1": "${shipping?.address1}",
+      "line2": "",
+      "city": "${shipping?.city}",
+      "country_code": "${shipping?.country}",
+      "postal_code": "${shipping?.postcode}",
+      "phone": "${shipping?.phone}",
+      "state": "${shipping?.state}"
+    };
 
-    items = widget.cartModel?.items?.map((item) => {
-      "name": item.name,
-      "quantity": item.quantity,
-      "price": item.price,
-      "currency": GlobalData.currencyCode
-    }).toList();
+    items = widget.cartModel?.items
+        ?.map((item) => {
+              "name": item.name,
+              "quantity": item.quantity,
+              "price": item.price,
+              "currency": GlobalData.currencyCode
+            })
+        .toList();
   }
 
   String _getSandboxKeyForMethod(String? method) {
@@ -176,6 +178,7 @@ class _CheckOutSaveOrderState extends State<CheckOutSaveOrder> {
       if (state.status == SaveOrderStatus.success) {
         String redirectUrl = state.saveOrderModel?.redirectUrl ?? "";
         if (redirectUrl.isEmpty) {
+          log("saveorderModel: ${state.saveOrderModel?.order?.toJson()}");
           return _orderPlacedView(state.saveOrderModel!);
         } else {
           return CircularProgressIndicatorClass.circularProgressIndicator(
@@ -254,7 +257,7 @@ class _CheckOutSaveOrderState extends State<CheckOutSaveOrder> {
                     child: Wrap(
                       children: [
                         Text(
-                            "${StringConstants.yourOrderIdMsg.localized()} ${saveOrderModel.order?.id ?? ""}",
+                            "${StringConstants.yourOrderIdMsg.localized()} ${saveOrderModel.order?.incrementId ?? ""}",
                             style: Theme.of(context)
                                 .textTheme
                                 .labelSmall
@@ -313,9 +316,9 @@ class _CheckOutSaveOrderState extends State<CheckOutSaveOrder> {
   Widget paypalView() {
     return (paypalClientId ?? "").isEmpty || (paypalClientSecret ?? "").isEmpty
         ? Loader()
-        : widget.cartModel?.payment?.method == "paypal_smart_button" ?
-        paypalSmartButton()
-    : PaypalCheckoutView(
+        : widget.cartModel?.payment?.method == "paypal_smart_button"
+            ? paypalSmartButton()
+            : PaypalCheckoutView(
                 sandboxMode: isSandbox,
                 clientId: paypalClientId,
                 secretKey: paypalClientSecret,
@@ -329,8 +332,7 @@ class _CheckOutSaveOrderState extends State<CheckOutSaveOrder> {
                 },
                 onError: (error) {
                   debugPrint("onError: $error");
-                  ShowMessage.errorNotification(
-                      error.toString(), context);
+                  ShowMessage.errorNotification(error.toString(), context);
                   Navigator.of(context).pop();
                 },
                 onCancel: (params) {
@@ -372,7 +374,7 @@ class _CheckOutSaveOrderState extends State<CheckOutSaveOrder> {
     };
   }
 
-  void launchPaypalNative(){
+  void launchPaypalNative() {
     final payload = prepareCompleteOrderPayload();
     platform.invokeMethod("paypalPay", payload);
   }
@@ -422,7 +424,6 @@ class _CheckOutSaveOrderState extends State<CheckOutSaveOrder> {
         "paymentType": sale?['payment_mode'] ?? 'unknown',
         "paymentMethod": method
       };
-
     } catch (e, stackTrace) {
       debugPrint("❌ Error parsing PayPal success data: $e");
       debugPrint("📄 StackTrace: $stackTrace");
@@ -431,9 +432,6 @@ class _CheckOutSaveOrderState extends State<CheckOutSaveOrder> {
   }
 
   Widget paypalSmartButton() {
-    return Center(
-      child: Loader()
-    );
+    return Center(child: Loader());
   }
-
 }

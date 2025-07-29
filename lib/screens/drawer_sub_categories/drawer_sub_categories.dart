@@ -158,82 +158,90 @@ class _DrawerSubCategoryViewState extends State<DrawerSubCategoryView> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        if((categoriesData?.data ?? []).isNotEmpty || (allParents?.children ?? []).isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(StringConstants.subCategories.localized(),
-                          style: Theme.of(context).textTheme.titleMedium),
-                        ),
-
-                        if (widget.parentId != "1")
-                        SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              ...?categoriesData?.data
-                                  ?.map((parent) => InkWell(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(
-                                      AppSizes.spacingMedium),
-                                  child: Column(
-                                    mainAxisAlignment:
-                                    MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                    CrossAxisAlignment.center,
-                                    children: [
-                                      CircleAvatar(
-                                        foregroundImage: NetworkImage(
-                                            parent.logoUrl ?? ""),
-                                        radius: 30,
-                                        backgroundImage: const AssetImage(
-                                            AssetConstants.placeHolder),
-                                      ),
-                                      const SizedBox(height: 12),
-                                      SizedBox(
-                                        width: AppSizes.screenWidth / 4,
-                                        child: Text(parent.name ?? "",
-                                            style: const TextStyle(
-                                                fontSize: 12
-                                            ),
-                                            maxLines: 2,
-                                            textAlign: TextAlign.center,
-                                            softWrap: true),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                onTap: () {
-                                  if ((parent.children ?? []).isNotEmpty) {
-                                    Navigator.pushNamed(
-                                        context, drawerSubCategoryScreen,
-                                        arguments: CategoriesArguments(
-                                            categorySlug: parent.slug,
-                                            title: parent.name,
-                                            id: parent.id.toString(),
-                                            image: parent.bannerUrl,
-                                            parentId:
-                                            parent.id.toString()));
-                                  } else {
-                                    Navigator.pushNamed(
-                                      context,
-                                      categoryScreen,
-                                      arguments: CategoriesArguments(
-                                          metaDescription:
-                                          parent.description,
-                                          categorySlug: parent.slug,
-                                          title: parent.name,
-                                          id: parent.id.toString(),
-                                          image: parent.bannerUrl),
-                                    );
-                                  }
-                                },
-                              ))
-                                  .toList(),
-                            ],
+                        if ((categoriesData?.data ?? []).isNotEmpty ||
+                            (allParents?.children ?? []).isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                                StringConstants.subCategories.localized(),
+                                style: Theme.of(context).textTheme.titleMedium),
                           ),
-                        ),
-
+                        if (widget.parentId != "1")
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                ...?categoriesData?.data
+                                    ?.map((parent) => InkWell(
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(
+                                                AppSizes.spacingMedium),
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.start,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
+                                              children: [
+                                                CircleAvatar(
+                                                  foregroundImage: NetworkImage(
+                                                      parent.logoUrl ?? ""),
+                                                  radius: 30,
+                                                  backgroundImage:
+                                                      const AssetImage(
+                                                          AssetConstants
+                                                              .placeHolder),
+                                                ),
+                                                const SizedBox(height: 12),
+                                                SizedBox(
+                                                  width:
+                                                      AppSizes.screenWidth / 4,
+                                                  child: Text(parent.name ?? "",
+                                                      style: const TextStyle(
+                                                          fontSize: 12),
+                                                      maxLines: 2,
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                      softWrap: true),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          onTap: () {
+                                            if ((parent.children ?? [])
+                                                .isNotEmpty) {
+                                              Navigator.pushNamed(context,
+                                                  drawerSubCategoryScreen,
+                                                  arguments:
+                                                      CategoriesArguments(
+                                                          categorySlug:
+                                                              parent.slug,
+                                                          title: parent.name,
+                                                          id: parent.id
+                                                              .toString(),
+                                                          image:
+                                                              parent.bannerUrl,
+                                                          parentId: parent.id
+                                                              .toString()));
+                                            } else {
+                                              Navigator.pushNamed(
+                                                context,
+                                                categoryScreen,
+                                                arguments: CategoriesArguments(
+                                                    metaDescription:
+                                                        parent.description,
+                                                    categorySlug: parent.slug,
+                                                    title: parent.name,
+                                                    id: parent.id.toString(),
+                                                    image: parent.bannerUrl),
+                                              );
+                                            }
+                                          },
+                                        ))
+                                    .toList(),
+                              ],
+                            ),
+                          ),
                         SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           child: Row(
@@ -241,45 +249,49 @@ class _DrawerSubCategoryViewState extends State<DrawerSubCategoryView> {
                             children: [
                               ...?allParents?.children
                                   ?.map((parent) => InkWell(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(
-                                      AppSizes.spacingMedium),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    children: [
-                                      CircleAvatar(
-                                        foregroundImage: NetworkImage(
-                                            parent.logoUrl ?? ""),
-                                        radius: 30,
-                                        backgroundImage: const AssetImage(
-                                            AssetConstants.placeHolder),
-                                      ),
-                                      const SizedBox(height: 12),
-                                      SizedBox(
-                                        width: AppSizes.screenWidth / 4,
-                                        child: Text(parent.name ?? "",
-                                            style: const TextStyle(
-                                                fontSize: 12
-                                            ),
-                                            maxLines: 2,
-                                        textAlign: TextAlign.center,
-                                        softWrap: true),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                onTap: () {
-                                  Navigator.pushNamed(
-                                      context, drawerSubCategoryScreen,
-                                      arguments: CategoriesArguments(
-                                          categorySlug: parent.slug,
-                                          title: parent.name,
-                                          id: parent.id.toString(),
-                                          image: parent.bannerUrl,
-                                          parentId: parent.id.toString()));
-                                },
-                              ))
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(
+                                              AppSizes.spacingMedium),
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            children: [
+                                              CircleAvatar(
+                                                foregroundImage: NetworkImage(
+                                                    parent.logoUrl ?? ""),
+                                                radius: 30,
+                                                backgroundImage:
+                                                    const AssetImage(
+                                                        AssetConstants
+                                                            .placeHolder),
+                                              ),
+                                              const SizedBox(height: 12),
+                                              SizedBox(
+                                                width: AppSizes.screenWidth / 4,
+                                                child: Text(parent.name ?? "",
+                                                    style: const TextStyle(
+                                                        fontSize: 12),
+                                                    maxLines: 2,
+                                                    textAlign: TextAlign.center,
+                                                    softWrap: true),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        onTap: () {
+                                          Navigator.pushNamed(
+                                              context, drawerSubCategoryScreen,
+                                              arguments: CategoriesArguments(
+                                                  categorySlug: parent.slug,
+                                                  title: parent.name,
+                                                  id: parent.id.toString(),
+                                                  image: parent.bannerUrl,
+                                                  parentId:
+                                                      parent.id.toString()));
+                                        },
+                                      ))
                                   .toList()
                             ],
                           ),
@@ -362,8 +374,7 @@ class _DrawerSubCategoryViewState extends State<DrawerSubCategoryView> {
                               elevation: 0,
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment: MainAxisAlignment.start,
                                 children: [
                                   Stack(
                                     children: [
@@ -562,6 +573,7 @@ class _DrawerSubCategoryViewState extends State<DrawerSubCategoryView> {
                                   PriceWidgetHtml(
                                       priceHtml:
                                           val?.priceHtml?.priceHtml ?? ""),
+                                  const Spacer(),
                                   Padding(
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 6.0),
@@ -578,15 +590,19 @@ class _DrawerSubCategoryViewState extends State<DrawerSubCategoryView> {
                                                       .then((value) {
                                                     if (value) {
                                                       if (((val?.priceHtml
-                                                                  ?.type) ==
-                                                              StringConstants
-                                                                  .simple ||
-                                                          val?.type ==
-                                                              StringConstants
-                                                                  .simple ||
-                                                          val?.type ==
-                                                              StringConstants
-                                                                  .virtual)&& ((val?.customizableOptions??[]).length ==0) ) {
+                                                                      ?.type) ==
+                                                                  StringConstants
+                                                                      .simple ||
+                                                              val?.type ==
+                                                                  StringConstants
+                                                                      .simple ||
+                                                              val?.type ==
+                                                                  StringConstants
+                                                                      .virtual) &&
+                                                          ((val?.customizableOptions ??
+                                                                      [])
+                                                                  .length ==
+                                                              0)) {
                                                         bloc?.add(
                                                             AddToCartEvent(
                                                                 int.parse(
@@ -600,11 +616,19 @@ class _DrawerSubCategoryViewState extends State<DrawerSubCategoryView> {
                                                                     .addOptions
                                                                     .localized(),
                                                                 context);
-                                                        Navigator.pushNamed(context, productScreen,
+                                                        Navigator.pushNamed(
+                                                            context,
+                                                            productScreen,
                                                             arguments: PassProductData(
-                                                                title: val?.name ?? "",
-                                                                urlKey: val?.urlKey,
-                                                                productId: int.parse(val?.id ?? "")));
+                                                                title:
+                                                                    val?.name ??
+                                                                        "",
+                                                                urlKey:
+                                                                    val?.urlKey,
+                                                                productId: int
+                                                                    .parse(val
+                                                                            ?.id ??
+                                                                        "")));
                                                       }
                                                     } else {
                                                       ShowMessage

@@ -1,0 +1,6 @@
+appId: com.example.bagisto
+---
+- runFlow: checkout/payment_cod.yaml
+- tapOn: "More Options"
+- tapOn: "Orders"
+- assertVisible: id:order_card_0

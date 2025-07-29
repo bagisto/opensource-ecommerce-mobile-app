@@ -21,7 +21,7 @@ class ApplicationLocalizations {
 
   ApplicationLocalizations._init(Locale locale) {
     instance = this;
-    appLocale = appLocale;
+    appLocale = locale;
   }
 
   Locale? appLocale;
@@ -40,11 +40,17 @@ class ApplicationLocalizations {
 
   Future<bool> load() async {
     var selectedCode = appStoragePref.getCustomerLanguage();
-    if (!(supportedLocale.contains(selectedCode))) {
-      selectedCode = supportedLocale.first;
-    }
+    Locale selectedLocale = supportedLocale.firstWhere(
+      (locale) => locale.toString() == selectedCode ||
+        locale.languageCode == selectedCode ||
+        '${locale.languageCode}_${locale.countryCode}' == selectedCode,
+      orElse: () => supportedLocale.first,
+    );
+    String localeFile = selectedLocale.countryCode != null && selectedLocale.countryCode!.isNotEmpty
+      ? '${selectedLocale.languageCode}_${selectedLocale.countryCode}'
+      : selectedLocale.languageCode;
     String jsonString =
-        await rootBundle.loadString('assets/language/$selectedCode.json');
+        await rootBundle.loadString('assets/language/$localeFile.json');
     Map<String, dynamic> jsonLanguageMap = json.decode(jsonString);
     _localizedStrings = jsonLanguageMap.map((key, value) {
       return MapEntry(key, value.toString());
@@ -67,7 +73,10 @@ class _AppLocalizationsDelegate
   @override
   bool isSupported(Locale locale) {
     // Include all of your supported language codes here
-    return supportedLocale.contains(locale.languageCode);
+    return supportedLocale.any((supported) =>
+      supported.languageCode == locale.languageCode &&
+      (supported.countryCode == null || supported.countryCode == locale.countryCode)
+    );
   }
 
   @override

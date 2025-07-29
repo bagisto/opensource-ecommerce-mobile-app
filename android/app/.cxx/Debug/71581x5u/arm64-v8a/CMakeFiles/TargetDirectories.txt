@@ -1,0 +1,2 @@
+/Users/afzal/Documents/demo/Bagisto_demo_new_projects/laravel-mobile-app-afzal_v2.2.2/android/app/.cxx/Debug/71581x5u/arm64-v8a/CMakeFiles/edit_cache.dir
+/Users/afzal/Documents/demo/Bagisto_demo_new_projects/laravel-mobile-app-afzal_v2.2.2/android/app/.cxx/Debug/71581x5u/arm64-v8a/CMakeFiles/rebuild_cache.dir

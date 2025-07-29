@@ -131,7 +131,7 @@ class OrdersListTile extends StatelessWidget with OrderStatusBGColorHelper {
                             children: [
                               const SizedBox(height: AppSizes.spacingNormal),
                               Text(
-                                data?.id.toString() ?? "",
+                                data?.incrementId.toString() ?? "",
                                 style: Theme.of(context).textTheme.labelMedium,
                               ),
                               const SizedBox(height: AppSizes.spacingNormal),

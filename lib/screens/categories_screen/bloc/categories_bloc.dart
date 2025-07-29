@@ -8,13 +8,10 @@
  *   @link https://store.webkul.com/license.html
  */
 
-
 import 'package:bagisto_app_demo/data_model/add_to_wishlist_model/add_wishlist_model.dart';
 import 'package:bagisto_app_demo/screens/categories_screen/utils/index.dart';
 
-
-class CategoryBloc
-    extends Bloc<CategoryBaseEvent, CategoriesBaseState> {
+class CategoryBloc extends Bloc<CategoryBaseEvent, CategoriesBaseState> {
   CategoriesRepository? repository;
 
   CategoryBloc(this.repository) : super(ShowLoaderCategoryState()) {
@@ -25,8 +22,8 @@ class CategoryBloc
       CategoryBaseEvent event, Emitter<CategoriesBaseState> emit) async {
     if (event is FetchSubCategoryEvent) {
       try {
-        NewProductsModel? categoriesData = await repository
-            ?.callCategoriesData(filters: event.filters, page: event.page);
+        NewProductsModel? categoriesData = await repository?.callCategoriesData(
+            filters: event.filters, page: event.page);
         emit(FetchSubCategoryState.success(categoriesData: categoriesData));
       } catch (e) {
         emit(FetchSubCategoryState.fail(error: e.toString()));
@@ -79,7 +76,8 @@ class CategoryBloc
               response: removeFromWishlist));
         }
       } catch (e) {
-        emit(RemoveWishlistState.fail(error: StringConstants.somethingWrong.localized()));
+        emit(RemoveWishlistState.fail(
+            error: StringConstants.somethingWrong.localized()));
       }
     } else if (event is AddToCartSubCategoriesEvent) {
       try {
@@ -105,7 +103,8 @@ class CategoryBloc
           emit(AddToCompareSubCategoryState.success(
               baseModel: baseModel, successMsg: baseModel.message));
         } else {
-          emit(AddToCompareSubCategoryState.fail(error: baseModel.graphqlErrors));
+          emit(AddToCompareSubCategoryState.fail(
+              error: baseModel.graphqlErrors));
         }
       } catch (e) {
         emit(AddToCompareSubCategoryState.fail(
@@ -122,6 +121,8 @@ class CategoryBloc
       } catch (e) {
         emit(FilterFetchState.fail(error: e.toString()));
       }
+    } else if (event is HasMoreSubCategoryLoadingEvent) {
+      emit(HasMoreSubCategoryLoadingState());
     }
   }
 }

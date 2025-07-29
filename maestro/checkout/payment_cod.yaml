@@ -1,0 +1,6 @@
+appId: com.example.bagisto
+---
+- runFlow: checkout/shipping_methods.yaml
+- tapOn: "Cash on Delivery"
+- tapOn: "Place Order"
+- assertVisible: "Order #"

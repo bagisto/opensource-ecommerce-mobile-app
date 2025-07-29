@@ -1,0 +1,28 @@
+{
+  "buildFiles": [
+    "/Users/arshad/flutter/packages/flutter_tools/gradle/src/main/groovy/CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "/Users/arshad/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+      "-C",
+      "/Users/arshad/Documents/demos/Bagisto/laravel-mobile-app/android/app/.cxx/RelWithDebInfo/5l6c3a4s/armeabi-v7a",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "/Users/arshad/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+    "-C",
+    "/Users/arshad/Documents/demos/Bagisto/laravel-mobile-app/android/app/.cxx/RelWithDebInfo/5l6c3a4s/armeabi-v7a",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {},
+  "toolchains": {
+    "toolchain": {
+      "cCompilerExecutable": "/Users/arshad/Library/Android/sdk/ndk/27.0.12077973/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang.lld",
+      "cppCompilerExecutable": "/Users/arshad/Library/Android/sdk/ndk/27.0.12077973/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang++.lld"
+    }
+  },
+  "cFileExtensions": [],
+  "cppFileExtensions": []
+}

@@ -1,0 +1,1 @@
+/Users/afzal/Documents/demo/Bagisto_demo_new_projects/laravel-mobile-app-afzal_v2.2.2/build/app/intermediates/cxx/RelWithDebInfo/2u4g331s/obj/x86

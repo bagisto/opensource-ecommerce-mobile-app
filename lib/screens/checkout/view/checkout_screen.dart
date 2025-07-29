@@ -87,11 +87,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       key: scaffoldMessengerKey,
       child: Scaffold(
         appBar: AppBar(
+          centerTitle: false,
           title: Text(
             currentIndex == 1
                 ? StringConstants.addressTitle.localized()
                 : currentIndex == 2
-                    ? StringConstants.shippingMethods.localized()
+                    ? widget.isDownloadable == false
+                        ? StringConstants.shippingMethods.localized()
+                        : StringConstants.paymentMethods.localized()
                     : currentIndex == 3
                         ? StringConstants.paymentMethods.localized()
                         : StringConstants.reviewAndCheckout.localized(),
@@ -221,52 +224,58 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             : BlocProvider(
                 create: (context) =>
                     GuestAddressBloc(GuestAddressRepositoryImp()),
-                child: GuestAddAddressForm(callBack: (billingCompanyName,
-                    billingFirstName,
-                    billingLastName,
-                    billingAddress,
-                    billingAddress2,
-                    billingCountry,
-                    billingState,
-                    billingCity,
-                    billingPostCode,
-                    billingPhone,
-                    billingEmail,
-                    shippingEmail,
-                    shippingCompanyName,
-                    shippingFirstName,
-                    shippingLastName,
-                    shippingAddress,
-                    shippingAddress2,
-                    shippingCountry,
-                    shippingState,
-                    shippingCity,
-                    shippingPostCode,
-                    shippingPhone) {
-                  this.billingCompanyName = billingCompanyName;
-                  this.billingFirstName = billingFirstName;
-                  this.billingLastName = billingLastName;
-                  this.billingAddress = billingAddress;
-                  this.billingEmail = billingEmail;
-                  this.billingAddress2 = billingAddress2;
-                  this.billingCountry = billingCountry;
-                  this.billingState = billingState;
-                  this.billingCity = billingCity;
-                  this.billingPostCode = billingPostCode;
-                  this.billingPhone = billingPhone;
-                  this.shippingCompanyName = shippingCompanyName;
-                  this.shippingFirstName = shippingFirstName;
-                  this.shippingLastName = shippingLastName;
-                  this.shippingAddress = shippingAddress;
-                  this.shippingEmail = shippingEmail;
-                  this.shippingAddress2 = shippingAddress2;
-                  this.shippingCountry = shippingCountry;
-                  this.shippingState = shippingState;
-                  this.shippingCity = shippingCity;
-                  this.shippingPostCode = shippingPostCode;
-                  this.shippingPhone = shippingPhone;
-                }),
-              );
+                child: GuestAddAddressForm(
+                  callBack: (billingCompanyName,
+                      billingFirstName,
+                      billingLastName,
+                      billingAddress,
+                      billingAddress2,
+                      billingCountry,
+                      billingState,
+                      billingCity,
+                      billingPostCode,
+                      billingPhone,
+                      billingEmail,
+                      shippingEmail,
+                      shippingCompanyName,
+                      shippingFirstName,
+                      shippingLastName,
+                      shippingAddress,
+                      shippingAddress2,
+                      shippingCountry,
+                      shippingState,
+                      shippingCity,
+                      shippingPostCode,
+                      shippingPhone) {
+                    this.billingCompanyName = billingCompanyName;
+                    this.billingFirstName = billingFirstName;
+                    this.billingLastName = billingLastName;
+                    this.billingAddress = billingAddress;
+                    this.billingEmail = billingEmail;
+                    this.billingAddress2 = billingAddress2;
+                    this.billingCountry = billingCountry;
+                    this.billingState = billingState;
+                    this.billingCity = billingCity;
+                    this.billingPostCode = billingPostCode;
+                    this.billingPhone = billingPhone;
+                    this.shippingCompanyName = shippingCompanyName;
+                    this.shippingFirstName = shippingFirstName;
+                    this.shippingLastName = shippingLastName;
+                    this.shippingAddress = shippingAddress;
+                    this.shippingEmail = shippingEmail;
+                    this.shippingAddress2 = shippingAddress2;
+                    this.shippingCountry = shippingCountry;
+                    this.shippingState = shippingState;
+                    this.shippingCity = shippingCity;
+                    this.shippingPostCode = shippingPostCode;
+                    this.shippingPhone = shippingPhone;
+                  },
+                  callbackNavigate: () {
+                    setState(() {
+                      currentIndex = currentIndex + 1;
+                    });
+                  },
+                ));
 
       case 2:
         return BlocProvider(

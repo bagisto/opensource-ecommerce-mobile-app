@@ -1,0 +1,9 @@
+appId: com.webkul.bagisto.mobikul
+---
+- launchApp
+- tapOn: "Login"
+- inputText: "wrong@example.com"
+- tapOn: "Password"
+- inputText: "badpass"
+- tapOn: "Sign In"
+- assertVisible: "Invalid credentials"

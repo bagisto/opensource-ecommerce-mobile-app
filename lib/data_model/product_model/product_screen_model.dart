@@ -309,29 +309,26 @@ class FilterableAttributes {
 @JsonSerializable()
 class Translations {
   dynamic id;
-  String? name;
-  String? description;
-  String? localeId;
-  String? locale;
+  // String? name;
+  // String? description;
+  // String? localeId;
+  // String? locale;
   String? title;
   String? label;
-  String? productDownloadableSampleId;
-  String? productDownloadableLinkId;
-  String? productBundleOptionId;
-  String? productCustomizableOptionId;
+  // String? productDownloadableSampleId;
+  // String? productDownloadableLinkId;
+  // String? productBundleOptionId;
+  // String? productCustomizableOptionId;
 
-  Translations(
-      {this.id,
-      this.name,
-      this.label,
-      this.description,
-      this.localeId,
-      this.locale,
-      this.title,
-      this.productDownloadableLinkId,
-      this.productDownloadableSampleId,
-      this.productBundleOptionId,
-      this.productCustomizableOptionId});
+  Translations({
+    this.id,
+    this.label,
+    this.title,
+    // this.productDownloadableLinkId,
+    // this.productDownloadableSampleId,
+    // this.productBundleOptionId,
+    //  this.productCustomizableOptionId
+  });
 
   factory Translations.fromJson(Map<String, dynamic> json) =>
       _$TranslationsFromJson(json);
@@ -496,17 +493,17 @@ class Reviews {
 class Variants {
   String? id;
   String? type;
-  dynamic attributeFamilyId;
+  // dynamic attributeFamilyId;
   String? sku;
-  String? parentId;
+  // String? parentId;
   Map<String, dynamic>? map = {};
 
   Variants(
       {this.id,
       this.type,
-      this.attributeFamilyId,
+      // this.attributeFamilyId,
       this.sku,
-      this.parentId,
+      // this.parentId,
       this.map});
 
   factory Variants.fromJson(Map<String, dynamic> json) =>

@@ -1,0 +1,11 @@
+appId: com.example.bagisto
+---
+- runFlow: auth/login_valid.yaml
+- tapOn: "More options"
+- tapOn: "Hello!"
+- tapOn: "Date"
+- tapOn: "ok"
+- inputText: "Phone", "9876543210"
+- hideKeyborad
+- tapOn: "Save"
+- assertVisible: "Saved"

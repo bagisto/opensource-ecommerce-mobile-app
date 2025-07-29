@@ -127,8 +127,9 @@ class _SortBottomSheetState extends State<SortBottomSheet> {
                         appStoragePref.setSortName(value ?? "");
                       });
 
-                      widget.filters
-                          .removeWhere((element) => element["key"] == '"sort"');
+                      widget.filters.removeWhere((element) =>
+                          element["key"] == '"sort"' ||
+                          element["key"] == '"page"');
 
                       widget.filters.add({
                         "key": '"sort"',

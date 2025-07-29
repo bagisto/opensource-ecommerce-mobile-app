@@ -1,0 +1,6 @@
+appId: com.example.bagisto
+---
+- launchApp
+- assertVisible: id:banner_carousel
+- tapOn: id:banner_carousel
+- assertVisible: "Featured"

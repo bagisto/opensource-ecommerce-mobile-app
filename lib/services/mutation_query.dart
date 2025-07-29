@@ -78,10 +78,7 @@ class MutationsData {
                 html
                 title
                 links {
-                    title 
-                    link
-                    image
-                    imageUrl
+                
                     url
                     slug 
                     type
@@ -444,6 +441,9 @@ message
 
   String allProductsList(
       {List<Map<String, dynamic>>? filters, int page = 1, int limit = 15}) {
+    if (filters != null) {
+      filters.removeWhere((element) => element["key"] == '"limit"');
+    }
     filters?.add({"key": '"page"', "value": '"$page"'});
     filters?.add({"key": '"limit"', "value": '"$limit"'});
 
@@ -463,7 +463,6 @@ message
             isInWishlist
             isInSale
             isSaleable
-            attributeFamilyId
             name
             shareURL
             urlKey
@@ -477,59 +476,40 @@ message
                 isRequired
                 maxCharacters
                 supportedFileExtensions
-                sortOrder
+
                 product {
                     id
                 }
                 translations {
                     id
-                    locale
                     label
-                    productCustomizableOptionId
                 }
                 customizableOptionPrices {
                     id
-                    isDefault
-                    isUserDefined
                     label
                     price
-                    productCustomizableOptionId
-                    qty
-                    sortOrder
+          
                 }
             }
             additionalData {
                 id
-                code
+          
                 label
                 value
-                admin_name
+             
                 type
             }
             priceHtml {
                 id
                 type
                 priceHtml
-                priceWithoutHtml
-                minPrice
                 regularPrice
                 formattedRegularPrice
                 finalPrice
                 formattedFinalPrice
-                currencyCode
-                bundlePrice {
-                    finalPriceFrom
-                    formattedFinalPriceFrom
-                    regularPriceFrom
-                    formattedRegularPriceFrom
-                    finalPriceTo
-                    formattedFinalPriceTo
-                    regularPriceTo
-                    formattedRegularPriceTo
-                }
             }
             configutableData {
-            chooseText
+          
             attributes {
                 id
                 code
@@ -561,54 +541,23 @@ message
                     formattedPrice
                 }
             }
-            regularPrice {
-                formattedPrice
-                price
-            }
+         
           }
             sku
             parentId
             variants {
                 id
                 type
-                attributeFamilyId
+    
                 sku
-                parentId
+        
             }
-            parent {
-                id
-                type
-                attributeFamilyId
-                sku
-                parentId
-            }
+         
             attributeFamily {
                 id
-                code
-                name
-                status
-                isUserDefined
+
             }
-            attributeValues {
-                id
-                productId
-                attributeId
-                locale
-                channel
-                textValue
-                booleanValue
-                integerValue
-                floatValue
-                dateTimeValue
-                dateValue
-                jsonValue
-                attribute {
-                    id
-                    code
-                    adminName
-                    type
-                }
-            }
+           
             superAttributes {
                 id
                 code
@@ -616,101 +565,59 @@ message
                 type
                 position
             }
-            inventories {
-                id
-                qty
-                productId
-                inventorySourceId
-                vendorId
-                inventorySource {
-                    id
-                    code
-                    name
-                    description
-                    contactName
-                    contactEmail
-                    contactNumber
-                    contactFax
-                    country
-                    state
-                    city
-                    street
-                    postcode
-                    priority
-                    latitude
-                    longitude
-                    status
-                }
-            }
+          
             images {
                 id
                 type
-                path
+
                 url
                 productId
             }
-            orderedInventories {
-                id
-                qty
-                productId
-                channelId
-            }
+         
             averageRating
             percentageRating
             reviews {
                 id
                 title
                 rating
-                comment
-                status
-                productId
-                customerId
+                comment 
                 createdAt
-                updatedAt
+     
             }
             groupedProducts {
                 id
                 qty
-                sortOrder
-                productId
+
                 associatedProductId
                 associatedProduct {
                     id
                     name
                     type
-                    attributeFamilyId
+                 
                     sku
                     priceHtml {
                         id
                         type
                         priceHtml
-                        priceWithoutHtml
-                        minPrice
+                      
+                  
                         regularPrice
                         formattedRegularPrice
                         finalPrice
                         formattedFinalPrice
-                        currencyCode
+               
                     }
-                    parentId
+     
                 }
             }
             downloadableSamples {
                 id
-                url
-                fileUrl
-                file
-                fileName
-                type
-                sortOrder
-                productId
-                createdAt
-                updatedAt
+                fileName      
                 translations {
                     id
-                    locale
+                 
                     title
-                    productDownloadableSampleId
+           
                 }
             }
             downloadableLinks {
@@ -718,7 +625,7 @@ message
                 title
                 price
                 url
-                fileUrl
+        
                 file
                 fileName
                 type
@@ -732,9 +639,9 @@ message
                 downloads
                 translations {
                     id
-                    locale
+              
                     title
-                    productDownloadableLinkId
+               
                 }
             }
             bundleOptions {
@@ -758,24 +665,11 @@ message
                      priceHtml {
                             id
                             type
-                            priceHtml
-                            priceWithoutHtml
-                            minPrice
+                            priceHtml                       
                             regularPrice
                             formattedRegularPrice
                             finalPrice
                             formattedFinalPrice
-                            currencyCode
-                            bundlePrice {
-                                finalPriceFrom
-                                formattedFinalPriceFrom
-                                regularPriceFrom
-                                formattedRegularPriceFrom
-                                finalPriceTo
-                                formattedFinalPriceTo
-                                regularPriceTo
-                                formattedRegularPriceTo
-                            }
                         }
                 }
                 }
@@ -786,16 +680,7 @@ message
                     productBundleOptionId
                 }
             }
-            customerGroupPrices {
-                id
-                qty
-                valueType
-                value
-                productId
-                customerGroupId
-                createdAt
-                updatedAt
-            }
+    
          booking {
         id
         type
@@ -1287,8 +1172,6 @@ message
                 sku
                 images {
                     id
-                    type
-                    path
                     url
                     productId
                 }
@@ -1319,7 +1202,7 @@ message
       int? page,
       bool? isFilterApply}) {
     final inputString = """
-  ${id.isNotEmpty ? 'id: $id,' : ''}
+  ${id.isNotEmpty ? 'incrementId: $id,' : ''}
         ${startDate.isNotEmpty ? 'orderDateFrom: "$startDate",' : ''}
          ${endDate.isNotEmpty ? 'orderDateTo: "$endDate",' : ''}
       ${status!.isNotEmpty ? 'status: "$status"' : ''}
@@ -1343,6 +1226,7 @@ message
         }
         data {
             id
+            incrementId
             status
             totalQtyOrdered
             createdAt
@@ -1660,6 +1544,7 @@ message
         redirectUrl
         order {
             id
+            incrementId
         }
       }
     }""";

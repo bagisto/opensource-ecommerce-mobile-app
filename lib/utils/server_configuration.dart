@@ -8,11 +8,14 @@
  *   @link https://store.webkul.com/license.html
  */
 
+// Application Specific Constants
+import 'dart:ui';
+
 const int defaultSplashDelay = 3;
 
-/////base domain of the server
 const String baseDomain = "";
 
+///base url for the application
 const String baseUrl = "$baseDomain/graphql";
 
 ///default channel id
@@ -37,7 +40,16 @@ const String demoEmail = "";
 const String demoPassword = "";
 
 ///supported locales in app
-List<String> supportedLocale = ['en', 'fr', 'nl', 'tr', 'es', 'ar', 'pt_br'];
+List<Locale> supportedLocale = [
+  Locale('en'),
+  Locale('fr'),
+  Locale('nl'),
+  Locale('tr'),
+  Locale('es'),
+  Locale('ar'),
+  Locale('pt', 'BR'),
+  Locale('hi', 'IN'),
+];
 
 const bool isPreFetchingEnable = true;
 

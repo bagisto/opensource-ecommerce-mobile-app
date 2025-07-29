@@ -224,15 +224,19 @@ class _CompareScreenState extends State<CompareScreen>
     if (state is RemoveFromCompareState) {
       isLoading = false;
       if (state.status == CompareStatusStatus.success) {
+        compareScreenBloc?.page = 1; // Reset page
+        compareScreenBloc?.hasMore = true; // Reset hasMore
         compareScreenBloc?.add(CompareScreenFetchEvent());
-        return _compareScreen(_compareScreenModel, isLoading);
+        return const CompareLoaderView();
       }
     }
     if (state is RemoveAllCompareProductState) {
       isLoading = false;
       if (state.status == CompareStatusStatus.success) {
+        compareScreenBloc?.page = 1; // Reset page
+        compareScreenBloc?.hasMore = true; // Reset hasMore
         compareScreenBloc?.add(CompareScreenFetchEvent());
-        return _compareScreen(_compareScreenModel, isLoading);
+        return const CompareLoaderView();
       }
     }
     if (state is AddToCartCompareState) {

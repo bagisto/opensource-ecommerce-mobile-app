@@ -1,0 +1,8 @@
+appId: com.example.bagisto
+---
+- runFlow: pdp/add_to_cart.yaml
+- tapOn: "Cart"
+- tapOn: "Estimate Shipping"
+- inputText: "Postal Code", "560001"
+- tapOn: "Get Rates"
+- assertVisible: "Standard"

@@ -106,13 +106,23 @@ class _CheckoutHeaderViewState extends State<CheckoutHeaderView> {
 
   List<Widget> _iconViews() {
     var list = <Widget>[];
+    print("widget.curStep: ${widget.curStep}");
     stepIcons.asMap().forEach((i, icon) {
-      var circleColor =
-          (i == 0 || widget.curStep > i) ? _activeColor : Colors.grey[400];
+      var circleColor = (i == 0 || widget.isDownloadable == true
+              ? widget.curStep > 2
+                  ? widget.curStep - 1 > i
+                  : widget.curStep > i
+              : widget.curStep > i)
+          ? _activeColor
+          : Colors.grey[400];
 
-      var lineColor = widget.curStep > i + 1
-          ? Theme.of(context).colorScheme.onBackground
-          : _inactiveColor;
+      var lineColor = (i == 0 || widget.isDownloadable == true
+              ? widget.curStep > 2
+                  ? widget.curStep - 1 > i + 1
+                  : widget.curStep > i + 1
+              : widget.curStep > i + 1)
+          ? _activeColor
+          : Colors.grey[400];
 
       var iconColor =
           (i == 0 || widget.curStep > i) ? Colors.white : Colors.white;

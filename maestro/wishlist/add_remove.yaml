@@ -1,0 +1,7 @@
+appId: com.example.bagisto
+---
+- runFlow: pdp/add_to_wishlist.yaml
+- tapOn: "Wishlist"
+- assertVisible: id:wishlist_item_0
+- tapOn: id:remove_wishlist_item_0
+- assertVisible: "Your wishlist is empty"

@@ -1,0 +1,14 @@
+appId: com.example.bagisto
+---
+- runFlow: auth/login_valid.yaml
+- tapOn: "Profile"
+- tapOn: "Address Book"
+- tapOn: "Add Address"
+- inputText: "Street", "221B Baker St"
+- inputText: "City", "London"
+- inputText: "Postal Code", "NW16XE"
+- tapOn: "Save"
+- assertVisible: "221B Baker St"
+- tapOn: id:delete_address_btn
+- tapOn: "Yes"
+- assertVisible: "No addresses"

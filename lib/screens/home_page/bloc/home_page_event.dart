@@ -41,7 +41,8 @@ class CartCountEvent extends HomePageEvent {}
 
 class FetchAllProductsEvent extends HomePageEvent {
   List<Map<String, dynamic>>? filters;
-  FetchAllProductsEvent(this.filters);
+  String id;
+  FetchAllProductsEvent(this.filters, this.id);
 }
 
 class FetchHomeCustomData extends HomePageEvent {}

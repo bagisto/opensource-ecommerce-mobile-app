@@ -1,0 +1,10 @@
+appId: com.example.bagisto
+---
+- runFlow: pdp/add_to_cart.yaml
+- tapOn: "Cart"
+- tapOn: id:qty_plus
+- assertVisible: "2"
+- tapOn: id:qty_minus
+- assertVisible: "1"
+- tapOn: id:remove_item
+- assertVisible: "Your cart is empty"
