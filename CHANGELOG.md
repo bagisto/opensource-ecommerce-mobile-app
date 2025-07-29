@@ -1,10 +1,10 @@
 #### This changelog consists the bug & security fixes and new features being included in the releases listed below
 
-# CHANGELOG for v2.3.6
+# CHANGELOG for v2.3.2
 
-## **v2.3.6 (28th of July, 2025)** - *Release*
+## **v2.3.2 (28th of July, 2025)** - *Release*
 
-# CHANGELOG for v2.3.6
+# CHANGELOG for v2.3.2
 
 * [Enhancement] Features as per Bagisto v2.3.6.
 * [Improvement] Optimized GraphQL queries across the project to improve data retrieval performance.
