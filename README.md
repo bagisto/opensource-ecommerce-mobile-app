@@ -58,7 +58,7 @@ Before beginning with the installation, you will need the following with the men
 - Xcode - 16.3
 - Swift - 6.1
 
-Make sure you have installed the API module and set this up properly on your bagisto.
+Make sure you have installed the [API module](https://github.com/bagisto/headless-ecommerce/) and set this up properly on your bagisto.
 
 > NOTE: It is recommended that you run a simple Hello World program in Flutter first before proceeding further so that you are sure that the environment is properly set up.
 
