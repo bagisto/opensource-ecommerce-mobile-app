@@ -10,8 +10,6 @@
 
 // must_be_immutable, void_checks
 
-import 'dart:io';
-
 import 'package:bagisto_app_demo/screens/home_page/data_model/get_categories_drawer_data_model.dart';
 import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
 import 'package:bagisto_app_demo/utils/app_navigation.dart';
@@ -44,7 +42,6 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 Future<void> main() async {
   await GetStorage.init("configurationStorage");
-  HttpOverrides.global = MyHttpOverrides();
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
@@ -222,14 +219,5 @@ class _BagistoAppState extends State<BagistoApp> {
         );
       }),
     ));
-  }
-}
-
-class MyHttpOverrides extends HttpOverrides {
-  @override
-  HttpClient createHttpClient(SecurityContext? context) {
-    return super.createHttpClient(context)
-      ..badCertificateCallback =
-          (X509Certificate cert, String host, int port) => true;
   }
 }

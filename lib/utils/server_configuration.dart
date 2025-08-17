@@ -13,7 +13,8 @@ import 'dart:ui';
 
 const int defaultSplashDelay = 3;
 
-const String baseDomain = "";
+//Please add your admin panel url here and make sure it's running on https.
+const String baseDomain = "https://demo.bagisto.com";
 
 ///base url for the application
 const String baseUrl = "$baseDomain/graphql";
