@@ -188,7 +188,7 @@ class OrdersListTile extends StatelessWidget with OrderStatusBGColorHelper {
                 elevation: 0.0,
                 height: AppSizes.buttonHeight,
                 minWidth: MediaQuery.of(context).size.width,
-                color: Theme.of(context).colorScheme.onBackground,
+                color: Theme.of(context).colorScheme.onSurface,
                 onPressed: () {
                   Navigator.pushNamed(context, orderDetailPage,
                           arguments: data?.id)
@@ -202,14 +202,14 @@ class OrdersListTile extends StatelessWidget with OrderStatusBGColorHelper {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(Icons.info_outline,
-                        color: Theme.of(context).colorScheme.background),
+                        color: Theme.of(context).colorScheme.surface),
                     const SizedBox(
                       width: 5,
                     ),
                     Text(
                       StringConstants.orderDetails.localized().toUpperCase(),
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: Theme.of(context).colorScheme.background),
+                          color: Theme.of(context).colorScheme.surface),
                     ),
                   ],
                 ),

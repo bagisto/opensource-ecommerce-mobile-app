@@ -16,7 +16,7 @@ import 'package:bagisto_app_demo/screens/search_screen/utils/index.dart';
 class CategoriesView extends StatelessWidget {
   final List<HomeCategories>? data;
 
-  const CategoriesView({Key? key, this.data}) : super(key: key);
+  const CategoriesView({super.key,  this.data});
 
   @override
   Widget build(BuildContext context) {
@@ -70,7 +70,7 @@ class CategoriesView extends StatelessWidget {
                           decoration: BoxDecoration(
                             borderRadius:
                                 const BorderRadius.all(Radius.circular(AppSizes.spacingWide)),
-                            color: Theme.of(context).colorScheme.onBackground,
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
                           child: Center(
                               child: Text(

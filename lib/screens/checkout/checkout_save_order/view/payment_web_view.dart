@@ -38,10 +38,13 @@ class PaymentWebViewState extends State<PaymentWebView> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) {
+          return;
+        }
         Navigator.pushNamed(context, cartScreen);
-        return true;
       },
       child: Scaffold(
         appBar: AppBar(

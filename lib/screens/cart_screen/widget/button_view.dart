@@ -31,13 +31,13 @@ class ButtonView extends StatelessWidget {
                 borderRadius: const BorderRadius.all(Radius.circular(AppSizes.spacingNormal)),
                 side: BorderSide(
                     width: 1,
-                    color: Theme.of(context).colorScheme.onBackground),
+                    color: Theme.of(context).colorScheme.onSurface),
               ),
               elevation: 0.0,
               height: AppSizes.buttonHeight,
               minWidth: MediaQuery.of(context).size.width,
-              color: Theme.of(context).colorScheme.background,
-              textColor: Theme.of(context).colorScheme.onBackground,
+              color: Theme.of(context).colorScheme.surface,
+              textColor: Theme.of(context).colorScheme.onSurface,
               onPressed: () {
                 Navigator.pushReplacementNamed(context, home);
               },
@@ -47,7 +47,7 @@ class ButtonView extends StatelessWidget {
                 children: [
                    Icon(
                     Icons.arrow_forward,
-                    color: Theme.of(context).colorScheme.onBackground,
+                    color: Theme.of(context).colorScheme.onSurface,
                     size: AppSizes.spacingWide,
                   ),
                   const SizedBox(
@@ -57,7 +57,7 @@ class ButtonView extends StatelessWidget {
                     StringConstants.continueShopping.localized().toUpperCase(),
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.onBackground,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                   ),
                 ],
@@ -74,13 +74,13 @@ class ButtonView extends StatelessWidget {
                 borderRadius: const BorderRadius.all(Radius.circular(AppSizes.spacingNormal)),
                 side: BorderSide(
                     width: 1,
-                    color: Theme.of(context).colorScheme.onBackground),
+                    color: Theme.of(context).colorScheme.onSurface),
               ),
               elevation: 0.0,
               height: AppSizes.buttonHeight,
               minWidth: MediaQuery.of(context).size.width,
-              color: Theme.of(context).colorScheme.background,
-              textColor: Theme.of(context).colorScheme.onBackground,
+              color: Theme.of(context).colorScheme.surface,
+              textColor: Theme.of(context).colorScheme.onSurface,
               onPressed: () {
                 _onPressAllRemove(context);
               },
@@ -89,7 +89,7 @@ class ButtonView extends StatelessWidget {
                 children: <Widget>[
                    Icon(
                     Icons.delete_forever,
-                    color:Theme.of(context).colorScheme.onBackground,
+                    color:Theme.of(context).colorScheme.onSurface,
                     size: AppSizes.spacingMedium*2,
                   ),
                   const SizedBox(
@@ -99,7 +99,7 @@ class ButtonView extends StatelessWidget {
                     StringConstants.emptyCart.localized().toUpperCase(),
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color:Theme.of(context).colorScheme.onBackground,
+                          color:Theme.of(context).colorScheme.onSurface,
                         ),
                   ),
                 ],
@@ -116,13 +116,13 @@ class ButtonView extends StatelessWidget {
                 borderRadius: const BorderRadius.all(Radius.circular(AppSizes.spacingNormal)),
                 side: BorderSide(
                     width: 1,
-                    color: Theme.of(context).colorScheme.onBackground),
+                    color: Theme.of(context).colorScheme.onSurface),
               ),
               elevation: 0.0,
               height: AppSizes.buttonHeight,
               minWidth: MediaQuery.of(context).size.width,
-              color: Theme.of(context).colorScheme.background,
-              textColor: Theme.of(context).colorScheme.onBackground,
+              color: Theme.of(context).colorScheme.surface,
+              textColor: Theme.of(context).colorScheme.onSurface,
               onPressed: () {
                 cartScreenBloc?.add(UpdateCartEvent(selectedItems));
               },
@@ -132,7 +132,7 @@ class ButtonView extends StatelessWidget {
                 children: <Widget>[
                    Icon(
                     Icons.update,
-                    color:Theme.of(context).colorScheme.onBackground,
+                    color:Theme.of(context).colorScheme.onSurface,
                     size: AppSizes.spacingMedium*2,
                   ),
                   const SizedBox(
@@ -142,7 +142,7 @@ class ButtonView extends StatelessWidget {
                     StringConstants.updateCart.localized().toUpperCase(),
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color:Theme.of(context).colorScheme.onBackground,
+                          color:Theme.of(context).colorScheme.onSurface,
                         ),
                   ),
                 ],
@@ -160,7 +160,7 @@ class ButtonView extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: Theme.of(context).colorScheme.background,
+          backgroundColor: Theme.of(context).colorScheme.surface,
           title: Text(
             StringConstants.deleteAllItemWarning.localized(),
           ),

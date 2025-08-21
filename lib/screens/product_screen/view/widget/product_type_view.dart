@@ -8,8 +8,6 @@
  *   @link https://store.webkul.com/license.html
  */
 
-import 'dart:developer';
-
 import 'package:bagisto_app_demo/data_model/product_model/booking_slots_modal.dart';
 import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
 import 'package:bagisto_app_demo/screens/product_screen/view/widget/customizable_option_view.dart';

@@ -124,7 +124,7 @@ class _ProfileDetailViewState extends State<ProfileDetailView>
                               } else {}
                               return null;
                             },
-                            value: genderValues?[currentGenderValue],
+                            // value: genderValues?[currentGenderValue],
                             decoration: InputDecoration(
                               contentPadding: const EdgeInsets.fromLTRB(
                                   AppSizes.spacingMedium,

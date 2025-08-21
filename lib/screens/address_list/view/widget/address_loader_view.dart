@@ -12,7 +12,7 @@ import 'package:bagisto_app_demo/screens/address_list/utils/index.dart';
 
 class AddressLoader extends StatelessWidget {
   final bool ? isFromDashboard;
-  const AddressLoader({Key? key, this.isFromDashboard}) : super(key: key);
+  const AddressLoader({super.key,  this.isFromDashboard});
 
   @override
   Widget build(BuildContext context) {

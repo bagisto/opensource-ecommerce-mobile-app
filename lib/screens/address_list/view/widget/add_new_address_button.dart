@@ -15,7 +15,7 @@ import 'package:bagisto_app_demo/screens/address_list/utils/index.dart';
 class AddNewAddressButton extends StatelessWidget {
   final  VoidCallback? reload;
   final bool? isFromDashboard;
-  const AddNewAddressButton({Key? key, this.reload,this.isFromDashboard}) : super(key: key);
+  const AddNewAddressButton({super.key,  this.reload,this.isFromDashboard});
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +27,7 @@ class AddNewAddressButton extends StatelessWidget {
               : Padding(
                 padding: const EdgeInsets.all(AppSizes.spacingNormal),
                 child: MaterialButton(
-            color: Theme.of(context).colorScheme.onBackground,
+            color: Theme.of(context).colorScheme.onSurface,
             padding: const EdgeInsets.all(AppSizes.spacingMedium),
             onPressed: () {
                 Navigator.pushNamed(context, addAddressScreen,
@@ -45,11 +45,11 @@ class AddNewAddressButton extends StatelessWidget {
                 children: [
                    Icon(
                     Icons.add,
-                    color:Theme.of(context).colorScheme.background,
+                    color:Theme.of(context).colorScheme.surface,
                   ),
                   Text(
                     StringConstants.addNewAddress.localized().toUpperCase(),
-                    style: TextStyle(color: Theme.of(context).colorScheme.background),
+                    style: TextStyle(color: Theme.of(context).colorScheme.surface),
                   )
                 ],
             ),

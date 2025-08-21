@@ -12,7 +12,6 @@ import 'package:bagisto_app_demo/data_model/graphql_base_model.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 import '../../screens/cart_screen/cart_model/cart_data_model.dart';
-import 'order_detail_model.dart';
 
 part 'order_invoices_model.g.dart';
 

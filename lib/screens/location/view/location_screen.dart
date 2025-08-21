@@ -18,7 +18,7 @@ export 'package:location/location.dart';
 class LocationScreen extends StatefulWidget {
   final String? address;
 
-  const LocationScreen({Key? key, this.address}) : super(key: key);
+  const LocationScreen({super.key,  this.address});
 
   @override
   State<LocationScreen> createState() => _LocationScreenState();

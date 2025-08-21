@@ -127,7 +127,7 @@ class CommonWidgets with EmailValidator {
         style: ButtonStyle(
           maximumSize: MaterialStateProperty.all(Size(buttonWidth, 60)),
           backgroundColor: MaterialStateProperty.all<Color>(
-            Theme.of(context).colorScheme.onBackground,
+            Theme.of(context).colorScheme.onSurface,
           ),
           shape: MaterialStateProperty.all<RoundedRectangleBorder>(
             RoundedRectangleBorder(
@@ -193,7 +193,7 @@ class CommonWidgets with EmailValidator {
         const SizedBox(height: 6),
         Theme(
           data: Theme.of(context).copyWith(
-            canvasColor: Theme.of(context).colorScheme.background,
+            canvasColor: Theme.of(context).colorScheme.surface,
           ),
           child: DropdownButtonFormField(
             style: Theme.of(context).textTheme.bodyMedium,
@@ -228,7 +228,7 @@ class CommonWidgets with EmailValidator {
               fillColor: Colors.black,
               focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(
-                    color: Theme.of(context).colorScheme.onBackground,
+                    color: Theme.of(context).colorScheme.onSurface,
                     width: 1,
                   ),
                   borderRadius: const BorderRadius.all(

@@ -367,7 +367,7 @@ class CartListItem extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: Theme.of(context).colorScheme.background,
+          backgroundColor: Theme.of(context).colorScheme.surface,
           title: Text(
             StringConstants.deleteItemWarning.localized(),
             style: Theme.of(context).textTheme.labelLarge,

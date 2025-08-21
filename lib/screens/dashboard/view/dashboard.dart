@@ -11,7 +11,7 @@
 import 'package:bagisto_app_demo/screens/dashboard/utils/index.dart';
 
 class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({Key? key}) : super(key: key);
+  const DashboardScreen({super.key});
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
@@ -107,9 +107,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                                   MediaQuery.of(context).size.width,
                                   AppSizes.buttonHeight),
                               backgroundColor:
-                                  Theme.of(context).colorScheme.onBackground,
+                                  Theme.of(context).colorScheme.onSurface,
                               foregroundColor:
-                                  Theme.of(context).colorScheme.background,
+                                  Theme.of(context).colorScheme.surface,
                             ),
                             onPressed: () {
                               Navigator.pushReplacementNamed(context, home);
@@ -133,7 +133,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                                       ?.copyWith(
                                           color: Theme.of(context)
                                               .colorScheme
-                                              .background),
+                                              .surface),
                                 ),
                               ],
                             ),
@@ -162,9 +162,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                                   MediaQuery.of(context).size.width,
                                   AppSizes.buttonHeight),
                               backgroundColor:
-                                  Theme.of(context).colorScheme.onBackground,
+                                  Theme.of(context).colorScheme.onSurface,
                               foregroundColor:
-                                  Theme.of(context).colorScheme.background,
+                                  Theme.of(context).colorScheme.surface,
                             ),
                             onPressed: () {
                               addressIsEmpty
@@ -202,7 +202,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                                       ?.copyWith(
                                           color: Theme.of(context)
                                               .colorScheme
-                                              .background),
+                                              .surface),
                                 ),
                               ],
                             ),
@@ -234,9 +234,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                                     MediaQuery.of(context).size.width,
                                     AppSizes.buttonHeight),
                                 backgroundColor:
-                                    Theme.of(context).colorScheme.onBackground,
+                                    Theme.of(context).colorScheme.onSurface,
                                 foregroundColor:
-                                    Theme.of(context).colorScheme.background,
+                                    Theme.of(context).colorScheme.surface,
                               ),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -255,7 +255,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                                         ?.copyWith(
                                             color: Theme.of(context)
                                                 .colorScheme
-                                                .background),
+                                                .surface),
                                   ),
                                 ],
                               ),

@@ -20,7 +20,7 @@ class GetTextField extends StatefulWidget {
   final Function(List, String)? callback;
   final List<Attributes>? customOptions;
   final NewProducts? productData;
-  const GetTextField({Key? key, this.variation, required this.index, required this.optionArray,this.callback,this.productData,this.customOptions}) : super(key: key);
+  const GetTextField({super.key,  this.variation, required this.index, required this.optionArray,this.callback,this.productData,this.customOptions});
 
   @override
   State<GetTextField> createState() => _GetTextFieldState();

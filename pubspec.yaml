@@ -44,12 +44,12 @@ dependencies:
   graphql_flutter: ^5.2.0-beta.6
   get_storage: ^2.1.1
   flutter_widget_from_html: ^0.15.0
-  skeleton_loader: ^3.0.1
+  skeleton_loader: ^2.0.0
   firebase_core: ^3.2.0
-  hive: ^4.0.0-dev.2
+  hive: ^2.2.3
   open_file: ^3.3.2
   intl: ^0.19.0
-  speech_to_text: ^6.6.2
+  speech_to_text: ^7.3.0
   cached_network_image: ^3.3.1
   google_fonts: ^6.2.1
   json_annotation: ^4.9.0

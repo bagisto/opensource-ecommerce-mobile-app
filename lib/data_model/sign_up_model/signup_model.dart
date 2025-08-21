@@ -10,7 +10,6 @@
 
 // ignore_for_file: file_names
 
-import 'package:bagisto_app_demo/data_model/graphql_base_model.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'signup_model.g.dart';

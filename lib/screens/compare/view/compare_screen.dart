@@ -13,7 +13,7 @@
 import 'package:bagisto_app_demo/screens/compare/utils/index.dart';
 
 class CompareScreen extends StatefulWidget {
-  const CompareScreen({Key? key}) : super(key: key);
+  const CompareScreen({super.key});
   @override
   State<CompareScreen> createState() => _CompareScreenState();
 }
@@ -89,7 +89,7 @@ class _CompareScreenState extends State<CompareScreen>
             return Visibility(
               visible: count > 0,
               child: FloatingActionButton(
-                backgroundColor: Theme.of(context).colorScheme.onBackground,
+                backgroundColor: Theme.of(context).colorScheme.onSurface,
                 onPressed: () {
                   CompareScreenBloc compareScreenBloc =
                       context.read<CompareScreenBloc>();

@@ -16,7 +16,7 @@ import '../widgets/news_letter_checkbox.dart';
 class SignUpScreen extends StatefulWidget {
   final bool? addShopSlug;
 
-  const SignUpScreen({Key? key, this.addShopSlug}) : super(key: key);
+  const SignUpScreen({super.key,  this.addShopSlug});
 
   @override
   State<SignUpScreen> createState() => _SignUpScreenState();
@@ -278,7 +278,7 @@ class _SignUpScreenState extends State<SignUpScreen> with EmailValidator {
                   elevation: 0.0,
                   height: 48,
                   minWidth: MediaQuery.of(context).size.width,
-                  color: Theme.of(context).colorScheme.onBackground,
+                  color: Theme.of(context).colorScheme.onSurface,
                   textColor: Theme.of(context).colorScheme.secondaryContainer,
                   onPressed: () {
                     if (!agreement) {
@@ -313,7 +313,7 @@ class _SignUpScreenState extends State<SignUpScreen> with EmailValidator {
           builder: (BuildContext context) {
             return Dialog(
               child: Container(
-                color: Theme.of(context).colorScheme.background,
+                color: Theme.of(context).colorScheme.surface,
                 padding: const EdgeInsets.all(
                   AppSizes.spacingWide,
                 ),

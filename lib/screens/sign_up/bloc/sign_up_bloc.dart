@@ -10,8 +10,6 @@
 
 import 'package:bagisto_app_demo/screens/sign_up/utils/index.dart';
 
-import '../../../data_model/sign_up_model/signup_model.dart';
-
 class SignUpBloc extends Bloc<SignUpBaseEvent, SignUpBaseState> {
   SignUpRepository? repository;
 

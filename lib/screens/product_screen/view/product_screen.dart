@@ -15,7 +15,6 @@ import 'package:hive/hive.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../data_model/download_sample_model.dart';
-import 'dart:developer';
 
 class ProductScreen extends StatefulWidget {
   final int? productId;
@@ -295,11 +294,11 @@ class _ProductScreenState extends State<ProductScreen> {
                       borderRadius:
                           BorderRadius.circular(AppSizes.spacingMedium),
                       side: BorderSide(
-                          color: Theme.of(context).colorScheme.onBackground)),
+                          color: Theme.of(context).colorScheme.onSurface)),
                   elevation: AppSizes.spacingSmall,
                   height: AppSizes.buttonHeight,
                   minWidth: MediaQuery.of(context).size.width,
-                  textColor: Theme.of(context).colorScheme.onBackground,
+                  textColor: Theme.of(context).colorScheme.onSurface,
                   onPressed: (productData?.isSaleable ?? false)
                       ? () {
                           checkInternetConnection().then((value) {
@@ -327,7 +326,7 @@ class _ProductScreenState extends State<ProductScreen> {
                               ?.copyWith(
                                   color: Theme.of(context)
                                       .colorScheme
-                                      .onBackground)),
+                                      .onSurface)),
                     ],
                   )),
             ),

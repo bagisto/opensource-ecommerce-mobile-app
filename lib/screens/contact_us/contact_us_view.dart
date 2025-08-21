@@ -212,7 +212,7 @@ class _ContactUsPageState extends State<ContactUsPage> with EmailValidator {
           elevation: 2.0,
           height: AppSizes.buttonHeight,
           minWidth: MediaQuery.of(context).size.width,
-          color: Theme.of(context).colorScheme.onBackground,
+          color: Theme.of(context).colorScheme.onSurface,
           onPressed: () {
             _submitForm();
           },

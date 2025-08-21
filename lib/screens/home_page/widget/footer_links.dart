@@ -88,7 +88,7 @@ class _FooterColumnsScreenState extends State<FooterColumnsScreen>
                   height: 51, // Matches the height of the text field
                   child: MaterialButton(
                     elevation: 0.0,
-                    color: Theme.of(context).colorScheme.onBackground,
+                    color: Theme.of(context).colorScheme.onSurface,
                     textColor: Theme.of(context).colorScheme.secondaryContainer,
                     onPressed: () {
                       if (_signUpFormKey.currentState?.validate() == true) {

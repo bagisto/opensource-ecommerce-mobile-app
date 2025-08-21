@@ -12,7 +12,7 @@ import 'package:bagisto_app_demo/screens/checkout/utils/index.dart';
 
 
 class CheckoutGuestAddressLoaderView extends StatelessWidget {
-  const CheckoutGuestAddressLoaderView({Key? key}) : super(key: key);
+  const CheckoutGuestAddressLoaderView({super.key});
 
   @override
   Widget build(BuildContext context) {

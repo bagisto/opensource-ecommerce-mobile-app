@@ -18,7 +18,7 @@ import 'package:bagisto_app_demo/screens/home_page/utils/index.dart';
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: Theme.of(context).colorScheme.background,
+          backgroundColor: Theme.of(context).colorScheme.surface,
           title: Text(StringConstants.internetIssue.localized()),
           actions: [
             MaterialButton(

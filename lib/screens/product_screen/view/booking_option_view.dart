@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:bagisto_app_demo/data_model/product_model/booking_slots_modal.dart';
 import 'package:bagisto_app_demo/screens/location/view/location_screen.dart';
 import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';

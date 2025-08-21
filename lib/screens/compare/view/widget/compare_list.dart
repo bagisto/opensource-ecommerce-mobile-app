@@ -100,12 +100,12 @@ class CompareList extends StatelessWidget {
                                 decoration: BoxDecoration(
                                   color: Theme.of(context)
                                       .colorScheme
-                                      .onBackground,
+                                      .onSurface,
                                   borderRadius: const BorderRadius.all(
                                       Radius.circular(AppSizes.spacingWide)),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.grey.withOpacity(0.4),
+                                      color: Colors.grey.withAlpha((0.4 * 255).round()),
                                       spreadRadius: 1,
                                       blurRadius: 7,
                                       offset: const Offset(

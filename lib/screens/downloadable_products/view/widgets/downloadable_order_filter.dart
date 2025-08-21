@@ -193,7 +193,7 @@ class _DownloadableOrderFiltersState extends State<DownloadableOrderFilters> {
                             _currentStatus = status.indexOf(value!);
                           });
                         },
-                        value: status[_currentStatus],
+                        // value: status[_currentStatus],
                         decoration: InputDecoration(
                           contentPadding:
                           const EdgeInsets.fromLTRB(12.0, 16.0, 12.0, 16.0),
@@ -286,7 +286,7 @@ class _DownloadableOrderFiltersState extends State<DownloadableOrderFilters> {
                   onPrimary: Colors.white,
                   onSurface: Colors.black,
                   secondary: Colors.black),
-              dialogBackgroundColor: Colors.white,
+              dialogTheme: const DialogTheme(backgroundColor: Colors.white),
             ),
             child: child ?? const Text(""),
           );

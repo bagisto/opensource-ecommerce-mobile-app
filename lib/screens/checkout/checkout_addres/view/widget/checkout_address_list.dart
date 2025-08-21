@@ -14,7 +14,7 @@ import 'package:bagisto_app_demo/screens/checkout/utils/index.dart';
 class CheckoutAddressList extends StatefulWidget {
   final  AddressModel addressModel;
 
-  const CheckoutAddressList({Key? key, required this.addressModel}) : super(key: key);
+  const CheckoutAddressList({super.key,  required this.addressModel});
 
   @override
   State<CheckoutAddressList> createState() => _CheckoutAddressListState();

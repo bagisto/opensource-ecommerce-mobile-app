@@ -16,7 +16,7 @@ import '../utils/app_constants.dart';
 
 class PriceWidgetHtml extends StatelessWidget {
   final String priceHtml;
-  const PriceWidgetHtml({Key? key, required this.priceHtml}) : super(key: key);
+  const PriceWidgetHtml({super.key,  required this.priceHtml});
 
   @override
   Widget build(BuildContext context) {

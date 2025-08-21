@@ -3,7 +3,6 @@ import 'dart:developer';
 import 'package:bagisto_app_demo/utils/extension.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 import '../data_model/theme_customization.dart';
 import '../utils/index.dart';
 

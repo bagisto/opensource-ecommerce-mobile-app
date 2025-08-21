@@ -15,7 +15,7 @@ import '../../data_model/currency_language_model.dart';
 import '../../main.dart';
 
 class CurrencyScreen extends StatefulWidget {
-  const CurrencyScreen({Key? key}) : super(key: key);
+  const CurrencyScreen({super.key});
 
   @override
   State<CurrencyScreen> createState() => _CurrencyScreenState();

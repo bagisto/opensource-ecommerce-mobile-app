@@ -14,6 +14,7 @@ import 'package:bagisto_app_demo/screens/home_page/data_model/get_categories_dra
 import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
 import 'package:bagisto_app_demo/utils/app_navigation.dart';
 import 'package:bagisto_app_demo/utils/push_notifications_manager.dart';
+import 'dart:io';
 import 'package:bagisto_app_demo/utils/theme_provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -87,7 +88,7 @@ Future<void> hiveRegisterAdapter() async {
 
 // restarts the widget by taking a child widget to draw and assign unique key to be associated with it
 class RestartWidget extends StatefulWidget {
-  const RestartWidget({Key? key, required this.child}) : super(key: key);
+  const RestartWidget({super.key, required this.child});
   final Widget child;
 
   static restartApp(BuildContext context) {
@@ -121,8 +122,8 @@ class _RestartWidgetState extends State<RestartWidget> {
 class BagistoApp extends StatefulWidget {
   const BagistoApp(
     this.selectedLanguage, {
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   final String? selectedLanguage;
   @override

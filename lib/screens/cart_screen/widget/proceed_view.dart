@@ -58,9 +58,9 @@ class ProceedView extends StatelessWidget {
             Expanded(
               flex: 1,
               child: MaterialButton(
-                color: Theme.of(context).colorScheme.onBackground,
+                color: Theme.of(context).colorScheme.onSurface,
                 elevation: 0.0,
-                textColor: Theme.of(context).colorScheme.background,
+                textColor: Theme.of(context).colorScheme.surface,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppSizes.spacingSmall),
                 ),

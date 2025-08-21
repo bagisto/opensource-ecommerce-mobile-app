@@ -230,11 +230,11 @@ class _SubCategoriesFilterScreenState extends State<SubCategoriesFilterScreen> {
           title == "Price"
               ? SliderTheme(
                   data: const SliderThemeData(
-                      showValueIndicator: ShowValueIndicator.always),
+                      showValueIndicator: ShowValueIndicator.onDrag),
                   child: RangeSlider(
                     min: widget.data?.minPrice ?? 0,
                     max: widget.data?.maxPrice ?? 500,
-                    activeColor: Theme.of(context).colorScheme.onBackground,
+                    activeColor: Theme.of(context).colorScheme.onSurface,
                     inactiveColor: Colors.grey.shade300,
                     labels: RangeLabels(
                       startPriceValue.toString(),

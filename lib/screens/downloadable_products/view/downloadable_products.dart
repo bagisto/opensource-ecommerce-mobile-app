@@ -15,7 +15,7 @@ import '../data_model/download_product_Image_model.dart';
 import 'widgets/downloadable_order_filter.dart';
 
 class DownLoadableScreen extends StatefulWidget {
-  const DownLoadableScreen({Key? key}) : super(key: key);
+  const DownLoadableScreen({super.key});
 
   @override
   State<DownLoadableScreen> createState() => _DownLoadableScreenState();
