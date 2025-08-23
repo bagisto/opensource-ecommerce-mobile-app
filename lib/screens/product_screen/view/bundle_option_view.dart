@@ -294,8 +294,8 @@ class _BundleOptionsViewState extends State<BundleOptionsView> {
                 ),
                 CheckboxGroup(
                   checked: selectedItem,
-                  activeColor: Theme.of(context).colorScheme.onBackground,
-                  checkColor: Theme.of(context).colorScheme.background,
+                  activeColor: Theme.of(context).colorScheme.onSurface,
+                  checkColor: Theme.of(context).colorScheme.surface,
                   labels: val?.toList(),
                   onChange: (isChecked, label, index, key) {
                     var product = option?.bundleOptionProducts?[index];

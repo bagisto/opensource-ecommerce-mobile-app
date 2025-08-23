@@ -9,7 +9,6 @@
  *   @link https://store.webkul.com/license.html
  */
 
-import 'package:bagisto_app_demo/utils/server_configuration.dart';
 import 'package:flutter/material.dart';
 import '../data_model/currency_language_model.dart';
 import '../services/api_client.dart';

@@ -14,7 +14,6 @@ import '../../../data_model/add_to_wishlist_model/add_wishlist_model.dart';
 import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
 
 import '../data_model/download_sample_model.dart';
-import 'dart:developer';
 
 class ProductScreenBLoc extends Bloc<ProductScreenBaseEvent, ProductBaseState> {
   ProductScreenRepo? repository;

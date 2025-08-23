@@ -13,7 +13,7 @@ import 'package:flutter/cupertino.dart';
 import '../utils/index.dart';
 
 class ChangeEmailAndPassword extends StatefulWidget {
-  const ChangeEmailAndPassword({Key? key}) : super(key: key);
+  const ChangeEmailAndPassword({super.key});
 
   @override
   State<ChangeEmailAndPassword> createState() => _ChangeEmailAndPasswordState();
@@ -248,7 +248,7 @@ class _ChangeEmailAndPasswordState extends State<ChangeEmailAndPassword>
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: Theme.of(context).colorScheme.background,
+          backgroundColor: Theme.of(context).colorScheme.surface,
           title: Text(StringConstants.deleteAccount.localized()),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -299,7 +299,7 @@ class _ChangeEmailAndPasswordState extends State<ChangeEmailAndPassword>
         barrierDismissible: false,
         builder: (BuildContext context) {
           return Dialog(
-            backgroundColor: Theme.of(context).colorScheme.background,
+            backgroundColor: Theme.of(context).colorScheme.surface,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [

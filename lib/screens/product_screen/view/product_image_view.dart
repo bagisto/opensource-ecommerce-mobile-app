@@ -138,7 +138,7 @@ class ProductImageViewState extends State<ProductImageView> {
             child: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.onBackground,
+                  color: Theme.of(context).colorScheme.onSurface,
                   borderRadius: const BorderRadius.all(Radius.circular(20)),
                   boxShadow: [
                     BoxShadow(
@@ -181,7 +181,7 @@ class ProductImageViewState extends State<ProductImageView> {
           child: Container(
               padding: const EdgeInsets.all(9),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.onBackground,
+                color: Theme.of(context).colorScheme.onSurface,
                 borderRadius: const BorderRadius.all(Radius.circular(18)),
                 boxShadow: [
                   BoxShadow(

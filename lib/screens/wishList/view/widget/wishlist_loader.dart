@@ -13,7 +13,7 @@ import 'package:bagisto_app_demo/screens/wishList/utils/index.dart';
 
 
 class WishListLoader extends StatelessWidget {
-  const WishListLoader({Key? key}) : super(key: key);
+  const WishListLoader({super.key});
 
   @override
   Widget build(BuildContext context) {

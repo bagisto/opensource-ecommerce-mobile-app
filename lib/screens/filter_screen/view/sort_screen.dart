@@ -93,7 +93,7 @@ class _SortBottomSheetState extends State<SortBottomSheet> {
                 },
                 style: TextButton.styleFrom(
                     backgroundColor:
-                        Theme.of(context).colorScheme.onBackground),
+                        Theme.of(context).colorScheme.onSurface),
                 child: Text(StringConstants.clear.localized().toUpperCase(),
                     style: Theme.of(context).textTheme.labelMedium?.copyWith(
                           color:
@@ -112,44 +112,40 @@ class _SortBottomSheetState extends State<SortBottomSheet> {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  RadioListTile<String?>(
-                    dense: true,
-                    activeColor: Theme.of(context).colorScheme.onBackground,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 6),
-                    visualDensity: const VisualDensity(
-                      horizontal: VisualDensity.minimumDensity,
-                    ),
-                    value: itemLabel,
-                    groupValue: value,
-                    onChanged: (ind) {
-                      setState(() {
-                        value = ind;
-                        appStoragePref.setSortName(value ?? "");
-                      });
-
-                      widget.filters.removeWhere((element) =>
-                          element["key"] == '"sort"' ||
-                          element["key"] == '"page"');
-
-                      widget.filters.add({
-                        "key": '"sort"',
-                        "value": '"${data?[index].value}"'
-                      });
-
-                      widget.subCategoryBloc?.add(FetchSubCategoryEvent(
-                        widget.filters,
-                        widget.page,
-                      ));
-
-                      widget.subCategoryBloc?.add(
-                          OnClickSubCategoriesLoaderEvent(
-                              isReqToShowLoader: true));
-
-                      Navigator.pop(context);
-                    },
+                  ListTile(
                     title: Text(
                       itemLabel,
                       style: Theme.of(context).textTheme.labelSmall,
+                    ),
+                    leading: Radio<String?>(
+                      value: itemLabel,
+                      groupValue: value,
+                      onChanged: (newValue) {
+                        setState(() {
+                          value = newValue;
+                          appStoragePref.setSortName(value ?? "");
+                        });
+
+                        widget.filters.removeWhere((element) =>
+                        element["key"] == '"sort"' ||
+                            element["key"] == '"page"');
+
+                        widget.filters.add({
+                          "key": '"sort"',
+                          "value": '"${data?[index].value}"'
+                        });
+
+                        widget.subCategoryBloc?.add(FetchSubCategoryEvent(
+                          widget.filters,
+                          widget.page,
+                        ));
+
+                        widget.subCategoryBloc?.add(
+                            OnClickSubCategoriesLoaderEvent(
+                                isReqToShowLoader: true));
+
+                        Navigator.pop(context);
+                      },
                     ),
                   ),
                 ],

@@ -12,7 +12,7 @@
 import 'package:bagisto_app_demo/screens/checkout/utils/index.dart';
 
 class CheckoutOrderReviewLoaderView extends StatelessWidget {
-  const CheckoutOrderReviewLoaderView({Key? key}) : super(key: key);
+  const CheckoutOrderReviewLoaderView({super.key});
 
   @override
   Widget build(BuildContext context) {

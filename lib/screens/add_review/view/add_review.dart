@@ -241,7 +241,7 @@ class _AddReviewState extends State<AddReview> {
                       elevation: 0.0,
                       height: AppSizes.buttonHeight,
                       minWidth: MediaQuery.of(context).size.width,
-                      color: Theme.of(context).colorScheme.onBackground,
+                      color: Theme.of(context).colorScheme.onSurface,
                       textColor:
                           Theme.of(context).colorScheme.secondaryContainer,
                       onPressed: () {

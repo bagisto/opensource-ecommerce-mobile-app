@@ -9,10 +9,9 @@
  */
 
 import 'package:bagisto_app_demo/screens/orders/utils/index.dart';
-import 'package:bagisto_app_demo/utils/prefetching_helper.dart';
 
 class OrdersList extends StatefulWidget {
-  const OrdersList({Key? key, this.isFromDashboard}) : super(key: key);
+  const OrdersList({super.key,  this.isFromDashboard});
   final bool? isFromDashboard;
 
   @override
@@ -197,8 +196,8 @@ class _OrdersListState extends State<OrdersList> with OrderStatusBGColorHelper {
                           borderRadius: BorderRadius.all(Radius.circular(5.0))),
                       elevation: 0.0,
                       minWidth: AppSizes.buttonHeight,
-                      color: Theme.of(context).colorScheme.onBackground,
-                      textColor: Theme.of(context).colorScheme.background,
+                      color: Theme.of(context).colorScheme.onSurface,
+                      textColor: Theme.of(context).colorScheme.surface,
                       onPressed: () {
                         page = 1;
                         orderId.clear();
@@ -366,11 +365,11 @@ class _OrdersListState extends State<OrdersList> with OrderStatusBGColorHelper {
                           borderRadius: BorderRadius.circular(8.0),
                           side: BorderSide(
                               color:
-                                  Theme.of(context).colorScheme.onBackground)),
+                                  Theme.of(context).colorScheme.onSurface)),
                       elevation: 2.0,
                       height: AppSizes.buttonHeight,
                       minWidth: MediaQuery.of(context).size.width / 2.2,
-                      textColor: Theme.of(context).colorScheme.onBackground,
+                      textColor: Theme.of(context).colorScheme.onSurface,
                       onPressed: () {
                         Navigator.pop(context);
                       },
@@ -385,7 +384,7 @@ class _OrdersListState extends State<OrdersList> with OrderStatusBGColorHelper {
                                 ?.copyWith(
                                     color: Theme.of(context)
                                         .colorScheme
-                                        .onBackground),
+                                        .onSurface),
                           ),
                         ],
                       )),
@@ -395,7 +394,7 @@ class _OrdersListState extends State<OrdersList> with OrderStatusBGColorHelper {
                       elevation: 2.0,
                       height: AppSizes.buttonHeight,
                       minWidth: MediaQuery.of(context).size.width / 2.2,
-                      color: Theme.of(context).colorScheme.onBackground,
+                      color: Theme.of(context).colorScheme.onSurface,
                       textColor: MobiKulTheme.primaryColor,
                       onPressed: () {
                         page = 1;

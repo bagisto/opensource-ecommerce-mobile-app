@@ -13,7 +13,7 @@ import 'package:bagisto_app_demo/screens/account/utils/index.dart';
 class ProfileImageView extends StatefulWidget {
   final Function(XFile? imageFile, {bool isDelete})? callback;
 
-  const ProfileImageView({Key? key, this.callback}) : super(key: key);
+  const ProfileImageView({super.key, this.callback});
 
   @override
   State<ProfileImageView> createState() => _ProfileImageViewState();
@@ -74,7 +74,7 @@ class _ProfileImageViewState extends State<ProfileImageView> {
                 padding: const EdgeInsets.all(AppSizes.spacingNormal),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(AppSizes.spacingLarge),
-                  color: Theme.of(context).colorScheme.onBackground,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
                 child: Icon(
                   Icons.delete_forever,
@@ -92,7 +92,7 @@ class _ProfileImageViewState extends State<ProfileImageView> {
               padding: const EdgeInsets.all(AppSizes.spacingNormal),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(AppSizes.spacingLarge),
-                color: Theme.of(context).colorScheme.onBackground,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
               child: Icon(
                 Icons.camera_alt,

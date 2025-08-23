@@ -114,14 +114,14 @@ class ProductReviewSummaryViewState extends State<ProductReviewSummaryView> {
                                     const EdgeInsets.symmetric(
                                         vertical: 8, horizontal: 15)),
                                 foregroundColor: MaterialStateProperty.all<Color>(
-                                    Theme.of(context).colorScheme.onBackground),
+                                    Theme.of(context).colorScheme.onSurface),
                                 shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                                     RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(8.0),
                                         side: BorderSide(
                                             color: Theme.of(context)
                                                 .colorScheme
-                                                .onBackground)))),
+                                                .onSurface)))),
                             onPressed: () {
                               widget.isLogin ?? false
                                   ? Navigator.pushNamed(context, addReviewScreen,

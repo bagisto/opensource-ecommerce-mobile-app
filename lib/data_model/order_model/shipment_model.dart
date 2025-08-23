@@ -11,8 +11,6 @@
 import 'package:bagisto_app_demo/data_model/graphql_base_model.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-import 'order_detail_model.dart';
-
 part 'shipment_model.g.dart';
 
 @JsonSerializable()

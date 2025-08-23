@@ -11,7 +11,7 @@
 import 'package:bagisto_app_demo/screens/compare/utils/index.dart';
 
 class CompareLoaderView extends StatelessWidget {
-  const CompareLoaderView({Key? key}) : super(key: key);
+  const CompareLoaderView({super.key});
 
   @override
   Widget build(BuildContext context) {

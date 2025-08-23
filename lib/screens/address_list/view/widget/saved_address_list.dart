@@ -199,7 +199,7 @@ class SavedAddressList extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: Theme.of(context).colorScheme.background,
+          backgroundColor: Theme.of(context).colorScheme.surface,
           title: Text(
             StringConstants.deleteAddressWarning.localized(),
           ),

@@ -8,8 +8,6 @@
  *   @link https://store.webkul.com/license.html
  */
 
-import 'dart:developer';
-
 import 'package:bagisto_app_demo/screens/home_page/utils/index.dart';
 
 import '../../../data_model/add_to_wishlist_model/add_wishlist_model.dart';

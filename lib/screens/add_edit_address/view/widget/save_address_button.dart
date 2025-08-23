@@ -85,7 +85,7 @@ class _SaveAddressButtonState extends State<SaveAddressButton> {
           elevation: 0.0,
           height: AppSizes.buttonHeight,
           minWidth: MediaQuery.of(context).size.width,
-          color: Theme.of(context).colorScheme.onBackground,
+          color: Theme.of(context).colorScheme.onSurface,
           textColor: Theme.of(context).colorScheme.secondaryContainer,
           onPressed: () {
             _onPressSaveButton();
@@ -109,7 +109,7 @@ class _SaveAddressButtonState extends State<SaveAddressButton> {
           builder: (BuildContext context) {
             return Dialog(
               child: Container(
-                color: Theme.of(context).colorScheme.background,
+                color: Theme.of(context).colorScheme.surface,
                 padding: const EdgeInsets.all(AppSizes.spacingWide),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,

@@ -18,8 +18,7 @@ class AddNewAddress extends StatefulWidget {
   final bool? isCheckout;
 
   const AddNewAddress(this.isEdit, this.addressModel,
-      {Key? key, this.isCheckout = false})
-      : super(key: key);
+      {super.key, this.isCheckout = false});
 
   @override
   State<AddNewAddress> createState() => _AddNewAddressState();
@@ -158,7 +157,7 @@ class _AddNewAddressState extends State<AddNewAddress> {
                     shape: BoxShape.circle),
                 child: Icon(
                   Icons.my_location,
-                  color: Theme.of(context).colorScheme.background,
+                  color: Theme.of(context).colorScheme.surface,
                 ),
               ),
             ),

@@ -13,7 +13,7 @@ import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
 
 class ReviewLinearProgressIndicator extends StatelessWidget {
  final dynamic percentage;
-  const ReviewLinearProgressIndicator({Key? key, this.percentage}) : super(key: key);
+  const ReviewLinearProgressIndicator({super.key,  this.percentage});
 
   @override
   Widget build(BuildContext context) {

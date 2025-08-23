@@ -2,7 +2,6 @@ import 'package:bagisto_app_demo/utils/index.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import '../utils/app_constants.dart';
-import 'dart:developer';
 
 class CommonWebView extends StatefulWidget {
   final String? redirectUrl;

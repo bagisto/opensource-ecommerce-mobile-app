@@ -423,7 +423,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         Expanded(
                           flex: 1,
                           child: MaterialButton(
-                            color: Theme.of(context).colorScheme.onBackground,
+                            color: Theme.of(context).colorScheme.onSurface,
                             elevation: 0.0,
                             textColor: MobiKulTheme.primaryColor,
                             shape: RoundedRectangleBorder(
@@ -492,7 +492,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                   ?.copyWith(
                                       color: Theme.of(context)
                                           .colorScheme
-                                          .background),
+                                          .surface),
                             ),
                           ),
                         ),
@@ -537,7 +537,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       Expanded(
                         flex: 1,
                         child: MaterialButton(
-                          color: Theme.of(context).colorScheme.onBackground,
+                          color: Theme.of(context).colorScheme.onSurface,
                           elevation: 0.0,
                           shape: RoundedRectangleBorder(
                             borderRadius:
@@ -588,7 +588,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                 ?.copyWith(
                                     color: Theme.of(context)
                                         .colorScheme
-                                        .background),
+                                        .surface),
                           ),
                         ),
                       ),

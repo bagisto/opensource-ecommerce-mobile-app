@@ -190,7 +190,7 @@ class _ReviewsListState extends State<ReviewsList> {
   //     context: context,
   //     builder: (BuildContext context) {
   //       return AlertDialog(
-  //         backgroundColor: Theme.of(context).colorScheme.background,
+  //         backgroundColor: Theme.of(context).colorScheme.surface,
   //         title: Text(
   //           StringConstants.deleteReviewWarning.localized(),
   //           style: Theme.of(context).textTheme.labelMedium,

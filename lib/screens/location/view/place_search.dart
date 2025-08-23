@@ -11,7 +11,7 @@
 import 'package:bagisto_app_demo/screens/location/utils/index.dart';
 
 class PlaceSearch extends StatefulWidget {
-  const PlaceSearch({Key? key}) : super(key: key);
+  const PlaceSearch({super.key});
 
   @override
   State<PlaceSearch> createState() => _PlaceSearchState();

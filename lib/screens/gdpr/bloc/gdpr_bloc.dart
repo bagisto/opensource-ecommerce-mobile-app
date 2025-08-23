@@ -8,7 +8,6 @@
  *   @link https://store.webkul.com/license.html
  */
 
-import 'dart:developer';
 import 'package:bagisto_app_demo/data_model/gdpr_models/gdpr_pdf_model.dart';
 import 'package:bagisto_app_demo/data_model/gdpr_models/gdpr_request_model.dart';
 import 'package:bagisto_app_demo/data_model/gdpr_models/gdpr_request_search_model.dart';

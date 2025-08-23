@@ -32,7 +32,7 @@ class _LogoutButtonState extends State<LogoutButton> {
         _onPressedLogout();
       },
       title: MaterialButton(
-        color: Theme.of(context).colorScheme.onBackground,
+        color: Theme.of(context).colorScheme.onSurface,
         elevation: 0.0,
         textColor: Theme.of(context).colorScheme.secondaryContainer,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
@@ -63,7 +63,7 @@ class _LogoutButtonState extends State<LogoutButton> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: Theme.of(context).colorScheme.background,
+          backgroundColor: Theme.of(context).colorScheme.surface,
           title: Text(
             StringConstants.logOutTitle.localized(),
             style: Theme.of(context).textTheme.headlineSmall,
@@ -104,7 +104,7 @@ class _LogoutButtonState extends State<LogoutButton> {
         builder: (BuildContext context) {
           return Dialog(
             child: Container(
-              color: Theme.of(context).colorScheme.background,
+              color: Theme.of(context).colorScheme.surface,
               padding: const EdgeInsets.all(AppSizes.spacingWide),
               child: Column(
                 mainAxisSize: MainAxisSize.min,

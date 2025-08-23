@@ -202,9 +202,9 @@ class _CustomizableOptionViewState extends State<CustomizableOptionView> {
             ),
             value: priceOption.id!,
             groupValue: selected,
-            activeColor: Theme.of(context).colorScheme.onBackground,
+            activeColor: Theme.of(context).colorScheme.onSurface,
             selected: selected == priceOption.id,
-            selectedTileColor: theme.colorScheme.onBackground
+            selectedTileColor: theme.colorScheme.onSurface
                 .withOpacity(0.1), // subtle highlight
             onChanged: (value) {
               _setSelectedValue(option.id!, {
@@ -578,8 +578,8 @@ class _CustomizableOptionViewState extends State<CustomizableOptionView> {
             shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.all(Radius.circular(4.0))),
             elevation: 0.0,
-            backgroundColor: Theme.of(context).colorScheme.onBackground,
-            foregroundColor: Theme.of(context).colorScheme.background,
+            backgroundColor: Theme.of(context).colorScheme.onSurface,
+            foregroundColor: Theme.of(context).colorScheme.surface,
           ),
         ),
         if (file != null)

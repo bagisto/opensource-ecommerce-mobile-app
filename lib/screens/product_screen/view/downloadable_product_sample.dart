@@ -12,7 +12,6 @@
 
 import 'dart:io';
 import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:open_file/open_file.dart';
 
 

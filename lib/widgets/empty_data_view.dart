@@ -34,7 +34,7 @@ class EmptyDataView extends StatelessWidget {
         children: [
           ColorFiltered(
             colorFilter: ColorFilter.mode(
-              Theme.of(context).colorScheme.onBackground,
+              Theme.of(context).colorScheme.onSurface,
               BlendMode.srcIn,
             ),
             child: LottieBuilder.asset(assetPath,

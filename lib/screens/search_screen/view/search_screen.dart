@@ -12,7 +12,7 @@ import 'package:bagisto_app_demo/screens/search_screen/utils/index.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 class SearchScreen extends StatefulWidget {
-  const SearchScreen({Key? key}) : super(key: key);
+  const SearchScreen({super.key});
 
   @override
   State<SearchScreen> createState() => _SearchScreenState();

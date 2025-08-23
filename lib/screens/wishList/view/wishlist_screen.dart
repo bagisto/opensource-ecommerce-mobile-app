@@ -11,7 +11,7 @@
 import 'package:bagisto_app_demo/screens/wishList/utils/index.dart';
 
 class WishListScreen extends StatefulWidget {
-  const WishListScreen({Key? key}) : super(key: key);
+  const WishListScreen({super.key});
 
   @override
   State<WishListScreen> createState() => _WishListScreenState();
@@ -80,7 +80,7 @@ class _WishListScreenState extends State<WishListScreen> {
               return Visibility(
                 visible: count > 0 ? true : false,
                 child: FloatingActionButton(
-                  backgroundColor: Theme.of(context).colorScheme.onBackground,
+                  backgroundColor: Theme.of(context).colorScheme.onSurface,
                   onPressed: () {
                     wishListBloc?.add(
                         OnClickWishListLoaderEvent(isReqToShowLoader: true));

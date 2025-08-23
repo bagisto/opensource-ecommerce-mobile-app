@@ -50,15 +50,15 @@ class GuestCheckoutView extends StatelessWidget {
                     ),
                     elevation: AppSizes.spacingSmall,
                     height: AppSizes.buttonHeight,
-                    color: Theme.of(context).colorScheme.onBackground,
-                    textColor: Theme.of(context).colorScheme.background,
+                    color: Theme.of(context).colorScheme.onSurface,
+                    textColor: Theme.of(context).colorScheme.surface,
                     onPressed: () {
                       Navigator.pushNamed(context, signUp, arguments: false);
                     },
                     child: Text(
                       StringConstants.signUpLabel.localized().toUpperCase(),
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: Theme.of(context).colorScheme.background,
+                            color: Theme.of(context).colorScheme.surface,
                           ),
                     ),
                   ),
@@ -79,15 +79,15 @@ class GuestCheckoutView extends StatelessWidget {
                     ),
                     elevation: AppSizes.spacingSmall,
                     height: AppSizes.buttonHeight,
-                    color: Theme.of(context).colorScheme.onBackground,
-                    textColor: Theme.of(context).colorScheme.background,
+                    color: Theme.of(context).colorScheme.onSurface,
+                    textColor: Theme.of(context).colorScheme.surface,
                     onPressed: () {
                       Navigator.of(context).pushNamed(signIn);
                     },
                     child: Text(
                       StringConstants.signIn.localized().toUpperCase(),
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: Theme.of(context).colorScheme.background,
+                            color: Theme.of(context).colorScheme.surface,
                           ),
                     ),
                   ),
@@ -109,8 +109,8 @@ class GuestCheckoutView extends StatelessWidget {
                       elevation: AppSizes.spacingSmall,
                       height: AppSizes.buttonHeight,
                       minWidth: MediaQuery.of(context).size.width / 1,
-                      color: Theme.of(context).colorScheme.onBackground,
-                      textColor: Theme.of(context).colorScheme.background,
+                      color: Theme.of(context).colorScheme.onSurface,
+                      textColor: Theme.of(context).colorScheme.surface,
                       onPressed: () {
                         bool downloadable =
                             checkVirtualDownloadable(cartDetailsModel.items);
@@ -129,7 +129,7 @@ class GuestCheckoutView extends StatelessWidget {
                             .localized()
                             .toUpperCase(),
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: Theme.of(context).colorScheme.background),
+                            color: Theme.of(context).colorScheme.surface),
                       )),
                 ),
               )

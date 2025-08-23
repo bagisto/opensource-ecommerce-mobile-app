@@ -93,7 +93,7 @@ class _WishlistItemListState extends State<WishlistItemList> {
                                   decoration: BoxDecoration(
                                     color: Theme.of(context)
                                         .colorScheme
-                                        .onBackground,
+                                        .onSurface,
                                     borderRadius: const BorderRadius.all(
                                         Radius.circular(20)),
                                     boxShadow: [

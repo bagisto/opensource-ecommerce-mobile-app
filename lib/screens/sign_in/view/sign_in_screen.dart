@@ -14,7 +14,7 @@ import 'package:bagisto_app_demo/screens/sign_in/utils/index.dart';
 import '../../../utils/server_configuration.dart';
 
 class SignInScreen extends StatefulWidget {
-  const SignInScreen({Key? key}) : super(key: key);
+  const SignInScreen({super.key});
 
   @override
   State<SignInScreen> createState() => _SignInScreenState();
@@ -224,7 +224,7 @@ class _SignInScreenState extends State<SignInScreen> with EmailValidator {
                     elevation: 0.0,
                     height: AppSizes.buttonHeight,
                     minWidth: MediaQuery.of(context).size.width,
-                    color: Theme.of(context).colorScheme.onBackground,
+                    color: Theme.of(context).colorScheme.onSurface,
                     onPressed: () {
                       _onPressSignInButton();
                     },
@@ -238,18 +238,18 @@ class _SignInScreenState extends State<SignInScreen> with EmailValidator {
                       borderRadius:
                           const BorderRadius.all(Radius.circular(5.0)),
                       side: BorderSide(
-                          color: Theme.of(context).colorScheme.onBackground),
+                          color: Theme.of(context).colorScheme.onSurface),
                     ),
                     elevation: 0.0,
                     height: AppSizes.buttonHeight,
                     minWidth: MediaQuery.of(context).size.width,
-                    textColor: Theme.of(context).colorScheme.onBackground,
+                    textColor: Theme.of(context).colorScheme.onSurface,
                     onPressed: () {
                       Navigator.pushNamed(context, signUp, arguments: false);
                     },
                     child: Text(
                         StringConstants.createAnAccount.localized().toUpperCase(),
-                        style: Theme.of(context).textTheme.labelMedium?.copyWith(color:Theme.of(context).colorScheme.onBackground)),
+                        style: Theme.of(context).textTheme.labelMedium?.copyWith(color:Theme.of(context).colorScheme.onSurface)),
                   ),
                   const SizedBox(height: AppSizes.spacingWide),
                   if ((appStoragePref.getFingerPrintUser()).isNotEmpty)
@@ -291,7 +291,7 @@ class _SignInScreenState extends State<SignInScreen> with EmailValidator {
         builder: (BuildContext context) {
           return Dialog(
             child: Container(
-              color: Theme.of(context).colorScheme.background,
+              color: Theme.of(context).colorScheme.surface,
               padding: const EdgeInsets.all(
                 AppSizes.spacingMedium,
               ),

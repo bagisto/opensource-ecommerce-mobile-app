@@ -11,7 +11,7 @@
 import 'package:bagisto_app_demo/screens/add_edit_address/utils/index.dart';
 
 class AddEditLoaderView extends StatelessWidget {
-  const AddEditLoaderView({Key? key}) : super(key: key);
+  const AddEditLoaderView({super.key});
 
   @override
   Widget build(BuildContext context) {

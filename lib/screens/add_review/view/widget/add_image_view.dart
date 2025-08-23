@@ -19,7 +19,6 @@ import '../../../../utils/string_constants.dart';
 import '../../../../widgets/common_widgets.dart';
 import '../../bloc/add_review_event.dart';
 import '../../bloc/add_review_bloc.dart';
-import 'package:http/http.dart' as http;
 
 class AddImageView extends StatefulWidget {
   final AddReviewBloc? addReviewBloc;
@@ -72,11 +71,11 @@ class _AddImageViewState extends State<AddImageView> {
           child: OutlinedButton(
             style: OutlinedButton.styleFrom(
                 side: BorderSide(
-                    color: Theme.of(context).colorScheme.onBackground)),
+                    color: Theme.of(context).colorScheme.onSurface)),
             child: Text(StringConstants.addImage.localized().toUpperCase(),
               style: TextStyle(
                   fontSize: AppSizes.spacingLarge,
-                  color: Theme.of(context).colorScheme.onBackground),
+                  color: Theme.of(context).colorScheme.onSurface),
             ),
             onPressed: () {
               _onPressAddImage(context);
@@ -92,7 +91,7 @@ class _AddImageViewState extends State<AddImageView> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            backgroundColor: Theme.of(context).colorScheme.background,
+            backgroundColor: Theme.of(context).colorScheme.surface,
             title: Text(
               StringConstants.pleaseChoose.localized(),
             ),

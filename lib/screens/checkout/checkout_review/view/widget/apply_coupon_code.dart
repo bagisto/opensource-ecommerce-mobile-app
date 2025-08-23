@@ -97,7 +97,7 @@ class _ApplyCouponCodeState extends State<ApplyCouponCode> {
                           right: 3),
                       child: MaterialButton(
                         height: AppSizes.buttonHeight+5,
-                        color: Theme.of(context).colorScheme.onBackground,
+                        color: Theme.of(context).colorScheme.onSurface,
                         elevation: 0.0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(AppSizes.spacingSmall),

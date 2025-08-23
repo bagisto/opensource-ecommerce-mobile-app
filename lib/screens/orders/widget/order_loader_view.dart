@@ -12,7 +12,7 @@
 import 'package:bagisto_app_demo/screens/orders/utils/index.dart';
 
 class OrderLoader extends StatelessWidget {
-  const OrderLoader({Key? key}) : super(key: key);
+  const OrderLoader({super.key});
 
   @override
   Widget build(BuildContext context) {

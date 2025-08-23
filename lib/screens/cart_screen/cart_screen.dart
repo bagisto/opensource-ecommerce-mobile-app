@@ -11,7 +11,7 @@
 import 'package:bagisto_app_demo/screens/cart_screen/utils/cart_index.dart';
 
 class CartScreen extends StatefulWidget {
-  const CartScreen({Key? key}) : super(key: key);
+  const CartScreen({super.key});
 
   @override
   State<CartScreen> createState() => _CartScreenState();

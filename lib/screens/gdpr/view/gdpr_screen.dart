@@ -2,12 +2,10 @@ import 'package:bagisto_app_demo/screens/checkout/utils/index.dart';
 import 'package:bagisto_app_demo/screens/gdpr/bloc/gdpr_bloc.dart';
 import 'package:bagisto_app_demo/screens/gdpr/bloc/gdpr_state.dart';
 import 'package:bagisto_app_demo/screens/gdpr/view/widget/create_request.dart';
-import 'package:bagisto_app_demo/screens/home_page/data_model/theme_customization.dart';
 import 'package:bagisto_app_demo/screens/product_screen/view/file_download.dart';
 import 'package:bagisto_app_demo/utils/index.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'dart:developer';
 import '../bloc/gdpr_event.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -175,7 +173,7 @@ class GdprScreenState extends State<GdprScreen> {
                           ),
                         ),
                         // fillColor:
-                        //     Theme.of(context).searchBarTheme.backgroundColor,
+                        //     Theme.of(context).searchBarTheme.surfaceColor,
                         contentPadding: EdgeInsets.symmetric(vertical: 10),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -338,7 +336,7 @@ class GdprScreenState extends State<GdprScreen> {
                   : EdgeInsets.zero,
               decoration: isLabel
                   ? BoxDecoration(
-                      color: color?.withOpacity(0.1),
+                      color: color?.withAlpha((0.1 * 255).round()),
                       borderRadius: BorderRadius.circular(6),
                     )
                   : null,

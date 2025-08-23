@@ -88,7 +88,7 @@ class OrderDetailTile extends StatelessWidget with OrderStatusBGColorHelper {
                                         MaterialStateProperty.all<Color>(
                                       Theme.of(context)
                                           .colorScheme
-                                          .onBackground,
+                                          .onSurface,
                                     ),
                                     shape: MaterialStateProperty.all<
                                         RoundedRectangleBorder>(
@@ -179,7 +179,7 @@ class OrderDetailTile extends StatelessWidget with OrderStatusBGColorHelper {
                                         ?.copyWith(
                                             color: Theme.of(context)
                                                 .colorScheme
-                                                .background),
+                                                .surface),
                                   ),
                                 )
                               : const SizedBox(),
@@ -658,14 +658,14 @@ class OrderDetailTile extends StatelessWidget with OrderStatusBGColorHelper {
           horizontal: AppSizes.spacingNormal,
         ),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.onBackground,
+          color: Theme.of(context).colorScheme.onSurface,
           borderRadius: BorderRadius.circular(4),
         ),
         child: Text(
           title.localized().toUpperCase(),
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.normal,
-              color: Theme.of(context).colorScheme.background),
+              color: Theme.of(context).colorScheme.surface),
         ),
       ),
       onTap: () {

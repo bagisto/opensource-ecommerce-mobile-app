@@ -18,7 +18,7 @@ class ApplyCouponView extends StatefulWidget {
 
 
 
-  const ApplyCouponView({Key? key, this.cartDetailsModel, this.cartScreenBloc,required this.discountController}) : super(key: key);
+  const ApplyCouponView({super.key,  this.cartDetailsModel, this.cartScreenBloc,required this.discountController});
 
   @override
   State<ApplyCouponView> createState() => _ApplyCouponViewState();
@@ -88,9 +88,9 @@ class _ApplyCouponViewState extends State<ApplyCouponView> {
                         height: AppSizes.buttonHeight+5,
                         color: Theme.of(context)
                             .colorScheme
-                            .onBackground,
+                            .onSurface,
                         textColor: Theme.of(context)
-                            .colorScheme.background,
+                            .colorScheme.surface,
                         elevation: 0.0,
                         shape:  RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(AppSizes.spacingSmall),
@@ -120,7 +120,7 @@ class _ApplyCouponViewState extends State<ApplyCouponView> {
                             ? Text(
                           StringConstants.apply.localized().toUpperCase(),
                           style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.background
+                            color: Theme.of(context).colorScheme.surface
                           ),
                         )
                             : Text(StringConstants.remove.localized()),

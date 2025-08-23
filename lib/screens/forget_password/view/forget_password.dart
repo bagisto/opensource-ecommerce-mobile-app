@@ -11,7 +11,7 @@
 import 'package:bagisto_app_demo/screens/forget_password/utils/index.dart';
 
 class ForgetPasswordScreen extends StatefulWidget {
-  const ForgetPasswordScreen({Key? key}) : super(key: key);
+  const ForgetPasswordScreen({super.key});
 
   @override
   State<ForgetPasswordScreen> createState() => _ForgetPasswordScreenState();
@@ -136,7 +136,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen>
                 elevation: 0.0,
                 height: AppSizes.buttonHeight,
                 minWidth: MediaQuery.of(context).size.width,
-                color: Theme.of(context).colorScheme.onBackground,
+                color: Theme.of(context).colorScheme.onSurface,
                 textColor: Colors.white,
                 onPressed: () {
                   _onPressButton();
@@ -144,7 +144,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen>
                 child: Text(
                   StringConstants.forgetPasswordButton.localized().toUpperCase(),
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.background
+                    color: Theme.of(context).colorScheme.surface
                   ),
                 ),
               ),
@@ -164,7 +164,7 @@ class _ForgetPasswordScreenState extends State<ForgetPasswordScreen>
           builder: (BuildContext context) {
             return Dialog(
               child: Container(
-                color: Theme.of(context).colorScheme.background,
+                color: Theme.of(context).colorScheme.surface,
                 padding: const EdgeInsets.all(
                   AppSizes.spacingWide,
                 ),

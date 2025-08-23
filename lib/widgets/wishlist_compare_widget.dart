@@ -17,7 +17,7 @@ Widget wishlistIcon(BuildContext context, bool? isInWishlist){
     padding: const EdgeInsets.all(AppSizes.spacingNormal),
     decoration: BoxDecoration(
       color: Theme.of(context)
-          .colorScheme.onBackground,
+          .colorScheme.onSurface,
       borderRadius: const BorderRadius.all(
           Radius.circular(AppSizes.spacingSmall)),
       boxShadow: [
@@ -56,7 +56,7 @@ Widget compareIcon(BuildContext context){
     decoration: BoxDecoration(
       color: Theme.of(context)
           .colorScheme
-          .onBackground,
+          .onSurface,
       borderRadius: const BorderRadius.all(
           Radius.circular(AppSizes.spacingSmall)),
       boxShadow: [

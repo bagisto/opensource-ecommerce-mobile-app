@@ -12,7 +12,7 @@ import 'package:bagisto_app_demo/data_model/account_models/account_update_model.
 import 'package:bagisto_app_demo/screens/account/utils/index.dart';
 
 class AccountScreen extends StatefulWidget {
-  const AccountScreen({Key? key}) : super(key: key);
+  const AccountScreen({super.key});
 
   @override
   State<AccountScreen> createState() => _AccountScreenState();
@@ -76,7 +76,7 @@ class _AccountScreenState extends State<AccountScreen>
             elevation: 2.0,
             height: AppSizes.buttonHeight,
             minWidth: MediaQuery.of(context).size.width,
-            color: Theme.of(context).colorScheme.onBackground,
+            color: Theme.of(context).colorScheme.onSurface,
             onPressed: () {
               _onPressSaveButton();
             },
@@ -230,7 +230,7 @@ class _AccountScreenState extends State<AccountScreen>
           builder: (BuildContext context) {
             return Dialog(
               child: Container(
-                color: Theme.of(context).colorScheme.background,
+                color: Theme.of(context).colorScheme.surface,
                 padding: const EdgeInsets.all(AppSizes.spacingWide),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
