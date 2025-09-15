@@ -10,7 +10,7 @@
 
 export 'package:bagisto_app_demo/utils/index.dart';
 export 'dart:async';
-export 'package:bagisto_app_demo/screens/wishList/view/widget/wishlist_item_list.dart';
+export 'package:bagisto_app_demo/screens/wishList/view/widget/wishlist_Item_list.dart';
 export 'package:bagisto_app_demo/screens/wishList/view/widget/wishlist_loader.dart';
 export 'package:bagisto_app_demo/screens/cart_screen/cart_model/add_to_cart_model.dart';
 export 'package:bagisto_app_demo/screens/wishList/bloc/wishlist_event.dart';
