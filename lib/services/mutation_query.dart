@@ -137,54 +137,53 @@ class MutationsData {
     }""";
   }
 
-  String addToCart(
-      {int? quantity,
-      String? productId,
-      List? downloadableLinks,
-      List? groupedParams,
-      List? bundleParams,
-      List? configurableParams,
-      var configurableId,
-      Map<String, dynamic>? booking,
-      List<Map<String, dynamic>>? customizableOptions}) {
+   String addToCart({
+    int? quantity,
+    String? productId,
+    List? downloadableLinks,
+    List? groupedParams,
+    List? bundleParams,
+    List? configurableParams,
+    var configurableId,
+    Map<String, dynamic>? booking,
+    List<Map<String, dynamic>>? customizableOptions,
+  }) {
+    final inputFields = <String>[
+      if (productId != null) "productId: $productId",
+      if (quantity != null) "quantity: $quantity",
+      if (configurableId != null) "selectedConfigurableOption: $configurableId",
+      if (configurableParams != null && configurableParams.isNotEmpty)
+        "superAttribute: $configurableParams",
+      if (groupedParams != null && groupedParams.isNotEmpty) "qty: $groupedParams",
+      if (downloadableLinks != null && downloadableLinks.isNotEmpty)
+        "links: $downloadableLinks",
+      if (bundleParams != null && bundleParams.isNotEmpty) "bundleOptions: $bundleParams",
+      if (booking != null && booking.isNotEmpty) "booking: $booking",
+      if (customizableOptions != null && customizableOptions.isNotEmpty)
+        "customizableOptions: $customizableOptions",
+    ];
+
+    final inputString = inputFields.join("\n");
+
     return """
-    mutation addItemToCart {
-      addItemToCart(input: {
-        productId: $productId
-        quantity: $quantity
-     
-        # Only use while adding configurable product to cart
-       selectedConfigurableOption : $configurableId
-        superAttribute:$configurableParams
-    
-        # Only use while adding grouped product to cart
-        qty:$groupedParams
-       
-
-        # Only use while adding downloadable product to cart
-        links: $downloadableLinks
-
-        # Only use while adding bundled product to cart
-        bundleOptions: $bundleParams
-
-        # Only use while adding booking product to cart
-        booking: $booking
-
-        # Customizable options
-        customizableOptions: $customizableOptions
-      }) {
-        success
-        message
-        cart {
-            id
-            itemsCount
-            couponCode
-            itemsQty
-            taxTotal
-        }
+  mutation addItemToCart {
+    addItemToCart(input: {
+      $inputString
+    }) {
+      success
+      message
+      cart {
+        id
+        itemsCount
+        couponCode
+        itemsQty
+        taxTotal
       }
-    }""";
+    }
   }
+  """;
+  }
+
 
   String addToWishlist({
     String? id,
