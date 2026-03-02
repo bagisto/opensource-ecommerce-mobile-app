@@ -292,12 +292,12 @@ class _AccountMenuBody extends StatelessWidget {
             trailingIcon: Icons.chevron_right,
             onTap: () => _onMenuItemTap(context, AccountMenuAction.editAccount),
           ),
-          const SizedBox(height: 2),
-          AccountMenuItem(
-            label: 'Preferences',
-            trailingIcon: Icons.chevron_right,
-            onTap: () => _onMenuItemTap(context, AccountMenuAction.preferences),
-          ),
+          // const SizedBox(height: 2),
+          // AccountMenuItem(
+          //   label: 'Preferences',
+          //   trailingIcon: Icons.chevron_right,
+          //   onTap: () => _onMenuItemTap(context, AccountMenuAction.preferences),
+          // ),
           const SizedBox(height: 2),
           AccountMenuItem(label: 'Logout', onTap: () => _onLogout(context)),
           const SizedBox(height: 2),

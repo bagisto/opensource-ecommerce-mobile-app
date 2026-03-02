@@ -54,10 +54,10 @@ The open-source ecommerce mobile app comes with an array of features to improve 
 Before beginning with the installation, you will need the following with the mentioned versions
 
 - Bagisto Version - v2.3.6
-- Android Studio Meerkat | 2024.3.1 Patch 2
-- Flutter Version - 3.3.5
-- Dart - 3.8.1
-- Xcode - 16.3
+- Android Studio Meerkat | 2024.3.2
+- Flutter Version - 3.38.9
+- Dart - 3.10.8
+- Xcode - 26.3
 - Swift - 6.1
 
 Make sure you have installed the [API module](https://github.com/bagisto/headless-ecommerce/) and set this up properly on your bagisto.
@@ -134,23 +134,36 @@ flutter run
 
 Change the baseDomain  as per your store
 
-**Path:** lib/utils/server_configuration.dart
+Go to `lib/core/constants/api_constants.dart` and configure the following:
 
-```sh
-static const String baseDomain = ‘....’;
+```dart
+/// Bagisto GraphQL endpoint (e.g., https://your-bagisto-server.com/graphql)
+const String bagistoEndpoint = 'YOUR_BAGISTO_ENDPOINT_HERE';
+
+/// Storefront key for Bagisto API
+/// Get this from your Bagisto admin panel
+const String storefrontKey = 'YOUR_STOREFRONT_KEY_HERE';
+
+/// Company name (optional metadata)
+const String companyName = 'Your Company Name';
 ```
-
-> Note: Add the value of the complete URL ending with the GraphQL API endpoint. E.g - <https://example.com/graphql>
 
 ### For Theme
 
-Change the Theme for your app
+In the `AppColors` class, find and modify the primary colors:
 
-**Path:** lib/utils/mobikul_theme.dart
+```dart
+class AppColors {
+  // Primary Colors - Modify these hex values to change the app's primary color
+  static const Color primary500 = Color(0xFFFF6900);  // Main primary color
+  static const Color primary600 = Color(0xFFF54900);  // Darker variant for pressed states
+  // ...
+}
+```
 
-```sh
-static const Color primaryColor = Color(***********);  
-static const Color accentColor = Color(***********); 
+**To change the primary color:**
+- Replace `0xFFFF6900` with your desired color hex value
+- Adjust `primary600` to a slightly darker shade of your primary color
 ```
 
 ### For Push Notification Service
@@ -184,15 +197,6 @@ Replace "GoogleService-Info.plist".
 > (Note: Here, “en” in en.json refers to the languages that would be supported within the application)
 
 ### For Splash Screen
-
-- For adding Lottie as Splash Screen
-
-  1. **Path:** assets/lottie/splash_screen.json
-  2. After updating the Lottie file, update the ‘splashLottie’ in lib/utils/assets_constants.
-
-```sh
- static const String splashLottie = "assets/lottie/splash_screen.json";
-```
 
 - For adding an Image as a Splash Screen
 
