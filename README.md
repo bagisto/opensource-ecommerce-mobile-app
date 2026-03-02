@@ -227,3 +227,4 @@ Contributions are welcome! Follow the contribution guidelines to get started.
 ## License
 
 Bagisto is open-sourced software licensed under the MIT license.
+
