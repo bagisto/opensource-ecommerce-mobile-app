@@ -1,0 +1,269 @@
+appId: com.webkul.bagistoApp.iOS
+---
+# MASTER TEST FLOW
+# This is the orchestrator flow that runs all test suites sequentially.
+#
+# Test Suite Order:
+# 1. smoke_flow.yaml      - Quick health check
+# 2. auth_flow.yaml       - Login/logout/signup
+# 3. home_flow.yaml       - Home screen features
+# 4. product_flow.yaml    - Product browsing and details
+# 5. cart_checkout_flow.yaml - Cart management and checkout
+# 6. orders_flow.yaml     - Order history and details
+# 7. account_flow.yaml    - Profile and address management
+#
+# Run Time: ~30-45 minutes (including sleeps and navigation)
+
+# TEST SUITE 1: SMOKE TESTS
+- launchApp
+- waitForAnimationToEnd
+
+# Quick navigation test across all tabs
+- tapOn:
+    text: "Home"
+    index: 0
+- waitForAnimationToEnd
+- tapOn:
+    text: "Categories"
+    index: 0
+- waitForAnimationToEnd
+- tapOn:
+    text: "Cart"
+    index: 0
+- waitForAnimationToEnd
+- tapOn:
+    text: "Account"
+    index: 0
+- waitForAnimationToEnd
+
+# TEST SUITE 2: AUTHENTICATION TESTS
+
+# Test Login
+- tapOn:
+    text: "Login"
+- waitForAnimationToEnd
+
+- tapOn:
+    type: "TextField"
+    index: 0
+- inputText: "test@example.com"
+
+- tapOn:
+    type: "TextField"
+    index: 1
+- inputText: "password123"
+
+- tapOn:
+    text: "Login"
+    index: 0
+- waitForAnimationToEnd
+
+# TEST SUITE 3: PASSWORD RECOVERY TESTS
+# (Run password_recovery_flow.yaml separately for comprehensive tests)
+
+# TEST SUITE 4: HOME SCREEN TESTS
+
+- tapOn:
+    text: "Home"
+    index: 0
+- waitForAnimationToEnd
+
+# Scroll and verify content
+- scroll:
+    down: 3
+- waitForAnimationToEnd
+- scroll:
+    down: 3
+- waitForAnimationToEnd
+
+
+# TEST SUITE 4: PRODUCT BROWSING TESTS
+
+- tapOn:
+    text: "Categories"
+    index: 0
+- waitForAnimationToEnd
+
+# Select first category
+- tapOn:
+    type: "Card"
+    index: 0
+- waitForAnimationToEnd
+
+# Select first product
+- tapOn:
+    type: "Card"
+    index: 0
+- waitForAnimationToEnd
+
+# Add to cart
+- scroll:
+    down: 3
+- waitForAnimationToEnd
+
+- tapOn:
+    text: "Add to Cart"
+- waitForAnimationToEnd
+
+# Back to categories
+- tapOn:
+    type: "Icon"
+    index: 0
+- waitForAnimationToEnd
+
+# Back to home
+- tapOn:
+    type: "Icon"
+    index: 0
+- waitForAnimationToEnd
+
+
+# TEST SUITE 5: CART AND CHECKOUT TESTS
+
+- tapOn:
+    text: "Cart"
+    index: 0
+- waitForAnimationToEnd
+
+# Scroll to see cart contents
+- scroll:
+    down: 2
+- waitForAnimationToEnd
+
+# Verify cart items and proceed to checkout
+- scroll:
+    down: 3
+- waitForAnimationToEnd
+
+- tapOn:
+    text: "Proceed to Checkout|Checkout"
+    isRegex: true
+- waitForAnimationToEnd
+
+# Enter shipping address
+- tapOn:
+    type: "TextField"
+    index: 0
+- inputText: "123 Main St"
+- waitForAnimationToEnd
+
+# Proceed to payment
+- scroll:
+    down: 3
+- waitForAnimationToEnd
+
+# Place order
+- tapOn:
+    text: "Place Order|Complete Purchase|Pay Now"
+    isRegex: true
+- waitForAnimationToEnd
+
+
+# TEST SUITE 6: ORDERS TESTS
+
+- tapOn:
+    text: "Account"
+    index: 0
+- waitForAnimationToEnd
+
+- tapOn:
+    text: "Orders|My Orders"
+    isRegex: true
+- waitForAnimationToEnd
+
+# Scroll to view orders
+- scroll:
+    down: 2
+- waitForAnimationToEnd
+
+# Open first order
+- tapOn:
+    type: "Card|ListTile|Container"
+    index: 0
+- waitForAnimationToEnd
+
+# Scroll through order details
+- scroll:
+    down: 3
+- waitForAnimationToEnd
+
+# Back to orders
+- tapOn:
+    type: "Icon"
+    index: 0
+- waitForAnimationToEnd
+
+
+# TEST SUITE 7: ACCOUNT MANAGEMENT TESTS
+
+# Navigate to edit profile
+- tapOn:
+    text: "Profile|Edit Profile"
+    isRegex: true
+- waitForAnimationToEnd
+
+# Update profile
+- tapOn:
+    type: "TextField"
+    index: 0
+- doubleTap
+- inputText: "John"
+- waitForAnimationToEnd
+
+# Save
+- scroll:
+    down: 2
+- waitForAnimationToEnd
+
+- tapOn:
+    text: "Save|Update"
+    isRegex: true
+- waitForAnimationToEnd
+
+# Back to account
+- tapOn:
+    type: "Icon"
+    index: 0
+- waitForAnimationToEnd
+
+# Navigate to address book
+- tapOn:
+    text: "Address|Address Book"
+    isRegex: true
+- waitForAnimationToEnd
+
+# View addresses
+- scroll:
+    down: 2
+- waitForAnimationToEnd
+
+# Back to account
+- tapOn:
+    type: "Icon"
+    index: 0
+- waitForAnimationToEnd
+
+# Logout
+- scroll:
+    down: 3
+- waitForAnimationToEnd
+
+- tapOn:
+    text: "Logout"
+- waitForAnimationToEnd
+
+
+# TEST SUITE SUMMARY
+# Summary:
+#   - Smoke Tests
+#   - Authentication Tests
+#   - Password Recovery Tests (run separately)
+#   - Home Screen Tests
+#   - Product Browsing Tests
+#   - Product Search & Filter Tests (run separately)
+#   - Cart & Checkout Tests
+#   - Shopping Multiple Items Tests (run separately)
+#   - Orders Tests
+#   - Account Management Tests
+#   - Change Password Tests (run separately)
+#   - Edge Cases Tests (run separately)

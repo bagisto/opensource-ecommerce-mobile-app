@@ -1,0 +1,13 @@
+appId: com.webkul.bagistoApp.iOS
+---
+- launchApp
+- tapOn:
+    text: "Account"
+- assertVisible:
+    text: "Sign Up"
+- assertVisible:
+    text: "Login"
+- tapOn:
+    text: "Login"
+- assertVisible:
+    text: "Email"

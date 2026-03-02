@@ -1,5 +1,5 @@
-name: bagisto_app_demo
-description: A new Flutter project.
+name: bagisto_flutter
+description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -19,7 +19,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.0.1 <4.0.0'
+  sdk: ^3.10.8
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -30,91 +30,86 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_localizations:
-    sdk: flutter
-  lottie: ^3.3.1
+
+  # The following adds the Cupertino Icons font to your application.
+  # Use with the CupertinoIcons class for iOS style icons.
+  cupertino_icons: ^1.0.8
+
+  # GraphQL
+  graphql_flutter: ^5.2.0-beta.7
+  graphql: ^5.2.0-beta.7
+
+  # State Management
   flutter_bloc: ^9.1.0
-  equatable: ^2.0.3
+  equatable: ^2.0.7
+
+  # Networking & Caching
+  cached_network_image: ^3.4.1
+  shimmer: ^3.0.0
+
+  # UI Components
+  flutter_staggered_grid_view: ^0.7.0
   carousel_slider: ^5.0.0
-  image_picker: ^1.0.1
-  path_provider: ^2.0.8
-  permission_handler:
-  firebase_messaging:  ^15.2.5
-  flutter_local_notifications: ^19.0.0
-  graphql_flutter: ^5.1.1
-  get_storage: ^2.0.3
-  flutter_widget_from_html: ^0.16.0
-  skeleton_loader: ^2.0.0+4
-  firebase_core: ^3.13.0
-  hive: ^2.2.3
-  open_file: ^3.3.2
-  intl: ^0.19.0
-  speech_to_text: ^7.0.0
-  cached_network_image: ^3.2.1
-  google_fonts: 6.2.1
-  json_annotation: ^4.8.1
-  overlay_support: ^2.1.0
-  cupertino_icons: ^1.0.2
-  local_auth: ^2.1.6
-  flutter_rating_bar: ^4.0.0
-  device_info_plus:
-  webview_flutter: ^4.4.2
+  flutter_rating_bar: ^4.0.1
+  flutter_html: ^3.0.0-beta.2
+
+  # Utils
+  shared_preferences: ^2.3.5
+  provider: ^6.1.4
+  flutter_svg: ^2.2.3
+  share_plus: ^10.0.0
+  url_launcher: ^6.2.0
   flutter_inappwebview: ^6.1.5
-  location: ^8.0.0
-  geocoding: ^3.0.0
-  share_plus: ^10.1.4
-  google_maps_flutter: ^2.4.0
-  dio: ^5.3.3
-  retrofit: ^4.0.2
-  collection: ^1.17.0
-  provider: ^6.0.1
-  internet_connection_checker: ^3.0.1
-  http: ^1.2.2
-  flutter_paypal_payment: ^1.0.8
-  flutter_html: ^3.0.0
-  csslib: ^1.0.2
-  url_launcher: ^6.3.1
-  html: ^0.15.6
-  file_picker: ^10.2.0
+  speech_to_text: ^7.0.0
 
+  # Image Handling & Camera
+  image_picker: ^1.0.7
+  image: ^4.1.7
+  camera: ^0.10.5+5
+  permission_handler: ^11.0.0
 
-dependency_overrides:
-  intl: ^0.19.0
+  # On-device ML Kit for real object detection
+  google_mlkit_image_labeling: ^0.12.0
+  google_mlkit_object_detection: ^0.13.0
+
+  # Image Processing
+  http: ^1.1.0
+  flutter_image_compress: ^2.3.0
+  path_provider: ^2.1.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  build_runner: ^2.1.4
-  retrofit_generator: ^9.1.9
-  built_value_generator: ^8.1.2
-  json_serializable: ^6.5.4
-  hive_generator: ^2.0.0
+  # The "flutter_lints" package below contains a set of recommended lints to
+  # encourage good coding practices. The lint set provided by the package is
+  # activated in the `analysis_options.yaml` file located at the root of your
+  # package. See that file for information about deactivating specific lint
+  # rules and activating additional ones.
+  flutter_lints: ^6.0.0
+  flutter_driver:
+    sdk: flutter
 
-  flutter_lints: ^5.0.0
+# For information on the generic Dart part of this file, see the
+# following page: https://dart.dev/tools/pub/pubspec
 
-
+# The following section is specific to Flutter packages.
 flutter:
 
-
+  # The following line ensures that the Material Icons font is
+  # included with your application, so that you can use the icons in
+  # the material Icons class.
   uses-material-design: true
 
   assets:
-    - assets/lottie/
-    - assets/language/
     - assets/images/
-    - assets/web/
-
-  fonts:
-    - family: IcoMoon
-      fonts:
-        - asset: assets/fonts/icomoon.ttf
+    - assets/ml/
 
   # An image asset can refer to one or more resolution-specific "variants", see
-  # https://flutter.dev/assets-and-images/#resolution-aware
+  # https://flutter.dev/to/resolution-aware-images
 
   # For details regarding adding assets from package dependencies, see
-  # https://flutter.dev/assets-and-images/#from-packages
+  # https://flutter.dev/to/asset-from-package
 
   # To add custom fonts to your application, add a fonts section here,
   # in this "flutter" section. Each entry in this list should have a
@@ -134,4 +129,4 @@ flutter:
   #         weight: 700
   #
   # For details regarding fonts from package dependencies,
-  # see https://flutter.dev/custom-fonts/#from-packages
+  # see https://flutter.dev/to/font-from-package

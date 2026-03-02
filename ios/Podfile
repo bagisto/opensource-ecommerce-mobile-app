@@ -1,6 +1,7 @@
 # Uncomment this line to define a global platform for your project
-platform :ios, '16.0' # Updated to a higher deployment target
+platform :ios, '15.5'
 
+# CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 
 project 'Runner', {
@@ -12,7 +13,7 @@ project 'Runner', {
 def flutter_root
   generated_xcode_build_settings_path = File.expand_path(File.join('..', 'Flutter', 'Generated.xcconfig'), __FILE__)
   unless File.exist?(generated_xcode_build_settings_path)
-    raise "#{generated_xcode_build_settings_path} must exist. If you're running pod install manually, make sure flutter pub get is executed first"
+    raise "#{generated_xcode_build_settings_path} must exist. If you're running flutter pub get is executed first"
   end
 
   File.foreach(generated_xcode_build_settings_path) do |line|
@@ -28,22 +29,30 @@ flutter_ios_podfile_setup
 
 target 'Runner' do
   use_frameworks!
-  use_modular_headers!
-  pod 'SwiftKeychainWrapper'
-  pod 'GoogleMLKit/TextRecognition'
-  pod 'GoogleMLKit/ImageLabeling'
-  pod 'GoogleMLKit/ImageLabelingCustom'
-  pod 'PayPalCheckout'
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
+  target 'RunnerTests' do
+    inherit! :search_paths
+  end
 end
 
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
-
+    
+    # Permission Handler Configuration - Enable specific permissions
     target.build_configurations.each do |config|
-      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0' # Updated to match the platform
+      config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= [
+        '$(inherited)',
+        ## dart: PermissionGroup.camera
+        'PERMISSION_CAMERA=1',
+        ## dart: PermissionGroup.photos
+        'PERMISSION_PHOTOS=1',
+        ## dart: PermissionGroup.microphone
+        'PERMISSION_MICROPHONE=1',
+        ## dart: PermissionGroup.speech
+        'PERMISSION_SPEECH_RECOGNIZER=1',
+      ]
     end
   end
 end

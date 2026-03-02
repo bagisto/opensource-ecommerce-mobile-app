@@ -55,7 +55,7 @@ Before beginning with the installation, you will need the following with the men
 
 - Bagisto Version - v2.3.6
 - Android Studio Meerkat | 2024.3.1 Patch 2
-- Flutter Version - 3.32.5
+- Flutter Version - 3.3.5
 - Dart - 3.8.1
 - Xcode - 16.3
 - Swift - 6.1
@@ -214,7 +214,7 @@ Replace "GoogleService-Info.plist".
 
 ## API Documentation
 
-For the API Documentation, please go through - <https://github.com/bagisto/headless-ecommerce/>
+For the API Documentation, please go through - <https://api-docs.bagisto.com/api/graphql-api/introduction.html>
 
 ## Usage
 

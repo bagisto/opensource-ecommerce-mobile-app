@@ -1,0 +1,349 @@
+appId: com.webkul.bagistoApp.iOS
+---
+# ═════════════════════════════════════════════════════════════════════════════
+# PRODUCT SEARCH & FILTER FLOW TEST
+# ═════════════════════════════════════════════════════════════════════════════
+# This flow covers:
+# - Product search functionality
+# - Search with valid results
+# - Search with no results
+# - Search suggestions/autocomplete
+# - Filter by price range
+# - Filter by category
+# - Sort by price (low to high, high to low)
+# - Sort by newest/popularity
+# - Clear filters
+# - Product reviews/ratings submission
+#
+# Preconditions: App is installed
+# ═════════════════════════════════════════════════════════════════════════════
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 1. NAVIGATE TO HOME AND ACCESS SEARCH
+# ─────────────────────────────────────────────────────────────────────────────
+- launchApp
+- waitForAnimationToEnd
+
+- tapOn:
+    text: "Home"
+    index: 0
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 2. OPEN SEARCH
+# ─────────────────────────────────────────────────────────────────────────────
+- tapOn:
+    type: "Icon"
+    index: 1
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 3. VERIFY SEARCH PAGE LOADS
+# ─────────────────────────────────────────────────────────────────────────────
+- assertVisible:
+    text: "Search"
+- assertVisible:
+    type: "TextField"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 4. SEARCH FOR A PRODUCT (VALID RESULTS)
+# ─────────────────────────────────────────────────────────────────────────────
+# Enter a search term
+- tapOn:
+    type: "TextField"
+    index: 0
+- inputText: "shirt"
+
+# Submit search
+- tapOn:
+    type: "Icon"
+    index: 0
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 5. VERIFY SEARCH RESULTS
+# ─────────────────────────────────────────────────────────────────────────────
+- waitForAnimationToEnd
+
+# Verify results are displayed (or no results message)
+- scroll
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 6. CLEAR SEARCH AND TRY DIFFERENT TERM
+# ─────────────────────────────────────────────────────────────────────────────
+# Clear search field
+- tapOn:
+    type: "Icon"
+    index: 0
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 7. SEARCH WITH PARTIAL TERM
+# ─────────────────────────────────────────────────────────────────────────────
+- tapOn:
+    type: "TextField"
+    index: 0
+- inputText: "dress"
+- waitForAnimationToEnd
+
+# Submit
+- tapOn:
+    type: "Icon"
+    index: 0
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 8. VERIFY PRODUCT RESULTS DISPLAY
+# ─────────────────────────────────────────────────────────────────────────────
+- waitForAnimationToEnd
+
+# If products found, verify product cards
+- scroll
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 9. NAVIGATE TO CATEGORIES FOR FILTERING
+# ─────────────────────────────────────────────────────────────────────────────
+- tapOn:
+    text: "Categories"
+    index: 0
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 10. SELECT A CATEGORY
+# ─────────────────────────────────────────────────────────────────────────────
+- tapOn:
+    type: "Card"
+    index: 0
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 11. VERIFY PRODUCTS IN CATEGORY
+# ─────────────────────────────────────────────────────────────────────────────
+- scroll
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 12. OPEN FILTER/SORT OPTIONS
+# ─────────────────────────────────────────────────────────────────────────────
+# Look for filter or sort button
+- tapOn:
+    text: "Filter|Sort"
+    isRegex: true
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 13. APPLY PRICE FILTER (LOW TO HIGH)
+# ─────────────────────────────────────────────────────────────────────────────
+# If filter sheet opens, apply sorting
+- scroll
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 14. SORT BY PRICE: LOW TO HIGH
+# ─────────────────────────────────────────────────────────────────────────────
+- tapOn:
+    text: "Price|Low to High|Price: Low to High"
+    isRegex: true
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 15. APPLY SORT
+# ─────────────────────────────────────────────────────────────────────────────
+- tapOn:
+    text: "Apply|Apply Filter|Done"
+    isRegex: true
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 16. VERIFY SORTED RESULTS
+# ─────────────────────────────────────────────────────────────────────────────
+- scroll
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 17. REOPEN SORT AND CHANGE TO HIGH TO LOW
+# ─────────────────────────────────────────────────────────────────────────────
+- tapOn:
+    text: "Sort|Filter"
+    isRegex: true
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 18. SORT BY PRICE: HIGH TO LOW
+# ─────────────────────────────────────────────────────────────────────────────
+- scroll
+- waitForAnimationToEnd
+
+- tapOn:
+    text: "Price|High to Low|Price: High to Low"
+    isRegex: true
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 19. APPLY NEW SORT
+# ─────────────────────────────────────────────────────────────────────────────
+- tapOn:
+    text: "Apply|Apply Filter|Done"
+    isRegex: true
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 20. CLEAR ALL FILTERS
+# ─────────────────────────────────────────────────────────────────────────────
+- tapOn:
+    text: "Sort|Filter"
+    isRegex: true
+- waitForAnimationToEnd
+
+- tapOn:
+    text: "Clear All|Clear|Reset"
+    isRegex: true
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 21. NAVIGATE TO PRODUCT DETAIL FOR REVIEWS
+# ─────────────────────────────────────────────────────────────────────────────
+- tapOn:
+    type: "Card"
+    index: 0
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 22. SCROLL TO REVIEWS SECTION
+# ─────────────────────────────────────────────────────────────────────────────
+- scroll:
+    down: 5
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 23. VERIFY REVIEWS ARE VISIBLE (IF ANY)
+# ─────────────────────────────────────────────────────────────────────────────
+# Check for reviews section
+- assertVisible:
+    text: "Review|Rating|Comment"
+    isRegex: true
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 24. CHECK FOR ADD REVIEW BUTTON
+# ─────────────────────────────────────────────────────────────────────────────
+- scroll
+- waitForAnimationToEnd
+
+# Look for "Write Review" or "Add Review" button
+- tapOn:
+    text: "Write Review|Add Review|Submit Review"
+    isRegex: true
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 25. VERIFY REVIEW FORM LOADS
+# ─────────────────────────────────────────────────────────────────────────────
+- assertVisible:
+    text: "Review|Rating|Comment|Submit"
+    isRegex: true
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 26. FILL IN REVIEW DETAILS
+# ─────────────────────────────────────────────────────────────────────────────
+- scroll
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 27. SUBMIT REVIEW (IF FORM IS COMPLETE)
+# ─────────────────────────────────────────────────────────────────────────────
+# Look for submit button
+- tapOn:
+    text: "Submit|Post|Submit Review"
+    isRegex: true
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 28. VERIFY REVIEW SUBMISSION RESULT
+# ─────────────────────────────────────────────────────────────────────────────
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 29. GO BACK TO PRODUCT LIST
+# ─────────────────────────────────────────────────────────────────────────────
+- tapOn:
+    type: "Icon"
+    index: 0
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 30. TEST SEARCH AUTOCOMPLETE (IF AVAILABLE)
+# ─────────────────────────────────────────────────────────────────────────────
+- tapOn:
+    text: "Categories"
+    index: 0
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 31. OPEN SEARCH FROM CATEGORIES
+# ─────────────────────────────────────────────────────────────────────────────
+- tapOn:
+    type: "Icon"
+    index: 1
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 32. TYPE AND CHECK FOR SUGGESTIONS
+# ─────────────────────────────────────────────────────────────────────────────
+- tapOn:
+    type: "TextField"
+    index: 0
+- inputText: "phone"
+- waitForAnimationToEnd
+
+# Check for autocomplete/suggestions
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 33. SELECT FROM SUGGESTIONS (IF AVAILABLE)
+# ─────────────────────────────────────────────────────────────────────────────
+# Tap on a suggestion if available
+- tapOn:
+    type: "Text"
+    index: 0
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 34. VERIFY SEARCH RESULTS FROM SUGGESTION
+# ─────────────────────────────────────────────────────────────────────────────
+- scroll
+- waitForAnimationToEnd

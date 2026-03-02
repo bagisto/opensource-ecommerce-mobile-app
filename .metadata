@@ -1,11 +1,11 @@
 # This file tracks properties of this Flutter project.
 # Used by Flutter tool to assess capabilities and perform upgrades etc.
 #
-# This file should be version controlled.
+# This file should be version controlled and should not be manually edited.
 
 version:
-  revision: d3d8effc686d73e0114d71abdcccef63fa1f25d2
-  channel: stable
+  revision: "67323de285b00232883f53b84095eb72be97d35c"
+  channel: "stable"
 
 project_type: app
 
@@ -13,26 +13,26 @@ project_type: app
 migration:
   platforms:
     - platform: root
-      create_revision: d3d8effc686d73e0114d71abdcccef63fa1f25d2
-      base_revision: d3d8effc686d73e0114d71abdcccef63fa1f25d2
+      create_revision: 67323de285b00232883f53b84095eb72be97d35c
+      base_revision: 67323de285b00232883f53b84095eb72be97d35c
     - platform: android
-      create_revision: d3d8effc686d73e0114d71abdcccef63fa1f25d2
-      base_revision: d3d8effc686d73e0114d71abdcccef63fa1f25d2
+      create_revision: 67323de285b00232883f53b84095eb72be97d35c
+      base_revision: 67323de285b00232883f53b84095eb72be97d35c
     - platform: ios
-      create_revision: d3d8effc686d73e0114d71abdcccef63fa1f25d2
-      base_revision: d3d8effc686d73e0114d71abdcccef63fa1f25d2
+      create_revision: 67323de285b00232883f53b84095eb72be97d35c
+      base_revision: 67323de285b00232883f53b84095eb72be97d35c
     - platform: linux
-      create_revision: d3d8effc686d73e0114d71abdcccef63fa1f25d2
-      base_revision: d3d8effc686d73e0114d71abdcccef63fa1f25d2
+      create_revision: 67323de285b00232883f53b84095eb72be97d35c
+      base_revision: 67323de285b00232883f53b84095eb72be97d35c
     - platform: macos
-      create_revision: d3d8effc686d73e0114d71abdcccef63fa1f25d2
-      base_revision: d3d8effc686d73e0114d71abdcccef63fa1f25d2
+      create_revision: 67323de285b00232883f53b84095eb72be97d35c
+      base_revision: 67323de285b00232883f53b84095eb72be97d35c
     - platform: web
-      create_revision: d3d8effc686d73e0114d71abdcccef63fa1f25d2
-      base_revision: d3d8effc686d73e0114d71abdcccef63fa1f25d2
+      create_revision: 67323de285b00232883f53b84095eb72be97d35c
+      base_revision: 67323de285b00232883f53b84095eb72be97d35c
     - platform: windows
-      create_revision: d3d8effc686d73e0114d71abdcccef63fa1f25d2
-      base_revision: d3d8effc686d73e0114d71abdcccef63fa1f25d2
+      create_revision: 67323de285b00232883f53b84095eb72be97d35c
+      base_revision: 67323de285b00232883f53b84095eb72be97d35c
 
   # User provided section
 

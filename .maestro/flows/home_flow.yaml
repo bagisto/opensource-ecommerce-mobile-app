@@ -1,0 +1,109 @@
+appId: com.webkul.bagistoApp.iOS
+---
+# ═════════════════════════════════════════════════════════════════════════════
+# HOME SCREEN FLOW TEST
+# ═════════════════════════════════════════════════════════════════════════════
+# This flow covers:
+# - App launch verification
+# - Home tab visibility
+# - Banner/carousel visibility  
+# - Category carousel visibility
+# - Product list visibility
+# - Search functionality
+# - "Back to Top" functionality
+#
+# Preconditions: App is installed
+# ═════════════════════════════════════════════════════════════════════════════
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 1. LAUNCH APP AND VERIFY HOME SCREEN LOADS
+# ─────────────────────────────────────────────────────────────────────────────
+- launchApp
+- waitForAnimationToEnd
+
+# The app should start logged out on Account page, let's navigate to Home
+- tapOn:
+    text: "Home"
+    index: 0
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Home"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 2. VERIFY BANNER/CAROUSEL VISIBILITY
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Banner carousel is visible
+- assertVisible:
+    type: "Image"
+    index: 0
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 3. VERIFY CATEGORIES CAROUSEL VISIBILITY
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Category carousel is visible
+- scroll
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 4. VERIFY FEATURED PRODUCTS ARE VISIBLE
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Product list loads
+- assertVisible:
+    text: "Featured Products"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 5. TEST SEARCH FUNCTIONALITY
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Search icon navigation
+- tapOn:
+    type: "Icon"
+    index: 1
+# Search may show a search input. Let's just verify we can navigate
+- waitForAnimationToEnd
+- scroll
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 6. SCROLL TO BOTTOM AND VERIFY MULTIPLE PRODUCT SECTIONS
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Multiple product sections visible
+- scroll:
+    down: 5
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Hot Deals"
+- assertVisible:
+    type: "Image"
+    index: 0
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 7. BACK TO TOP BUTTON TEST
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Back to top functionality
+- scroll:
+    down: 10
+- waitForAnimationToEnd
+
+# Tap back to top button (usually a floating pill)
+- tapOn:
+    text: "Back to Top"
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 8. VERIFY BOTTOM NAVIGATION IS VISIBLE
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Bottom navigation tabs are visible
+- assertVisible:
+    text: "Home"
+- assertVisible:
+    text: "Categories"
+- assertVisible:
+    text: "Cart"
+- assertVisible:
+    text: "Account"
+

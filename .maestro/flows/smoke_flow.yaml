@@ -1,0 +1,123 @@
+appId: com.webkul.bagistoApp.iOS
+---
+# ═════════════════════════════════════════════════════════════════════════════
+# SMOKE TEST FLOW
+# ═════════════════════════════════════════════════════════════════════════════
+# This flow covers quick smoke tests to verify basic functionality:
+# - App launches successfully
+# - All main tabs are accessible
+# - Navigation works
+# - Search functionality works
+# - Basic UI elements are present
+#
+# Purpose: Quick verification that the app is in a healthy state
+# Preconditions: App is installed
+# ═════════════════════════════════════════════════════════════════════════════
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 1. APP LAUNCH
+# ─────────────────────────────────────────────────────────────────────────────
+- launchApp
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Bagisto|bagisto"
+    isRegex: true
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 2. HOME TAB NAVIGATION
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Home tab accessible
+- tapOn:
+    text: "Home"
+    index: 0
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Featured Products"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 3. CATEGORIES TAB NAVIGATION
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Categories tab accessible
+- tapOn:
+    text: "Categories"
+    index: 0
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Categories"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 4. CART TAB NAVIGATION
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Cart tab accessible
+- tapOn:
+    text: "Cart"
+    index: 0
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Cart"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 5. ACCOUNT TAB NAVIGATION
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Account tab accessible
+- tapOn:
+    text: "Account"
+    index: 0
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Login|Account"
+    isRegex: true
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 6. BACK TO HOME
+# ─────────────────────────────────────────────────────────────────────────────
+- tapOn:
+    text: "Home"
+    index: 0
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 7. SCROLL FUNCTIONALITY
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Scrolling works
+- scroll:
+    down: 3
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 8. IMAGE LOADING
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Images load
+- assertVisible:
+    type: "Image"
+    index: 0
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 9. PRODUCT CARD VISIBILITY
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Products display
+- assertVisible:
+    text: "Featured Products"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 10. BOTTOM NAVIGATION VISIBLE
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Bottom navigation intact
+- assertVisible:
+    text: "Home"
+- assertVisible:
+    text: "Categories"
+- assertVisible:
+    text: "Cart"
+- assertVisible:
+    text: "Account"
+

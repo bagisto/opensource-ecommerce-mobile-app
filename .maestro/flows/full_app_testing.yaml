@@ -1,0 +1,57 @@
+# 🎯 FULL BAGISTO FLUTTER APP - COMPREHENSIVE TEST SUITE
+# Testing Complete Purchase Journey from Product to Order
+
+appId: com.webkul.bagistoApp.iOS
+---
+
+# ═══════════════════════════════════════════════════════════════
+# TEST 1: FULL GUEST SHOPPING JOURNEY - ADD TO CART & CHECKOUT
+# ═══════════════════════════════════════════════════════════════
+
+- launchApp
+- assertVisible:
+    text: "Home"
+
+# Browse Home Screen
+- assertVisible:
+    text: "Popular Products"
+- assertVisible:
+    text: "$"
+
+# Navigate to Categories
+- tapOn:
+    text: "Categories"
+- assertVisible:
+    text: "Electronics"
+- assertVisible:
+    text: "Furniture"
+- assertVisible:
+    text: "Fashion"
+
+# Back to Home
+- tapOn:
+    text: "Home"
+- assertVisible:
+    text: "Popular Products"
+
+# Tap on a product (Using gesture since products are image cards)
+- tapOn:
+    index: 1
+
+# Check product detail page elements
+- assertVisible:
+    text: "$"
+- assertVisible:
+    text: "Add to"
+
+# Try to add to cart
+- tapOn:
+    text: "Add to"
+- assertVisible:
+    text: "Cart"
+
+# Go to Cart
+- tapOn:
+    text: "Cart"
+- assertVisible:
+    text: "Cart"

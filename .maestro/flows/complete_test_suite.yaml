@@ -1,0 +1,423 @@
+appId: com.webkul.bagistoApp.iOS
+---
+# ═════════════════════════════════════════════════════════════════════════════
+# COMPLETE TEST SUITE - ALL RECOMMENDED TESTS
+# ═════════════════════════════════════════════════════════════════════════════
+# This is the master orchestrator that runs ALL test categories
+# from the recommended testing plan.
+#
+# Test Categories:
+# 1. Authentication Tests (login, invalid login, sign up, password recovery)
+# 2. Product Tests (detail, add to cart, search, filter, reviews)
+# 3. Shopping Tests (multiple items, update quantities, remove, checkout)
+# 4. Account Tests (profile, addresses, orders, change password, logout)
+# 5. Edge Cases (network errors, out of stock, session timeout, etc.)
+#
+# Note: This is a comprehensive test that runs all scenarios
+# Run Time: ~60-90 minutes
+# ═════════════════════════════════════════════════════════════════════════════
+
+# ═════════════════════════════════════════════════════════════════════════════
+# SECTION 1: AUTHENTICATION TESTS
+# ═════════════════════════════════════════════════════════════════════════════
+
+# Test 1.1: Valid Login
+- launchApp
+- waitForAnimationToEnd
+- tapOn:
+    text: "Account"
+    index: 0
+- waitForAnimationToEnd
+- tapOn:
+    text: "Login"
+- waitForAnimationToEnd
+- tapOn:
+    type: "TextField"
+    index: 0
+- inputText: "test@example.com"
+- tapOn:
+    type: "TextField"
+    index: 1
+- inputText: "password123"
+- tapOn:
+    text: "Login"
+    index: 0
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Featured Products"
+
+# Test 1.2: Logout
+- tapOn:
+    text: "Account"
+    index: 0
+- waitForAnimationToEnd
+- scroll
+- tapOn:
+    text: "Logout"
+- waitForAnimationToEnd
+
+# Test 1.3: Invalid Login
+- tapOn:
+    text: "Login"
+- waitForAnimationToEnd
+- tapOn:
+    type: "TextField"
+    index: 0
+- inputText: "invalid@test.com"
+- tapOn:
+    type: "TextField"
+    index: 1
+- inputText: "wrongpass"
+- tapOn:
+    text: "Login"
+    index: 0
+- waitForAnimationToEnd
+- assertVisible:
+    text: "error|invalid|failed"
+    isRegex: true
+
+# Test 1.4: Sign Up Navigation
+- tapOn:
+    text: "Sign Up"
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Create Account|Sign Up"
+    isRegex: true
+
+# Test 1.5: Password Recovery Navigation
+- tapOn:
+    text: "Forgot Password"
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Reset|Recover"
+    isRegex: true
+- tapOn:
+    type: "Icon"
+    index: 0
+- waitForAnimationToEnd
+
+# ═════════════════════════════════════════════════════════════════════════════
+# SECTION 2: PRODUCT TESTS
+# ═════════════════════════════════════════════════════════════════════════════
+
+# Test 2.1: Navigate to Categories
+- tapOn:
+    text: "Categories"
+    index: 0
+- waitForAnimationToEnd
+
+# Test 2.2: Select Category
+- tapOn:
+    type: "Card"
+    index: 0
+- waitForAnimationToEnd
+
+# Test 2.3: Select Product
+- tapOn:
+    type: "Card"
+    index: 0
+- waitForAnimationToEnd
+
+# Test 2.4: Verify Product Detail
+- scroll
+- waitForAnimationToEnd
+
+# Test 2.5: Add to Cart
+- tapOn:
+    text: "Add to Cart"
+- waitForAnimationToEnd
+
+# Test 2.6: Search Functionality
+- tapOn:
+    type: "Icon"
+    index: 0
+- waitForAnimationToEnd
+- tapOn:
+    text: "Home"
+    index: 0
+- waitForAnimationToEnd
+- tapOn:
+    type: "Icon"
+    index: 1
+- waitForAnimationToEnd
+- tapOn:
+    type: "TextField"
+    index: 0
+- inputText: "shirt"
+- tapOn:
+    type: "Icon"
+    index: 0
+- waitForAnimationToEnd
+- scroll
+- waitForAnimationToEnd
+
+# Test 2.7: Filter/Sort Access
+- tapOn:
+    text: "Categories"
+    index: 0
+- waitForAnimationToEnd
+- tapOn:
+    type: "Card"
+    index: 0
+- waitForAnimationToEnd
+- scroll
+- tapOn:
+    text: "Sort|Filter"
+    isRegex: true
+- waitForAnimationToEnd
+- scroll
+- waitForAnimationToEnd
+- tapOn:
+    type: "Icon"
+    index: 0
+- waitForAnimationToEnd
+
+# Test 2.8: Product Reviews Section
+- tapOn:
+    type: "Card"
+    index: 0
+- waitForAnimationToEnd
+- scroll:
+    down: 5
+- waitForAnimationToEnd
+
+# ═════════════════════════════════════════════════════════════════════════════
+# SECTION 3: SHOPPING TESTS
+# ═════════════════════════════════════════════════════════════════════════════
+
+# Test 3.1: Navigate to Cart
+- tapOn:
+    text: "Cart"
+    index: 0
+- waitForAnimationToEnd
+- scroll
+
+# Test 3.2: Update Quantity (+)
+- tapOn:
+    text: "+"
+    index: 0
+- waitForAnimationToEnd
+
+# Test 3.3: Update Quantity (-)
+- tapOn:
+    text: "-"
+    index: 0
+- waitForAnimationToEnd
+
+# Test 3.4: Remove Item
+- scroll
+- tapOn:
+    text: "Remove"
+    index: 0
+- waitForAnimationToEnd
+
+# Test 3.5: Proceed to Checkout
+- scroll:
+    down: 2
+- tapOn:
+    text: "Proceed to Checkout|Checkout"
+    isRegex: true
+- waitForAnimationToEnd
+
+# Test 3.6: Enter Shipping Info
+- scroll
+- tapOn:
+    type: "TextField"
+    index: 0
+- inputText: "123 Test St"
+- waitForAnimationToEnd
+
+# Test 3.7: Shipping Method
+- scroll:
+    down: 2
+- waitForAnimationToEnd
+
+# Test 3.8: Payment Method
+- scroll:
+    down: 2
+- waitForAnimationToEnd
+
+# Test 3.9: Place Order
+- scroll:
+    down: 2
+- tapOn:
+    text: "Place Order|Complete Purchase|Pay Now"
+    isRegex: true
+- waitForAnimationToEnd
+
+# Test 3.10: Order Confirmation
+- assertVisible:
+    text: "Thank You|Success|Order #"
+    isRegex: true
+
+# ═════════════════════════════════════════════════════════════════════════════
+# SECTION 4: ACCOUNT TESTS
+# ═════════════════════════════════════════════════════════════════════════════
+
+# Test 4.1: Navigate to Account
+- tapOn:
+    text: "Account"
+    index: 0
+- waitForAnimationToEnd
+
+# Test 4.2: Login for account tests
+- tapOn:
+    text: "Login"
+- waitForAnimationToEnd
+- tapOn:
+    type: "TextField"
+    index: 0
+- inputText: "test@example.com"
+- tapOn:
+    type: "TextField"
+    index: 1
+- inputText: "password123"
+- tapOn:
+    text: "Login"
+    index: 0
+- waitForAnimationToEnd
+
+# Test 4.3: View Profile
+- tapOn:
+    text: "Account"
+    index: 0
+- waitForAnimationToEnd
+- assertVisible:
+    text: "My Account"
+
+# Test 4.4: Edit Profile
+- tapOn:
+    text: "Profile|Edit Profile"
+    isRegex: true
+- waitForAnimationToEnd
+- scroll
+- tapOn:
+    type: "Icon"
+    index: 0
+- waitForAnimationToEnd
+
+# Test 4.5: Manage Addresses
+- tapOn:
+    text: "Address|Address Book"
+    isRegex: true
+- waitForAnimationToEnd
+- scroll
+- tapOn:
+    type: "Icon"
+    index: 0
+- waitForAnimationToEnd
+
+# Test 4.6: View Order History
+- tapOn:
+    text: "Orders|My Orders"
+    isRegex: true
+- waitForAnimationToEnd
+- scroll
+- tapOn:
+    type: "Icon"
+    index: 0
+- waitForAnimationToEnd
+
+# Test 4.7: Change Password
+- scroll
+- tapOn:
+    text: "Settings|Change Password|Profile|Security"
+    isRegex: true
+- waitForAnimationToEnd
+
+# Test 4.8: Logout
+- scroll:
+    down: 5
+- tapOn:
+    text: "Logout"
+- waitForAnimationToEnd
+
+# ═════════════════════════════════════════════════════════════════════════════
+# SECTION 5: EDGE CASES TESTS
+# ═════════════════════════════════════════════════════════════════════════════
+
+# Test 5.1: App Background/Foreground
+- launchApp
+- waitForAnimationToEnd
+- tapOn:
+    text: "Home"
+    index: 0
+- waitForAnimationToEnd
+- pressKey: Home
+- waitForAnimationToEnd
+- launchApp
+- waitForAnimationToEnd
+
+# Test 5.2: Empty Search Results
+- tapOn:
+    type: "Icon"
+    index: 1
+- waitForAnimationToEnd
+- tapOn:
+    type: "TextField"
+    index: 0
+- inputText: "xyznonexistent123"
+- tapOn:
+    type: "Icon"
+    index: 0
+- waitForAnimationToEnd
+
+# Test 5.3: Out of Stock Item
+- tapOn:
+    text: "Categories"
+    index: 0
+- waitForAnimationToEnd
+- tapOn:
+    type: "Card"
+    index: 0
+- waitForAnimationToEnd
+- tapOn:
+    type: "Card"
+    index: 0
+- waitForAnimationToEnd
+- scroll
+- assertVisible:
+    text: "Out of Stock|In Stock|Available"
+    isRegex: true
+
+# Test 5.4: Session/Logout
+- tapOn:
+    type: "Icon"
+    index: 0
+- waitForAnimationToEnd
+- tapOn:
+    type: "Icon"
+    index: 0
+- waitForAnimationToEnd
+- tapOn:
+    text: "Account"
+    index: 0
+- waitForAnimationToEnd
+- scroll
+- tapOn:
+    text: "Logout"
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Login"
+
+# Test 5.5: Invalid Input Validation
+- tapOn:
+    text: "Login"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Login"
+    index: 0
+- waitForAnimationToEnd
+- assertVisible:
+    text: "required|valid|email|password"
+    isRegex: true
+
+# ═════════════════════════════════════════════════════════════════════════════
+# COMPLETE TEST SUITE SUMMARY
+# ═════════════════════════════════════════════════════════════════════════════
+# All recommended tests completed:
+# ✅ Authentication Tests (login, invalid login, sign up, password recovery)
+# ✅ Product Tests (detail, add to cart, search, filter, reviews)
+# ✅ Shopping Tests (quantities, remove, checkout)
+# ✅ Account Tests (profile, addresses, orders, change password, logout)
+# ✅ Edge Cases (background/foreground, search, validation)

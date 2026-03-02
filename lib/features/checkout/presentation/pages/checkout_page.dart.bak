@@ -1,0 +1,1502 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../cart/data/models/cart_model.dart';
+import '../../../cart/presentation/bloc/cart_bloc.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../data/repository/checkout_repository.dart';
+import '../bloc/checkout_bloc.dart';
+
+class CheckoutPage extends StatelessWidget {
+  const CheckoutPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final cartState = context.read<CartBloc>().state;
+    final authState = context.read<AuthBloc>().state;
+    final isGuest = authState is! AuthAuthenticated;
+
+    /// Returns the latest Bearer auth token.
+    ///
+    /// For logged-in users → the auth access token from AuthBloc.
+    /// For guests → the guest session UUID from CartBloc.
+    ///
+    /// This function is called at request-time by CheckoutBloc to ensure
+    /// the freshest token is always used.
+    String? getLatestAuthToken() {
+      final currentAuthState = context.read<AuthBloc>().state;
+      final currentCartState = context.read<CartBloc>().state;
+
+      // Prefer the login token — it's the real Bearer auth token
+      if (currentAuthState is AuthAuthenticated && currentAuthState.token.isNotEmpty) {
+        return currentAuthState.token;
+      }
+      // Fall back to guest session token
+      if (currentCartState.cartToken != null && currentCartState.cartToken!.isNotEmpty) {
+        return currentCartState.cartToken;
+      }
+      return null;
+    }
+
+    final latestToken = getLatestAuthToken();
+    final repo = CheckoutRepository(
+      client: context.read<CartBloc>().repository.client,
+      initialToken: latestToken,
+    );
+
+    return BlocProvider(
+      create: (_) => CheckoutBloc(repository: repo, getLatestAuthToken: getLatestAuthToken)
+        ..add(InitCheckout(cart: cartState.cart, isGuest: isGuest)),
+      child: const _CheckoutPageView(),
+    );
+  }
+}
+
+class _CheckoutPageView extends StatefulWidget {
+  const _CheckoutPageView();
+
+  @override
+  State<_CheckoutPageView> createState() => _CheckoutPageViewState();
+}
+
+class _CheckoutPageViewState extends State<_CheckoutPageView> {
+  final TextEditingController _couponController = TextEditingController();
+  bool _useSameAddress = true;
+
+  // Local selection state for immediate UI response
+  String? _selectedShippingMethod;
+  String? _selectedPaymentMethod;
+
+  // Guest address form controllers
+  final _formKey = GlobalKey<FormState>();
+  final _firstNameCtrl = TextEditingController();
+  final _lastNameCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
+  final _addressCtrl = TextEditingController();
+  final _cityCtrl = TextEditingController();
+  final _stateCtrl = TextEditingController();
+  final _postcodeCtrl = TextEditingController();
+  final _companyCtrl = TextEditingController();
+  String _country = 'US';
+
+  @override
+  void dispose() {
+    _couponController.dispose();
+    _firstNameCtrl.dispose();
+    _lastNameCtrl.dispose();
+    _emailCtrl.dispose();
+    _phoneCtrl.dispose();
+    _addressCtrl.dispose();
+    _cityCtrl.dispose();
+    _stateCtrl.dispose();
+    _postcodeCtrl.dispose();
+    _companyCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocConsumer<CheckoutBloc, CheckoutState>(
+      listener: (context, state) {
+        if (state.errorMessage != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.errorMessage!),
+              backgroundColor: Colors.red,
+            ),
+          );
+          context.read<CheckoutBloc>().add(ClearCheckoutMessage());
+        }
+        if (state.successMessage != null &&
+            state.status == CheckoutStatus.orderPlaced) {
+          _showOrderSuccessDialog(context, state);
+        }
+      },
+      builder: (context, state) {
+        final cart = state.cart;
+        return Scaffold(
+          backgroundColor: AppColors.white,
+          body: SafeArea(
+            bottom: false,
+            child: Column(
+              children: [
+                // ── Navigation Bar ──
+                _buildAppBar(context),
+                // ── Scrollable Content ──
+                Expanded(
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 16),
+                        // Billing Address Section
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: _buildBillingSection(context, state),
+                        ),
+                        const SizedBox(height: 16),
+                        // Cart Items Section
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: _buildCartItemsSection(context, cart),
+                        ),
+                        const SizedBox(height: 16),
+                        // Shipping Method Section
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: _buildShippingMethodSection(context, state),
+                        ),
+                        const SizedBox(height: 8),
+                        // Payment Method Section
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: _buildPaymentMethodSection(context, state),
+                        ),
+                        const SizedBox(height: 32),
+                        // Coupon Section
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: _buildCouponSection(context, state),
+                        ),
+                        const SizedBox(height: 32),
+                        // Price Break Section
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: _buildPriceBreakSection(context, cart),
+                        ),
+                        const SizedBox(height: 100),
+                      ],
+                    ),
+                  ),
+                ),
+                // ── Bottom Bar ──
+                _buildBottomBar(context, cart, state),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // APP BAR
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  Widget _buildAppBar(BuildContext context) {
+    return Container(
+      color: AppColors.white,
+      height: 48,
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Row(
+        children: [
+          // Back button
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(10),
+              onTap: () => Navigator.of(context).pop(),
+              child: const Padding(
+                padding: EdgeInsets.all(8),
+                child: Icon(
+                  Icons.arrow_back,
+                  color: AppColors.neutral900,
+                  size: 24,
+                ),
+              ),
+            ),
+          ),
+          // Title
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Text(
+                'Checkout',
+                style: const TextStyle(
+                  fontFamily: 'Roboto',
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                  color: Colors.black,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // BILLING SECTION
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  Widget _buildBillingSection(BuildContext context, CheckoutState state) {
+    if (state.isLoading && state.status == CheckoutStatus.loading) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.neutral100,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: const Center(
+          child: Padding(
+            padding: EdgeInsets.all(20),
+            child: CircularProgressIndicator(),
+          ),
+        ),
+      );
+    }
+
+    // If address has been confirmed (saved to API), show the confirmed address
+    if (state.addressConfirmed && state.selectedAddress != null) {
+      return _buildConfirmedAddressCard(context, state);
+    }
+
+    // Guest users: show address entry form
+    if (state.isGuest) {
+      return _buildGuestAddressForm(context, state);
+    }
+
+    // Logged-in users with saved addresses
+    if (state.addresses.isNotEmpty) {
+      return _buildSavedAddressSelector(context, state);
+    }
+
+    // Logged-in but no saved addresses — show form
+    return _buildGuestAddressForm(context, state);
+  }
+
+  /// Shows the confirmed address with a "Change" button
+  Widget _buildConfirmedAddressCard(BuildContext context, CheckoutState state) {
+    final addr = state.selectedAddress!;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.neutral100,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  const Text('Billing to',
+                    style: TextStyle(fontFamily: 'Roboto', fontWeight: FontWeight.w400, fontSize: 14, color: AppColors.neutral900)),
+                  const SizedBox(width: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFDCFCE7),
+                      border: Border.all(color: const Color(0xFFB9F8CF)),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Icon(Icons.check, size: 14, color: Color(0xFF00A63E)),
+                  ),
+                ],
+              ),
+              GestureDetector(
+                onTap: () {
+                  // Reset to allow re-entering address
+                  // (In a full app, you'd navigate back to address selection)
+                },
+                child: const Text('Change',
+                  style: TextStyle(fontFamily: 'Roboto', fontWeight: FontWeight.w600, fontSize: 14, color: Color(0xFF155DFC))),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(addr.displayName,
+            style: const TextStyle(fontFamily: 'Roboto', fontWeight: FontWeight.w700, fontSize: 14, color: AppColors.neutral900)),
+          const SizedBox(height: 6),
+          Text(addr.fullAddress,
+            style: const TextStyle(fontFamily: 'Roboto', fontWeight: FontWeight.w400, fontSize: 14, color: AppColors.neutral900)),
+          if (addr.phone != null && addr.phone!.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text('Phone: ${addr.phone}',
+              style: const TextStyle(fontFamily: 'Roboto', fontSize: 13, color: AppColors.neutral800)),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// Saved address selector for logged-in users
+  Widget _buildSavedAddressSelector(BuildContext context, CheckoutState state) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.neutral100,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Select Billing Address',
+            style: TextStyle(fontFamily: 'Roboto', fontWeight: FontWeight.w600, fontSize: 14, color: AppColors.neutral900)),
+          const SizedBox(height: 12),
+          ...state.addresses.map((addr) {
+            final isSelected = state.selectedAddress?.id == addr.id;
+            return GestureDetector(
+              onTap: () => context.read<CheckoutBloc>().add(SelectSavedAddress(address: addr)),
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: isSelected ? AppColors.primary500.withValues(alpha: 0.05) : AppColors.white,
+                  border: Border.all(
+                    color: isSelected ? AppColors.primary500 : AppColors.neutral200,
+                    width: isSelected ? 2 : 1,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(addr.displayName,
+                      style: TextStyle(fontFamily: 'Roboto', fontWeight: FontWeight.w600, fontSize: 14,
+                        color: isSelected ? AppColors.primary500 : AppColors.neutral900)),
+                    const SizedBox(height: 4),
+                    Text(addr.fullAddress,
+                      style: const TextStyle(fontFamily: 'Roboto', fontSize: 13, color: AppColors.neutral800)),
+                  ],
+                ),
+              ),
+            );
+          }),
+          const SizedBox(height: 8),
+          // Use same for shipping checkbox
+          _buildSameAddressCheckbox(context),
+          const SizedBox(height: 12),
+          // Confirm button
+          _buildSaveAddressButton(context, state),
+        ],
+      ),
+    );
+  }
+
+  /// Guest address entry form
+  Widget _buildGuestAddressForm(BuildContext context, CheckoutState state) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.neutral100,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(state.isGuest ? 'Billing Address' : 'Enter Address',
+              style: const TextStyle(fontFamily: 'Roboto', fontWeight: FontWeight.w600, fontSize: 14, color: AppColors.neutral900)),
+            const SizedBox(height: 12),
+            // Name row
+            Row(
+              children: [
+                Expanded(child: _buildTextField(_firstNameCtrl, 'First Name', required: true)),
+                const SizedBox(width: 12),
+                Expanded(child: _buildTextField(_lastNameCtrl, 'Last Name', required: true)),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _buildTextField(_emailCtrl, 'Email', keyboardType: TextInputType.emailAddress, required: true),
+            const SizedBox(height: 12),
+            _buildTextField(_phoneCtrl, 'Phone', keyboardType: TextInputType.phone, required: true),
+            const SizedBox(height: 12),
+            _buildTextField(_addressCtrl, 'Street Address', required: true),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(child: _buildTextField(_cityCtrl, 'City', required: true)),
+                const SizedBox(width: 12),
+                Expanded(child: _buildTextField(_stateCtrl, 'State')),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(child: _buildTextField(_postcodeCtrl, 'Postcode', required: true)),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildDropdown(
+                    label: 'Country',
+                    value: _country,
+                    items: const ['US', 'IN', 'GB', 'CA', 'AU', 'DE', 'FR'],
+                    onChanged: (v) => setState(() => _country = v ?? 'US'),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _buildTextField(_companyCtrl, 'Company (Optional)'),
+            const SizedBox(height: 12),
+            // Use same for shipping checkbox
+            _buildSameAddressCheckbox(context),
+            const SizedBox(height: 16),
+            // Save button
+            _buildSaveAddressButton(context, state),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField(TextEditingController ctrl, String label,
+      {TextInputType keyboardType = TextInputType.text, bool required = false}) {
+    return TextFormField(
+      controller: ctrl,
+      keyboardType: keyboardType,
+      validator: required
+          ? (v) => (v == null || v.trim().isEmpty) ? '$label is required' : null
+          : null,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(fontFamily: 'Roboto', fontSize: 14, color: AppColors.neutral400),
+        filled: true,
+        fillColor: AppColors.white,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.neutral200)),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.neutral200)),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.primary500)),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        isDense: true,
+      ),
+      style: const TextStyle(fontFamily: 'Roboto', fontSize: 14, color: AppColors.neutral900),
+    );
+  }
+
+  Widget _buildDropdown({required String label, required String value, required List<String> items, required void Function(String?) onChanged}) {
+    return DropdownButtonFormField<String>(
+      initialValue: value,
+      items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+      onChanged: onChanged,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(fontFamily: 'Roboto', fontSize: 14, color: AppColors.neutral400),
+        filled: true,
+        fillColor: AppColors.white,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.neutral200)),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.neutral200)),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.primary500)),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        isDense: true,
+      ),
+      style: const TextStyle(fontFamily: 'Roboto', fontSize: 14, color: AppColors.neutral900),
+    );
+  }
+
+  Widget _buildSameAddressCheckbox(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        setState(() => _useSameAddress = !_useSameAddress);
+        context.read<CheckoutBloc>().add(ToggleSameAddress());
+      },
+      child: Row(
+        children: [
+          SizedBox(
+            width: 24, height: 24,
+            child: _useSameAddress
+                ? Container(
+                    decoration: BoxDecoration(color: AppColors.primary500, borderRadius: BorderRadius.circular(4)),
+                    child: const Icon(Icons.check, size: 18, color: AppColors.white),
+                  )
+                : Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(color: AppColors.neutral400, width: 2),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+          ),
+          const SizedBox(width: 8),
+          const Text('Use same address for shipping',
+            style: TextStyle(fontFamily: 'Roboto', fontWeight: FontWeight.w400, fontSize: 14, color: AppColors.neutral800)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSaveAddressButton(BuildContext context, CheckoutState state) {
+    return GestureDetector(
+      onTap: state.isLoading ? null : () => _onSaveAddress(context, state),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        decoration: BoxDecoration(
+          color: state.isLoading ? AppColors.neutral400 : AppColors.primary500,
+          borderRadius: BorderRadius.circular(54),
+        ),
+        child: Center(
+          child: state.isLoading
+              ? const SizedBox(width: 20, height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.white))
+              : const Text('Save & Continue',
+                  style: TextStyle(fontFamily: 'Roboto', fontWeight: FontWeight.w700, fontSize: 14, color: AppColors.white)),
+        ),
+      ),
+    );
+  }
+
+  void _onSaveAddress(BuildContext context, CheckoutState state) {
+    Map<String, dynamic> input;
+
+    if (state.isGuest || state.selectedAddress == null) {
+      // Build from form
+      if (!_formKey.currentState!.validate()) return;
+
+      input = {
+        'billingFirstName': _firstNameCtrl.text.trim(),
+        'billingLastName': _lastNameCtrl.text.trim(),
+        'billingEmail': _emailCtrl.text.trim(),
+        'billingCompanyName': _companyCtrl.text.trim(),
+        'billingAddress': _addressCtrl.text.trim(),
+        'billingCity': _cityCtrl.text.trim(),
+        'billingCountry': _country,
+        'billingState': _stateCtrl.text.trim(),
+        'billingPostcode': _postcodeCtrl.text.trim(),
+        'billingPhoneNumber': _phoneCtrl.text.trim(),
+        'useForShipping': _useSameAddress,
+      };
+    } else {
+      // Use selected saved address
+      input = state.selectedAddress!.toBillingInput(useForShipping: _useSameAddress);
+    }
+
+    context.read<CheckoutBloc>().add(SaveCheckoutAddressEvent(input: input));
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // CART ITEMS SECTION
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  Widget _buildCartItemsSection(BuildContext context, CartModel cart) {
+    final items = cart.items;
+
+    if (items.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        child: const Center(
+          child: Text('Your cart is empty',
+            style: TextStyle(fontFamily: 'Roboto', fontSize: 14, color: AppColors.neutral400)),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '${items.length} Item${items.length > 1 ? 's' : ''} in the Cart',
+          style: const TextStyle(
+            fontFamily: 'Roboto',
+            fontWeight: FontWeight.w500,
+            fontSize: 14,
+            color: Colors.black,
+          ),
+        ),
+        ...items.asMap().entries.map((entry) {
+          final idx = entry.key;
+          final item = entry.value;
+          return _buildCartItemWidget(
+            imageUrl: item.imageUrl,
+            name: item.name,
+            pricePerUnit: '\$${item.price.toStringAsFixed(2)}',
+            quantity: item.quantity,
+            totalPrice: '\$${item.totalPrice.toStringAsFixed(2)}',
+            showBorder: idx < items.length - 1,
+          );
+        }),
+      ],
+    );
+  }
+
+  Widget _buildCartItemWidget({
+    String? imageUrl,
+    required String name,
+    required String pricePerUnit,
+    required int quantity,
+    required String totalPrice,
+    required bool showBorder,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      decoration: BoxDecoration(
+        border: showBorder
+            ? const Border(
+                bottom: BorderSide(color: AppColors.neutral200, width: 1))
+            : null,
+      ),
+      child: Row(
+        children: [
+          // Product image
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: SizedBox(
+              width: 62,
+              height: 62,
+              child: imageUrl != null && imageUrl.isNotEmpty
+                  ? CachedNetworkImage(
+                      imageUrl: imageUrl,
+                      fit: BoxFit.cover,
+                      placeholder: (_, __) => Container(
+                        color: AppColors.neutral200,
+                      ),
+                      errorWidget: (_, __, ___) => Container(
+                        color: AppColors.neutral200,
+                        child: const Icon(Icons.image, color: AppColors.neutral400),
+                      ),
+                    )
+                  : Container(
+                      color: AppColors.neutral200,
+                      child: const Icon(Icons.image,
+                          color: AppColors.neutral400, size: 30),
+                    ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          // Product details
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: const TextStyle(
+                    fontFamily: 'Roboto',
+                    fontWeight: FontWeight.w500,
+                    fontSize: 14,
+                    color: AppColors.neutral900,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '$pricePerUnit x $quantity Units',
+                      style: const TextStyle(
+                        fontFamily: 'Roboto',
+                        fontWeight: FontWeight.w400,
+                        fontSize: 14,
+                        color: AppColors.neutral900,
+                      ),
+                    ),
+                    Text(
+                      totalPrice,
+                      style: const TextStyle(
+                        fontFamily: 'Roboto',
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                        color: AppColors.neutral900,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // SHIPPING METHOD SECTION
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  Widget _buildShippingMethodSection(BuildContext context, CheckoutState state) {
+    // Don't show shipping options until address is confirmed
+    if (!state.addressConfirmed) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.neutral100,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Shipping Method',
+              style: TextStyle(fontFamily: 'Roboto', fontWeight: FontWeight.w400, fontSize: 14, color: AppColors.neutral900)),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.white,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.neutral200),
+              ),
+              child: Row(
+                children: const [
+                  Icon(Icons.info_outline, size: 18, color: AppColors.neutral400),
+                  SizedBox(width: 8),
+                  Text('Save your address to see shipping options',
+                    style: TextStyle(fontFamily: 'Roboto', fontSize: 13, color: AppColors.neutral400)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final rates = state.shippingRates;
+
+    if (rates.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.neutral100,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: const [
+            Text('Shipping Method',
+              style: TextStyle(fontFamily: 'Roboto', fontWeight: FontWeight.w400, fontSize: 14, color: AppColors.neutral900)),
+            SizedBox(height: 12),
+            Center(child: Padding(
+              padding: EdgeInsets.all(8.0),
+              child: CircularProgressIndicator(),
+            )),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.neutral100,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Title row
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Shipping Method',
+                style: TextStyle(
+                  fontFamily: 'Roboto',
+                  fontWeight: FontWeight.w400,
+                  fontSize: 14,
+                  color: AppColors.neutral900,
+                ),
+              ),
+              const SizedBox(), // placeholder for Change button (opacity 0 in Figma)
+            ],
+          ),
+          const SizedBox(height: 6),
+          // Shipping options
+          ...rates.asMap().entries.map((entry) {
+            final rate = entry.value;
+            final isSelected =
+                (_selectedShippingMethod ?? rates.first.code) ==
+                    rate.code;
+            return _buildRadioOption(
+              isSelected: isSelected,
+              title: rate.displayPrice,
+              subtitle: rate.displayLabel,
+              onTap: () {
+                setState(() => _selectedShippingMethod = rate.code);
+                context.read<CheckoutBloc>().add(
+                      SelectShippingMethod(shippingMethodCode: rate.code),
+                    );
+              },
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PAYMENT METHOD SECTION
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  Widget _buildPaymentMethodSection(BuildContext context, CheckoutState state) {
+    // Don't show payment options until shipping is selected
+    if (state.selectedShippingMethod == null) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.neutral100,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Payment Method',
+              style: TextStyle(fontFamily: 'Roboto', fontWeight: FontWeight.w400, fontSize: 14, color: AppColors.neutral900)),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.white,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.neutral200),
+              ),
+              child: Row(
+                children: const [
+                  Icon(Icons.info_outline, size: 18, color: AppColors.neutral400),
+                  SizedBox(width: 8),
+                  Text('Select a shipping method first',
+                    style: TextStyle(fontFamily: 'Roboto', fontSize: 13, color: AppColors.neutral400)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final methods = state.paymentMethods;
+
+    if (methods.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.neutral100,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: const [
+            Text('Payment Method',
+              style: TextStyle(fontFamily: 'Roboto', fontWeight: FontWeight.w400, fontSize: 14, color: AppColors.neutral900)),
+            SizedBox(height: 12),
+            Center(child: Padding(
+              padding: EdgeInsets.all(8.0),
+              child: CircularProgressIndicator(),
+            )),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.neutral100,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Title row
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Payment Method ',
+                style: TextStyle(
+                  fontFamily: 'Roboto',
+                  fontWeight: FontWeight.w400,
+                  fontSize: 14,
+                  color: AppColors.neutral900,
+                ),
+              ),
+              const SizedBox(), // placeholder for Change (opacity 0)
+            ],
+          ),
+          const SizedBox(height: 6),
+          // Payment options
+          ...methods.map((method) {
+            final isSelected =
+                (_selectedPaymentMethod ?? '') == method.method;
+            return _buildPaymentOptionRow(
+              isSelected: isSelected,
+              title: method.title,
+              subtitle: method.description ?? '',
+              paymentCode: method.method,
+              onTap: () {
+                setState(() => _selectedPaymentMethod = method.method);
+                context.read<CheckoutBloc>().add(
+                      SelectPaymentMethod(paymentMethodCode: method.method),
+                    );
+              },
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  // ─── Payment icon helper ──────────────────────────────────────────────────
+
+  Widget _getPaymentIcon(String code) {
+    IconData iconData;
+    Color bgColor;
+    Color iconColor;
+
+    switch (code) {
+      case 'paypal_smart_button':
+        iconData = Icons.paypal_outlined;
+        bgColor = const Color(0xFFE8F0FE);
+        iconColor = const Color(0xFF003087);
+        break;
+      case 'cashondelivery':
+        iconData = Icons.local_atm;
+        bgColor = const Color(0xFFE8F5E9);
+        iconColor = const Color(0xFF2E7D32);
+        break;
+      case 'moneytransfer':
+        iconData = Icons.account_balance;
+        bgColor = const Color(0xFFE3F2FD);
+        iconColor = const Color(0xFF1565C0);
+        break;
+      case 'paypal_standard':
+        iconData = Icons.paypal;
+        bgColor = const Color(0xFFFFF3E0);
+        iconColor = const Color(0xFF003087);
+        break;
+      default:
+        iconData = Icons.payment;
+        bgColor = AppColors.white;
+        iconColor = AppColors.neutral800;
+    }
+
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Icon(iconData, size: 22, color: iconColor),
+    );
+  }
+
+  Widget _buildPaymentOptionRow({
+    required bool isSelected,
+    required String title,
+    required String subtitle,
+    required String paymentCode,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 5),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Radio icon
+            SizedBox(
+              width: 24,
+              height: 24,
+              child: isSelected
+                  ? _buildFilledRadio()
+                  : _buildEmptyRadio(),
+            ),
+            const SizedBox(width: 4),
+            // Title + Subtitle
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontFamily: 'Roboto',
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                        color: AppColors.neutral900,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        fontFamily: 'Roboto',
+                        fontWeight: FontWeight.w400,
+                        fontSize: 14,
+                        color: AppColors.neutral900,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            // Payment icon
+            _getPaymentIcon(paymentCode),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // RADIO BUTTON COMPONENTS
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  Widget _buildRadioOption({
+    required bool isSelected,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 5),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Radio icon
+            SizedBox(
+              width: 24,
+              height: 24,
+              child: isSelected
+                  ? _buildFilledRadio()
+                  : _buildEmptyRadio(),
+            ),
+            const SizedBox(width: 4),
+            // Title + Subtitle
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontFamily: 'Roboto',
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                      color: AppColors.neutral900,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      fontFamily: 'Roboto',
+                      fontWeight: FontWeight.w400,
+                      fontSize: 14,
+                      color: AppColors.neutral900,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Filled radio circle (selected state) - matching Figma exactly
+  Widget _buildFilledRadio() {
+    return Container(
+      width: 24,
+      height: 24,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: AppColors.primary500, width: 2),
+      ),
+      child: Center(
+        child: Container(
+          width: 12,
+          height: 12,
+          decoration: const BoxDecoration(
+            shape: BoxShape.circle,
+            color: AppColors.primary500,
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Empty radio circle (unselected state)
+  Widget _buildEmptyRadio() {
+    return Container(
+      width: 24,
+      height: 24,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: AppColors.neutral400, width: 2),
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // COUPON SECTION
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  Widget _buildCouponSection(BuildContext context, CheckoutState state) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Apply Coupon',
+          style: TextStyle(
+            fontFamily: 'Roboto',
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
+            color: Colors.black,
+          ),
+        ),
+        const SizedBox(height: 12),
+        // Coupon input field
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 14),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: AppColors.neutral200),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _couponController,
+                            decoration: const InputDecoration(
+                              hintText: 'Enter your coupon code',
+                              hintStyle: TextStyle(
+                                fontFamily: 'Roboto',
+                                fontWeight: FontWeight.w400,
+                                fontSize: 16,
+                                color: AppColors.neutral400,
+                              ),
+                              border: InputBorder.none,
+                              isDense: true,
+                              contentPadding: EdgeInsets.zero,
+                            ),
+                            style: const TextStyle(
+                              fontFamily: 'Roboto',
+                              fontSize: 16,
+                              color: AppColors.neutral900,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Floating label
+                  Positioned(
+                    left: 9,
+                    top: -10,
+                    child: Container(
+                      color: AppColors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 2),
+                      child: const Text(
+                        'Coupon Code',
+                        style: TextStyle(
+                          fontFamily: 'Roboto',
+                          fontWeight: FontWeight.w400,
+                          fontSize: 12,
+                          color: AppColors.neutral800,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 6),
+            // Apply button
+            GestureDetector(
+              onTap: () {
+                final code = _couponController.text.trim();
+                if (code.isNotEmpty) {
+                  context
+                      .read<CheckoutBloc>()
+                      .add(ApplyCheckoutCoupon(couponCode: code));
+                }
+              },
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: AppColors.primary500,
+                  borderRadius: BorderRadius.circular(54),
+                ),
+                child: const Text(
+                  'Apply Coupon',
+                  style: TextStyle(
+                    fontFamily: 'Roboto',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                    color: AppColors.white,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PRICE BREAK SECTION
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  Widget _buildPriceBreakSection(BuildContext context, CartModel cart) {
+    final subtotal = cart.subtotal > 0
+        ? '\$${_formatPrice(cart.subtotal)}'
+        : '\$0.00';
+    final discount = cart.discountAmount > 0
+        ? '-\$${_formatPrice(cart.discountAmount)}'
+        : '\$0.00';
+    final shipping = cart.shippingAmount > 0
+        ? '\$${_formatPrice(cart.shippingAmount)}'
+        : '\$0.00';
+    final tax =
+        cart.taxAmount > 0 ? '\$${_formatPrice(cart.taxAmount)}' : '\$0.00';
+    final grandTotal = cart.grandTotal > 0
+        ? '\$${_formatPrice(cart.grandTotal)}'
+        : '\$0.00';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Price Break',
+          style: TextStyle(
+            fontFamily: 'Roboto',
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
+            color: Colors.black,
+          ),
+        ),
+        const SizedBox(height: 16),
+        _buildPriceRow('SubTotal', subtotal),
+        const SizedBox(height: 8),
+        _buildPriceRow('Discount', discount),
+        const SizedBox(height: 8),
+        _buildPriceRow('Delivery Charges', shipping),
+        const SizedBox(height: 8),
+        _buildPriceRow('Tax', tax),
+        const SizedBox(height: 8),
+        _buildPriceRow('Grand Total', grandTotal, isBold: true),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  Widget _buildPriceRow(String label, String value, {bool isBold = false}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontFamily: 'Roboto',
+            fontWeight: FontWeight.w400,
+            fontSize: 14,
+            color: AppColors.neutral800,
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontFamily: 'Roboto',
+            fontWeight: isBold ? FontWeight.w600 : FontWeight.w400,
+            fontSize: 14,
+            color: AppColors.neutral800,
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // BOTTOM BAR
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  Widget _buildBottomBar(
+      BuildContext context, CartModel cart, CheckoutState state) {
+    final grandTotal = cart.grandTotal > 0
+        ? '\$${_formatPrice(cart.grandTotal)}'
+        : '\$0.00';
+
+    final canPlace = state.canPlaceOrder;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: const BoxDecoration(
+        color: AppColors.neutral50,
+      ),
+      child: SafeArea(
+        top: false,
+        child: Row(
+          children: [
+            // Price + label
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    grandTotal,
+                    style: const TextStyle(
+                      fontFamily: 'Roboto',
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                      color: AppColors.neutral800,
+                    ),
+                  ),
+                  const Text(
+                    'Amount to be Paid',
+                    style: TextStyle(
+                      fontFamily: 'Roboto',
+                      fontWeight: FontWeight.w400,
+                      fontSize: 14,
+                      color: AppColors.neutral800,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 16),
+            // Place Order button
+            GestureDetector(
+              onTap: (!canPlace || state.isPlacingOrder)
+                  ? null
+                  : () {
+                      context.read<CheckoutBloc>().add(PlaceOrder());
+                    },
+              child: Container(
+                width: 131,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: canPlace ? AppColors.primary500 : AppColors.neutral400,
+                  borderRadius: BorderRadius.circular(54),
+                ),
+                child: Center(
+                  child: state.isPlacingOrder
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppColors.white,
+                          ),
+                        )
+                      : const Text(
+                          'Place Order',
+                          style: TextStyle(
+                            fontFamily: 'Roboto',
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                            color: AppColors.white,
+                          ),
+                        ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // HELPERS
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  String _formatPrice(double price) {
+    if (price >= 1000) {
+      final parts = price.toStringAsFixed(2).split('.');
+      final intPart = parts[0];
+      final decPart = parts[1];
+      final buffer = StringBuffer();
+      int count = 0;
+      for (int i = intPart.length - 1; i >= 0; i--) {
+        buffer.write(intPart[i]);
+        count++;
+        if (count % 3 == 0 && i > 0) {
+          buffer.write(',');
+        }
+      }
+      return '${buffer.toString().split('').reversed.join('')}.$decPart';
+    }
+    return price.toStringAsFixed(2);
+  }
+
+  void _showOrderSuccessDialog(BuildContext context, CheckoutState state) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.check_circle, color: AppColors.successGreen, size: 64),
+            const SizedBox(height: 16),
+            const Text(
+              'Order Placed!',
+              style: TextStyle(
+                fontFamily: 'Roboto',
+                fontWeight: FontWeight.w600,
+                fontSize: 20,
+                color: AppColors.neutral900,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              (state.orderResponse?.orderIncrementId ?? state.orderResponse?.orderId) != null
+                  ? 'Order #${state.orderResponse!.orderIncrementId ?? state.orderResponse!.orderId}'
+                  : 'Your order has been placed successfully!',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontFamily: 'Roboto',
+                fontSize: 14,
+                color: AppColors.neutral800,
+              ),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.of(ctx).pop();
+                  Navigator.of(context).pop();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary500,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(54),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+                child: const Text(
+                  'Continue Shopping',
+                  style: TextStyle(
+                    fontFamily: 'Roboto',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16,
+                    color: AppColors.white,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

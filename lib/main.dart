@@ -1,235 +1,186 @@
-/*
- *   Webkul Software.
- *   @package Mobikul Application Code.
- *   @Category Mobikul
- *   @author Webkul <support@webkul.com>
- *   @Copyright (c) Webkul Software Private Limited (https://webkul.com)
- *   @license https://store.webkul.com/license.html
- *   @link https://store.webkul.com/license.html
- */
-
-// must_be_immutable, void_checks
-
-import 'dart:io';
-
-import 'package:bagisto_app_demo/screens/home_page/data_model/get_categories_drawer_data_model.dart';
-import 'package:bagisto_app_demo/screens/product_screen/utils/index.dart';
-import 'package:bagisto_app_demo/utils/app_navigation.dart';
-import 'package:bagisto_app_demo/utils/push_notifications_manager.dart';
-import 'package:bagisto_app_demo/utils/theme_provider.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:get_storage/get_storage.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:hive/hive.dart';
-import 'package:overlay_support/overlay_support.dart';
-import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'core/graphql/graphql_client.dart';
+import 'core/theme/app_theme.dart';
+import 'core/theme/theme_cubit.dart';
+import 'core/wishlist/wishlist_cubit.dart';
+import 'features/auth/data/repository/auth_repository.dart';
+import 'features/auth/presentation/bloc/auth_bloc.dart';
+import 'features/category/data/repository/category_repository.dart';
+import 'features/category/presentation/bloc/category_bloc.dart';
+import 'features/cart/data/repository/cart_repository.dart';
+import 'features/cart/presentation/bloc/cart_bloc.dart';
+import 'features/home/data/repository/home_repository.dart';
+import 'features/home/presentation/bloc/home_bloc.dart';
+import 'features/home/presentation/pages/main_shell.dart';
+import 'features/splash/presentation/splash_screen.dart';
 
-import 'data_model/product_model/product_screen_model.dart';
-
-String? token;
-
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  debugPrint('Handling a background message ${message.toMap()}');
-}
-
-AndroidNotificationChannel channel = const AndroidNotificationChannel(
-  'high_importance_channel', // id
-  'High Importance Notifications', // title// description
-  importance: Importance.high,
-);
-final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-    FlutterLocalNotificationsPlugin();
-Future<void> main() async {
-  await GetStorage.init("configurationStorage");
-  HttpOverrides.global = MyHttpOverrides();
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
-
-  await Firebase.initializeApp();
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-  await flutterLocalNotificationsPlugin
-      .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>()
-      ?.createNotificationChannel(channel);
-  await initHiveForFlutter();
-  hiveRegisterAdapter();
-  loadWebContent();
-  runApp(
-    RestartWidget(
-      child: BagistoApp(GlobalData.locale),
-    ),
-  );
-}
-
-void loadWebContent() async {
-  GlobalData.style = await rootBundle.loadString('assets/web/style.css');
-}
-
-Future<void> hiveRegisterAdapter() async {
-  var dir = await getApplicationDocumentsDirectory();
-  Hive.init(dir.path);
-
-  ///Home Page Model
-  Hive.registerAdapter(NewProductsModelAdapter());
-  Hive.registerAdapter(NewProductsAdapter());
-  Hive.registerAdapter(InventoriesAdapter());
-  Hive.registerAdapter(InventorySourceAdapter());
-  Hive.registerAdapter(ReviewsAdapter());
-  Hive.registerAdapter(PriceHtmlAdapter());
-  Hive.registerAdapter(ProductFlatsAdapter());
-  Hive.registerAdapter(ImagesAdapter());
-  Hive.registerAdapter(HomeCategoriesAdapter());
-  Hive.registerAdapter(GetDrawerCategoriesDataAdapter());
-}
-
-// restarts the widget by taking a child widget to draw and assign unique key to be associated with it
-class RestartWidget extends StatefulWidget {
-  const RestartWidget({Key? key, required this.child}) : super(key: key);
-  final Widget child;
-
-  static restartApp(BuildContext context) {
-    //find the current this state object and calls the [restartApp] function to restart the whole app
-    context.findAncestorStateOfType<_RestartWidgetState>()?.restartApp();
+  
+  // Initialize SharedPreferences
+  final prefs = await SharedPreferences.getInstance();
+  
+  try {
+    await initHiveForFlutter();
+  } catch (e) {
+    debugPrint('Hive init failed (using in-memory cache): $e');
   }
 
-  @override
-  State<StatefulWidget> createState() {
-    return _RestartWidgetState();
-  }
+  runApp(BagistoApp(prefs: prefs));
 }
 
-class _RestartWidgetState extends State<RestartWidget> {
-  Key _key = UniqueKey();
-  void restartApp() {
-    setState(() {
-      _key = UniqueKey();
-    });
-  }
+class BagistoApp extends StatelessWidget {
+  final SharedPreferences prefs;
+  
+  const BagistoApp({super.key, required this.prefs});
 
   @override
   Widget build(BuildContext context) {
-    return KeyedSubtree(
-      key: _key,
-      child: widget.child,
+    final clientNotifier = GraphQLClientProvider.client;
+
+    return GraphQLProvider(
+      client: clientNotifier,
+      child: MultiRepositoryProvider(
+        providers: [
+          RepositoryProvider<CategoryRepository>(
+            create: (_) => CategoryRepository(client: clientNotifier.value),
+          ),
+          RepositoryProvider<CartRepository>(
+            create: (_) => CartRepository(client: clientNotifier.value),
+          ),
+          RepositoryProvider<AuthRepository>(
+            create: (_) => AuthRepository(client: clientNotifier.value),
+          ),
+          RepositoryProvider<HomeRepository>(
+            create: (_) => HomeRepository(client: clientNotifier.value),
+          ),
+        ],
+        child: MultiBlocProvider(
+          providers: [
+            BlocProvider(
+              create: (_) => ThemeCubit()..initialize(prefs),
+            ),
+            BlocProvider(
+              create: (ctx) =>
+                  AuthBloc(repository: ctx.read<AuthRepository>())
+                    ..add(const AuthCheckStatus()),
+            ),
+            BlocProvider(
+              create: (ctx) =>
+                  CategoryBloc(repository: ctx.read<CategoryRepository>())
+                    ..add(LoadCategories()),
+            ),
+            BlocProvider(
+              create: (ctx) =>
+                  CartBloc(repository: ctx.read<CartRepository>())
+                    ..add(LoadCart()),
+            ),
+            BlocProvider(
+              create: (ctx) =>
+                  HomeBloc(repository: ctx.read<HomeRepository>())
+                    ..add(const LoadHome()),
+            ),
+            BlocProvider(
+              create: (_) => WishlistCubit()..loadWishlist(),
+            ),
+          ],
+          child: const _AppWithAuthCartSync(),
+        ),
+      ),
     );
   }
 }
 
-class BagistoApp extends StatefulWidget {
-  const BagistoApp(
-    this.selectedLanguage, {
-    Key? key,
-  }) : super(key: key);
+/// Widget that listens to AuthBloc state changes and synchronizes the CartBloc.
+///
+/// This is the Flutter equivalent of the Next.js SessionSync + useMergeCart:
+///
+///  • On login  → fires [OnUserLoggedIn] which switches the cart bearer token
+///    to the auth access token and merges the guest cart into the user's cart.
+///
+///  • On logout → fires [OnUserLoggedOut] which clears the user's cart and
+///    creates a fresh guest cart session.
+class _AppWithAuthCartSync extends StatefulWidget {
+  const _AppWithAuthCartSync();
 
-  final String? selectedLanguage;
   @override
-  State<BagistoApp> createState() => _BagistoAppState();
+  State<_AppWithAuthCartSync> createState() => _AppWithAuthCartSyncState();
 }
 
-class _BagistoAppState extends State<BagistoApp> {
-  Locale? _locale;
-  String appRoot = splash;
-
-  @override
-  void initState() {
-    try {
-      ApiClient().getCoreConfigs().then((config) {
-        GlobalData.configData = config;
-      });
-    } catch (e) {
-      debugPrint("Error in config --> $e");
-    }
-    GlobalData.locale = appStoragePref.getCustomerLanguage();
-    GlobalData.currencyCode = appStoragePref.getCurrencyCode();
-    GlobalData.currencySymbol = appStoragePref.getCurrencySymbol();
-    // Properly construct Locale from stored string
-    if (GlobalData.locale.contains('_')) {
-      var parts = GlobalData.locale.split('_');
-      _locale = Locale(parts[0], parts[1]);
-    } else {
-      _locale = Locale(GlobalData.locale);
-    }
-    PushNotificationsManager.instance.setUpFirebase(context);
-    notification();
-    getDeviceName().then((value){
-      GlobalData.deviceName = value;
-    });
-    super.initState();
-  }
-
-  Future<String> getDeviceName() async {
-    final deviceInfoPlugin = DeviceInfoPlugin();
-
-    if (Platform.isAndroid) {
-      final androidInfo = await deviceInfoPlugin.androidInfo;
-      return "${androidInfo.manufacturer} ${androidInfo.model}";
-    } else if (Platform.isIOS) {
-      final iosInfo = await deviceInfoPlugin.iosInfo;
-      return "${iosInfo.name} ${iosInfo.model}";
-    } else {
-      return "Unknown Device";
-    }
-  }
-
-  // Permission for notification
-  Future<void> notification() async {
-    await Permission.notification.isDenied.then((value) {
-      if (value) {
-        Permission.notification.request();
-      }
-    });
-  }
-
+class _AppWithAuthCartSyncState extends State<_AppWithAuthCartSync> {
+  /// Track previous auth state to detect transitions (login / logout).
+  bool _wasAuthenticated = false;
+  String? _lastAuthToken;
+  bool _initialAuthCheckDone = false;
+  bool _logoutSyncTriggered = false;
 
   @override
   Widget build(BuildContext context) {
-    return OverlaySupport.global(
-        child: ChangeNotifierProvider(
-      create: (_) => ThemeProvider(),
-      child: Consumer<ThemeProvider>(
-          builder: (context, ThemeProvider themeNotifier, child) {
-        return MaterialApp(
-          theme: MobiKulTheme.lightTheme,
-          themeMode: ThemeMode.system,
-          darkTheme: MobiKulTheme.darkTheme,
-          initialRoute: appRoot,
-          onGenerateRoute: generateRoute,
-          title: defaultAppTitle,
-          debugShowCheckedModeBanner: false,
-          supportedLocales: supportedLocale,
-          localizationsDelegates: const [
-            ApplicationLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          localeResolutionCallback: (locale, supportedLocales) {
-            for (var supportedLocaleLanguage in supportedLocales) {
-              if (supportedLocaleLanguage.languageCode == locale?.languageCode &&
-                  supportedLocaleLanguage.countryCode == locale?.countryCode) {
-                return supportedLocaleLanguage;
-              }
-            }
-            return supportedLocales.first;
-          },
-          locale: _locale,
-        );
-      }),
-    ));
-  }
-}
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (context, authState) {
+        final cartBloc = context.read<CartBloc>();
 
-class MyHttpOverrides extends HttpOverrides {
-  @override
-  HttpClient createHttpClient(SecurityContext? context) {
-    return super.createHttpClient(context)
-      ..badCertificateCallback =
-          (X509Certificate cert, String host, int port) => true;
+        // On first auth state, sync the cart if user is already authenticated
+        if (!_initialAuthCheckDone) {
+          _initialAuthCheckDone = true;
+          if (authState is AuthAuthenticated) {
+            _wasAuthenticated = true;
+            _lastAuthToken = authState.token;
+            debugPrint('🔄 Auth→Cart sync: user already logged in — firing OnUserLoggedIn');
+            cartBloc.add(OnUserLoggedIn(authToken: authState.token));
+            context.read<WishlistCubit>().loadWishlist();
+            return;
+          }
+        }
+
+        if (authState is AuthAuthenticated) {
+          // User just logged in — sync the cart
+          if (!_wasAuthenticated || _lastAuthToken != authState.token) {
+            debugPrint('🔄 Auth→Cart sync: user logged in — firing OnUserLoggedIn');
+            cartBloc.add(OnUserLoggedIn(authToken: authState.token));
+            context.read<WishlistCubit>().loadWishlist();
+            _wasAuthenticated = true;
+            _lastAuthToken = authState.token;
+            _logoutSyncTriggered = false;
+          }
+        } else if (authState is AuthLoading) {
+          // Logout flow enters loading while token is still available.
+          // Trigger cart reset here so we can clear user cart data promptly.
+          if (_wasAuthenticated && !_logoutSyncTriggered) {
+            debugPrint('🔄 Auth→Cart sync: auth loading after login — firing OnUserLoggedOut');
+            cartBloc.add(const OnUserLoggedOut());
+            context.read<WishlistCubit>().clearWishlist();
+            _logoutSyncTriggered = true;
+          }
+        } else if (authState is AuthUnauthenticated) {
+          // User just logged out — reset the cart
+          if (_wasAuthenticated && !_logoutSyncTriggered) {
+            debugPrint('🔄 Auth→Cart sync: user logged out — firing OnUserLoggedOut');
+            cartBloc.add(const OnUserLoggedOut());
+            context.read<WishlistCubit>().clearWishlist();
+          }
+          _wasAuthenticated = false;
+          _lastAuthToken = null;
+          _logoutSyncTriggered = false;
+        }
+      },
+      child: BlocBuilder<ThemeCubit, ThemeMode>(
+        builder: (context, themeMode) {
+          return MaterialApp(
+            title: 'Bagisto Store',
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: themeMode,
+            home: SplashScreen(
+              nextScreen: MainShell(key: MainShell.navigatorKey),
+            ),
+          );
+        },
+      ),
+    );
   }
 }

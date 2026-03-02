@@ -1,0 +1,135 @@
+appId: com.webkul.bagistoApp.iOS
+---
+# ═════════════════════════════════════════════════════════════════════════════
+# AUTHENTICATION FLOW TEST
+# ═════════════════════════════════════════════════════════════════════════════
+# This flow covers:
+# - App launch and splash screen
+# - Login with valid credentials
+# - Login with invalid credentials
+# - Sign up navigation
+# - Logout verification
+#
+# Preconditions: None
+# ═════════════════════════════════════════════════════════════════════════════
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 1. VERIFY APP LAUNCHES TO ACCOUNT PAGE (Login required)
+# ─────────────────────────────────────────────────────────────────────────────
+- launchApp
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Login"
+    index: 0
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 2. VALID LOGIN TEST
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Valid login with correct credentials
+- tapOn:
+    text: "Login"
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Welcome back!"
+
+# Enter email
+- tapOn:
+    type: "TextField"
+    index: 0
+- inputText: "test@example.com"
+
+# Enter password
+- tapOn:
+    type: "TextField"
+    index: 1
+- inputText: "password123"
+
+# Tap login button
+- tapOn:
+    text: "Login"
+    index: 0
+- waitForAnimationToEnd
+
+# Verify login success and redirect to home
+- assertVisible:
+    text: "Featured Products"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 3. NAVIGATE TO ACCOUNT AND VERIFY LOGGED-IN STATE
+# ─────────────────────────────────────────────────────────────────────────────
+# Navigate to Account tab to verify login
+- tapOn:
+    text: "Account"
+    index: 0
+- waitForAnimationToEnd
+- assertVisible:
+    text: "My Account"
+- assertVisible:
+    text: "Logout"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 4. LOGOUT TEST
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Logout functionality
+- tapOn:
+    text: "Logout"
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Login"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 5. INVALID LOGIN TEST
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Invalid login with wrong credentials
+- tapOn:
+    text: "Login"
+- waitForAnimationToEnd
+
+# Enter invalid email
+- tapOn:
+    type: "TextField"
+    index: 0
+- inputText: "invalid@example.com"
+
+# Enter invalid password
+- tapOn:
+    type: "TextField"
+    index: 1
+- inputText: "wrongpassword"
+
+# Tap login button
+- tapOn:
+    text: "Login"
+    index: 0
+- waitForAnimationToEnd
+
+# Verify error message appears
+- assertVisible:
+    text: "error"
+    isRegex: true
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 6. SIGN UP NAVIGATION TEST
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Navigate to Sign Up screen
+- tapOn:
+    text: "Sign Up"
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Create Account"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 7. BACK NAVIGATION FROM SIGN UP
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Back button from Sign Up
+- tapOn:
+    text: "Back"
+    index: 0
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Welcome back!"
+

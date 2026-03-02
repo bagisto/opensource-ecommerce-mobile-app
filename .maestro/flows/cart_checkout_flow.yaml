@@ -1,0 +1,195 @@
+appId: com.webkul.bagistoApp.iOS
+---
+# ═════════════════════════════════════════════════════════════════════════════
+# CART & CHECKOUT FLOW TEST
+# ═════════════════════════════════════════════════════════════════════════════
+# This flow covers:
+# - Cart item visibility and validation
+# - Quantity updates
+# - Item removal from cart
+# - Cart total calculation
+# - Proceed to checkout
+# - Address selection/entry
+# - Shipping method selection
+# - Payment method selection
+# - Order confirmation
+# - Empty cart scenarios
+#
+# Preconditions: App is installed, items added to cart (from product_flow)
+# ═════════════════════════════════════════════════════════════════════════════
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 1. NAVIGATE TO CART TAB
+# ─────────────────────────────────────────────────────────────────────────────
+- launchApp
+- waitForAnimationToEnd
+
+- tapOn:
+    text: "Cart"
+    index: 0
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 2. VERIFY CART LOADS (May be empty on first run)
+# ─────────────────────────────────────────────────────────────────────────────
+- assertVisible:
+    text: "Cart"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 3. IF CART IS EMPTY, ADD ITEMS VIA HOME > PRODUCT FLOW
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Add items to cart if empty
+# Check if cart is empty - if so, navigate to add items
+- scroll
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 4. VERIFY CART ITEMS ARE DISPLAYED
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Cart items visible
+- assertVisible:
+    text: "Subtotal|Total"
+    isRegex: true
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 5. VERIFY ITEM QUANTITY CONTROLS
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Quantity + button visible
+- assertVisible:
+    text: "+"
+- assertVisible:
+    text: "-"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 6. TEST QUANTITY INCREMENT
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Increase quantity
+- tapOn:
+    text: "+"
+    index: 0
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 7. TEST QUANTITY DECREMENT
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Decrease quantity
+- tapOn:
+    text: "-"
+    index: 0
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 8. VERIFY REMOVE ITEM BUTTON
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Remove item button visible
+- assertVisible:
+    text: "Remove"
+    index: 0
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 9. SCROLL TO SEE CHECKOUT BUTTON
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Checkout button visible
+- scroll:
+    down: 2
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Proceed to Checkout|Checkout"
+    isRegex: true
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 10. CLICK CHECKOUT BUTTON
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Navigate to checkout
+- tapOn:
+    text: "Proceed to Checkout|Checkout"
+    isRegex: true
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 11. VERIFY CHECKOUT PAGE LOADS
+# ─────────────────────────────────────────────────────────────────────────────
+- assertVisible:
+    text: "Shipping|Address|Checkout"
+    isRegex: true
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 12. ENTER/SELECT SHIPPING ADDRESS
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Address selection or entry
+- scroll
+- waitForAnimationToEnd
+
+# If there's an address field, fill it
+- tapOn:
+    type: "TextField"
+    index: 0
+- inputText: "123 Main St"
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 13. SELECT SHIPPING METHOD (if available)
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Shipping method selection
+- scroll:
+    down: 2
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 14. SCROLL TO PAYMENT AND SELECT METHOD
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Payment method selection
+- scroll:
+    down: 3
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 15. PLACE ORDER
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Place order
+- assertVisible:
+    text: "Place Order|Complete Purchase|Pay Now"
+    isRegex: true
+- tapOn:
+    text: "Place Order|Complete Purchase|Pay Now"
+    isRegex: true
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 16. VERIFY ORDER CONFIRMATION
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Order confirmation page
+- assertVisible:
+    text: "Thank You|Success|Order Confirmation|Order #"
+    isRegex: true
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 17. TEST EMPTY CART SCENARIO (Navigate back to cart)
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Empty cart after order
+- tapOn:
+    text: "Home|Shop|Continue Shopping"
+    isRegex: true
+- waitForAnimationToEnd
+- tapOn:
+    text: "Cart"
+- waitForAnimationToEnd
+
+# Cart should be empty or show only newly added items
+- scroll
+

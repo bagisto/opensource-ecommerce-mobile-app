@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "maestro": {
+      "command": "/Users/jitendra/.maestro/bin/maestro",
+      "args": [
+        "--udid=00F3D8B0-F068-4BE9-A08A-5CB11F6E79BE",
+        "--platform=ios",
+        "mcp",
+        "--working-dir=/Users/jitendra/Documents/Demo_project/Bagisto_flutter"
+      ],
+      "disabled": false,
+      "alwaysAllow": []
+    }
+  }
+}

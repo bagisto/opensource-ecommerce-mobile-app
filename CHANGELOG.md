@@ -1,5 +1,17 @@
 #### This changelog consists the bug & security fixes and new features being included in the releases listed below
 
+# CHANGELOG for v2.3.9
+
+## **v2.3.9 (20th of Feb, 2026)** - *Release*
+
+# CHANGELOG for v2.3.9
+
+* [Enhancement] Ui Updates And Bug Fixes
+* [Improvement] Optimized GraphQL queries across the project to improve data retrieval performance.
+* [Improvement] Optimized overall user experience
+* [Compatibility] Compatibility with Xcode 26.3.
+* [Compatibility] Compatibility with Flutter Version 3.38.9
+
 # CHANGELOG for v2.3.2
 
 ## **v2.3.2 (28th of July, 2025)** - *Release*

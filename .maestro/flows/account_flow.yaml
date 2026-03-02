@@ -1,0 +1,309 @@
+appId: com.webkul.bagistoApp.iOS
+---
+# ═════════════════════════════════════════════════════════════════════════════
+# ACCOUNT FLOW TEST
+# ═════════════════════════════════════════════════════════════════════════════
+# This flow covers:
+# - Account page navigation
+# - Profile information display
+# - Edit profile functionality
+# - Address book view
+# - Add/edit address
+# - Delete address
+# - Orders section access
+# - Wishlist access
+# - Settings/preferences
+# - Logout functionality
+#
+# Preconditions: App is installed, User is logged out initially
+# ═════════════════════════════════════════════════════════════════════════════
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 1. LAUNCH APP AND NAVIGATE TO ACCOUNT
+# ─────────────────────────────────────────────────────────────────────────────
+- launchApp
+- waitForAnimationToEnd
+
+- tapOn:
+    text: "Account"
+    index: 0
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Login"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 2. LOGIN TO ACCOUNT
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Login for account tests
+- tapOn:
+    text: "Login"
+- waitForAnimationToEnd
+
+# Enter email
+- tapOn:
+    type: "TextField"
+    index: 0
+- inputText: "test@example.com"
+
+# Enter password
+- tapOn:
+    type: "TextField"
+    index: 1
+- inputText: "password123"
+
+# Tap login
+- tapOn:
+    text: "Login"
+    index: 0
+- waitForAnimationToEnd
+
+# Return to account tab
+- tapOn:
+    text: "Account"
+    index: 0
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 3. VERIFY ACCOUNT DASHBOARD LOADS
+# ─────────────────────────────────────────────────────────────────────────────
+- assertVisible:
+    text: "My Account"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 4. VERIFY PROFILE MENU ITEMS ARE VISIBLE
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Account menu items visible
+- assertVisible:
+    text: "Profile|Orders|Address|Logout"
+    isRegex: true
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 5. NAVIGATE TO EDIT PROFILE
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Open profile edit
+- tapOn:
+    text: "Profile|Edit Profile"
+    isRegex: true
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 6. VERIFY PROFILE EDIT FIELDS
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Profile fields visible
+- assertVisible:
+    text: "First Name|Last Name|Email"
+    isRegex: true
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 7. EDIT PROFILE INFORMATION (Mock update)
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Update profile information
+# Clear first name field
+- tapOn:
+    type: "TextField"
+    index: 0
+- doubleTap
+- inputText: "John"
+
+# Update last name
+- tapOn:
+    type: "TextField"
+    index: 1
+- doubleTap
+- inputText: "Doe"
+
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 8. VERIFY SAVE BUTTON
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Save profile changes
+- assertVisible:
+    text: "Save|Update"
+    isRegex: true
+- tapOn:
+    text: "Save|Update"
+    isRegex: true
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 9. BACK TO ACCOUNT PAGE
+# ─────────────────────────────────────────────────────────────────────────────
+- tapOn:
+    type: "Icon"
+    index: 0
+- waitForAnimationToEnd
+- assertVisible:
+    text: "My Account"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 10. NAVIGATE TO ADDRESS BOOK
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Open address book
+- tapOn:
+    text: "Address|Address Book"
+    isRegex: true
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 11. VERIFY ADDRESS LIST
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Address list visible
+- assertVisible:
+    text: "Address"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 12. VERIFY ADD ADDRESS BUTTON
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Add address button visible
+- scroll
+- assertVisible:
+    text: "Add|Add New Address|+"
+    isRegex: true
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 13. NAVIGATE TO ADD ADDRESS PAGE
+# ─────────────────────────────────────────────────────────────────────────────
+- tapOn:
+    text: "Add|Add New Address|+"
+    isRegex: true
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 14. VERIFY ADD ADDRESS FORM FIELDS
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Address form fields visible
+- assertVisible:
+    text: "Street|City|State|Zip|Country|Phone"
+    isRegex: true
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 15. FILL IN ADDRESS FORM (Mock entry)
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Fill address information
+- tapOn:
+    type: "TextField"
+    index: 0
+- inputText: "123 Main Street"
+
+- tapOn:
+    type: "TextField"
+    index: 1
+- inputText: "Springfield"
+
+- tapOn:
+    type: "TextField"
+    index: 2
+- inputText: "IL"
+
+- tapOn:
+    type: "TextField"
+    index: 3
+- inputText: "62701"
+
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 16. SUBMIT ADDRESS
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Save address
+- scroll:
+    down: 2
+- assertVisible:
+    text: "Save|Add Address|Save Address"
+    isRegex: true
+- tapOn:
+    text: "Save|Add Address|Save Address"
+    isRegex: true
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 17. BACK TO ACCOUNT
+# ─────────────────────────────────────────────────────────────────────────────
+- tapOn:
+    type: "Icon"
+    index: 0
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 18. NAVIGATE TO ORDERS SECTION
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Orders section access
+- tapOn:
+    text: "Orders|My Orders"
+    isRegex: true
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Orders"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 19. BACK TO ACCOUNT
+# ─────────────────────────────────────────────────────────────────────────────
+- tapOn:
+    type: "Icon"
+    index: 0
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 20. NAVIGATE TO WISHLIST (if available)
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Wishlist access
+- scroll
+- tapOn:
+    text: "Wishlist|Favorites|Saved Items"
+    isRegex: true
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 21. BACK TO ACCOUNT
+# ─────────────────────────────────────────────────────────────────────────────
+- tapOn:
+    type: "Icon"
+    index: 0
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 22. VERIFY LOGOUT BUTTON IS VISIBLE
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Logout button visible
+- scroll
+- assertVisible:
+    text: "Logout"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 23. PERFORM LOGOUT
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Logout functionality
+- tapOn:
+    text: "Logout"
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 24. VERIFY LOGIN PAGE AFTER LOGOUT
+# ─────────────────────────────────────────────────────────────────────────────
+- assertVisible:
+    text: "Login"
+

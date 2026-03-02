@@ -1,0 +1,19 @@
+appId: com.webkul.bagistoApp.iOS
+---
+- launchApp
+- assertVisible:
+    text: "Popular Products"
+- tapOn:
+    text: "Categories"
+- tapOn:
+    text: "Furniture"
+- tapOn:
+    index: 0
+- assertVisible:
+    text: "Add to Cart"
+- tapOn:
+    text: "Add to Cart"
+- tapOn:
+    text: "Cart"
+- assertVisible:
+    text: "Cart"

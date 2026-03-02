@@ -1,6 +1,6 @@
 {
-    "name": "bagisto_2_flutter_mobile_app",
-    "short_name": "bagisto_2_flutter_mobile_app",
+    "name": "bagisto_flutter",
+    "short_name": "bagisto_flutter",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

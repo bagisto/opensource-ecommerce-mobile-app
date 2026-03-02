@@ -1,68 +1,180 @@
- 
- # Configuration Guide:-
+# Configuration Guide
 
-**//--------------------Configuration Guide Opensource Bagisto app----------------------//**
+This guide explains how to configure the Bagisto Flutter app for your specific needs.
 
-### For setup the application:
-- Path-Project.lib.configuration.serverConfiguration.dart
-- Change BASE_URL,username & password.
+---
 
-```  
-static const String BASE_URL = "***********";  
-static const String API_WS_KEY  = "***********";  
-static const String demoAdminEmail  = "***********";  
-static const String demoAdminPassword  = "***********";  
-```  
+## API Configuration
 
-- Path-Project.project name.lib.configuration.MobikulTheme.dart
-- Change primary & accent color.
+Configure the Bagisto API endpoint and storefront key:
 
-```  
-static const Color primaryColor = Color(***********);  
-static const Color accentColor = Color(***********);  
+**File:** `lib/core/constants/api_constants.dart`
+
+```dart
+/// Bagisto API endpoint
+const String bagistoEndpoint = 'https://your-bagisto-domain.com/graphql';
+
+/// Storefront key for Bagisto API
+const String storefrontKey = 'your_storefront_key';
+
+/// Company name
+const String companyName = 'Your Company Name';
 ```
 
-&nbsp;
+---
 
-## For Application Title:
-- **Android**
-    * Path-android/app/src/main/AndroidManifest.xml
-    * change app name - **android:label=```"***********"```**.
-- **iOS**
-    * Go to the ios then Runner and open the info.plist file
-    * Find the key named as **CFBundleDisplayName** and replace the string value to reflect the new app name.
-    * From here you can change your app name.
+## Theme & Color Configuration
 
-&nbsp;
+Customize the app's primary colors and theme:
 
-##  For splash screen:
-- **Android**
-    * Path-android/app/src/main/res/drawable/
-    * replace the **splash_background**.
-- **iOS**
-    * Go to the below given path and replace splash image with yours
-    * path- ios/Runner/Assets.xcassets/LaunchImage.imageset/**LaunchImage.png**.
+**File:** `lib/core/theme/app_theme.dart`
 
-  &nbsp;
+In the `AppColors` class, modify the primary colors:
 
-## For App icon:
-- **Android** - open **android** folder right click **app > new > Image Asset** set Image.
-- **iOS** - ios/Runner/Assets.xcassets/AppIcon.appiconset
+```dart
+class AppColors {
+  // Primary Colors
+  static const Color primary500 = Color(0xFFFF6900);  // Main primary color
+  static const Color primary600 = Color(0xFFF54900);  // Darker variant for pressed states
+  // ... neutral, status, and other colors
+}
+```
 
-  &nbsp;
+For detailed color customization, see [ColorSetUp.md](./ColorSetUp.md).
 
-## For push notification service:
-- **Android** - Replace **"google-services.json"**.
-- **iOS** - Replace **"GoogleService-Info.plist"**.
+---
 
-  &nbsp;
+## Application Title
 
-## For Google maps:
-- **Android**
-    * Path-Project/Project name/android/app/src/main/AndroidManifest.xml
-    * Replace Your Google Map Key For android.
-- **iOS**
-    * Path-ios/Runner/AppDelegate.m
-    * GMSServices provideAPIKey:@"Your Google Map Key For ios".
+### Android
 
-  &nbsp;
+**File:** `android/app/src/main/AndroidManifest.xml`
+
+Find and modify the `android:label` attribute:
+
+```xml
+<application
+    android:label="Your App Name"
+    ... >
+```
+
+### iOS
+
+**File:** `ios/Runner/Info.plist`
+
+Find and modify the `CFBundleDisplayName` key:
+
+```xml
+<key>CFBundleDisplayName</key>
+<string>Your App Name</string>
+```
+
+---
+
+## Splash Screen
+
+### Android
+
+**File:** `android/app/src/main/res/drawable/launch_background.xml`
+
+Modify the splash background color:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@android:color/white" />
+</layer-list>
+```
+
+### iOS
+
+**File:** `ios/Runner/Assets.xcassets/LaunchImage.imageset/`
+
+Replace `LaunchImage.png` with your custom splash image.
+
+---
+
+## App Icons
+
+### Android
+
+1. Open the `android` folder in Android Studio
+2. Right-click on `app` → New → Image Asset
+3. Set your custom icon image
+
+### iOS
+
+**File:** `ios/Runner/Assets.xcassets/AppIcon.appiconset/`
+
+Replace the existing app icon images with your custom icons.
+
+---
+
+## Push Notifications
+
+### Android
+
+**File:** `android/app/google-services.json`
+
+Replace this file with your Firebase configuration file from the Firebase Console.
+
+### iOS
+
+**File:** `ios/Runner/GoogleService-Info.plist`
+
+Replace this file with your Firebase configuration file from the Firebase Console.
+
+---
+
+## Google Maps
+
+This app does not currently include Google Maps integration. If you need to add Google Maps:
+
+### Android
+
+**File:** `android/app/src/main/AndroidManifest.xml`
+
+Add the following permission and meta-data:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+<meta-data
+    android:name="com.google.android.geo.API_KEY"
+    android:value="YOUR_GOOGLE_MAPS_API_KEY"/>
+```
+
+### iOS
+
+**File:** `ios/Runner/AppDelegate.swift` (or AppDelegate.m for Objective-C)
+
+Add the API key initialization:
+
+```swift
+GMSServices.provideAPIKey("YOUR_GOOGLE_MAPS_API_KEY")
+```
+
+---
+
+## GraphQL Configuration
+
+The app uses GraphQL for API communication. The configuration is handled in:
+
+**File:** `lib/core/graphql/graphql_client.dart`
+
+This file sets up:
+- HTTP client with 30-second timeout
+- Authentication headers (X-STOREFRONT-KEY)
+- Cache management using Hive
+
+---
+
+## Summary of Configuration Files
+
+| Configuration | File Path |
+|--------------|-----------|
+| API Endpoint | `lib/core/constants/api_constants.dart` |
+| Theme/Colors | `lib/core/theme/app_theme.dart` |
+| Android App Name | `android/app/src/main/AndroidManifest.xml` |
+| iOS App Name | `ios/Runner/Info.plist` |
+| Push Notifications | `android/app/google-services.json` / `ios/Runner/GoogleService-Info.plist` |
+| GraphQL Client | `lib/core/graphql/graphql_client.dart` |

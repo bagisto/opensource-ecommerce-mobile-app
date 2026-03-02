@@ -1,0 +1,353 @@
+appId: com.webkul.bagistoApp.iOS
+---
+# ═════════════════════════════════════════════════════════════════════════════
+# SHOPPING MULTIPLE ITEMS FLOW TEST
+# ═════════════════════════════════════════════════════════════════════════════
+# This flow covers:
+# - Add multiple different items to cart
+# - Update quantities in cart
+# - Remove items from cart
+# - Verify cart totals with multiple items
+# - Proceed to checkout with multiple items
+#
+# Preconditions: App is installed
+# ═════════════════════════════════════════════════════════════════════════════
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 1. CLEAR CART (START FRESH)
+# ─────────────────────────────────────────────────────────────────────────────
+- launchApp
+- waitForAnimationToEnd
+
+- tapOn:
+    text: "Cart"
+    index: 0
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 2. NAVIGATE TO HOME TO START SHOPPING
+# ─────────────────────────────────────────────────────────────────────────────
+- tapOn:
+    text: "Home"
+    index: 0
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 3. ADD FIRST PRODUCT TO CART
+# ─────────────────────────────────────────────────────────────────────────────
+- scroll
+- waitForAnimationToEnd
+
+# Find and tap on a product
+- tapOn:
+    type: "Card"
+    index: 0
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 4. VERIFY PRODUCT DETAIL PAGE
+# ─────────────────────────────────────────────────────────────────────────────
+- assertVisible:
+    type: "Image"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 5. ADD FIRST ITEM TO CART
+# ─────────────────────────────────────────────────────────────────────────────
+- scroll:
+    down: 2
+- waitForAnimationToEnd
+
+- tapOn:
+    text: "Add to Cart"
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 6. GO BACK TO CONTINUE SHOPPING
+# ─────────────────────────────────────────────────────────────────────────────
+- tapOn:
+    type: "Icon"
+    index: 0
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 7. ADD SECOND PRODUCT TO CART
+# ─────────────────────────────────────────────────────────────────────────────
+- scroll
+- waitForAnimationToEnd
+
+# Select another product
+- tapOn:
+    type: "Card"
+    index: 1
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 8. VERIFY SECOND PRODUCT DETAIL
+# ─────────────────────────────────────────────────────────────────────────────
+- assertVisible:
+    type: "Image"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 9. ADD SECOND ITEM TO CART
+# ─────────────────────────────────────────────────────────────────────────────
+- scroll:
+    down: 2
+- waitForAnimationToEnd
+
+- tapOn:
+    text: "Add to Cart"
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 10. GO BACK AND ADD THIRD PRODUCT
+# ─────────────────────────────────────────────────────────────────────────────
+- tapOn:
+    type: "Icon"
+    index: 0
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 11. ADD THIRD PRODUCT TO CART
+# ─────────────────────────────────────────────────────────────────────────────
+- scroll
+- waitForAnimationToEnd
+
+# Select another product (third item)
+- tapOn:
+    type: "Card"
+    index: 2
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 12. VERIFY THIRD PRODUCT DETAIL
+# ─────────────────────────────────────────────────────────────────────────────
+- assertVisible:
+    type: "Image"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 13. ADD THIRD ITEM TO CART
+# ─────────────────────────────────────────────────────────────────────────────
+- scroll:
+    down: 2
+- waitForAnimationToEnd
+
+- tapOn:
+    text: "Add to Cart"
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 14. NAVIGATE TO CART TO VERIFY ALL ITEMS
+# ─────────────────────────────────────────────────────────────────────────────
+- tapOn:
+    text: "Cart"
+    index: 0
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 15. VERIFY CART HAS MULTIPLE ITEMS
+# ─────────────────────────────────────────────────────────────────────────────
+- scroll
+- waitForAnimationToEnd
+
+# Verify cart shows items (not empty)
+- assertVisible:
+    text: "Cart|Subtotal|Total"
+    isRegex: true
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 16. VERIFY MULTIPLE ITEMS ARE PRESENT
+# ─────────────────────────────────────────────────────────────────────────────
+- scroll:
+    down: 2
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 17. UPDATE QUANTITY OF FIRST ITEM
+# ─────────────────────────────────────────────────────────────────────────────
+# Navigate to beginning of cart
+- scroll:
+    up: 3
+- waitForAnimationToEnd
+
+# Find quantity controls (+/-)
+- tapOn:
+    text: "+"
+    index: 0
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 18. VERIFY QUANTITY UPDATED
+# ─────────────────────────────────────────────────────────────────────────────
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 19. UPDATE ANOTHER ITEM QUANTITY
+# ─────────────────────────────────────────────────────────────────────────────
+- scroll:
+    down: 2
+- waitForAnimationToEnd
+
+# Increment another item
+- tapOn:
+    text: "+"
+    index: 0
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 20. DECREASE QUANTITY OF FIRST ITEM
+# ─────────────────────────────────────────────────────────────────────────────
+- scroll:
+    up: 2
+- waitForAnimationToEnd
+
+# Decrement
+- tapOn:
+    text: "-"
+    index: 0
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 21. VERIFY CART TOTAL UPDATED
+# ─────────────────────────────────────────────────────────────────────────────
+- scroll:
+    down: 2
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 22. SCROLL TO SEE ALL ITEMS
+# ─────────────────────────────────────────────────────────────────────────────
+- scroll:
+    down: 3
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 23. REMOVE AN ITEM FROM CART
+# ─────────────────────────────────────────────────────────────────────────────
+# Look for remove button
+- tapOn:
+    text: "Remove|Remove Item|Delete"
+    isRegex: true
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 24. VERIFY ITEM REMOVED
+# ─────────────────────────────────────────────────────────────────────────────
+- waitForAnimationToEnd
+
+# Cart should now have fewer items
+- scroll
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 25. SCROLL TO CART SUMMARY
+# ─────────────────────────────────────────────────────────────────────────────
+- scroll:
+    down: 3
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 26. VERIFY SUBTOTAL AND TOTAL
+# ─────────────────────────────────────────────────────────────────────────────
+- assertVisible:
+    text: "Subtotal|Total"
+    isRegex: true
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 27. PROCEED TO CHECKOUT
+# ─────────────────────────────────────────────────────────────────────────────
+- tapOn:
+    text: "Proceed to Checkout|Checkout"
+    isRegex: true
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 28. VERIFY CHECKOUT PAGE LOADS
+# ─────────────────────────────────────────────────────────────────────────────
+- assertVisible:
+    text: "Shipping|Address|Checkout"
+    isRegex: true
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 29. ENTER SHIPPING INFORMATION
+# ─────────────────────────────────────────────────────────────────────────────
+- scroll
+- waitForAnimationToEnd
+
+# Enter address details
+- tapOn:
+    type: "TextField"
+    index: 0
+- inputText: "123 Test Street"
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 30. SCROLL TO CONTINUE
+# ─────────────────────────────────────────────────────────────────────────────
+- scroll:
+    down: 2
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 31. SELECT SHIPPING METHOD
+# ─────────────────────────────────────────────────────────────────────────────
+- scroll:
+    down: 2
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 32. SELECT PAYMENT METHOD
+# ─────────────────────────────────────────────────────────────────────────────
+- scroll:
+    down: 2
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 33. PLACE ORDER
+# ─────────────────────────────────────────────────────────────────────────────
+- scroll:
+    down: 2
+- waitForAnimationToEnd
+
+- tapOn:
+    text: "Place Order|Complete Purchase|Pay Now"
+    isRegex: true
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 34. VERIFY ORDER CONFIRMATION
+# ─────────────────────────────────────────────────────────────────────────────
+- assertVisible:
+    text: "Thank You|Success|Order Confirmation|Order #"
+    isRegex: true

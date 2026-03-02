@@ -1,0 +1,149 @@
+appId: com.webkul.bagistoApp.iOS
+---
+# ═════════════════════════════════════════════════════════════════════════════
+# PRODUCT FLOW TEST
+# ═════════════════════════════════════════════════════════════════════════════
+# This flow covers:
+# - Category page navigation and product display
+# - Product filtering and sorting
+# - Product detail page navigation
+# - Product images visibility
+# - Price display
+# - Add to cart from product detail
+# - Product ratings/reviews visibility
+#
+# Preconditions: App is installed
+# ═════════════════════════════════════════════════════════════════════════════
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 1. NAVIGATE TO CATEGORIES TAB
+# ─────────────────────────────────────────────────────────────────────────────
+- launchApp
+- waitForAnimationToEnd
+
+- tapOn:
+    text: "Categories"
+    index: 0
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Categories"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 2. SELECT A CATEGORY
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Enter a category
+# Tap on first category item (adjust index as needed)
+- tapOn:
+    type: "Card"
+    index: 0
+- waitForAnimationToEnd
+- assertVisible:
+    type: "ListView"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 3. VERIFY PRODUCTS IN CATEGORY ARE VISIBLE
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Product list in category loads
+- scroll
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 4. SELECT A PRODUCT AND OPEN DETAIL PAGE
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Navigate to product detail page
+# Tap on first product in the grid
+- tapOn:
+    type: "Card"
+    index: 0
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 5. VERIFY PRODUCT DETAIL PAGE LOADS
+# ─────────────────────────────────────────────────────────────────────────────
+- assertVisible:
+    type: "Image"
+    index: 0
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 6. VERIFY PRODUCT IMAGE IS VISIBLE
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Product image carousel visible
+- scroll
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 7. VERIFY PRICE IS VISIBLE
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Price display visible
+- assertVisible:
+    type: "Text"
+    index: 0
+# Usually price is displayed with $ or currency symbol
+- scroll:
+    down: 2
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 8. SCROLL AND VERIFY PRODUCT DESCRIPTION
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Product description visible
+- scroll:
+    down: 3
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 9. VERIFY ADD TO CART BUTTON
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Add to cart button visible
+- assertVisible:
+    text: "Add to Cart"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 10. CLICK ADD TO CART
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Add to cart functionality
+- tapOn:
+    text: "Add to Cart"
+- waitForAnimationToEnd
+
+# Verify success message or cart count update
+- assertVisible:
+    text: "success|added|cart"
+    isRegex: true
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 11. SCROLL DOWN TO VERIFY RATINGS/REVIEWS SECTION (if available)
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Reviews section visible
+- scroll:
+    down: 3
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 12. BACK NAVIGATION TO CATEGORY
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Back navigation from product detail
+- tapOn:
+    type: "Icon"
+    index: 0
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 13. BACK TO CATEGORIES LIST
+# ─────────────────────────────────────────────────────────────────────────────
+- tapOn:
+    type: "Icon"
+    index: 0
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Categories"
+

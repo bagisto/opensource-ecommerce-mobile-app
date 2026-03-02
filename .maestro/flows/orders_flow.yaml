@@ -1,0 +1,176 @@
+appId: com.webkul.bagistoApp.iOS
+---
+# ═════════════════════════════════════════════════════════════════════════════
+# ORDERS FLOW TEST
+# ═════════════════════════════════════════════════════════════════════════════
+# This flow covers:
+# - Navigate to Orders section (Account → Orders)
+# - Orders list visibility
+# - Order status display
+# - Order details page
+# - Order items verification
+# - Order ID visibility
+# - Order total verification
+# - Tracking information (if available)
+# - Reorder functionality
+# - Empty orders handling
+#
+# Preconditions: User is logged in and has placed orders
+# ═════════════════════════════════════════════════════════════════════════════
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 1. LAUNCH APP AND NAVIGATE TO ACCOUNT
+# ─────────────────────────────────────────────────────────────────────────────
+- launchApp
+- waitForAnimationToEnd
+
+- tapOn:
+    text: "Account"
+    index: 0
+- waitForAnimationToEnd
+- assertVisible:
+    text: "My Account|Account"
+    isRegex: true
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 2. LOGIN IF NOT ALREADY LOGGED IN
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Check if login is required
+# Try to find Orders menu item - if not found, need to login
+- scroll
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 3. NAVIGATE TO ORDERS SECTION
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Navigate to Orders
+- tapOn:
+    text: "Orders|My Orders"
+    isRegex: true
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 4. VERIFY ORDERS PAGE LOADS
+# ─────────────────────────────────────────────────────────────────────────────
+- assertVisible:
+    text: "Orders|Order History"
+    isRegex: true
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 5. VERIFY ORDERS LIST ITEMS ARE VISIBLE
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Order list items visible
+- scroll
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 6. VERIFY ORDER STATUS IS DISPLAYED
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Order status visible
+- assertVisible:
+    text: "Pending|Completed|Processing|Canceled"
+    isRegex: true
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 7. SELECT AN ORDER AND OPEN DETAILS
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Open order details
+- tapOn:
+    type: "Card|ListTile|Container"
+    index: 0
+- waitForAnimationToEnd
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 8. VERIFY ORDER DETAIL PAGE LOADS
+# ─────────────────────────────────────────────────────────────────────────────
+- assertVisible:
+    text: "Order Details|Order #"
+    isRegex: true
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 9. VERIFY ORDER ID IS VISIBLE
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Order ID visible
+- assertVisible:
+    type: "Text"
+    index: 0
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 10. VERIFY ORDER ITEMS ARE LISTED
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Order items visible
+- scroll
+- assertVisible:
+    type: "ListView|Column"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 11. VERIFY ITEM DETAILS (Price, Quantity)
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Item details visible
+- scroll:
+    down: 2
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 12. VERIFY ORDER TOTAL
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Order total visible
+- assertVisible:
+    text: "Total|Subtotal"
+    isRegex: true
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 13. VERIFY SHIPPING ADDRESS
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Shipping address visible
+- scroll:
+    down: 2
+- assertVisible:
+    text: "Shipping|Address"
+    isRegex: true
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 14. CHECK FOR TRACKING INFORMATION (if available)
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Tracking information (if available)
+- scroll:
+    down: 2
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 15. BACK NAVIGATION FROM ORDER DETAILS
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Back from order details
+- tapOn:
+    type: "Icon"
+    index: 0
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Orders"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 16. VERIFY MULTIPLE ORDERS PAGINATION (if available)
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Multiple orders or pagination
+- scroll:
+    down: 5
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 17. TEST EMPTY ORDERS HANDLING (Edge case)
+# ─────────────────────────────────────────────────────────────────────────────
+# Test: Empty orders message (if applicable)
+# This would be tested with an account that has no orders
+

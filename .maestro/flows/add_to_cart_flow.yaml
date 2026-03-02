@@ -1,0 +1,12 @@
+appId: com.webkul.bagistoApp.iOS
+---
+# TEST 1: Add Product to Cart (Guest User)
+- launchApp
+- assertVisible:
+    text: "Home"
+- assertVisible:
+    text: "Popular Products"
+- tapOn:
+    index: 0
+- assertVisible:
+    text: "Add to Cart"

@@ -1,3 +1,0 @@
-appId: com.example.bagisto
----
-- runFlow: checkout/shipping_address_crud.yaml
