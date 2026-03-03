@@ -27,27 +27,27 @@ The open-source ecommerce mobile app comes with an array of features to improve 
 
 ## Interactive Home Page and Search
 
-![enter image description here](https://raw.githubusercontent.com/bagisto/temp-media/master/interactive-homepage-and-search.png)
+![Interactive Home Page and Search](Docs/features_images/Interactive%20Home%20Page%20and%20Search.png)
 
 ## All Type Product Supported
 
-![enter image description here](https://raw.githubusercontent.com/bagisto/temp-media/master/product-details.png)
+![All Type Product Supported](Docs/features_images/All%20Type%20Product%20Supported.png)
 
 ## Dark Mode and Push Notification
 
-![enter image description here](https://raw.githubusercontent.com/bagisto/temp-media/master/dark-theme-and-push-notifications.png)
+![Dark Mode and Push Notification](Docs/features_images/Dark%20Mode%20and%20Push%20Notification.png)
 
 ## Discount Coupons and Guest Checkout
 
-![enter image description here](https://raw.githubusercontent.com/bagisto/temp-media/master/coupon-and-guest-checkout.png)
+![Discount Coupons and Guest Checkout](Docs/features_images/Discount%20Coupons%20and%20Guest%20Checkout.png)
 
 ## Wishlist and Product Category
 
-![enter image description here](https://raw.githubusercontent.com/bagisto/temp-media/master/category%3Dpage-and-wishlist.png)
+![Wishlist and Product Category](Docs/features_images/Wishlist%20and%20Product%20Category.png)
 
 ## Order Details and Product Reviews
 
-![enter image description here](https://raw.githubusercontent.com/bagisto/temp-media/master/order-details-and-product-reviews.png)
+![Order Details and Product Reviews](Docs/features_images/Order%20Details%20and%20Product%20Reviews.png)
 
 ## Installation Guide
 
