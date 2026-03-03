@@ -49,3 +49,7 @@ app.*.map.json
 
 # ML models - large files not needed in git
 assets/ml/
+
+# Google Services configuration files - contain sensitive API keys
+**/google-services.json
+**/GoogleService-Info.plist
