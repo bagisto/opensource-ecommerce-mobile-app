@@ -33,7 +33,7 @@ The open-source ecommerce mobile app comes with an array of features to improve 
 
 ![All Type Product Supported](Docs/features_images/All%20Type%20Product%20Supported.png)
 
-## Dark Mode and Push Notification
+## Dark Mode and Push Notification 
 
 ![Dark Mode and Push Notification](Docs/features_images/Dark%20Mode%20and%20Push%20Notification.png)
 
