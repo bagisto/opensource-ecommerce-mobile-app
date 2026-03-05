@@ -50,7 +50,7 @@ class CategoryQueries {
   /// Source: nextjs-commerce/src/graphql/catelog/queries/HomeCategories.ts
   static const String getHomeCategories = r'''
     query Categories {
-      categories(first: 20) {
+      categories {
         edges {
           node {
             id
