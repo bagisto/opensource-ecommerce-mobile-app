@@ -68,11 +68,10 @@ class AccountQueries {
   /// Get product reviews (cursor-based pagination)
   /// Actual API query: productReviews
   /// Returns: ProductReviewCursorConnection
-  /// Note: This returns all product reviews; for customer-specific
-  /// reviews we filter by authenticated context.
+  /// Note: Pass productId to fetch reviews for a specific product.
   static const String getProductReviews = r'''
-    query productReviews($first: Int, $after: String) {
-      productReviews(first: $first, after: $after) {
+    query productReviews($first: Int, $after: String, $productId: Int) {
+      productReviews(first: $first, after: $after, product_id: $productId) {
         edges {
           node {
             id
@@ -85,6 +84,7 @@ class AccountQueries {
             createdAt
             updatedAt
           }
+          cursor
         }
         pageInfo {
           hasNextPage

@@ -218,20 +218,22 @@ class AccountRepository {
   }
 
   /// Fetch product reviews via productReviews query
+  /// [productId] — optional product ID to filter reviews for a specific product
   Future<({List<ProductReview> reviews, int totalCount})> getProductReviews({
     int first = 10,
     int? status,
+    int? productId,
   }) async {
-    debugPrint('⭐ AccountRepo.getProductReviews');
+    debugPrint('⭐ AccountRepo.getProductReviews (productId=$productId)');
+
+    final variables = <String, dynamic>{'first': first};
+    if (status != null) variables['status'] = status;
+    if (productId != null) variables['productId'] = productId;
 
     final result = await client.query(
       QueryOptions(
         document: gql(AccountQueries.getProductReviews),
-        variables: <String, dynamic>{
-          'first': first,
-          // ignore: use_null_aware_elements
-          if (status case final s?) 'status': s,
-        },
+        variables: variables,
         fetchPolicy: FetchPolicy.networkOnly,
       ),
     );
@@ -242,7 +244,7 @@ class AccountRepository {
       throw AccountException(message);
     }
 
-    final reviewsData = result.data?['customerReviews'];
+    final reviewsData = result.data?['productReviews'];
     if (reviewsData == null) {
       return (reviews: const <ProductReview>[], totalCount: 0);
     }

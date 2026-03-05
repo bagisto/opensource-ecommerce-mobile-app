@@ -22,12 +22,14 @@ abstract class ReviewEvent extends Equatable {
 
 /// Load reviews from API (initial or refresh)
 /// [mode] controls which API endpoint is called.
+/// [productId] — optional product ID to filter reviews (used when mode is product).
 class LoadReviews extends ReviewEvent {
   final ReviewMode mode;
-  const LoadReviews({this.mode = ReviewMode.customer});
+  final int? productId;
+  const LoadReviews({this.mode = ReviewMode.customer, this.productId});
 
   @override
-  List<Object?> get props => [mode];
+  List<Object?> get props => [mode, productId];
 }
 
 /// Load next page of reviews (pagination)
@@ -117,7 +119,10 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
     try {
       if (event.mode == ReviewMode.product) {
         // ── Product page: call getProductReviews ──
-        final result = await repository.getProductReviews(first: 20);
+        final result = await repository.getProductReviews(
+          first: 20,
+          productId: event.productId,
+        );
         emit(
           state.copyWith(
             status: ReviewStatus.loaded,

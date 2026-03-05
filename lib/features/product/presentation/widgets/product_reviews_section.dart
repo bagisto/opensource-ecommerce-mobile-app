@@ -530,7 +530,10 @@ class ProductReviewsSection extends StatelessWidget {
               value: repository,
               child: BlocProvider(
                 create: (_) => ReviewBloc(repository: repository)
-                  ..add(const LoadReviews(mode: ReviewMode.product)),
+                  ..add(LoadReviews(
+                    mode: ReviewMode.product,
+                    productId: product.numericId,
+                  )),
                 child: const ReviewsPage(),
               ),
             ),
