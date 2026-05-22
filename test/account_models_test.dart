@@ -249,6 +249,20 @@ void main() {
     });
   });
 
+  group('OrderItem', () {
+    test('fromJson decodes additional options from JSON string', () {
+      final item = OrderItem.fromJson({
+        'name': 'Arctic Cozy Knit Unisex Beanie',
+        'additional':
+            '{"options":[{"label":"Color","value":"Blue"},{"label":"Size","value":"M"}]}',
+      });
+
+      expect(item.additional, isNotNull);
+      expect(item.additional?['options'], isA<List<dynamic>>());
+      expect((item.additional?['options'] as List).length, 2);
+    });
+  });
+
   group('OrderShipment', () {
     test('shipmentNumber prefers shippingNumber from the API', () {
       final shipment = OrderShipment.fromJson({
