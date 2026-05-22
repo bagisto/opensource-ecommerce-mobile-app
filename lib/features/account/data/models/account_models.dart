@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:equatable/equatable.dart';
 import '../../../../core/constants/api_constants.dart';
 import '../../../../core/currency/currency_formatter.dart';
@@ -1405,6 +1407,23 @@ class OrderItem {
     final rawAdditional = json['additional'];
     if (rawAdditional is Map<String, dynamic>) {
       additionalMap = rawAdditional;
+    } else if (rawAdditional is Map) {
+      additionalMap = rawAdditional.map(
+        (key, value) => MapEntry(key.toString(), value),
+      );
+    } else if (rawAdditional is String && rawAdditional.trim().isNotEmpty) {
+      try {
+        final decoded = jsonDecode(rawAdditional);
+        if (decoded is Map<String, dynamic>) {
+          additionalMap = decoded;
+        } else if (decoded is Map) {
+          additionalMap = decoded.map(
+            (key, value) => MapEntry(key.toString(), value),
+          );
+        }
+      } catch (_) {
+        additionalMap = null;
+      }
     }
 
     return OrderItem(
