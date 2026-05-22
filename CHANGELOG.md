@@ -1,5 +1,17 @@
 #### This changelog consists the bug & security fixes and new features being included in the releases listed below
 
+# CHANGELOG for v2.4.4
+
+## **v2.4.4 (22nd of May, 2026)** - *Release*
+
+* [Improvement] Improved checkout address selection with dedicated billing and shipping address handling from the checkout sheet.
+* [Improvement] Added support to create a new address directly from checkout and auto-select it after saving.
+* [Improvement] Added support to save the first manually entered checkout address to the customer address book.
+* [Fixed] Fixed order list pagination so loading more orders continues with the correct cursor.
+* [Fixed] Fixed cart move-to-wishlist behavior when a product is already present in the wishlist.
+* [Fixed] Fixed order and invoice product "More info" handling for selected options.
+* [Fixed] Fixed account address refresh behavior after address updates and corrected home banner image cropping.
+
 # CHANGELOG for v2.4.3
 
 ## **v2.4.3 (10th of April, 2026)** - *Release*
