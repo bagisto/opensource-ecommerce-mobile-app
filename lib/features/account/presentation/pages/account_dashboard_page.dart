@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/navigation/route_observer.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
@@ -26,8 +27,43 @@ import 'reviews_page.dart';
 ///   - Wishlist Items (horizontal scroll)
 ///   - Default Addresses (billing & shipping)
 ///   - Product Reviews
-class AccountDashboardPage extends StatelessWidget {
+class AccountDashboardPage extends StatefulWidget {
   const AccountDashboardPage({super.key});
+
+  @override
+  State<AccountDashboardPage> createState() => _AccountDashboardPageState();
+}
+
+class _AccountDashboardPageState extends State<AccountDashboardPage>
+    with RouteAware {
+  PageRoute<dynamic>? _route;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final route = ModalRoute.of(context);
+    if (route is PageRoute<dynamic> && route != _route) {
+      if (_route != null) {
+        appRouteObserver.unsubscribe(this);
+      }
+      _route = route;
+      appRouteObserver.subscribe(this, route);
+    }
+  }
+
+  @override
+  void dispose() {
+    if (_route != null) {
+      appRouteObserver.unsubscribe(this);
+    }
+    super.dispose();
+  }
+
+  @override
+  void didPopNext() {
+    if (!mounted) return;
+    context.read<AccountDashboardBloc>().add(const RefreshAccountDashboard());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -180,7 +216,10 @@ class AccountDashboardPage extends StatelessWidget {
           children: [
             Icon(Icons.error_outline, size: 64, color: AppColors.neutral400),
             const SizedBox(height: 16),
-            Text(l10n.categorySomethingWentWrong, style: AppTextStyles.text3(context)),
+            Text(
+              l10n.categorySomethingWentWrong,
+              style: AppTextStyles.text3(context),
+            ),
             const SizedBox(height: 8),
             Text(
               errorMessage ?? l10n.accountPleaseTryAgainLater,

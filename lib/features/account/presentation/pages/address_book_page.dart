@@ -20,7 +20,7 @@ import 'add_address_page.dart';
 ///   - Type tag (Home/Office) + optional "Default" badge
 ///   - Name (bold) with company
 ///   - Full formatted address
-///   - Action buttons: Select Address, Set as Default, Edit
+///   - Action buttons: Set as Default, Edit, Delete
 class AddressBookPage extends StatelessWidget {
   const AddressBookPage({super.key});
 
@@ -536,9 +536,6 @@ class _AddressListWithScrollState extends State<_AddressListWithScroll> {
                     return AddressCard(
                       key: ValueKey(address.id ?? index),
                       address: address,
-                      onSelect: () {
-                        Navigator.of(context).pop(address);
-                      },
                       onSetDefault: address.isDefault
                           ? null
                           : () {

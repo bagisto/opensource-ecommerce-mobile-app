@@ -10,6 +10,7 @@ import 'core/graphql/graphql_client.dart';
 import 'core/currency/currency_cubit.dart';
 import 'core/currency/currency_formatter.dart';
 import 'core/locale/locale_cubit.dart';
+import 'core/navigation/route_observer.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_cubit.dart';
 import 'core/wishlist/wishlist_cubit.dart';
@@ -623,6 +624,7 @@ class _AppWithAuthCartSyncState extends State<_AppWithAuthCartSync> {
                 onGenerateTitle: (context) =>
                     AppLocalizations.of(context)!.appTitle,
                 debugShowCheckedModeBanner: false,
+                navigatorObservers: [appRouteObserver],
                 theme: AppTheme.lightTheme,
                 darkTheme: AppTheme.darkTheme,
                 themeMode: themeMode,
