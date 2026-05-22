@@ -94,25 +94,34 @@ class CheckoutRepository {
   /// Fetch states/provinces for a specific country by its numeric ID.
   /// API: https://api-docs.bagisto.com/api/graphql-api/shop/queries/get-country-state.html
   /// Tries with countryId first, then falls back to countryCode if available
-  Future<List<BagistoCountryState>> getCountryStates(int countryId, {String? countryCode}) async {
-    debugPrint('[CheckoutRepo] getCountryStates countryId=$countryId, countryCode=$countryCode');
-    
+  Future<List<BagistoCountryState>> getCountryStates(
+    int countryId, {
+    String? countryCode,
+  }) async {
+    debugPrint(
+      '[CheckoutRepo] getCountryStates countryId=$countryId, countryCode=$countryCode',
+    );
+
     // If no valid countryId, try fallback with countryCode
     if (countryId <= 0) {
       if (countryCode != null && countryCode.isNotEmpty) {
-        debugPrint('[CheckoutRepo] countryId invalid, falling back to countryCode=$countryCode');
+        debugPrint(
+          '[CheckoutRepo] countryId invalid, falling back to countryCode=$countryCode',
+        );
         return _getCountryStatesByCode(countryCode);
       }
-      debugPrint('[CheckoutRepo] getCountryStates: invalid countryId=$countryId and no countryCode, returning empty');
+      debugPrint(
+        '[CheckoutRepo] getCountryStates: invalid countryId=$countryId and no countryCode, returning empty',
+      );
       return [];
     }
-    
+
     // Query with countryId (Int! required) — do NOT pass countryCode here
     final Map<String, dynamic> variables = {
       'countryId': countryId,
       'first': 200,
     };
-    
+
     final result = await _authedClient.query(
       QueryOptions(
         document: gql(CheckoutQueries.getCountryStates),
@@ -122,7 +131,7 @@ class CheckoutRepository {
     );
 
     debugPrint('[CheckoutRepo] getCountryStates raw result: ${result.data}');
-    
+
     if (result.hasException) {
       debugPrint('[CheckoutRepo] getCountryStates error: ${result.exception}');
       // Fallback to countryCode query if available
@@ -138,7 +147,9 @@ class CheckoutRepository {
       debugPrint('[CheckoutRepo] getCountryStates: countryStates is null');
       // Try alternative query with countryCode if available
       if (countryCode != null && countryCode.isNotEmpty && countryId <= 0) {
-        debugPrint('[CheckoutRepo] Trying alternative query with countryCode: $countryCode');
+        debugPrint(
+          '[CheckoutRepo] Trying alternative query with countryCode: $countryCode',
+        );
         return _getCountryStatesByCode(countryCode);
       }
       return [];
@@ -149,7 +160,9 @@ class CheckoutRepository {
     if (statesData is List) {
       // Direct array format: countryStates: [{id, _id, ...}, ...]
       statesList = statesData;
-      debugPrint('[CheckoutRepo] getCountryStates: direct array format, ${statesList.length} items');
+      debugPrint(
+        '[CheckoutRepo] getCountryStates: direct array format, ${statesList.length} items',
+      );
     } else if (statesData is Map) {
       // Edge/node format: countryStates: {edges: [{node: {...}}, ...]}
       final edges = statesData['edges'] as List?;
@@ -158,29 +171,36 @@ class CheckoutRepository {
             .map((edge) => edge is Map ? edge['node'] : edge)
             .where((node) => node != null)
             .toList();
-        debugPrint('[CheckoutRepo] getCountryStates: edge/node format, ${statesList.length} items');
+        debugPrint(
+          '[CheckoutRepo] getCountryStates: edge/node format, ${statesList.length} items',
+        );
       } else {
         statesList = [];
         debugPrint('[CheckoutRepo] getCountryStates: edges is null');
       }
     } else {
-      debugPrint('[CheckoutRepo] getCountryStates: unexpected format: $statesData');
+      debugPrint(
+        '[CheckoutRepo] getCountryStates: unexpected format: $statesData',
+      );
       return [];
     }
 
     return statesList
         .map(
-          (e) => BagistoCountryState.fromJson(
-            (e ?? {}) as Map<String, dynamic>,
-          ),
+          (e) =>
+              BagistoCountryState.fromJson((e ?? {}) as Map<String, dynamic>),
         )
         .toList();
   }
 
   /// Alternative: Fetch states using country code
-  Future<List<BagistoCountryState>> _getCountryStatesByCode(String countryCode) async {
-    debugPrint('[CheckoutRepo] _getCountryStatesByCode countryCode=$countryCode');
-    
+  Future<List<BagistoCountryState>> _getCountryStatesByCode(
+    String countryCode,
+  ) async {
+    debugPrint(
+      '[CheckoutRepo] _getCountryStatesByCode countryCode=$countryCode',
+    );
+
     final result = await _authedClient.query(
       QueryOptions(
         document: gql(CheckoutQueries.getCountryStatesByCode),
@@ -189,16 +209,22 @@ class CheckoutRepository {
       ),
     );
 
-    debugPrint('[CheckoutRepo] _getCountryStatesByCode raw result: ${result.data}');
-    
+    debugPrint(
+      '[CheckoutRepo] _getCountryStatesByCode raw result: ${result.data}',
+    );
+
     if (result.hasException) {
-      debugPrint('[CheckoutRepo] _getCountryStatesByCode error: ${result.exception}');
+      debugPrint(
+        '[CheckoutRepo] _getCountryStatesByCode error: ${result.exception}',
+      );
       return [];
     }
 
     final statesData = result.data?['countryStates'];
     if (statesData == null) {
-      debugPrint('[CheckoutRepo] _getCountryStatesByCode: countryStates is null');
+      debugPrint(
+        '[CheckoutRepo] _getCountryStatesByCode: countryStates is null',
+      );
       return [];
     }
 
@@ -221,9 +247,8 @@ class CheckoutRepository {
 
     return statesList
         .map(
-          (e) => BagistoCountryState.fromJson(
-            (e ?? {}) as Map<String, dynamic>,
-          ),
+          (e) =>
+              BagistoCountryState.fromJson((e ?? {}) as Map<String, dynamic>),
         )
         .toList();
   }
@@ -277,8 +302,7 @@ class CheckoutRepository {
       throw result.exception!;
     }
 
-    final edges =
-        result.data?['getCustomerAddresses']?['edges'] as List?;
+    final edges = result.data?['getCustomerAddresses']?['edges'] as List?;
     if (edges == null) return [];
 
     return edges.map((e) {
@@ -409,11 +433,63 @@ class CheckoutRepository {
     return CheckoutAddressResponse.fromJson(data);
   }
 
+  /// Save the checkout billing address into the customer's address book.
+  ///
+  /// This is used for the first logged-in checkout when the customer has no
+  /// saved addresses yet and opts into saving the entered billing address.
+  Future<void> saveCustomerAddressFromCheckout(
+    Map<String, dynamic> checkoutInput, {
+    bool defaultAddress = false,
+  }) async {
+    final input = <String, dynamic>{
+      'firstName': checkoutInput['billingFirstName']?.toString() ?? '',
+      'lastName': checkoutInput['billingLastName']?.toString() ?? '',
+      'address1': checkoutInput['billingAddress']?.toString() ?? '',
+      'city': checkoutInput['billingCity']?.toString() ?? '',
+      'state': checkoutInput['billingState']?.toString() ?? '',
+      'country': checkoutInput['billingCountry']?.toString() ?? '',
+      'postcode': checkoutInput['billingPostcode']?.toString() ?? '',
+      'phone': checkoutInput['billingPhoneNumber']?.toString() ?? '',
+      'defaultAddress': defaultAddress,
+      'useForShipping': checkoutInput['useForShipping'] == true,
+    };
+
+    final email = checkoutInput['billingEmail']?.toString() ?? '';
+    if (email.isNotEmpty) {
+      input['email'] = email;
+    }
+
+    debugPrint('[CheckoutRepo] saveCustomerAddressFromCheckout input=$input');
+
+    final result = await _authedClient.mutate(
+      MutationOptions(
+        document: gql(AccountQueries.createAddUpdateCustomerAddress),
+        variables: {'input': input},
+      ),
+    );
+
+    if (result.hasException) {
+      debugPrint(
+        '[CheckoutRepo] saveCustomerAddressFromCheckout error: ${result.exception}',
+      );
+      throw result.exception!;
+    }
+
+    final data =
+        result.data?['createAddUpdateCustomerAddress']?['addUpdateCustomerAddress']
+            as Map<String, dynamic>?;
+    if (data == null) {
+      throw Exception('Failed to save address to address book');
+    }
+  }
+
   /// Save selected shipping method
   Future<CheckoutShippingMethodResponse> saveShippingMethod(
     String shippingMethod,
   ) async {
-    debugPrint('[CheckoutRepo] saveShippingMethod: $shippingMethod (authToken present: ${_authToken != null})');
+    debugPrint(
+      '[CheckoutRepo] saveShippingMethod: $shippingMethod (authToken present: ${_authToken != null})',
+    );
     final result = await _authedClient.mutate(
       MutationOptions(
         document: gql(CheckoutMutations.createCheckoutShippingMethod),

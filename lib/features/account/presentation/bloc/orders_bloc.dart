@@ -38,6 +38,8 @@ class ClearOrderMessage extends OrdersEvent {
 enum OrdersStatus { initial, loading, loaded, error }
 
 class OrdersState extends Equatable {
+  static const Object _endCursorUnchanged = Object();
+
   final OrdersStatus status;
   final List<CustomerOrder> orders;
   final int totalCount;
@@ -63,7 +65,7 @@ class OrdersState extends Equatable {
     List<CustomerOrder>? orders,
     int? totalCount,
     bool? hasNextPage,
-    String? endCursor,
+    Object? endCursor = _endCursorUnchanged,
     bool? isLoadingMore,
     String? errorMessage,
     String? statusFilter,
@@ -73,7 +75,9 @@ class OrdersState extends Equatable {
       orders: orders ?? this.orders,
       totalCount: totalCount ?? this.totalCount,
       hasNextPage: hasNextPage ?? this.hasNextPage,
-      endCursor: endCursor,
+      endCursor: identical(endCursor, _endCursorUnchanged)
+          ? this.endCursor
+          : endCursor as String?,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       errorMessage: errorMessage,
       statusFilter: statusFilter ?? this.statusFilter,

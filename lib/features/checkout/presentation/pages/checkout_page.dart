@@ -1,16 +1,24 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../../../core/graphql/graphql_client.dart';
 import '../../../../core/currency/currency_formatter.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/selection_sheet.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../account/data/repository/account_repository.dart';
+import '../../../account/presentation/bloc/address_book_bloc.dart';
+import '../../../account/presentation/pages/add_address_page.dart';
 import '../../../cart/data/models/cart_model.dart';
 import '../../../cart/presentation/bloc/cart_bloc.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../data/models/checkout_model.dart';
 import '../../data/repository/checkout_repository.dart';
 import '../bloc/checkout_bloc.dart';
+import '../helpers/checkout_address_sheet_helpers.dart';
+import '../widgets/checkout_address_selection_sheet.dart';
 import 'thankyou_page.dart';
 
 class CheckoutPage extends StatelessWidget {
@@ -80,6 +88,7 @@ class _CheckoutPageView extends StatefulWidget {
 class _CheckoutPageViewState extends State<_CheckoutPageView> {
   final TextEditingController _couponController = TextEditingController();
   bool _useSameAddress = true;
+  bool _saveToAddressBook = true;
 
   bool _requiresShipping(CheckoutState state) => !state.isVirtualOnly;
 
@@ -88,6 +97,9 @@ class _CheckoutPageViewState extends State<_CheckoutPageView> {
 
   bool _showsSeparateShippingForm(CheckoutState state) =>
       _requiresShipping(state) && !_useSameAddress;
+
+  bool _shouldOfferSaveToAddressBook(CheckoutState state) =>
+      !state.isGuest && state.addresses.isEmpty;
 
   // Local selection state for immediate UI response
   String? _selectedShippingMethod;
@@ -141,6 +153,157 @@ class _CheckoutPageViewState extends State<_CheckoutPageView> {
       return false;
     }
     return cartState.isGuest;
+  }
+
+  CheckoutAddress? _currentBillingAddress(CheckoutState state) {
+    return _selectedBillingAddress ?? state.selectedAddress;
+  }
+
+  CheckoutAddress? _currentShippingAddress(CheckoutState state) {
+    if (state.addresses.isEmpty) return null;
+
+    return _selectedShippingAddress ??
+        (state.addresses.length > 1
+            ? state.addresses[1]
+            : state.addresses.first);
+  }
+
+  Future<List<CheckoutAddress>> _refreshSavedAddresses(
+    CheckoutBloc bloc,
+  ) async {
+    final completer = Completer<List<CheckoutAddress>>();
+    bloc.add(RefreshSavedAddresses(completer: completer));
+    return completer.future;
+  }
+
+  AccountRepository? _buildCheckoutAccountRepository(BuildContext context) {
+    final token = context.read<CheckoutBloc>().getLatestAuthToken?.call();
+    if (token == null || token.isEmpty) {
+      debugPrint(
+        '[CheckoutPage] Unable to open add-address flow: missing auth token',
+      );
+      return null;
+    }
+
+    final client = GraphQLClientProvider.authenticatedClient(token).value;
+    return AccountRepository(client: client);
+  }
+
+  Future<Set<String>?> _loadCustomerAddressIds(
+    AccountRepository repository,
+  ) async {
+    try {
+      final addresses = await repository.getCustomerAddresses(first: 100);
+      return addresses
+          .map((address) => address.id)
+          .whereType<String>()
+          .where((id) => id.isNotEmpty)
+          .toSet();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void _applySavedAddressSelection(
+    CheckoutBloc bloc,
+    CheckoutState state, {
+    required CheckoutAddress address,
+    required bool isBilling,
+  }) {
+    setState(() {
+      if (isBilling) {
+        _selectedBillingAddress = address;
+      } else {
+        _selectedShippingAddress = address;
+      }
+    });
+
+    if (isBilling) {
+      final useForShipping = _usesBillingAsShipping(state);
+      final shippingAddress = useForShipping
+          ? null
+          : _currentShippingAddress(state);
+      bloc.add(
+        SelectSavedAddress(
+          address: address,
+          useForShipping: useForShipping,
+          shippingAddress: shippingAddress,
+        ),
+      );
+      return;
+    }
+
+    if (!state.addressConfirmed) {
+      return;
+    }
+
+    final billingAddress = _currentBillingAddress(state);
+    if (billingAddress == null) {
+      return;
+    }
+
+    bloc.add(
+      SelectSavedAddress(
+        address: billingAddress,
+        useForShipping: false,
+        shippingAddress: address,
+      ),
+    );
+  }
+
+  Future<void> _openAddAddressFromSheet({
+    required NavigatorState navigator,
+    required AccountRepository repository,
+    required CheckoutBloc checkoutBloc,
+    required bool isBilling,
+  }) async {
+    final existingCustomerIds = await _loadCustomerAddressIds(repository);
+    final created = await navigator.push<bool>(
+      MaterialPageRoute(
+        builder: (_) => RepositoryProvider.value(
+          value: repository,
+          child: BlocProvider(
+            create: (_) => AddressBookBloc(repository: repository),
+            child: const AddAddressPage(),
+          ),
+        ),
+      ),
+    );
+
+    if (!mounted || created != true) {
+      return;
+    }
+
+    try {
+      final refreshedAddresses = await _refreshSavedAddresses(checkoutBloc);
+      if (!mounted) return;
+
+      final refreshedCustomerIds = await _loadCustomerAddressIds(repository);
+      if (!mounted ||
+          existingCustomerIds == null ||
+          refreshedCustomerIds == null) {
+        return;
+      }
+
+      final newAddress = findNewlyAddedSelectableAddress(
+        previousCustomerIds: existingCustomerIds,
+        refreshedCustomerIds: refreshedCustomerIds,
+        refreshedAddresses: refreshedAddresses,
+      );
+
+      if (newAddress == null) {
+        return;
+      }
+
+      _applySavedAddressSelection(
+        checkoutBloc,
+        checkoutBloc.state,
+        address: newAddress,
+        isBilling: isBilling,
+      );
+    } catch (_) {
+      // CheckoutBloc emits the user-facing error state.
+    }
   }
 
   @override
@@ -392,12 +555,13 @@ class _CheckoutPageViewState extends State<_CheckoutPageView> {
     }
 
     // Address confirmed → Figma-exact card
-    if (state.addressConfirmed && state.selectedAddress != null) {
+    final billingAddress = _currentBillingAddress(state);
+    if (state.addressConfirmed && billingAddress != null) {
       return _buildAddressCard(
         context: context,
         state: state,
         label: AppLocalizations.of(context)!.checkoutBillingTo,
-        address: state.selectedAddress!,
+        address: billingAddress,
         onChangePressed: () =>
             _showChangeAddressFlow(context, state, isBilling: true),
         showSameAddressCheckbox: !state.isVirtualOnly,
@@ -411,13 +575,12 @@ class _CheckoutPageViewState extends State<_CheckoutPageView> {
 
     // Logged-in with saved addresses (not yet confirmed)
     if (state.addresses.isNotEmpty) {
-      final displayAddr = _selectedBillingAddress ?? state.selectedAddress;
-      if (displayAddr != null) {
+      if (billingAddress != null) {
         return _buildAddressCardWithConfirm(
           context: context,
           state: state,
           label: AppLocalizations.of(context)!.checkoutBillingTo,
-          address: displayAddr,
+          address: billingAddress,
           onChangePressed: () =>
               _showAddressSelectionSheet(context, state, isBilling: true),
           showSameAddressCheckbox: !state.isVirtualOnly,
@@ -447,17 +610,13 @@ class _CheckoutPageViewState extends State<_CheckoutPageView> {
     if (state.isGuest) {
       return _buildGuestShippingForm(context, state);
     }
-    if (state.addresses.isNotEmpty) {
-      final displayAddr =
-          _selectedShippingAddress ??
-          (state.addresses.length > 1
-              ? state.addresses[1]
-              : state.addresses.first);
+    final shippingAddress = _currentShippingAddress(state);
+    if (shippingAddress != null) {
       return _buildAddressCard(
         context: context,
         state: state,
         label: AppLocalizations.of(context)!.checkoutDeliveredTo,
-        address: displayAddr,
+        address: shippingAddress,
         onChangePressed: () =>
             _showAddressSelectionSheet(context, state, isBilling: false),
         showSameAddressCheckbox: false,
@@ -727,14 +886,16 @@ class _CheckoutPageViewState extends State<_CheckoutPageView> {
     CheckoutState state, {
     required bool isBilling,
   }) {
+    final pageContext = context;
     final addresses = state.addresses;
     if (addresses.isEmpty) return;
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bloc = context.read<CheckoutBloc>();
+    final isDark = Theme.of(pageContext).brightness == Brightness.dark;
+    final checkoutBloc = pageContext.read<CheckoutBloc>();
+    final pageNavigator = Navigator.of(pageContext);
 
     showModalBottomSheet(
-      context: context,
+      context: pageContext,
       isScrollControlled: true,
       backgroundColor: isDark ? AppColors.neutral900 : AppColors.white,
       shape: const RoundedRectangleBorder(
@@ -746,143 +907,49 @@ class _CheckoutPageViewState extends State<_CheckoutPageView> {
           maxChildSize: 0.85,
           minChildSize: 0.3,
           expand: false,
-          builder: (context, scrollController) {
-            return Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      margin: const EdgeInsets.only(bottom: 16),
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? AppColors.neutral700
-                            : AppColors.neutral300,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
-                  Text(
-                    isBilling
-                        ? AppLocalizations.of(
-                            context,
-                          )!.checkoutSelectBillingAddress
-                        : AppLocalizations.of(
-                            context,
-                          )!.checkoutSelectShippingAddress,
-                    style: TextStyle(
-                      fontFamily: 'Roboto',
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                      color: isDark
-                          ? AppColors.neutral100
-                          : AppColors.neutral900,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Expanded(
-                    child: ListView.separated(
-                      controller: scrollController,
-                      itemCount: addresses.length,
-                      separatorBuilder: (context, index) =>
-                          const SizedBox(height: 8),
-                      itemBuilder: (context, index) {
-                        final addr = addresses[index];
-                        final isSelected = isBilling
-                            ? _selectedBillingAddress?.id == addr.id
-                            : _selectedShippingAddress?.id == addr.id;
-                        return GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              if (isBilling) {
-                                _selectedBillingAddress = addr;
-                                bloc.add(SelectSavedAddress(address: addr));
-                              } else {
-                                _selectedShippingAddress = addr;
-                              }
-                            });
-                            Navigator.pop(ctx);
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? AppColors.primary500.withValues(alpha: 0.05)
-                                  : (isDark
-                                        ? AppColors.neutral800
-                                        : AppColors.neutral100),
-                              border: Border.all(
-                                color: isSelected
-                                    ? AppColors.primary500
-                                    : (isDark
-                                          ? AppColors.neutral700
-                                          : AppColors.neutral200),
-                                width: isSelected ? 2 : 1,
-                              ),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        addr.displayName,
-                                        style: TextStyle(
-                                          fontFamily: 'Roboto',
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 14,
-                                          color: isSelected
-                                              ? AppColors.primary500
-                                              : (isDark
-                                                    ? AppColors.neutral100
-                                                    : AppColors.neutral900),
-                                        ),
-                                      ),
-                                    ),
-                                    _buildGreenChip(_getAddressTypeChip(addr)),
-                                  ],
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  addr.fullAddress,
-                                  style: TextStyle(
-                                    fontFamily: 'Roboto',
-                                    fontSize: 13,
-                                    color: isDark
-                                        ? AppColors.neutral400
-                                        : AppColors.neutral800,
-                                  ),
-                                ),
-                                if (addr.phone != null &&
-                                    addr.phone!.isNotEmpty) ...[
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    AppLocalizations.of(
-                                      context,
-                                    )!.checkoutPhoneValue(addr.phone!),
-                                    style: TextStyle(
-                                      fontFamily: 'Roboto',
-                                      fontSize: 12,
-                                      color: isDark
-                                          ? AppColors.neutral500
-                                          : AppColors.neutral500,
-                                    ),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
+          builder: (sheetContext, scrollController) {
+            return CheckoutAddressSelectionSheet(
+              title: isBilling
+                  ? AppLocalizations.of(
+                      pageContext,
+                    )!.checkoutSelectBillingAddress
+                  : AppLocalizations.of(
+                      pageContext,
+                    )!.checkoutSelectShippingAddress,
+              addButtonLabel: AppLocalizations.of(
+                pageContext,
+              )!.accountAddNewAddress,
+              addresses: addresses,
+              selectedAddressId: isBilling
+                  ? _currentBillingAddress(state)?.id
+                  : _currentShippingAddress(state)?.id,
+              scrollController: scrollController,
+              addressTypeLabelBuilder: _getAddressTypeChip,
+              phoneLabelBuilder: AppLocalizations.of(
+                pageContext,
+              )!.checkoutPhoneValue,
+              onAddressSelected: (address) {
+                Navigator.pop(ctx);
+                _applySavedAddressSelection(
+                  checkoutBloc,
+                  state,
+                  address: address,
+                  isBilling: isBilling,
+                );
+              },
+              onAddNewAddress: () async {
+                final repository = _buildCheckoutAccountRepository(pageContext);
+                if (repository == null) return;
+                Navigator.pop(ctx);
+                await Future<void>.delayed(Duration.zero);
+                if (!mounted) return;
+                await _openAddAddressFromSheet(
+                  navigator: pageNavigator,
+                  repository: repository,
+                  checkoutBloc: checkoutBloc,
+                  isBilling: isBilling,
+                );
+              },
             );
           },
         );
@@ -1044,6 +1111,10 @@ class _CheckoutPageViewState extends State<_CheckoutPageView> {
               AppLocalizations.of(context)!.checkoutCompanyOptional,
             ),
             const SizedBox(height: 12),
+            if (_shouldOfferSaveToAddressBook(state)) ...[
+              _buildSaveToAddressBookCheckbox(context),
+              const SizedBox(height: 12),
+            ],
             if (_requiresShipping(state)) _buildSameAddressCheckbox(context),
             // Only show Save button here if using same address for shipping.
             // For virtual/downloadable/booking carts there is no shipping form,
@@ -1603,6 +1674,59 @@ class _CheckoutPageViewState extends State<_CheckoutPageView> {
     );
   }
 
+  Widget _buildSaveToAddressBookCheckbox(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return GestureDetector(
+      onTap: () {
+        setState(() => _saveToAddressBook = !_saveToAddressBook);
+      },
+      child: SizedBox(
+        height: 24,
+        child: Row(
+          children: [
+            SizedBox(
+              width: 24,
+              height: 24,
+              child: _saveToAddressBook
+                  ? Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.primary500,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Icon(
+                        Icons.check,
+                        size: 18,
+                        color: AppColors.white,
+                      ),
+                    )
+                  : Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: isDark
+                              ? AppColors.neutral500
+                              : AppColors.neutral400,
+                          width: 2,
+                        ),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+            ),
+            const SizedBox(width: 4),
+            Text(
+              ' ${AppLocalizations.of(context)!.accountSaveToAddressBook} ',
+              style: TextStyle(
+                fontFamily: 'Roboto',
+                fontWeight: FontWeight.w400,
+                fontSize: 14,
+                color: isDark ? AppColors.neutral200 : AppColors.neutral800,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildSaveAddressButton(BuildContext context, CheckoutState state) {
     return GestureDetector(
       onTap: state.isLoading ? null : () => _onSaveAddress(context, state),
@@ -1717,7 +1841,13 @@ class _CheckoutPageViewState extends State<_CheckoutPageView> {
       }
     }
 
-    context.read<CheckoutBloc>().add(SaveCheckoutAddressEvent(input: input));
+    context.read<CheckoutBloc>().add(
+      SaveCheckoutAddressEvent(
+        input: input,
+        saveToAddressBook:
+            _shouldOfferSaveToAddressBook(state) && _saveToAddressBook,
+      ),
+    );
   }
 
   // =====================================================================

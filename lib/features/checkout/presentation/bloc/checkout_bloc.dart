@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
@@ -5,6 +7,7 @@ import '../../../../core/error/error_mapper.dart';
 import '../../../cart/data/models/cart_model.dart';
 import '../../data/models/checkout_model.dart';
 import '../../data/repository/checkout_repository.dart';
+import '../helpers/checkout_address_sheet_helpers.dart';
 
 // ─── Events ────────────────────────────────────────────────────────────────
 
@@ -37,17 +40,29 @@ class SyncCheckoutCart extends CheckoutEvent {
 /// Save checkout address (billing + shipping)
 class SaveCheckoutAddressEvent extends CheckoutEvent {
   final Map<String, dynamic> input;
-  const SaveCheckoutAddressEvent({required this.input});
+  final bool saveToAddressBook;
+
+  const SaveCheckoutAddressEvent({
+    required this.input,
+    this.saveToAddressBook = false,
+  });
   @override
-  List<Object?> get props => [input];
+  List<Object?> get props => [input, saveToAddressBook];
 }
 
 /// Select a saved address for checkout (logged-in user only)
 class SelectSavedAddress extends CheckoutEvent {
   final CheckoutAddress address;
-  const SelectSavedAddress({required this.address});
+  final bool useForShipping;
+  final CheckoutAddress? shippingAddress;
+
+  const SelectSavedAddress({
+    required this.address,
+    this.useForShipping = true,
+    this.shippingAddress,
+  });
   @override
-  List<Object?> get props => [address];
+  List<Object?> get props => [address, useForShipping, shippingAddress];
 }
 
 /// Select and save a shipping method → then fetch payment methods
@@ -91,6 +106,13 @@ class ResetAddressConfirmation extends CheckoutEvent {}
 
 /// Fetch countries from Bagisto API
 class FetchCountries extends CheckoutEvent {}
+
+/// Refresh the saved address list for logged-in checkout.
+class RefreshSavedAddresses extends CheckoutEvent {
+  final Completer<List<CheckoutAddress>>? completer;
+
+  const RefreshSavedAddresses({this.completer});
+}
 
 /// Fetch states for a specific country (by numeric country ID or country code)
 class FetchCountryStates extends CheckoutEvent {
@@ -328,6 +350,7 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
     on<ResetAddressConfirmation>(_onResetAddressConfirmation);
     on<FetchCountries>(_onFetchCountries);
     on<FetchCountryStates>(_onFetchCountryStates);
+    on<RefreshSavedAddresses>(_onRefreshSavedAddresses);
   }
 
   /// Refresh the repo's Bearer auth token from the latest source.
@@ -344,6 +367,28 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
 
   void _requestCartRefresh() {
     onCartRefreshRequested?.call();
+  }
+
+  Future<List<CheckoutAddress>> _loadSelectableAddresses() async {
+    final checkoutAddresses = await repository.getCheckoutAddresses();
+    final customerAddresses = checkoutAddresses
+        .where(
+          (address) =>
+              address.addressType != 'cart_billing' &&
+              address.addressType != 'cart_shipping',
+        )
+        .toList();
+
+    if (customerAddresses.isNotEmpty) {
+      return customerAddresses;
+    }
+
+    final accountAddresses = await repository.getCustomerAddresses();
+    if (accountAddresses.isNotEmpty) {
+      return accountAddresses;
+    }
+
+    return checkoutAddresses;
   }
 
   /// 1) Store cart, determine guest/logged-in, fetch addresses only for logged-in
@@ -835,7 +880,11 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
 
     // Auto-save the newly selected address
     try {
-      final saveInput = event.address.toBillingInput(useForShipping: true);
+      final saveInput = buildSavedCheckoutAddressInput(
+        billingAddress: event.address,
+        useForShipping: event.useForShipping,
+        shippingAddress: event.shippingAddress,
+      );
       debugPrint(
         '[CheckoutBloc] Auto-saving selected address: ${event.address.fullName}',
       );
@@ -971,6 +1020,46 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
     }
   }
 
+  Future<void> _onRefreshSavedAddresses(
+    RefreshSavedAddresses event,
+    Emitter<CheckoutState> emit,
+  ) async {
+    if (state.isGuest) {
+      event.completer?.complete(state.addresses);
+      return;
+    }
+
+    _refreshAuthToken();
+
+    try {
+      final refreshedAddresses = await _loadSelectableAddresses();
+      final selectedAddress = state.selectedAddress == null
+          ? null
+          : refreshedAddresses.cast<CheckoutAddress?>().firstWhere(
+              (address) => address?.id == state.selectedAddress?.id,
+              orElse: () => state.selectedAddress,
+            );
+
+      emit(
+        state.copyWith(
+          addresses: refreshedAddresses,
+          selectedAddress: selectedAddress,
+        ),
+      );
+      event.completer?.complete(refreshedAddresses);
+    } catch (e, stackTrace) {
+      event.completer?.completeError(e, stackTrace);
+      emit(
+        state.copyWith(
+          errorMessage: ErrorMapper.getUserMessage(
+            e,
+            context: 'loading saved addresses',
+          ),
+        ),
+      );
+    }
+  }
+
   /// 2) Save address → on success fetch shipping rates.
   ///
   /// For **logged-in users** the `cartToken` returned by
@@ -1015,12 +1104,34 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
 
       repository.updateCartQueryToken(queryToken);
 
+      List<CheckoutAddress>? refreshedAddresses;
+      String? addressBookErrorMessage;
+      if (!state.isGuest && event.saveToAddressBook) {
+        try {
+          await repository.saveCustomerAddressFromCheckout(
+            event.input,
+            defaultAddress: state.addresses.isEmpty,
+          );
+          refreshedAddresses = await _loadSelectableAddresses();
+        } catch (e) {
+          debugPrint(
+            '[CheckoutBloc] saveCustomerAddressFromCheckout error: $e',
+          );
+          addressBookErrorMessage = ErrorMapper.getUserMessage(
+            e,
+            context: 'saving your address book',
+          );
+        }
+      }
+
       emit(
         state.copyWith(
           status: CheckoutStatus.addressSaved,
           cartToken: queryToken,
           addressConfirmed: true,
+          addresses: refreshedAddresses,
           successMessage: response.message,
+          errorMessage: addressBookErrorMessage,
         ),
       );
 

@@ -62,8 +62,7 @@ class AddReviewPage extends StatefulWidget {
         );
         return Future.value(null);
       }
-      final client =
-          GraphQLClientProvider.authenticatedClient(authState.token);
+      final client = GraphQLClientProvider.authenticatedClient(authState.token);
       repository = AccountRepository(client: client.value);
     }
 
@@ -94,6 +93,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
   final _summaryController = TextEditingController();
   final _reviewController = TextEditingController();
   int _selectedRating = 0;
+  String? _ratingErrorText;
 
   @override
   void dispose() {
@@ -106,28 +106,28 @@ class _AddReviewPageState extends State<AddReviewPage> {
   void _onSubmit() {
     final l10n = AppLocalizations.of(context)!;
 
-    if (!_formKey.currentState!.validate()) return;
-    if (_selectedRating == 0) {
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(
-            content: Text(l10n.accountPleaseSelectRating),
-            behavior: SnackBarBehavior.floating,
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 2),
-          ),
-        );
+    final isFormValid = _formKey.currentState!.validate();
+    final ratingError = _selectedRating == 0
+        ? l10n.accountPleaseSelectRating
+        : null;
+
+    setState(() {
+      _ratingErrorText = ratingError;
+    });
+
+    if (!isFormValid || ratingError != null) {
       return;
     }
 
-    context.read<AddReviewBloc>().add(SubmitReview(
-          productId: widget.productId,
-          title: _summaryController.text.trim(),
-          comment: _reviewController.text.trim(),
-          rating: _selectedRating,
-          name: _nickNameController.text.trim(),
-        ));
+    context.read<AddReviewBloc>().add(
+      SubmitReview(
+        productId: widget.productId,
+        title: _summaryController.text.trim(),
+        comment: _reviewController.text.trim(),
+        rating: _selectedRating,
+        name: _nickNameController.text.trim(),
+      ),
+    );
   }
 
   @override
@@ -171,7 +171,9 @@ class _AddReviewPageState extends State<AddReviewPage> {
               ..hideCurrentSnackBar()
               ..showSnackBar(
                 SnackBar(
-                  content: Text(state.successMessage ?? l10n.accountReviewSubmitted),
+                  content: Text(
+                    state.successMessage ?? l10n.accountReviewSubmitted,
+                  ),
                   backgroundColor: AppColors.successGreen,
                   behavior: SnackBarBehavior.floating,
                   duration: const Duration(seconds: 2),
@@ -192,14 +194,11 @@ class _AddReviewPageState extends State<AddReviewPage> {
                   duration: const Duration(seconds: 3),
                 ),
               );
-            context
-                .read<AddReviewBloc>()
-                .add(const ClearAddReviewMessage());
+            context.read<AddReviewBloc>().add(const ClearAddReviewMessage());
           }
         },
         builder: (context, state) {
-          final isSubmitting =
-              state.status == AddReviewStatus.submitting;
+          final isSubmitting = state.status == AddReviewStatus.submitting;
 
           return Form(
             key: _formKey,
@@ -245,6 +244,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
                         _buildTextField(
                           context,
                           label: l10n.accountSummary,
+                          isRequired: true,
                           controller: _summaryController,
                           hintText: l10n.accountReviewSummaryHint,
                           maxLines: 3,
@@ -262,6 +262,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
                         _buildTextField(
                           context,
                           label: l10n.accountReview,
+                          isRequired: true,
                           controller: _reviewController,
                           hintText: l10n.accountDetailedReviewHint,
                           maxLines: 5,
@@ -314,12 +315,13 @@ class _AddReviewPageState extends State<AddReviewPage> {
               color: isDark ? AppColors.neutral700 : const Color(0x1A0E1019),
             ),
             clipBehavior: Clip.antiAlias,
-            child: widget.productImageUrl != null &&
+            child:
+                widget.productImageUrl != null &&
                     widget.productImageUrl!.isNotEmpty
                 ? Image.network(
                     widget.productImageUrl!,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Center(
+                    errorBuilder: (context, error, stackTrace) => Center(
                       child: Icon(
                         Icons.image_not_supported_outlined,
                         size: 28,
@@ -366,16 +368,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // "Rating" label
-        Text(
-          l10n.accountRating,
-          style: TextStyle(
-            fontFamily: 'Roboto',
-            fontWeight: FontWeight.w400,
-            fontSize: 14,
-            color: isDark ? AppColors.neutral300 : AppColors.neutral900,
-          ),
-        ),
+        _buildFieldLabel(context, label: l10n.accountRating, isRequired: true),
         const SizedBox(height: 8),
 
         // 5 interactive stars
@@ -389,6 +382,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
               onTap: () {
                 setState(() {
                   _selectedRating = starIndex;
+                  _ratingErrorText = null;
                 });
               },
               child: Padding(
@@ -398,14 +392,19 @@ class _AddReviewPageState extends State<AddReviewPage> {
                   size: 36,
                   color: isFilled
                       ? const Color(0xFFFE9A00) // status-info/500
-                      : (isDark
-                          ? AppColors.neutral600
-                          : AppColors.neutral300),
+                      : (isDark ? AppColors.neutral600 : AppColors.neutral300),
                 ),
               ),
             );
           }),
         ),
+        if (_ratingErrorText != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            _ratingErrorText!,
+            style: TextStyle(fontSize: 12, color: Colors.red.shade400),
+          ),
+        ],
       ],
     );
   }
@@ -428,29 +427,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Field label with optional asterisk
-        RichText(
-          text: TextSpan(
-            text: label,
-            style: TextStyle(
-              fontFamily: 'Roboto',
-              fontWeight: FontWeight.w400,
-              fontSize: 14,
-              color: isDark ? AppColors.neutral300 : AppColors.neutral900,
-            ),
-            children: isRequired
-                ? [
-                    TextSpan(
-                      text: ' *',
-                      style: TextStyle(
-                        color: Colors.red.shade400,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ]
-                : null,
-          ),
-        ),
+        _buildFieldLabel(context, label: label, isRequired: isRequired),
         const SizedBox(height: 8),
 
         // Text input — Figma: rounded-10, border #E5E5E5
@@ -486,28 +463,50 @@ class _AddReviewPageState extends State<AddReviewPage> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(
-                color: AppColors.primary500,
-                width: 1.5,
-              ),
+              borderSide: BorderSide(color: AppColors.primary500, width: 1.5),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(
-                color: Colors.red.shade400,
-                width: 1,
-              ),
+              borderSide: BorderSide(color: Colors.red.shade400, width: 1),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(
-                color: Colors.red.shade400,
-                width: 1.5,
-              ),
+              borderSide: BorderSide(color: Colors.red.shade400, width: 1.5),
             ),
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildFieldLabel(
+    BuildContext context, {
+    required String label,
+    bool isRequired = false,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return RichText(
+      text: TextSpan(
+        text: label,
+        style: TextStyle(
+          fontFamily: 'Roboto',
+          fontWeight: FontWeight.w400,
+          fontSize: 14,
+          color: isDark ? AppColors.neutral300 : AppColors.neutral900,
+        ),
+        children: isRequired
+            ? [
+                TextSpan(
+                  text: ' *',
+                  style: TextStyle(
+                    color: Colors.red.shade400,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ]
+            : null,
+      ),
     );
   }
 
@@ -528,7 +527,9 @@ class _AddReviewPageState extends State<AddReviewPage> {
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primary500,
             foregroundColor: AppColors.white,
-            disabledBackgroundColor: AppColors.primary500.withValues(alpha: 0.6),
+            disabledBackgroundColor: AppColors.primary500.withValues(
+              alpha: 0.6,
+            ),
             disabledForegroundColor: AppColors.white.withValues(alpha: 0.8),
             elevation: 0,
             shape: RoundedRectangleBorder(
