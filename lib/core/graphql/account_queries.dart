@@ -607,6 +607,7 @@ class AccountQueries {
               _id
               sku
               name
+              additional
               price
               total
               qtyOrdered

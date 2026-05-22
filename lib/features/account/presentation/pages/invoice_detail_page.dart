@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:open_filex/open_filex.dart';
@@ -64,7 +66,11 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
   @override
   void initState() {
     super.initState();
-    _fetchInvoiceDetails();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _fetchInvoiceDetails();
+      }
+    });
   }
 
   Future<void> _fetchInvoiceDetails() async {
@@ -490,10 +496,408 @@ class _InvoiceItemCard extends StatelessWidget {
     return '$currencySymbol${amount.toStringAsFixed(2)}';
   }
 
+  List<String> _selectedOptionLines() {
+    final additional = orderItem.additional;
+    if (additional == null || additional.isEmpty) return const [];
+
+    final optionSources = [
+      additional['options'],
+      additional['attributes'],
+      additional['selected_options'],
+      additional['selectedOptions'],
+    ];
+
+    for (final source in optionSources) {
+      final lines = _extractOptionLines(source);
+      if (lines.isNotEmpty) {
+        return lines;
+      }
+    }
+
+    final superAttribute =
+        additional['super_attribute'] ?? additional['superAttribute'];
+    final superAttributeLines = _extractSuperAttributeLines(superAttribute);
+    if (superAttributeLines.isNotEmpty) {
+      return superAttributeLines;
+    }
+
+    return const [];
+  }
+
+  List<String> _extractSuperAttributeLines(dynamic value) {
+    if (value == null) return const [];
+
+    if (value is String) {
+      final trimmed = value.trim();
+      if (trimmed.isEmpty) return const [];
+      try {
+        return _extractSuperAttributeLines(jsonDecode(trimmed));
+      } catch (_) {
+        return <String>[trimmed];
+      }
+    }
+
+    if (value is List) {
+      return value
+          .map((entry) => _formatOptionValue(entry))
+          .where((entry) => entry.isNotEmpty)
+          .toSet()
+          .toList();
+    }
+
+    if (value is Map) {
+      return value.values
+          .map((entry) => _formatOptionValue(entry))
+          .where((entry) => entry.isNotEmpty)
+          .toSet()
+          .toList();
+    }
+
+    final text = value.toString().trim();
+    return text.isEmpty ? const [] : <String>[text];
+  }
+
+  List<String> _extractOptionLines(dynamic value) {
+    if (value == null) return const [];
+
+    if (value is String) {
+      final trimmed = value.trim();
+      if (trimmed.isEmpty) return const [];
+      try {
+        return _extractOptionLines(jsonDecode(trimmed));
+      } catch (_) {
+        return <String>[trimmed];
+      }
+    }
+
+    if (value is List) {
+      return value
+          .expand(_extractOptionLines)
+          .map((line) => line.trim())
+          .where((line) => line.isNotEmpty)
+          .toSet()
+          .toList();
+    }
+
+    if (value is Map) {
+      final label = value['label']?.toString().trim();
+      final rawOptionValue =
+          value['value'] ?? value['optionValue'] ?? value['option_value'];
+      final formattedValue = _formatOptionValue(rawOptionValue);
+
+      if ((label ?? '').isNotEmpty && formattedValue.isNotEmpty) {
+        return <String>['${label!} : $formattedValue'];
+      }
+
+      final attrName =
+          (value['attributeName'] ??
+                  value['attribute_name'] ??
+                  value['attributename'])
+              ?.toString()
+              .trim();
+      final optLabel =
+          (value['optionLabel'] ??
+                  value['option_label'] ??
+                  value['optionlabel'])
+              ?.toString()
+              .trim();
+
+      if ((attrName ?? '').isNotEmpty && (optLabel ?? '').isNotEmpty) {
+        return <String>['$attrName : $optLabel'];
+      }
+
+      final lines = <String>[];
+      value.forEach((key, entryValue) {
+        final entryKey = '$key';
+        if (entryKey == '__typename' ||
+            entryKey == 'optionId' ||
+            entryKey == 'option_id' ||
+            entryKey == 'optionid' ||
+            entryKey == 'id') {
+          return;
+        }
+
+        final entryFormatted = _formatOptionValue(entryValue);
+        if (entryFormatted.isNotEmpty &&
+            entryValue is! Map &&
+            entryValue is! List &&
+            entryKey != 'label') {
+          lines.add('${_normalizeOptionLabel(entryKey)} : $entryFormatted');
+        } else {
+          lines.addAll(_extractOptionLines(entryValue));
+        }
+      });
+      return lines;
+    }
+
+    final text = value.toString().trim();
+    return text.isEmpty ? const [] : <String>[text];
+  }
+
+  String _formatOptionValue(dynamic value) {
+    if (value == null) return '';
+
+    if (value is String) {
+      final trimmed = value.trim();
+      if (trimmed.isEmpty) return '';
+      try {
+        return _formatOptionValue(jsonDecode(trimmed));
+      } catch (_) {
+        return trimmed;
+      }
+    }
+
+    if (value is List) {
+      return value
+          .map(_formatOptionValue)
+          .where((entry) => entry.isNotEmpty)
+          .join(', ');
+    }
+
+    if (value is Map) {
+      if (value.containsKey('label') && value.containsKey('value')) {
+        return _formatOptionValue(value['value']);
+      }
+
+      final pieces = <String>[];
+      value.forEach((key, entryValue) {
+        if ('$key' == '__typename') return;
+        final entryFormatted = _formatOptionValue(entryValue);
+        if (entryFormatted.isEmpty) return;
+        if (entryValue is Map || entryValue is List) {
+          pieces.add(entryFormatted);
+        } else {
+          pieces.add('${_normalizeOptionLabel('$key')}: $entryFormatted');
+        }
+      });
+      return pieces.join(', ');
+    }
+
+    return value.toString();
+  }
+
+  String _normalizeOptionLabel(String raw) {
+    return raw
+        .replaceAll('_', ' ')
+        .replaceAllMapped(
+          RegExp(r'([a-z])([A-Z])'),
+          (match) => '${match.group(1)} ${match.group(2)}',
+        )
+        .trim();
+  }
+
+  List<MapEntry<String, String>> _buildOptionEntries(List<String> lines) {
+    return lines
+        .map((line) {
+          final separatorIndex = line.indexOf(':');
+          if (separatorIndex <= 0) {
+            final text = line.trim();
+            return text.isEmpty ? null : MapEntry<String, String>('', text);
+          }
+
+          final label = line.substring(0, separatorIndex).trim();
+          final value = line.substring(separatorIndex + 1).trim();
+          if (label.isEmpty && value.isEmpty) return null;
+          if (value.isEmpty) {
+            return MapEntry<String, String>('', line.trim());
+          }
+          return MapEntry<String, String>(label, value);
+        })
+        .whereType<MapEntry<String, String>>()
+        .toList();
+  }
+
+  Future<void> _showMoreInfoSheet(BuildContext context, List<String> lines) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
+    final optionEntries = _buildOptionEntries(lines);
+
+    return showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        final mediaQuery = MediaQuery.of(sheetContext);
+
+        return Container(
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.neutral900 : AppColors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: mediaQuery.size.height * 0.72,
+            ),
+            child: SingleChildScrollView(
+              padding: EdgeInsets.fromLTRB(
+                20,
+                8,
+                20,
+                mediaQuery.viewPadding.bottom + 20,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 48,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? AppColors.neutral700
+                            : AppColors.neutral300,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          orderItem.name,
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontFamily: 'Roboto',
+                            fontWeight: FontWeight.w600,
+                            fontSize: 22,
+                            color: isDark
+                                ? AppColors.neutral100
+                                : AppColors.neutral900,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      IconButton(
+                        tooltip: l10n.accountClose,
+                        onPressed: () => Navigator.of(sheetContext).pop(),
+                        icon: Icon(
+                          Icons.close,
+                          size: 20,
+                          color: isDark
+                              ? AppColors.neutral400
+                              : AppColors.neutral600,
+                        ),
+                        style: IconButton.styleFrom(
+                          backgroundColor: isDark
+                              ? AppColors.neutral800
+                              : AppColors.neutral100,
+                          minimumSize: const Size(40, 40),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? AppColors.neutral800
+                          : AppColors.neutral50,
+                      border: Border.all(
+                        color: isDark
+                            ? AppColors.neutral700
+                            : AppColors.neutral200,
+                      ),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Text(
+                      l10n.accountMoreInfo,
+                      style: TextStyle(
+                        fontFamily: 'Roboto',
+                        fontWeight: FontWeight.w500,
+                        fontSize: 13,
+                        color: isDark
+                            ? AppColors.neutral300
+                            : AppColors.neutral600,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  ...optionEntries.asMap().entries.map((entry) {
+                    final option = entry.value;
+                    final isLast = entry.key == optionEntries.length - 1;
+
+                    return Padding(
+                      padding: EdgeInsets.only(bottom: isLast ? 0 : 10),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? AppColors.neutral800
+                              : AppColors.neutral100,
+                          border: Border.all(
+                            color: isDark
+                                ? AppColors.neutral700
+                                : AppColors.neutral200,
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: option.key.isEmpty
+                            ? Text(
+                                option.value,
+                                style: TextStyle(
+                                  fontFamily: 'Roboto',
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 15,
+                                  color: isDark
+                                      ? AppColors.neutral100
+                                      : AppColors.neutral900,
+                                ),
+                              )
+                            : Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    option.key,
+                                    style: TextStyle(
+                                      fontFamily: 'Roboto',
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 13,
+                                      color: isDark
+                                          ? AppColors.neutral400
+                                          : AppColors.neutral600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    option.value,
+                                    style: TextStyle(
+                                      fontFamily: 'Roboto',
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 16,
+                                      color: isDark
+                                          ? AppColors.neutral100
+                                          : AppColors.neutral900,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                      ),
+                    );
+                  }),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context)!;
+    final optionLines = _selectedOptionLines();
 
     return Container(
       width: double.infinity,
@@ -529,20 +933,28 @@ class _InvoiceItemCard extends StatelessWidget {
                             : AppColors.neutral900,
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    // Options / variant text — Roboto Regular 14, #404040
-                    if (_getOptionsText().isNotEmpty)
-                      Text(
-                        _getOptionsText(),
-                        style: TextStyle(
-                          fontFamily: 'Roboto',
-                          fontWeight: FontWeight.w400,
-                          fontSize: 14,
-                          color: isDark
-                              ? AppColors.neutral400
-                              : AppColors.neutral700,
+                    if (optionLines.isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(4),
+                          onTap: () => _showMoreInfoSheet(context, optionLines),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 2),
+                            child: Text(
+                              l10n.accountMoreInfo,
+                              style: const TextStyle(
+                                fontFamily: 'Roboto',
+                                fontWeight: FontWeight.w400,
+                                fontSize: 14,
+                                color: Color(0xFF155DFC),
+                              ),
+                            ),
+                          ),
                         ),
                       ),
+                    ],
                   ],
                 ),
               ),
@@ -659,26 +1071,6 @@ class _InvoiceItemCard extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  /// Extract options from additional data
-  String _getOptionsText() {
-    final additional = orderItem.additional;
-    if (additional == null) return '';
-
-    // Try to build options string from 'attributes' or 'options'
-    final attrs = additional['attributes'];
-    if (attrs is Map) {
-      return attrs.entries.map((e) => '${e.key}: ${e.value}').join('\n');
-    }
-
-    // For configurable products, try super_attribute
-    final superAttr = additional['super_attribute'];
-    if (superAttr is Map) {
-      return superAttr.entries.map((e) => '${e.value}').join('-');
-    }
-
-    return '';
   }
 
   Widget _qtyRow(String label, int qty, bool isDark) {
