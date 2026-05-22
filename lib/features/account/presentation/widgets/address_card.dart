@@ -9,11 +9,9 @@ import '../../../../l10n/app_localizations.dart';
 ///   - Address type badge(s): "Home"/"Office" + optional "Default"
 ///   - Full name (with company in parentheses)
 ///   - Formatted address line
-///   - Action buttons: "Select Address", "Set as Default" (if not default),
-///     "Edit"
+///   - Action buttons: "Set as Default" (if not default), "Edit", "Delete"
 class AddressCard extends StatelessWidget {
   final CustomerAddress address;
-  final VoidCallback? onSelect;
   final VoidCallback? onSetDefault;
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
@@ -21,7 +19,6 @@ class AddressCard extends StatelessWidget {
   const AddressCard({
     super.key,
     required this.address,
-    this.onSelect,
     this.onSetDefault,
     this.onEdit,
     this.onDelete,
@@ -130,16 +127,13 @@ class AddressCard extends StatelessWidget {
     );
   }
 
-  /// Action buttons: Select Address | Set as Default | Edit
+  /// Action buttons: Set as Default | Edit | Delete
   /// Figma: node-id=204:5134
   Widget _buildActionsRow(AppLocalizations l10n, bool isDark) {
     return Wrap(
       spacing: 24,
       runSpacing: 8,
       children: [
-        if (onSelect != null)
-          _buildActionButton(l10n.accountSelectAddress, onSelect!),
-
         // Show "Set as Default" only if NOT already default
         if (!address.isDefault && onSetDefault != null)
           _buildActionButton(l10n.accountSetAsDefault, onSetDefault!),
