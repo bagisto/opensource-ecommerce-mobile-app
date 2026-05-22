@@ -716,23 +716,38 @@ class _CartPageState extends State<CartPage> {
     }
 
     try {
-      if (!isWishlisted) {
-        final result = await wishlistCubit.toggleWishlist(
-          productId: item.productId,
-        );
+      final result = await wishlistCubit.toggleWishlist(
+        productId: item.productId,
+      );
 
-        if (result != true) {
-          if (mounted && result == null) {
-            messenger.showSnackBar(
-              SnackBar(
-                content: Text(l10n.cartPleaseLoginWishlistAdd),
-                backgroundColor: Colors.red,
-                duration: const Duration(seconds: 2),
-              ),
-            );
-          }
-          return;
+      if (result == null) {
+        if (mounted) {
+          messenger.showSnackBar(
+            SnackBar(
+              content: Text(l10n.cartPleaseLoginWishlistAdd),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 2),
+            ),
+          );
         }
+        return;
+      }
+
+      if (isWishlisted) {
+        if (!mounted || result != false) return;
+
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(l10n.homeRemovedFromWishlist),
+            backgroundColor: AppColors.successGreen,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+        return;
+      }
+
+      if (result != true) {
+        return;
       }
 
       if (!mounted) return;
