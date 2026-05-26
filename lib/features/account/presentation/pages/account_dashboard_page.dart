@@ -14,6 +14,7 @@ import '../widgets/recent_orders_section.dart';
 import '../widgets/wishlist_section.dart';
 import '../widgets/default_addresses_section.dart';
 import '../widgets/product_reviews_section.dart';
+import '../helpers/account_dashboard_helpers.dart';
 import 'account_menu_page.dart';
 import 'address_book_page.dart';
 import 'reviews_page.dart';
@@ -25,7 +26,7 @@ import 'reviews_page.dart';
 ///   - Quick action chips (My Orders, Account, Settings)
 ///   - Recent Orders (horizontal scroll)
 ///   - Wishlist Items (horizontal scroll)
-///   - Default Addresses (billing & shipping)
+///   - Default address
 ///   - Product Reviews
 class AccountDashboardPage extends StatefulWidget {
   const AccountDashboardPage({super.key});
@@ -154,18 +155,28 @@ class _AccountDashboardPageState extends State<AccountDashboardPage>
                     addresses: state.addresses,
                     onViewAll: () {
                       final repository = context.read<AccountRepository>();
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => RepositoryProvider.value(
-                            value: repository,
-                            child: BlocProvider(
-                              create: (_) => AddressBookBloc(
-                                repository: repository,
-                              )..add(const LoadAddresses()),
-                              child: const AddressBookPage(),
+                      refreshAccountDashboardAfterAddressBook(
+                        openAddressBook: () {
+                          return Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => RepositoryProvider.value(
+                                value: repository,
+                                child: BlocProvider(
+                                  create: (_) =>
+                                      AddressBookBloc(repository: repository)
+                                        ..add(const LoadAddresses()),
+                                  child: const AddressBookPage(),
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
+                          );
+                        },
+                        onReturn: () {
+                          if (!context.mounted) return;
+                          context.read<AccountDashboardBloc>().add(
+                            const RefreshAccountDashboard(),
+                          );
+                        },
                       );
                     },
                   ),
@@ -183,9 +194,9 @@ class _AccountDashboardPageState extends State<AccountDashboardPage>
                           builder: (_) => RepositoryProvider.value(
                             value: repository,
                             child: BlocProvider(
-                              create: (_) => ReviewBloc(
-                                repository: repository,
-                              )..add(const LoadReviews()),
+                              create: (_) =>
+                                  ReviewBloc(repository: repository)
+                                    ..add(const LoadReviews()),
                               child: const ReviewsPage(),
                             ),
                           ),

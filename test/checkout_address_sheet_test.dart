@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:bagisto_flutter/features/cart/data/models/cart_model.dart';
 import 'package:bagisto_flutter/features/checkout/data/models/checkout_model.dart';
 import 'package:bagisto_flutter/features/checkout/data/repository/checkout_repository.dart';
 import 'package:bagisto_flutter/features/checkout/presentation/bloc/checkout_bloc.dart';
@@ -107,6 +108,143 @@ void main() {
   );
 
   test(
+    'loadChangeAddressSheetAddresses refreshes addresses for logged-in checkout',
+    () async {
+      var refreshCalls = 0;
+
+      final result = await loadChangeAddressSheetAddresses(
+        isGuest: false,
+        currentAddresses: const [],
+        refreshAddresses: () async {
+          refreshCalls += 1;
+          return const [
+            CheckoutAddress(
+              id: 'cust-1',
+              firstName: 'Saved',
+              lastName: 'Customer',
+            ),
+          ];
+        },
+      );
+
+      expect(refreshCalls, 1);
+      expect(result.single.id, 'cust-1');
+    },
+  );
+
+  test(
+    'loadChangeAddressSheetAddresses does not refresh for guest checkout',
+    () async {
+      var refreshCalls = 0;
+
+      final result = await loadChangeAddressSheetAddresses(
+        isGuest: true,
+        currentAddresses: const [
+          CheckoutAddress(
+            id: 'guest-form',
+            firstName: 'Guest',
+            lastName: 'User',
+          ),
+        ],
+        refreshAddresses: () async {
+          refreshCalls += 1;
+          return const [];
+        },
+      );
+
+      expect(refreshCalls, 0);
+      expect(result.single.id, 'guest-form');
+    },
+  );
+
+  test(
+    'confirmed logged-in checkout cards should refresh saved addresses before showing change sheet',
+    () {
+      expect(
+        shouldRefreshAddressesBeforeShowingChangeSheet(
+          isGuest: false,
+          addressConfirmed: true,
+        ),
+        isTrue,
+      );
+      expect(
+        shouldRefreshAddressesBeforeShowingChangeSheet(
+          isGuest: false,
+          addressConfirmed: false,
+        ),
+        isFalse,
+      );
+      expect(
+        shouldRefreshAddressesBeforeShowingChangeSheet(
+          isGuest: true,
+          addressConfirmed: true,
+        ),
+        isFalse,
+      );
+    },
+  );
+
+  test(
+    'InitCheckout respects checkout billing useForShipping and keeps checkout shipping address',
+    () async {
+      final repository = _FakeCheckoutRepository(
+        checkoutAddresses: const [
+          CheckoutAddress(
+            id: 'bill-1',
+            addressType: 'cart_billing',
+            firstName: 'Billing',
+            lastName: 'User',
+            address: 'Billing Street',
+            city: 'Noida',
+            state: 'UP',
+            country: 'IN',
+            postcode: '201001',
+            phone: '1111111111',
+            useForShipping: false,
+          ),
+          CheckoutAddress(
+            id: 'ship-1',
+            addressType: 'cart_shipping',
+            firstName: 'Shipping',
+            lastName: 'User',
+            address: 'Shipping Street',
+            city: 'Delhi',
+            state: 'DL',
+            country: 'IN',
+            postcode: '110001',
+            phone: '9999999999',
+          ),
+        ],
+        customerAddresses: const [],
+        shippingRates: const [],
+      );
+      final bloc = _SeededCheckoutBloc(repository: repository);
+
+      final emission = expectLater(
+        bloc.stream,
+        emitsThrough(
+          isA<CheckoutState>()
+              .having(
+                (state) => state.useSameAddressForShipping,
+                'same-address flag',
+                isFalse,
+              )
+              .having(
+                (state) => state.selectedShippingAddress?.id,
+                'selected shipping address id',
+                'ship-1',
+              ),
+        ),
+      );
+
+      bloc.add(const InitCheckout(cart: CartModel.empty, isGuest: false));
+
+      await emission;
+      await bloc.close();
+    },
+  );
+
+  test(
     'SelectSavedAddress includes separate shipping fields when shipping differs from billing',
     () async {
       final repository = _FakeCheckoutRepository(
@@ -163,6 +301,91 @@ void main() {
       expect(repository.lastSavedInput?['useForShipping'], isFalse);
       expect(repository.lastSavedInput?['shippingFirstName'], 'Shipping');
       expect(repository.lastSavedInput?['shippingCity'], 'Mumbai');
+      await bloc.close();
+    },
+  );
+
+  test(
+    'ToggleSameAddress auto-saves confirmed saved-address checkout when shipping changes',
+    () async {
+      final repository = _FakeCheckoutRepository(
+        checkoutAddresses: const [],
+        customerAddresses: const [],
+        shippingRates: const [],
+      );
+      final bloc = _SeededCheckoutBloc(repository: repository)
+        ..seedState(
+          const CheckoutState(
+            isGuest: false,
+            isVirtualOnly: false,
+            addressConfirmed: true,
+            useSameAddressForShipping: true,
+            selectedAddress: CheckoutAddress(
+              id: 'bill-1',
+              firstName: 'Billing',
+              lastName: 'User',
+              address: 'Billing Street',
+              city: 'Noida',
+              state: 'UP',
+              country: 'IN',
+              postcode: '201001',
+              phone: '1111111111',
+            ),
+            addresses: [
+              CheckoutAddress(
+                id: 'bill-1',
+                firstName: 'Billing',
+                lastName: 'User',
+                address: 'Billing Street',
+                city: 'Noida',
+                state: 'UP',
+                country: 'IN',
+                postcode: '201001',
+                phone: '1111111111',
+              ),
+              CheckoutAddress(
+                id: 'ship-1',
+                firstName: 'Shipping',
+                lastName: 'User',
+                address: 'Shipping Street',
+                city: 'Delhi',
+                state: 'DL',
+                country: 'IN',
+                postcode: '110001',
+                phone: '9999999999',
+              ),
+            ],
+          ),
+        );
+
+      final emission = expectLater(
+        bloc.stream,
+        emitsThrough(
+          isA<CheckoutState>()
+              .having(
+                (state) => state.addressConfirmed,
+                'address confirmed',
+                isTrue,
+              )
+              .having(
+                (state) => state.useSameAddressForShipping,
+                'same-address flag',
+                isFalse,
+              )
+              .having(
+                (state) => state.selectedShippingAddress?.id,
+                'selected shipping address id',
+                'ship-1',
+              ),
+        ),
+      );
+
+      bloc.add(ToggleSameAddress());
+
+      await emission;
+      expect(repository.lastSavedInput?['useForShipping'], isFalse);
+      expect(repository.lastSavedInput?['shippingFirstName'], 'Shipping');
+      expect(repository.lastSavedInput?['shippingCity'], 'Delhi');
       await bloc.close();
     },
   );
@@ -227,6 +450,86 @@ void main() {
     },
   );
 
+  test(
+    'SaveCheckoutAddressEvent saves separate billing and shipping addresses to the address book when requested',
+    () async {
+      final repository = _FakeCheckoutRepository(
+        checkoutAddresses: const [],
+        customerAddresses: const [],
+        shippingRates: const [],
+      );
+      final bloc = _SeededCheckoutBloc(repository: repository)
+        ..seedState(const CheckoutState(isGuest: false, isVirtualOnly: false));
+
+      final emission = expectLater(
+        bloc.stream,
+        emitsThrough(
+          isA<CheckoutState>().having(
+            (state) => state.addressConfirmed,
+            'address confirmed',
+            isTrue,
+          ),
+        ),
+      );
+
+      bloc.add(
+        const SaveCheckoutAddressEvent(
+          input: {
+            'billingFirstName': 'Billing',
+            'billingLastName': 'Customer',
+            'billingEmail': 'billing@example.com',
+            'billingAddress': 'Billing Street 1',
+            'billingCity': 'Noida',
+            'billingCountry': 'IN',
+            'billingState': 'UP',
+            'billingPostcode': '201301',
+            'billingPhoneNumber': '9999999999',
+            'shippingFirstName': 'Shipping',
+            'shippingLastName': 'Customer',
+            'shippingEmail': 'shipping@example.com',
+            'shippingAddress': 'Shipping Street 2',
+            'shippingCity': 'Delhi',
+            'shippingCountry': 'IN',
+            'shippingState': 'DL',
+            'shippingPostcode': '110001',
+            'shippingPhoneNumber': '8888888888',
+            'useForShipping': false,
+          },
+          saveToAddressBook: true,
+        ),
+      );
+
+      await emission;
+      expect(repository.createdCustomerAddressInputs, hasLength(2));
+      expect(
+        repository.createdCustomerAddressInputs[0]['firstName'],
+        'Billing',
+      );
+      expect(
+        repository.createdCustomerAddressInputs[0]['defaultAddress'],
+        isTrue,
+      );
+      expect(
+        repository.createdCustomerAddressInputs[0]['useForShipping'],
+        isFalse,
+      );
+      expect(
+        repository.createdCustomerAddressInputs[1]['firstName'],
+        'Shipping',
+      );
+      expect(
+        repository.createdCustomerAddressInputs[1]['defaultAddress'],
+        isFalse,
+      );
+      expect(
+        repository.createdCustomerAddressInputs[1]['useForShipping'],
+        isTrue,
+      );
+      expect(repository.createdCustomerAddressInputs[1]['city'], 'Delhi');
+      await bloc.close();
+    },
+  );
+
   testWidgets(
     'CheckoutAddressSelectionSheet shows Add New Address and calls callbacks',
     (WidgetTester tester) async {
@@ -255,7 +558,6 @@ void main() {
               selectedAddressId: 'addr-1',
               onAddressSelected: (address) => tappedAddress = address,
               onAddNewAddress: () => addTapped = true,
-              addressTypeLabelBuilder: (_) => 'Home',
               phoneLabelBuilder: (phone) => 'Phone: $phone',
             ),
           ),
@@ -274,6 +576,108 @@ void main() {
       expect(addTapped, isTrue);
     },
   );
+
+  test(
+    'SaveCheckoutAddressEvent keeps separate selected billing and shipping addresses for manual checkout input',
+    () async {
+      final repository = _FakeCheckoutRepository(
+        checkoutAddresses: const [],
+        customerAddresses: const [],
+        shippingRates: const [],
+      );
+      final bloc = _SeededCheckoutBloc(repository: repository)
+        ..seedState(const CheckoutState(isGuest: false, isVirtualOnly: false));
+
+      final emission = expectLater(
+        bloc.stream,
+        emitsThrough(
+          isA<CheckoutState>()
+              .having(
+                (state) => state.selectedAddress?.address,
+                'selected billing address',
+                'Billing Street 1',
+              )
+              .having(
+                (state) => state.selectedShippingAddress?.address,
+                'selected shipping address',
+                'Shipping Street 2',
+              )
+              .having(
+                (state) => state.useSameAddressForShipping,
+                'same-address flag',
+                isFalse,
+              ),
+        ),
+      );
+
+      bloc.add(
+        const SaveCheckoutAddressEvent(
+          input: {
+            'billingFirstName': 'Billing',
+            'billingLastName': 'Customer',
+            'billingEmail': 'billing@example.com',
+            'billingCompanyName': 'Billing Co',
+            'billingAddress': 'Billing Street 1',
+            'billingCity': 'Noida',
+            'billingCountry': 'IN',
+            'billingState': 'UP',
+            'billingPostcode': '201301',
+            'billingPhoneNumber': '9999999999',
+            'shippingFirstName': 'Shipping',
+            'shippingLastName': 'Customer',
+            'shippingEmail': 'shipping@example.com',
+            'shippingCompanyName': 'Shipping Co',
+            'shippingAddress': 'Shipping Street 2',
+            'shippingCity': 'Delhi',
+            'shippingCountry': 'IN',
+            'shippingState': 'DL',
+            'shippingPostcode': '110001',
+            'shippingPhoneNumber': '8888888888',
+            'useForShipping': false,
+          },
+          saveToAddressBook: true,
+        ),
+      );
+
+      await emission;
+      await bloc.close();
+    },
+  );
+
+  testWidgets(
+    'CheckoutAddressSelectionSheet does not show any address-type chip',
+    (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CheckoutAddressSelectionSheet(
+              title: 'Select Billing Address',
+              addButtonLabel: 'Add New Address',
+              addresses: const [
+                CheckoutAddress(
+                  id: 'addr-1',
+                  firstName: 'Paul',
+                  lastName: 'Doe',
+                  address: 'New Noida',
+                  city: 'Noida',
+                  state: 'UP',
+                  country: 'IN',
+                  postcode: '201306',
+                ),
+              ],
+              selectedAddressId: 'addr-1',
+              onAddressSelected: (_) {},
+              onAddNewAddress: () {},
+              phoneLabelBuilder: (phone) => 'Phone: $phone',
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Home'), findsNothing);
+      expect(find.text('Default'), findsNothing);
+    },
+  );
 }
 
 class _SeededCheckoutBloc extends CheckoutBloc {
@@ -290,6 +694,7 @@ class _FakeCheckoutRepository extends CheckoutRepository {
   final List<ShippingRate> shippingRates;
   Map<String, dynamic>? lastSavedInput;
   Map<String, dynamic>? lastCreatedCustomerAddressInput;
+  final List<Map<String, dynamic>> createdCustomerAddressInputs = [];
   late final List<CheckoutAddress> _customerAddresses;
 
   _FakeCheckoutRepository({
@@ -317,6 +722,9 @@ class _FakeCheckoutRepository extends CheckoutRepository {
       customerAddresses;
 
   @override
+  Future<List<BagistoCountry>> getCountries() async => <BagistoCountry>[];
+
+  @override
   Future<CheckoutAddressResponse> saveCheckoutAddress(
     Map<String, dynamic> input,
   ) async {
@@ -336,36 +744,32 @@ class _FakeCheckoutRepository extends CheckoutRepository {
     Map<String, dynamic> checkoutInput, {
     bool defaultAddress = false,
   }) async {
-    lastCreatedCustomerAddressInput = {
-      'firstName': checkoutInput['billingFirstName'],
-      'lastName': checkoutInput['billingLastName'],
-      'email': checkoutInput['billingEmail'],
-      'address': checkoutInput['billingAddress'],
-      'city': checkoutInput['billingCity'],
-      'state': checkoutInput['billingState'],
-      'country': checkoutInput['billingCountry'],
-      'postcode': checkoutInput['billingPostcode'],
-      'phone': checkoutInput['billingPhoneNumber'],
-      'defaultAddress': defaultAddress,
-      'useForShipping': checkoutInput['useForShipping'] == true,
-    };
-
-    _customerAddresses.add(
-      CheckoutAddress(
-        id: 'cust-${_customerAddresses.length + 1}',
-        addressType: 'home',
-        firstName: checkoutInput['billingFirstName']?.toString() ?? '',
-        lastName: checkoutInput['billingLastName']?.toString() ?? '',
-        address: checkoutInput['billingAddress']?.toString() ?? '',
-        city: checkoutInput['billingCity']?.toString() ?? '',
-        state: checkoutInput['billingState']?.toString(),
-        country: checkoutInput['billingCountry']?.toString(),
-        postcode: checkoutInput['billingPostcode']?.toString(),
-        email: checkoutInput['billingEmail']?.toString(),
-        phone: checkoutInput['billingPhoneNumber']?.toString(),
-        defaultAddress: defaultAddress,
-        useForShipping: checkoutInput['useForShipping'] == true,
-      ),
+    final inputs = buildCustomerAddressBookInputsFromCheckout(
+      checkoutInput,
+      defaultAddress: defaultAddress,
     );
+
+    for (final input in inputs) {
+      lastCreatedCustomerAddressInput = Map<String, dynamic>.from(input);
+      createdCustomerAddressInputs.add(lastCreatedCustomerAddressInput!);
+
+      _customerAddresses.add(
+        CheckoutAddress(
+          id: 'cust-${_customerAddresses.length + 1}',
+          addressType: 'home',
+          firstName: input['firstName']?.toString() ?? '',
+          lastName: input['lastName']?.toString() ?? '',
+          address: input['address1']?.toString() ?? '',
+          city: input['city']?.toString() ?? '',
+          state: input['state']?.toString(),
+          country: input['country']?.toString(),
+          postcode: input['postcode']?.toString(),
+          email: input['email']?.toString(),
+          phone: input['phone']?.toString(),
+          defaultAddress: input['defaultAddress'] == true,
+          useForShipping: input['useForShipping'] == true,
+        ),
+      );
+    }
   }
 }

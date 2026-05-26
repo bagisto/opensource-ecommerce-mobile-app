@@ -10,6 +10,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:bagisto_flutter/features/cart/data/models/cart_model.dart';
 import 'package:bagisto_flutter/features/checkout/data/models/checkout_model.dart';
+import 'package:bagisto_flutter/features/checkout/data/repository/checkout_repository.dart';
 import 'package:bagisto_flutter/features/checkout/presentation/bloc/checkout_bloc.dart';
 
 void main() {
@@ -125,6 +126,14 @@ void main() {
       final response = CheckoutOrderResponse.fromJson(json);
 
       expect(response.success, true);
+    });
+  });
+
+  group('Checkout logging', () {
+    test('suppresses getCountries API detail logs only', () {
+      expect(shouldLogCheckoutOperation('getCountries'), isFalse);
+      expect(shouldLogCheckoutOperation('saveCheckoutAddress'), isTrue);
+      expect(shouldLogCheckoutOperation('getShippingRates'), isTrue);
     });
   });
 

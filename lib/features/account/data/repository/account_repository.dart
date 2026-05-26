@@ -10,6 +10,60 @@ void _logAccountApiMessage(String message) {
   print(message);
 }
 
+Map<String, dynamic> buildCustomerAddressMutationInput({
+  int? addressId,
+  required String firstName,
+  required String lastName,
+  required String address,
+  required String city,
+  required String state,
+  required String country,
+  required String postcode,
+  required String phone,
+  String? email,
+  bool defaultAddress = false,
+}) {
+  final input = <String, dynamic>{
+    'firstName': firstName,
+    'lastName': lastName,
+    'address1': address,
+    'city': city,
+    'state': state,
+    'country': country,
+    'postcode': postcode,
+    'phone': phone,
+    'defaultAddress': defaultAddress,
+  };
+
+  if (addressId != null) {
+    input['addressId'] = addressId;
+  }
+
+  if (email != null && email.isNotEmpty) {
+    input['email'] = email;
+  }
+
+  return input;
+}
+
+Map<String, dynamic> buildSetDefaultCustomerAddressMutationInput({
+  required CustomerAddress address,
+}) {
+  return buildCustomerAddressMutationInput(
+    addressId: address.numericId,
+    firstName: address.firstName,
+    lastName: address.lastName,
+    address: address.address,
+    city: address.city,
+    state: address.state,
+    country: address.country,
+    postcode: address.zipCode,
+    phone: address.phone ?? '',
+    email: address.email,
+    defaultAddress: true,
+  );
+}
+
 /// Repository for Account Dashboard API calls via GraphQL.
 /// Uses authenticated GraphQL client to fetch:
 ///   - Customer Profile  (readCustomerProfile)
@@ -415,35 +469,31 @@ class AccountRepository {
   /// Requires the full address data to be passed.
   Future<CustomerAddress> setDefaultAddress({
     required int addressId,
-    // required String firstName,
-    // required String lastName,
-    // required String address,
-    // required String city,
-    // required String state,
-    // required String country,
-    // required String postcode,
-    // required String phone,
-    // String? email,
-    bool useForShipping = true,
+    required String firstName,
+    required String lastName,
+    required String address,
+    required String city,
+    required String state,
+    required String country,
+    required String postcode,
+    required String phone,
+    String? email,
   }) async {
     debugPrint('📍 AccountRepo.setDefaultAddress (addressId=$addressId)');
 
-    final input = <String, dynamic>{
-      'addressId': addressId,
-      // 'firstName': firstName,
-      // 'lastName': lastName,
-      // 'address1': address,
-      // 'city': city,
-      // 'state': state,
-      // 'country': country,
-      // 'postcode': postcode,
-      // 'phone': phone,
-      'defaultAddress': true,
-      'useForShipping': useForShipping,
-    };
-    // if (email != null && email.isNotEmpty) {
-    //   input['email'] = email;
-    // }
+    final input = buildCustomerAddressMutationInput(
+      addressId: addressId,
+      firstName: firstName,
+      lastName: lastName,
+      address: address,
+      city: city,
+      state: state,
+      country: country,
+      postcode: postcode,
+      phone: phone,
+      email: email,
+      defaultAddress: true,
+    );
 
     final result = await client.mutate(
       MutationOptions(
@@ -494,7 +544,7 @@ class AccountRepository {
   /// Add a new customer address via createAddUpdateCustomerAddress mutation.
   /// Schema introspection: createAddUpdateCustomerAddressInput fields:
   ///   firstName, lastName, email, phone, address1, address2,
-  ///   country, state, city, postcode, defaultAddress, useForShipping
+  ///   country, state, city, postcode, defaultAddress
   Future<CustomerAddress> createAddress({
     required String firstName,
     required String lastName,
@@ -508,25 +558,21 @@ class AccountRepository {
     String? companyName,
     String? vatId,
     bool defaultAddress = false,
-    bool useForShipping = false,
   }) async {
     debugPrint('📍 AccountRepo.createAddress');
 
-    final input = <String, dynamic>{
-      'firstName': firstName,
-      'lastName': lastName,
-      'address1': address,
-      'city': city,
-      'state': state,
-      'country': country,
-      'postcode': postcode,
-      'phone': phone,
-      'defaultAddress': defaultAddress,
-      'useForShipping': useForShipping,
-    };
-    if (email != null && email.isNotEmpty) {
-      input['email'] = email;
-    }
+    final input = buildCustomerAddressMutationInput(
+      firstName: firstName,
+      lastName: lastName,
+      address: address,
+      city: city,
+      state: state,
+      country: country,
+      postcode: postcode,
+      phone: phone,
+      email: email,
+      defaultAddress: defaultAddress,
+    );
     // Note: companyName and vatId are NOT supported by
     // createAddUpdateCustomerAddressInput on this server.
 
@@ -570,26 +616,22 @@ class AccountRepository {
     String? companyName,
     String? vatId,
     bool defaultAddress = false,
-    bool useForShipping = false,
   }) async {
     debugPrint('📍 AccountRepo.updateAddress (addressId=$addressId)');
 
-    final input = <String, dynamic>{
-      'addressId': addressId,
-      'firstName': firstName,
-      'lastName': lastName,
-      'address1': address,
-      'city': city,
-      'state': state,
-      'country': country,
-      'postcode': postcode,
-      'phone': phone,
-      'defaultAddress': defaultAddress,
-      'useForShipping': useForShipping,
-    };
-    if (email != null && email.isNotEmpty) {
-      input['email'] = email;
-    }
+    final input = buildCustomerAddressMutationInput(
+      addressId: addressId,
+      firstName: firstName,
+      lastName: lastName,
+      address: address,
+      city: city,
+      state: state,
+      country: country,
+      postcode: postcode,
+      phone: phone,
+      email: email,
+      defaultAddress: defaultAddress,
+    );
 
     final result = await client.mutate(
       MutationOptions(

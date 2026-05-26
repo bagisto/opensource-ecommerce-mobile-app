@@ -11,7 +11,6 @@ class CheckoutAddressSelectionSheet extends StatelessWidget {
   final ScrollController? scrollController;
   final ValueChanged<CheckoutAddress> onAddressSelected;
   final VoidCallback onAddNewAddress;
-  final String Function(CheckoutAddress address) addressTypeLabelBuilder;
   final String Function(String phone) phoneLabelBuilder;
 
   const CheckoutAddressSelectionSheet({
@@ -21,7 +20,6 @@ class CheckoutAddressSelectionSheet extends StatelessWidget {
     required this.addresses,
     required this.onAddressSelected,
     required this.onAddNewAddress,
-    required this.addressTypeLabelBuilder,
     required this.phoneLabelBuilder,
     this.selectedAddressId,
     this.scrollController,
@@ -106,9 +104,6 @@ class CheckoutAddressSelectionSheet extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            _AddressTypeChip(
-                              text: addressTypeLabelBuilder(address),
-                            ),
                           ],
                         ),
                         const SizedBox(height: 4),
@@ -172,33 +167,6 @@ class CheckoutAddressSelectionSheet extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _AddressTypeChip extends StatelessWidget {
-  final String text;
-
-  const _AddressTypeChip({required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-      decoration: BoxDecoration(
-        color: const Color(0xFFDCFCE7),
-        border: Border.all(color: const Color(0xFFB9F8CF)),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Text(
-        text,
-        style: const TextStyle(
-          fontFamily: 'Roboto',
-          fontWeight: FontWeight.w700,
-          fontSize: 12,
-          color: Color(0xFF00A63E),
-        ),
       ),
     );
   }

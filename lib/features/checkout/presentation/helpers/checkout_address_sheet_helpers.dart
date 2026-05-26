@@ -1,5 +1,28 @@
 import '../../data/models/checkout_model.dart';
 
+bool shouldRefreshAddressesBeforeShowingChangeSheet({
+  required bool isGuest,
+  required bool addressConfirmed,
+}) {
+  return !isGuest && addressConfirmed;
+}
+
+Future<List<CheckoutAddress>> loadChangeAddressSheetAddresses({
+  required bool isGuest,
+  required List<CheckoutAddress> currentAddresses,
+  required Future<List<CheckoutAddress>> Function() refreshAddresses,
+}) async {
+  if (isGuest) {
+    return currentAddresses;
+  }
+
+  try {
+    return await refreshAddresses();
+  } catch (_) {
+    return currentAddresses;
+  }
+}
+
 String? findNewlyAddedAddressId({
   required Set<String> previousIds,
   required Iterable<String?> refreshedIds,
@@ -86,4 +109,23 @@ Map<String, dynamic> buildSavedCheckoutAddressInput({
   }
 
   return input;
+}
+
+CheckoutAddress buildCheckoutAddressFromInput({
+  required Map<String, dynamic> input,
+  required String prefix,
+}) {
+  return CheckoutAddress(
+    id: '',
+    firstName: input['${prefix}FirstName']?.toString() ?? '',
+    lastName: input['${prefix}LastName']?.toString() ?? '',
+    email: input['${prefix}Email']?.toString(),
+    companyName: input['${prefix}CompanyName']?.toString(),
+    address: input['${prefix}Address']?.toString() ?? '',
+    city: input['${prefix}City']?.toString() ?? '',
+    state: input['${prefix}State']?.toString(),
+    country: input['${prefix}Country']?.toString(),
+    postcode: input['${prefix}Postcode']?.toString(),
+    phone: input['${prefix}PhoneNumber']?.toString(),
+  );
 }

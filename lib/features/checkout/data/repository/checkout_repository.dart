@@ -1,9 +1,95 @@
-import 'package:flutter/material.dart';
+import 'dart:convert';
+
+import 'package:flutter/foundation.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import '../../../../core/graphql/graphql_client.dart';
 import '../../../../core/graphql/checkout_queries.dart';
 import '../../../../core/graphql/account_queries.dart';
 import '../models/checkout_model.dart';
+
+List<Map<String, dynamic>> buildCustomerAddressBookInputsFromCheckout(
+  Map<String, dynamic> checkoutInput, {
+  bool defaultAddress = false,
+}) {
+  final usesBillingForShipping = checkoutInput['useForShipping'] == true;
+  final inputs = <Map<String, dynamic>>[
+    _buildCustomerAddressBookInput(
+      checkoutInput,
+      prefix: 'billing',
+      defaultAddress: defaultAddress,
+      useForShipping: usesBillingForShipping,
+    ),
+  ];
+
+  if (!usesBillingForShipping) {
+    inputs.add(
+      _buildCustomerAddressBookInput(
+        checkoutInput,
+        prefix: 'shipping',
+        defaultAddress: false,
+        useForShipping: true,
+      ),
+    );
+  }
+
+  return inputs;
+}
+
+Map<String, dynamic> _buildCustomerAddressBookInput(
+  Map<String, dynamic> checkoutInput, {
+  required String prefix,
+  required bool defaultAddress,
+  required bool useForShipping,
+}) {
+  final input = <String, dynamic>{
+    'firstName': _checkoutInputValue(checkoutInput, '${prefix}FirstName'),
+    'lastName': _checkoutInputValue(checkoutInput, '${prefix}LastName'),
+    'address1': _checkoutInputValue(checkoutInput, '${prefix}Address'),
+    'city': _checkoutInputValue(checkoutInput, '${prefix}City'),
+    'state': _checkoutInputValue(checkoutInput, '${prefix}State'),
+    'country': _checkoutInputValue(checkoutInput, '${prefix}Country'),
+    'postcode': _checkoutInputValue(checkoutInput, '${prefix}Postcode'),
+    'phone': _checkoutInputValue(checkoutInput, '${prefix}PhoneNumber'),
+    'defaultAddress': defaultAddress,
+    'useForShipping': useForShipping,
+  };
+
+  final email = _checkoutInputValue(checkoutInput, '${prefix}Email');
+  if (email.isNotEmpty) {
+    input['email'] = email;
+  }
+
+  return input;
+}
+
+String _checkoutInputValue(Map<String, dynamic> checkoutInput, String key) {
+  return checkoutInput[key]?.toString() ?? '';
+}
+
+bool shouldLogCheckoutOperation(String operation) {
+  return operation != 'getCountries';
+}
+
+void _logCheckoutApiDetails(
+  String operation, {
+  Map<String, dynamic>? variables,
+  Object? responseData,
+}) {
+  if (!kDebugMode || !shouldLogCheckoutOperation(operation)) return;
+
+  final encoder = const JsonEncoder.withIndent('  ');
+  debugPrint('━━━━━━━━━━━━━━━━ Checkout API ━━━━━━━━━━━━━━━━');
+  debugPrint('[CheckoutRepo][$operation]');
+  if (variables != null) {
+    debugPrint('variables=');
+    debugPrint(encoder.convert(variables));
+  }
+  if (responseData != null) {
+    debugPrint('response=');
+    debugPrint(encoder.convert(responseData));
+  }
+  debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+}
 
 /// Repository for all checkout operations via Bagisto GraphQL API.
 ///
@@ -67,7 +153,6 @@ class CheckoutRepository {
   /// Fetch all available countries from the Bagisto API.
   /// API: https://api-docs.bagisto.com/api/graphql-api/shop/queries/get-countries.html
   Future<List<BagistoCountry>> getCountries() async {
-    debugPrint('[CheckoutRepo] getCountries...');
     final result = await _authedClient.query(
       QueryOptions(
         document: gql(CheckoutQueries.getCountries),
@@ -79,6 +164,8 @@ class CheckoutRepository {
       debugPrint('[CheckoutRepo] getCountries error: ${result.exception}');
       throw result.exception!;
     }
+
+    _logCheckoutApiDetails('getCountries', responseData: result.data);
 
     final edges = result.data?['countries']?['edges'] as List?;
     if (edges == null) return [];
@@ -141,6 +228,12 @@ class CheckoutRepository {
       }
       return [];
     }
+
+    _logCheckoutApiDetails(
+      'getCountryStates',
+      variables: variables,
+      responseData: result.data,
+    );
 
     final statesData = result.data?['countryStates'];
     if (statesData == null) {
@@ -220,6 +313,12 @@ class CheckoutRepository {
       return [];
     }
 
+    _logCheckoutApiDetails(
+      'getCountryStatesByCode',
+      variables: {'countryCode': countryCode, 'first': 200},
+      responseData: result.data,
+    );
+
     final statesData = result.data?['countryStates'];
     if (statesData == null) {
       debugPrint(
@@ -270,6 +369,8 @@ class CheckoutRepository {
       throw result.exception!;
     }
 
+    _logCheckoutApiDetails('getCheckoutAddresses', responseData: result.data);
+
     final edges =
         result.data?['collectionGetCheckoutAddresses']?['edges'] as List?;
     if (edges == null) return [];
@@ -301,6 +402,12 @@ class CheckoutRepository {
       );
       throw result.exception!;
     }
+
+    _logCheckoutApiDetails(
+      'getCustomerAddresses',
+      variables: {'first': 100},
+      responseData: result.data,
+    );
 
     final edges = result.data?['getCustomerAddresses']?['edges'] as List?;
     if (edges == null) return [];
@@ -363,6 +470,12 @@ class CheckoutRepository {
       throw result.exception!;
     }
 
+    _logCheckoutApiDetails(
+      'getShippingRates',
+      variables: {'token': qToken},
+      responseData: result.data,
+    );
+
     final list = result.data?['collectionShippingRates'] as List?;
     if (list == null) return [];
 
@@ -394,6 +507,12 @@ class CheckoutRepository {
       throw result.exception!;
     }
 
+    _logCheckoutApiDetails(
+      'getPaymentMethods',
+      variables: {'token': qToken},
+      responseData: result.data,
+    );
+
     final list = result.data?['collectionPaymentMethods'] as List?;
     if (list == null) return [];
 
@@ -423,6 +542,12 @@ class CheckoutRepository {
       throw result.exception!;
     }
 
+    _logCheckoutApiDetails(
+      'saveCheckoutAddress',
+      variables: {'input': input},
+      responseData: result.data,
+    );
+
     final data =
         result.data?['createCheckoutAddress']?['checkoutAddress']
             as Map<String, dynamic>?;
@@ -441,45 +566,40 @@ class CheckoutRepository {
     Map<String, dynamic> checkoutInput, {
     bool defaultAddress = false,
   }) async {
-    final input = <String, dynamic>{
-      'firstName': checkoutInput['billingFirstName']?.toString() ?? '',
-      'lastName': checkoutInput['billingLastName']?.toString() ?? '',
-      'address1': checkoutInput['billingAddress']?.toString() ?? '',
-      'city': checkoutInput['billingCity']?.toString() ?? '',
-      'state': checkoutInput['billingState']?.toString() ?? '',
-      'country': checkoutInput['billingCountry']?.toString() ?? '',
-      'postcode': checkoutInput['billingPostcode']?.toString() ?? '',
-      'phone': checkoutInput['billingPhoneNumber']?.toString() ?? '',
-      'defaultAddress': defaultAddress,
-      'useForShipping': checkoutInput['useForShipping'] == true,
-    };
-
-    final email = checkoutInput['billingEmail']?.toString() ?? '';
-    if (email.isNotEmpty) {
-      input['email'] = email;
-    }
-
-    debugPrint('[CheckoutRepo] saveCustomerAddressFromCheckout input=$input');
-
-    final result = await _authedClient.mutate(
-      MutationOptions(
-        document: gql(AccountQueries.createAddUpdateCustomerAddress),
-        variables: {'input': input},
-      ),
+    final inputs = buildCustomerAddressBookInputsFromCheckout(
+      checkoutInput,
+      defaultAddress: defaultAddress,
     );
 
-    if (result.hasException) {
-      debugPrint(
-        '[CheckoutRepo] saveCustomerAddressFromCheckout error: ${result.exception}',
-      );
-      throw result.exception!;
-    }
+    for (final input in inputs) {
+      debugPrint('[CheckoutRepo] saveCustomerAddressFromCheckout input=$input');
 
-    final data =
-        result.data?['createAddUpdateCustomerAddress']?['addUpdateCustomerAddress']
-            as Map<String, dynamic>?;
-    if (data == null) {
-      throw Exception('Failed to save address to address book');
+      final result = await _authedClient.mutate(
+        MutationOptions(
+          document: gql(AccountQueries.createAddUpdateCustomerAddress),
+          variables: {'input': input},
+        ),
+      );
+
+      if (result.hasException) {
+        debugPrint(
+          '[CheckoutRepo] saveCustomerAddressFromCheckout error: ${result.exception}',
+        );
+        throw result.exception!;
+      }
+
+      _logCheckoutApiDetails(
+        'saveCustomerAddressFromCheckout',
+        variables: {'input': input},
+        responseData: result.data,
+      );
+
+      final data =
+          result.data?['createAddUpdateCustomerAddress']?['addUpdateCustomerAddress']
+              as Map<String, dynamic>?;
+      if (data == null) {
+        throw Exception('Failed to save address to address book');
+      }
     }
   }
 
@@ -505,6 +625,14 @@ class CheckoutRepository {
       );
       throw result.exception!;
     }
+
+    _logCheckoutApiDetails(
+      'saveShippingMethod',
+      variables: {
+        'input': {'shippingMethod': shippingMethod},
+      },
+      responseData: result.data,
+    );
 
     final data =
         result.data?['createCheckoutShippingMethod']?['checkoutShippingMethod']
@@ -535,6 +663,14 @@ class CheckoutRepository {
       throw result.exception!;
     }
 
+    _logCheckoutApiDetails(
+      'savePaymentMethod',
+      variables: {
+        'input': {'paymentMethod': paymentMethod},
+      },
+      responseData: result.data,
+    );
+
     final data =
         result.data?['createCheckoutPaymentMethod']?['checkoutPaymentMethod']
             as Map<String, dynamic>?;
@@ -556,6 +692,8 @@ class CheckoutRepository {
       debugPrint('[CheckoutRepo] placeOrder error: ${result.exception}');
       throw result.exception!;
     }
+
+    _logCheckoutApiDetails('placeOrder', responseData: result.data);
 
     final data =
         result.data?['createCheckoutOrder']?['checkoutOrder']
@@ -584,6 +722,14 @@ class CheckoutRepository {
       throw result.exception!;
     }
 
+    _logCheckoutApiDetails(
+      'applyCoupon',
+      variables: {
+        'input': {'couponCode': couponCode},
+      },
+      responseData: result.data,
+    );
+
     final data =
         result.data?['createApplyCoupon']?['applyCoupon']
             as Map<String, dynamic>?;
@@ -608,6 +754,12 @@ class CheckoutRepository {
       debugPrint('[CheckoutRepo] removeCoupon error: ${result.exception}');
       throw result.exception!;
     }
+
+    _logCheckoutApiDetails(
+      'removeCoupon',
+      variables: {'input': {}},
+      responseData: result.data,
+    );
 
     final data =
         result.data?['createRemoveCoupon']?['removeCoupon']

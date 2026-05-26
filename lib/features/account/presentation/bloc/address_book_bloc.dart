@@ -102,7 +102,6 @@ class CreateAddress extends AddressBookEvent {
   final String? companyName;
   final String? vatId;
   final bool defaultAddress;
-  final bool useForShipping;
 
   const CreateAddress({
     required this.firstName,
@@ -117,7 +116,6 @@ class CreateAddress extends AddressBookEvent {
     this.companyName,
     this.vatId,
     this.defaultAddress = false,
-    this.useForShipping = false,
   });
 
   @override
@@ -134,7 +132,6 @@ class CreateAddress extends AddressBookEvent {
     companyName,
     vatId,
     defaultAddress,
-    useForShipping,
   ];
 }
 
@@ -153,7 +150,6 @@ class UpdateAddress extends AddressBookEvent {
   final String? companyName;
   final String? vatId;
   final bool defaultAddress;
-  final bool useForShipping;
 
   const UpdateAddress({
     required this.addressId,
@@ -169,7 +165,6 @@ class UpdateAddress extends AddressBookEvent {
     this.companyName,
     this.vatId,
     this.defaultAddress = false,
-    this.useForShipping = false,
   });
 
   @override
@@ -187,7 +182,6 @@ class UpdateAddress extends AddressBookEvent {
     companyName,
     vatId,
     defaultAddress,
-    useForShipping,
   ];
 }
 
@@ -315,28 +309,26 @@ class AddressBookBloc extends Bloc<AddressBookEvent, AddressBookState> {
     emit(state.copyWith(isPerformingAction: true, actionMessage: null));
 
     try {
-      // Find the address in state if fields are null
-      state.addresses.firstWhere(
-        (a) => a.numericId == event.addressId,
-        orElse: () => throw Exception('Selected address not found in state'),
-      );
-
       await repository.setDefaultAddress(
         addressId: event.addressId,
-        useForShipping: event.useForShipping,
+        firstName: event.firstName ?? '',
+        lastName: event.lastName ?? '',
+        address: event.address ?? '',
+        city: event.city ?? '',
+        state: event.state ?? '',
+        country: event.country ?? '',
+        postcode: event.postcode ?? '',
+        phone: event.phone ?? '',
+        email: event.email,
       );
 
-      // Optimistic update using model's copyWith — future-proof
-      final updatedAddresses = state.addresses
-          .map(
-            (addr) =>
-                addr.copyWith(isDefault: addr.numericId == event.addressId),
-          )
-          .toList();
+      final refreshedAddresses = await repository.getCustomerAddresses(
+        first: 100,
+      );
 
       emit(
         state.copyWith(
-          addresses: updatedAddresses,
+          addresses: refreshedAddresses,
           isPerformingAction: false,
           actionMessage: 'Address set as default',
         ),
@@ -420,7 +412,6 @@ class AddressBookBloc extends Bloc<AddressBookEvent, AddressBookState> {
         companyName: event.companyName,
         vatId: event.vatId,
         defaultAddress: event.defaultAddress,
-        useForShipping: event.useForShipping,
       );
 
       final updatedAddresses = [...state.addresses, newAddress];
@@ -473,7 +464,6 @@ class AddressBookBloc extends Bloc<AddressBookEvent, AddressBookState> {
         companyName: event.companyName,
         vatId: event.vatId,
         defaultAddress: event.defaultAddress,
-        useForShipping: event.useForShipping,
       );
 
       // Replace the old address in the local list

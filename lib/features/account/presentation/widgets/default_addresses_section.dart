@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../data/models/account_models.dart';
+import '../helpers/account_dashboard_helpers.dart';
 import 'section_header.dart';
 
-/// Default Addresses section (Billing + Shipping)
+/// Default address section
 /// Figma: node-id=220-7109
 class DefaultAddressesSection extends StatelessWidget {
   final List<CustomerAddress> addresses;
@@ -19,27 +20,7 @@ class DefaultAddressesSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-
-    // Find default billing and shipping addresses
-    CustomerAddress? billingAddress;
-    CustomerAddress? shippingAddress;
-
-    for (final address in addresses) {
-      if (address.isDefault) {
-        billingAddress ??= address;
-        if (billingAddress != address) {
-          shippingAddress ??= address;
-        }
-      }
-    }
-
-    // If no default addresses found, use first two
-    if (billingAddress == null && addresses.isNotEmpty) {
-      billingAddress = addresses.first;
-    }
-    if (shippingAddress == null && addresses.length > 1) {
-      shippingAddress = addresses[1];
-    }
+    final defaultAddress = resolveDashboardDefaultAddress(addresses);
 
     return Padding(
       padding: const EdgeInsets.only(top: 24),
@@ -50,35 +31,16 @@ class DefaultAddressesSection extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: SectionHeader(
               title: l10n.accountDefaultAddresses,
-              onViewAll: addresses.isNotEmpty
-                  ? onViewAll
-                  : null,
+              onViewAll: addresses.isNotEmpty ? onViewAll : null,
             ),
           ),
           const SizedBox(height: 2),
           if (addresses.isEmpty)
             _buildEmptyState(context)
-          else
+          else if (defaultAddress != null)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-                children: [
-                  if (billingAddress != null)
-                    _buildAddressCard(
-                      context,
-                      address: billingAddress,
-                      type: l10n.accountBillingAddress,
-                    ),
-                  if (shippingAddress != null) ...[
-                    const SizedBox(height: 8),
-                    _buildAddressCard(
-                      context,
-                      address: shippingAddress,
-                      type: l10n.accountShippingAddress,
-                    ),
-                  ],
-                ],
-              ),
+              child: _buildAddressCard(context, address: defaultAddress),
             ),
         ],
       ),
@@ -117,7 +79,6 @@ class DefaultAddressesSection extends StatelessWidget {
   Widget _buildAddressCard(
     BuildContext context, {
     required CustomerAddress address,
-    required String type,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -134,28 +95,10 @@ class DefaultAddressesSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Address type + Default badge
-          Row(
-            children: [
-              Text(
-                type,
-                style: TextStyle(
-                  fontFamily: 'Roboto',
-                  fontWeight: FontWeight.w400,
-                  fontSize: 14,
-                  color: isDark
-                      ? AppColors.neutral300
-                      : AppColors.neutral900,
-                ),
-              ),
-              if (address.isDefault) ...[
-                const SizedBox(width: 4),
-                _buildDefaultBadge(context),
-              ],
-            ],
-          ),
-          const SizedBox(height: 6),
-          // Full name with company
+          if (address.isDefault) ...[
+            _buildDefaultBadge(context),
+            const SizedBox(height: 8),
+          ],
           Text(
             address.fullName,
             style: TextStyle(
@@ -166,7 +109,6 @@ class DefaultAddressesSection extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 6),
-          // Full address
           Text(
             address.formattedAddress,
             style: TextStyle(

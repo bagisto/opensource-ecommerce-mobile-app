@@ -1,5 +1,16 @@
 #### This changelog consists the bug & security fixes and new features being included in the releases listed below
 
+# CHANGELOG for v2.4.5
+
+## **v2.4.5 (26th of May, 2026)** - *Release*
+
+* [Improvement] Improved account address state handling for countries without predefined states and preserved saved state values while editing addresses.
+* [Improvement] Simplified account address management with a single "Set as Default" flow and improved dashboard/address book refresh after add or edit actions.
+* [Improvement] Improved checkout saved-address synchronization, including refreshed address selection flows, separate billing and shipping selection handling, and interaction blocking while placing orders.
+* [Fixed] Fixed account default address updates by sending the full payload expected by the API.
+* [Fixed] Fixed checkout address book saving so separate billing and shipping addresses are preserved when they are different.
+* [Fixed] Fixed checkout address selection UI by removing address type badges and preserving separate shipping selections after manual address entry.
+
 # CHANGELOG for v2.4.4
 
 ## **v2.4.4 (22nd of May, 2026)** - *Release*
