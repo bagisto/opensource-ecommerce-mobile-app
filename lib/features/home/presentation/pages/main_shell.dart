@@ -7,6 +7,7 @@ import '../../../category/presentation/pages/category_page.dart';
 import '../../../cart/presentation/pages/cart_page.dart';
 import '../../../cart/presentation/bloc/cart_bloc.dart';
 import '../../../auth/presentation/pages/account_page.dart';
+import '../helpers/main_shell_navigation_helpers.dart';
 import 'home_page.dart';
 
 /// Main Shell with bottom navigation bar — modern e-commerce navigation.
@@ -23,7 +24,8 @@ class MainShell extends StatefulWidget {
   const MainShell({super.key});
 
   /// GlobalKey for accessing MainShellState from anywhere in the app
-  static final GlobalKey<MainShellState> navigatorKey = GlobalKey<MainShellState>();
+  static final GlobalKey<MainShellState> navigatorKey =
+      GlobalKey<MainShellState>();
 
   @override
   State<MainShell> createState() => MainShellState();
@@ -38,16 +40,22 @@ class MainShellState extends State<MainShell> {
   final List<int> _tabHistory = [0]; // initial tab
 
   void switchToTab(int index) {
-    if (index == _currentIndex) return;
-    setState(() {
-      // Push current tab to history before switching
-      if (_tabHistory.isEmpty || _tabHistory.last != _currentIndex) {
-        _tabHistory.add(_currentIndex);
-      }
-      _currentIndex = index;
-    });
-    // Refresh cart data when switching to Cart tab
-    if (index == AppNavigator.cartTab) {
+    final action = resolveMainShellTabRequest(
+      currentIndex: _currentIndex,
+      requestedIndex: index,
+    );
+
+    if (action.shouldSwitchTabs) {
+      setState(() {
+        // Push current tab to history before switching
+        if (_tabHistory.isEmpty || _tabHistory.last != _currentIndex) {
+          _tabHistory.add(_currentIndex);
+        }
+        _currentIndex = index;
+      });
+    }
+
+    if (action.shouldReloadCart) {
       context.read<CartBloc>().add(LoadCart());
     }
   }
@@ -164,8 +172,8 @@ class MainShellState extends State<MainShell> {
               color: isActive
                   ? AppColors.primary500
                   : isDark
-                      ? AppColors.neutral300
-                      : AppColors.neutral800,
+                  ? AppColors.neutral300
+                  : AppColors.neutral800,
             ),
             const SizedBox(height: 2),
             Text(
@@ -177,8 +185,8 @@ class MainShellState extends State<MainShell> {
                 color: isActive
                     ? AppColors.primary500
                     : isDark
-                        ? AppColors.neutral300
-                        : AppColors.neutral800,
+                    ? AppColors.neutral300
+                    : AppColors.neutral800,
               ),
             ),
           ],
@@ -214,8 +222,8 @@ class MainShellState extends State<MainShell> {
                   color: isActive
                       ? AppColors.primary500
                       : isDark
-                          ? AppColors.neutral300
-                          : AppColors.neutral800,
+                      ? AppColors.neutral300
+                      : AppColors.neutral800,
                 ),
                 if (badgeCount > 0)
                   Positioned(
@@ -253,8 +261,8 @@ class MainShellState extends State<MainShell> {
                 color: isActive
                     ? AppColors.primary500
                     : isDark
-                        ? AppColors.neutral300
-                        : AppColors.neutral800,
+                    ? AppColors.neutral300
+                    : AppColors.neutral800,
               ),
             ),
           ],
@@ -262,5 +270,4 @@ class MainShellState extends State<MainShell> {
       ),
     );
   }
-
 }

@@ -14,6 +14,7 @@ import '../bloc/edit_account_bloc.dart';
 import '../bloc/orders_bloc.dart';
 import '../bloc/review_bloc.dart';
 import '../bloc/wishlist_bloc.dart';
+import '../helpers/account_dashboard_helpers.dart';
 import '../pages/address_book_page.dart';
 import '../pages/compare_products_page.dart';
 import '../pages/downloadable_products_page.dart';
@@ -307,7 +308,10 @@ class _AccountMenuBody extends StatelessWidget {
             onTap: () => _onMenuItemTap(context, AccountMenuAction.preferences),
           ),
           const SizedBox(height: 2),
-          AccountMenuItem(label: l10n.accountLogout, onTap: () => _onLogout(context)),
+          AccountMenuItem(
+            label: l10n.accountLogout,
+            onTap: () => _onLogout(context),
+          ),
         ],
       ),
     );
@@ -399,18 +403,32 @@ class _AccountMenuBody extends StatelessWidget {
         break;
       case AccountMenuAction.addressBook:
         final repository = context.read<AccountRepository>();
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => RepositoryProvider.value(
-              value: repository,
-              child: BlocProvider(
-                create: (_) =>
-                    AddressBookBloc(repository: repository)
-                      ..add(const LoadAddresses()),
-                child: const AddressBookPage(),
+        refreshAccountDashboardAfterAddressBook(
+          openAddressBook: () {
+            return Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => RepositoryProvider.value(
+                  value: repository,
+                  child: BlocProvider(
+                    create: (_) =>
+                        AddressBookBloc(repository: repository)
+                          ..add(const LoadAddresses()),
+                    child: const AddressBookPage(),
+                  ),
+                ),
               ),
-            ),
-          ),
+            );
+          },
+          onReturn: () {
+            if (!context.mounted) return;
+            try {
+              context.read<AccountDashboardBloc>().add(
+                const RefreshAccountDashboard(),
+              );
+            } catch (_) {
+              // AccountDashboardBloc not in tree — skip
+            }
+          },
         );
         break;
       case AccountMenuAction.editAccount:

@@ -161,6 +161,7 @@ class CheckoutState extends Equatable {
   // Addresses fetched from API (only for logged-in users)
   final List<CheckoutAddress> addresses;
   final CheckoutAddress? selectedAddress;
+  final CheckoutAddress? selectedShippingAddress;
   final bool useSameAddressForShipping;
 
   // Shipping rates (fetched after address saved)
@@ -196,6 +197,7 @@ class CheckoutState extends Equatable {
     this.addressConfirmed = false,
     this.addresses = const [],
     this.selectedAddress,
+    this.selectedShippingAddress,
     this.useSameAddressForShipping = true,
     this.shippingRates = const [],
     this.selectedShippingMethod,
@@ -230,6 +232,7 @@ class CheckoutState extends Equatable {
     bool? addressConfirmed,
     List<CheckoutAddress>? addresses,
     CheckoutAddress? selectedAddress,
+    CheckoutAddress? selectedShippingAddress,
     bool? useSameAddressForShipping,
     List<ShippingRate>? shippingRates,
     String? selectedShippingMethod,
@@ -250,6 +253,7 @@ class CheckoutState extends Equatable {
     bool clearError = false,
     bool clearSuccess = false,
     bool clearSelectedAddress = false,
+    bool clearSelectedShippingAddress = false,
     bool clearSelectedShippingMethod = false,
     bool clearSelectedPaymentMethod = false,
   }) {
@@ -263,6 +267,9 @@ class CheckoutState extends Equatable {
       selectedAddress: clearSelectedAddress
           ? null
           : (selectedAddress ?? this.selectedAddress),
+      selectedShippingAddress: clearSelectedShippingAddress
+          ? null
+          : (selectedShippingAddress ?? this.selectedShippingAddress),
       useSameAddressForShipping:
           useSameAddressForShipping ?? this.useSameAddressForShipping,
       shippingRates: shippingRates ?? this.shippingRates,
@@ -300,6 +307,7 @@ class CheckoutState extends Equatable {
     addressConfirmed,
     addresses,
     selectedAddress,
+    selectedShippingAddress,
     useSameAddressForShipping,
     shippingRates,
     selectedShippingMethod,
@@ -444,6 +452,10 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
         (a) => a.addressType == 'cart_billing',
         orElse: () => const CheckoutAddress(id: ''),
       );
+      final cartShipping = addresses.firstWhere(
+        (a) => a.addressType == 'cart_shipping',
+        orElse: () => const CheckoutAddress(id: ''),
+      );
       final hasCartAddress = cartBilling.id.isNotEmpty;
 
       CheckoutAddress? defaultAddr;
@@ -470,6 +482,10 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
                   ? customerAddresses
                   : addresses,
               selectedAddress: defaultAddr,
+              selectedShippingAddress: defaultAddr.useForShipping
+                  ? null
+                  : (cartShipping.id.isNotEmpty ? cartShipping : null),
+              useSameAddressForShipping: defaultAddr.useForShipping,
               status: CheckoutStatus.addressSaved,
               addressConfirmed: true,
               isLoading: false,
@@ -576,6 +592,7 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
                     ? customerAddresses
                     : addresses,
                 selectedAddress: defaultAddr,
+                useSameAddressForShipping: true,
                 status: CheckoutStatus.addressSaved,
                 addressConfirmed: true,
                 cartToken: queryToken,
@@ -716,6 +733,7 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
                 state.copyWith(
                   addresses: accountAddresses,
                   selectedAddress: fallbackAddr,
+                  useSameAddressForShipping: true,
                   status: CheckoutStatus.addressSaved,
                   addressConfirmed: true,
                   cartToken: fallbackQueryToken,
@@ -866,6 +884,10 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
     emit(
       state.copyWith(
         selectedAddress: event.address,
+        selectedShippingAddress: event.useForShipping
+            ? null
+            : event.shippingAddress,
+        useSameAddressForShipping: event.useForShipping,
         // Reset downstream steps since address changed
         addressConfirmed: false,
         shippingRates: const [],
@@ -1124,10 +1146,25 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
         }
       }
 
+      final selectedBillingAddress =
+          state.selectedAddress ??
+          buildCheckoutAddressFromInput(input: event.input, prefix: 'billing');
+      final useSameAddressForShipping = event.input['useForShipping'] == true;
+      final selectedShippingAddress = useSameAddressForShipping
+          ? null
+          : (state.selectedShippingAddress ??
+                buildCheckoutAddressFromInput(
+                  input: event.input,
+                  prefix: 'shipping',
+                ));
+
       emit(
         state.copyWith(
           status: CheckoutStatus.addressSaved,
           cartToken: queryToken,
+          selectedAddress: selectedBillingAddress,
+          selectedShippingAddress: selectedShippingAddress,
+          useSameAddressForShipping: useSameAddressForShipping,
           addressConfirmed: true,
           addresses: refreshedAddresses,
           successMessage: response.message,
@@ -1487,11 +1524,31 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
       return;
     }
 
-    emit(
-      state.copyWith(
-        useSameAddressForShipping: !state.useSameAddressForShipping,
-      ),
-    );
+    final nextUseSameAddress = !state.useSameAddressForShipping;
+
+    // Confirmed saved-address checkout has no save button on the card, so the
+    // toggle itself must persist the updated billing/shipping relationship.
+    if (state.addressConfirmed &&
+        state.selectedAddress != null &&
+        state.addresses.isNotEmpty) {
+      final shippingAddress = nextUseSameAddress
+          ? null
+          : state.selectedShippingAddress ??
+                (state.addresses.length > 1
+                    ? state.addresses[1]
+                    : state.addresses.first);
+
+      add(
+        SelectSavedAddress(
+          address: state.selectedAddress!,
+          useForShipping: nextUseSameAddress,
+          shippingAddress: shippingAddress,
+        ),
+      );
+      return;
+    }
+
+    emit(state.copyWith(useSameAddressForShipping: nextUseSameAddress));
   }
 
   void _onResetAddressConfirmation(
@@ -1501,6 +1558,7 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
     emit(
       state.copyWith(
         addressConfirmed: false,
+        clearSelectedShippingAddress: true,
         shippingRates: const [],
         clearSelectedShippingMethod: true,
         paymentMethods: const [],

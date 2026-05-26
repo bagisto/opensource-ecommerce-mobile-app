@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/error/error_mapper.dart';
@@ -7,6 +9,8 @@ import '../../../../l10n/app_localizations.dart';
 import '../../data/models/account_models.dart';
 import '../../data/repository/account_repository.dart';
 import '../bloc/address_book_bloc.dart';
+import '../utils/address_debug_payload.dart';
+import '../utils/address_state_field_behavior.dart';
 import '../widgets/address_form_field.dart';
 
 /// Add / Edit Address Page — Figma node-id=204-6116
@@ -17,7 +21,7 @@ import '../widgets/address_form_field.dart';
 ///     First Name*, Last Name*, Email, Company Name, VAT id,
 ///     Street Address*, Country* (dropdown), State* (dropdown),
 ///     City*, Zip/Postcode*, TelePhone*
-///   - Toggle switches: Default billing / Default shipping address
+///   - Toggle switch: Set as Default
 ///   - Bottom sticky "Save to Address Book" / "Update Address" button
 ///
 /// Pass [editingAddress] to pre-populate the form for editing.
@@ -65,7 +69,6 @@ class _AddAddressPageState extends State<AddAddressPage> {
 
   // Switch states
   bool _isDefaultBilling = false;
-  bool _isDefaultShipping = false;
 
   // Country / State data
   List<Country> _countries = [];
@@ -77,6 +80,10 @@ class _AddAddressPageState extends State<AddAddressPage> {
 
   // Submission state
   bool _isSubmitting = false;
+
+  bool get _useStateDropdown => shouldUseStateDropdown(
+    availableStateNames: _states.map((state) => state.name).toList(),
+  );
 
   @override
   void initState() {
@@ -94,6 +101,11 @@ class _AddAddressPageState extends State<AddAddressPage> {
     final addr = widget.editingAddress;
     if (addr == null) return;
 
+    debugPrint(
+      '📝 Edit Address loaded for addressId=${addr.numericId}: '
+      '${jsonEncode(buildEditAddressDebugPayload(addr))}',
+    );
+
     _firstNameCtrl.text = addr.firstName;
     _lastNameCtrl.text = addr.lastName;
     _emailCtrl.text = addr.email ?? '';
@@ -104,7 +116,6 @@ class _AddAddressPageState extends State<AddAddressPage> {
     _postcodeCtrl.text = addr.zipCode;
     _phoneCtrl.text = addr.phone ?? '';
     _isDefaultBilling = addr.isDefault;
-    _isDefaultShipping = addr.useForShipping;
 
     // Country & State will be matched after countries load
     // Store raw values so _loadCountries can match them
@@ -175,20 +186,9 @@ class _AddAddressPageState extends State<AddAddressPage> {
             _selectedCountry = match;
             _countryDisplayCtrl.text = match.name;
           });
-          // Load states for this country, then match saved state
-          await _loadStates(match);
-          if (mounted && _states.isNotEmpty) {
-            final stateMatch = _states.cast<CountryState?>().firstWhere(
-              (s) => s!.code == addr.state || s.name == addr.state,
-              orElse: () => null,
-            );
-            if (stateMatch != null) {
-              setState(() {
-                _selectedState = stateMatch;
-                _stateDisplayCtrl.text = stateMatch.name;
-              });
-            }
-          }
+          // Load states for this country, then restore the saved state value
+          // when the country has no predefined state list.
+          await _loadStates(match, savedStateText: addr.state);
         }
       }
     } catch (e) {
@@ -212,22 +212,42 @@ class _AddAddressPageState extends State<AddAddressPage> {
     }
   }
 
-  Future<void> _loadStates(Country country) async {
+  Future<void> _loadStates(Country country, {String? savedStateText}) async {
+    final normalizedSavedState = savedStateText?.trim() ?? '';
+
     if (!mounted) return;
     setState(() {
       _loadingStates = true;
       _states = [];
       _selectedState = null;
-      _stateDisplayCtrl.clear();
+      if (normalizedSavedState.isEmpty) {
+        _stateDisplayCtrl.clear();
+      }
     });
 
     try {
       final repo = context.read<AccountRepository>();
       final states = await repo.getCountryStates(countryId: country.numericId);
       if (!mounted) return;
+
+      final stateMatch = normalizedSavedState.isEmpty
+          ? null
+          : states.cast<CountryState?>().firstWhere(
+              (state) =>
+                  state!.code == normalizedSavedState ||
+                  state.name == normalizedSavedState,
+              orElse: () => null,
+            );
+      final resolvedStateText = resolveStateFieldText(
+        savedStateText: normalizedSavedState,
+        matchedStateName: stateMatch?.name,
+      );
+
       setState(() {
         _states = states;
         _loadingStates = false;
+        _selectedState = stateMatch;
+        _stateDisplayCtrl.text = resolvedStateText;
       });
 
       // Show warning if no states available for this country
@@ -292,15 +312,9 @@ class _AddAddressPageState extends State<AddAddressPage> {
     final l10n = AppLocalizations.of(context)!;
 
     if (_loadingStates) return;
+    if (_states.isEmpty) return;
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    // If no states — allow free text entry
-    if (_states.isEmpty) {
-      _showFreeTextStateInput(isDark);
-      return;
-    }
-
     final selected = await SelectionSheet.show<CountryState>(
       context: context,
       title: l10n.checkoutSelectState,
@@ -321,22 +335,6 @@ class _AddAddressPageState extends State<AddAddressPage> {
     setState(() {
       _selectedState = selected;
       _stateDisplayCtrl.text = selected.name;
-    });
-  }
-
-  Future<void> _showFreeTextStateInput(bool isDark) async {
-    final value = await showFreeTextStateDialog(
-      context: context,
-      currentValue: _stateDisplayCtrl.text,
-      isDark: isDark,
-    );
-
-    if (!mounted) return;
-    if (value == null || value.isEmpty) return;
-
-    setState(() {
-      _selectedState = null;
-      _stateDisplayCtrl.text = value;
     });
   }
 
@@ -387,7 +385,6 @@ class _AddAddressPageState extends State<AddAddressPage> {
               postcode: _postcodeCtrl.text.trim(),
               phone: _phoneCtrl.text.trim(),
               defaultAddress: _isDefaultBilling,
-              useForShipping: _isDefaultShipping,
             )
           : CreateAddress(
               firstName: _firstNameCtrl.text.trim(),
@@ -402,7 +399,6 @@ class _AddAddressPageState extends State<AddAddressPage> {
               postcode: _postcodeCtrl.text.trim(),
               phone: _phoneCtrl.text.trim(),
               defaultAddress: _isDefaultBilling,
-              useForShipping: _isDefaultShipping,
             ),
     );
   }
@@ -515,7 +511,9 @@ class _AddAddressPageState extends State<AddAddressPage> {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Text(
-                _isEditing ? l10n.accountEditAddress : l10n.accountAddNewAddress,
+                _isEditing
+                    ? l10n.accountEditAddress
+                    : l10n.accountAddNewAddress,
                 style: TextStyle(
                   fontFamily: 'Roboto',
                   fontWeight: FontWeight.w600,
@@ -688,8 +686,10 @@ class _AddAddressPageState extends State<AddAddressPage> {
                     controller: _stateDisplayCtrl,
                     label: l10n.checkoutState,
                     isRequired: true,
-                    isDropdown: true,
-                    onDropdownTap: _loadingStates ? null : _onStateTap,
+                    isDropdown: _useStateDropdown,
+                    onDropdownTap: _useStateDropdown && !_loadingStates
+                        ? _onStateTap
+                        : null,
                     enabled: _selectedCountry != null && !_loadingStates,
                     validator: (v) {
                       if (v == null || v.trim().isEmpty) {
@@ -773,22 +773,12 @@ class _AddAddressPageState extends State<AddAddressPage> {
 
             const SizedBox(height: 8),
 
-            // ── Change default billing address switch ──
+            // ── Set as Default switch ──
             _buildSwitch(
               isDark: isDark,
-              label: l10n.accountChangeDefaultBillingAddress,
+              label: l10n.accountSetAsDefault,
               value: _isDefaultBilling,
               onChanged: (v) => setState(() => _isDefaultBilling = v),
-            ),
-
-            const SizedBox(height: 8),
-
-            // ── Change default shipping address switch ──
-            _buildSwitch(
-              isDark: isDark,
-              label: l10n.accountChangeDefaultShippingAddress,
-              value: _isDefaultShipping,
-              onChanged: (v) => setState(() => _isDefaultShipping = v),
             ),
 
             // Extra space for bottom button
@@ -899,7 +889,11 @@ class _AddAddressPageState extends State<AddAddressPage> {
                     color: AppColors.white,
                   ),
                 )
-              : Text(_isEditing ? l10n.accountUpdateAddress : l10n.accountSaveToAddressBook),
+              : Text(
+                  _isEditing
+                      ? l10n.accountUpdateAddress
+                      : l10n.accountSaveToAddressBook,
+                ),
         ),
       ),
     );

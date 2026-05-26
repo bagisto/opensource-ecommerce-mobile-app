@@ -6,6 +6,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../data/repository/account_repository.dart';
 import '../bloc/address_book_bloc.dart';
+import '../helpers/address_book_navigation_helpers.dart';
 import '../widgets/address_card.dart';
 import 'add_address_page.dart';
 
@@ -189,17 +190,22 @@ class AddressBookPage extends StatelessWidget {
               // Disable button while a mutation is in progress
               onPressed: isPerforming
                   ? null
-                  : () {
-                      Navigator.of(selectorContext).push<bool>(
-                        MaterialPageRoute(
-                          builder: (_) => RepositoryProvider.value(
-                            value: repository,
-                            child: BlocProvider.value(
-                              value: bloc,
-                              child: const AddAddressPage(),
+                  : () async {
+                      await refreshAddressBookAfterForm(
+                        openForm: () {
+                          return Navigator.of(selectorContext).push<bool>(
+                            MaterialPageRoute(
+                              builder: (_) => RepositoryProvider.value(
+                                value: repository,
+                                child: BlocProvider.value(
+                                  value: bloc,
+                                  child: const AddAddressPage(),
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
+                          );
+                        },
+                        onSaved: () => bloc.add(const RefreshAddresses()),
                       );
                     },
               style: ElevatedButton.styleFrom(
@@ -544,25 +550,39 @@ class _AddressListWithScrollState extends State<_AddressListWithScroll> {
                                 context.read<AddressBookBloc>().add(
                                   SetDefaultAddress(
                                     addressId: numericId,
-
-                                    useForShipping: address.useForShipping,
+                                    firstName: address.firstName,
+                                    lastName: address.lastName,
+                                    address: address.address,
+                                    city: address.city,
+                                    state: address.state,
+                                    country: address.country,
+                                    postcode: address.zipCode,
+                                    phone: address.phone,
+                                    email: address.email,
                                   ),
                                 );
                               }
                             },
-                      onEdit: () {
+                      onEdit: () async {
                         final repository = context.read<AccountRepository>();
                         final bloc = context.read<AddressBookBloc>();
-                        Navigator.of(context).push<bool>(
-                          MaterialPageRoute(
-                            builder: (_) => RepositoryProvider.value(
-                              value: repository,
-                              child: BlocProvider.value(
-                                value: bloc,
-                                child: AddAddressPage(editingAddress: address),
+                        await refreshAddressBookAfterForm(
+                          openForm: () {
+                            return Navigator.of(context).push<bool>(
+                              MaterialPageRoute(
+                                builder: (_) => RepositoryProvider.value(
+                                  value: repository,
+                                  child: BlocProvider.value(
+                                    value: bloc,
+                                    child: AddAddressPage(
+                                      editingAddress: address,
+                                    ),
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
+                            );
+                          },
+                          onSaved: () => bloc.add(const RefreshAddresses()),
                         );
                       },
                       onDelete: () async {
