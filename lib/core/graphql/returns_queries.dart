@@ -67,9 +67,10 @@ class ReturnsQueries {
   ''';
 
   /// Items from an order that are still eligible for return/cancellation.
+  /// Returns the full list; this field does not accept pagination arguments.
   static const String getReturnableItems = r'''
-    query returnableItems($orderId: Int!, $first: Int, $after: String) {
-      returnableItems(orderId: $orderId, first: $first, after: $after) {
+    query returnableItems($orderId: Int!) {
+      returnableItems(orderId: $orderId) {
         orderItemId
         productId
         sku
@@ -116,7 +117,7 @@ class ReturnsQueries {
 
   /// Create a return request for one order item.
   static const String createCustomerReturn = r'''
-    mutation createCustomerReturn($input: CreateCustomerReturnInput!) {
+    mutation createCustomerReturn($input: createCustomerReturnInput!) {
       createCustomerReturn(input: $input) {
         customerReturn {
           _id
@@ -143,7 +144,7 @@ class ReturnsQueries {
   /// Cancel the customer's own return request. `id` is an IRI.
   static const String cancelCustomerReturn = r'''
     mutation cancelCustomerReturn($id: ID!) {
-      cancelCustomerReturn(id: $id) {
+      cancelCustomerReturn(input: { id: $id }) {
         customerReturn {
           _id
           orderId
