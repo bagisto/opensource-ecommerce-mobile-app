@@ -2226,6 +2226,12 @@ abstract class AppLocalizations {
   /// **'This order has no items eligible for return or cancellation.'**
   String get accountReturnNoReturnableItemsDescription;
 
+  /// No description provided for @accountReturnViewAction.
+  ///
+  /// In en, this message translates to:
+  /// **'View'**
+  String get accountReturnViewAction;
+
   /// No description provided for @accountReturnCancelAction.
   ///
   /// In en, this message translates to:

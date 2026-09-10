@@ -7,8 +7,6 @@ import '../../data/models/account_models.dart';
 import '../../data/models/returns_models.dart';
 import '../../data/repository/account_repository.dart';
 import '../bloc/create_return_bloc.dart';
-import '../bloc/returns_bloc.dart';
-import 'returns_page.dart';
 
 /// Create Return Page — request a return/cancellation, matching the web
 /// `customer/account/rma/create` flow:
@@ -21,13 +19,13 @@ import 'returns_page.dart';
 class CreateReturnPage extends StatelessWidget {
   const CreateReturnPage({super.key});
 
-  /// Navigate to this page from any context.
-  static void navigate(
+  /// Returns true when a request was submitted so the caller can refresh.
+  static Future<bool?> navigate(
     BuildContext context, {
     required AccountRepository repository,
   }) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
+    return Navigator.of(context).push<bool>(
+      MaterialPageRoute<bool>(
         builder: (_) => RepositoryProvider.value(
           value: repository,
           child: BlocProvider(
@@ -82,7 +80,6 @@ class CreateReturnPage extends StatelessWidget {
             );
           }
           if (state.status == CreateReturnStatus.success) {
-            final repository = context.read<CreateReturnBloc>().repository;
             showDialog<void>(
               context: context,
               barrierDismissible: false,
@@ -93,20 +90,7 @@ class CreateReturnPage extends StatelessWidget {
                   TextButton(
                     onPressed: () {
                       Navigator.of(dialogContext).pop();
-                      // Replace the create page with My Returns so the new
-                      // request shows in the RMA list section.
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(
-                          builder: (_) => RepositoryProvider.value(
-                            value: repository,
-                            child: BlocProvider(
-                              create: (_) => ReturnsBloc(repository: repository)
-                                ..add(const LoadReturns()),
-                              child: const ReturnsPage(),
-                            ),
-                          ),
-                        ),
-                      );
+                      Navigator.of(context).pop(true);
                     },
                     child: Text(
                       l10n.accountOk,

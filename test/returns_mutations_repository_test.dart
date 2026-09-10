@@ -91,7 +91,7 @@ AccountRepository _repository(
               '_id': 15,
               'orderId': 42,
               'orderIncrementId': '100000042',
-              'statusId': mutation == 'cancelCustomerReturn' ? 3 : 1,
+              'statusId': mutation == 'cancelCustomerReturn' ? 9 : 1,
               'statusTitle': mutation == 'cancelCustomerReturn'
                   ? 'Canceled'
                   : 'Pending',

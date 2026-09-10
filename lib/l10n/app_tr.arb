@@ -443,6 +443,7 @@
   "accountReturnSelectItem": "Ürün seçin",
   "accountReturnNoReturnableItems": "İade edilebilir ürün yok",
   "accountReturnNoReturnableItemsDescription": "Bu siparişte iade veya iptal için uygun ürün bulunmuyor.",
+  "accountReturnViewAction": "Görüntüle",
   "accountReturnCancelAction": "Talebi iptal et",
   "accountReturnCloseAction": "Çözüldü olarak işaretle",
   "accountReturnReopenAction": "Talebi yeniden aç",

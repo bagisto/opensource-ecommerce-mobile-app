@@ -1182,6 +1182,9 @@ class AppLocalizationsIt extends AppLocalizations {
       'Questo ordine non contiene articoli idonei al reso o all\'annullamento.';
 
   @override
+  String get accountReturnViewAction => 'Visualizza';
+
+  @override
   String get accountReturnCancelAction => 'Annulla richiesta';
 
   @override

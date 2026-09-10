@@ -348,6 +348,7 @@
   "accountReturnSelectItem": "Виберіть товар",
   "accountReturnNoReturnableItems": "Немає товарів для повернення",
   "accountReturnNoReturnableItemsDescription": "У цьому замовленні немає товарів, доступних для повернення чи скасування.",
+  "accountReturnViewAction": "Переглянути",
   "accountReturnCancelAction": "Скасувати запит",
   "accountReturnCloseAction": "Позначити як вирішений",
   "accountReturnReopenAction": "Відкрити запит знову",

@@ -1185,6 +1185,9 @@ class AppLocalizationsFr extends AppLocalizations {
       'Cette commande ne contient aucun article éligible au retour ou à l\'annulation.';
 
   @override
+  String get accountReturnViewAction => 'Voir';
+
+  @override
   String get accountReturnCancelAction => 'Annuler la demande';
 
   @override

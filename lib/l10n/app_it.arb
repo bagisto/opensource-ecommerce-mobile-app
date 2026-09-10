@@ -443,6 +443,7 @@
   "accountReturnSelectItem": "Seleziona articolo",
   "accountReturnNoReturnableItems": "Nessun articolo restituibile",
   "accountReturnNoReturnableItemsDescription": "Questo ordine non contiene articoli idonei al reso o all'annullamento.",
+  "accountReturnViewAction": "Visualizza",
   "accountReturnCancelAction": "Annulla richiesta",
   "accountReturnCloseAction": "Segna come risolto",
   "accountReturnReopenAction": "Riapri richiesta",

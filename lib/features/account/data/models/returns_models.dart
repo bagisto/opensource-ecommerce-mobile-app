@@ -235,8 +235,7 @@ class CustomerReturn extends Equatable {
   /// Formatted date: "8 Oct 2025"
   String get formattedDate => _formatDate(createdAt);
 
-  /// True when no further customer action can change this return
-  /// (used to decide whether the Cancel action is offered).
+  /// Whether the display status describes a completed or rejected return.
   bool get isTerminal {
     switch (statusTitle.toLowerCase()) {
       case 'canceled':
@@ -251,7 +250,18 @@ class CustomerReturn extends Equatable {
     }
   }
 
-  bool get canCancel => !isTerminal && !canReopen;
+  /// The cancellation API permits requests that are not already canceled.
+  /// Prefer the fixed canceled status ID because display labels are editable.
+  bool get canCancel {
+    if (id == null) return false;
+    if (statusId != null) return statusId != 9;
+    return !const {
+      'canceled',
+      'cancelled',
+      'request canceled',
+      'request cancelled',
+    }.contains(statusTitle.trim().toLowerCase());
+  }
 
   @override
   List<Object?> get props => [

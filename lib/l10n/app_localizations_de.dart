@@ -1181,6 +1181,9 @@ class AppLocalizationsDe extends AppLocalizations {
       'Diese Bestellung enthält keine Artikel, die zurückgegeben oder storniert werden können.';
 
   @override
+  String get accountReturnViewAction => 'Ansehen';
+
+  @override
   String get accountReturnCancelAction => 'Anfrage stornieren';
 
   @override

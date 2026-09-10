@@ -1170,6 +1170,9 @@ class AppLocalizationsRu extends AppLocalizations {
       'В этом заказе нет товаров, доступных для возврата или отмены.';
 
   @override
+  String get accountReturnViewAction => 'Просмотр';
+
+  @override
   String get accountReturnCancelAction => 'Отменить запрос';
 
   @override

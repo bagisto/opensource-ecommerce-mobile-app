@@ -28,6 +28,15 @@ class LoadMoreReturns extends ReturnsEvent {
   const LoadMoreReturns();
 }
 
+/// Cancel a request directly from its list card.
+class CancelListedReturn extends ReturnsEvent {
+  final int returnId;
+  const CancelListedReturn(this.returnId);
+
+  @override
+  List<Object?> get props => [returnId];
+}
+
 /// Clear transient error/success messages
 class ClearReturnsMessage extends ReturnsEvent {
   const ClearReturnsMessage();
@@ -48,6 +57,7 @@ class ReturnsState extends Equatable {
   final bool isLoadingMore;
   final String? errorMessage;
   final int? statusFilter;
+  final Set<int> cancelingReturnIds;
 
   const ReturnsState({
     this.status = ReturnsStatus.initial,
@@ -58,6 +68,7 @@ class ReturnsState extends Equatable {
     this.isLoadingMore = false,
     this.errorMessage,
     this.statusFilter,
+    this.cancelingReturnIds = const {},
   });
 
   ReturnsState copyWith({
@@ -69,6 +80,7 @@ class ReturnsState extends Equatable {
     bool? isLoadingMore,
     String? errorMessage,
     int? statusFilter,
+    Set<int>? cancelingReturnIds,
   }) {
     return ReturnsState(
       status: status ?? this.status,
@@ -81,6 +93,7 @@ class ReturnsState extends Equatable {
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       errorMessage: errorMessage,
       statusFilter: statusFilter ?? this.statusFilter,
+      cancelingReturnIds: cancelingReturnIds ?? this.cancelingReturnIds,
     );
   }
 
@@ -94,6 +107,7 @@ class ReturnsState extends Equatable {
     isLoadingMore,
     errorMessage,
     statusFilter,
+    cancelingReturnIds,
   ];
 }
 
@@ -105,6 +119,7 @@ class ReturnsBloc extends Bloc<ReturnsEvent, ReturnsState> {
   ReturnsBloc({required this.repository}) : super(const ReturnsState()) {
     on<LoadReturns>(_onLoad);
     on<LoadMoreReturns>(_onLoadMore);
+    on<CancelListedReturn>(_onCancel);
     on<ClearReturnsMessage>(_onClearMessage);
   }
 
@@ -186,5 +201,48 @@ class ReturnsBloc extends Bloc<ReturnsEvent, ReturnsState> {
 
   void _onClearMessage(ClearReturnsMessage event, Emitter<ReturnsState> emit) {
     emit(state.copyWith(errorMessage: null));
+  }
+
+  Future<void> _onCancel(
+    CancelListedReturn event,
+    Emitter<ReturnsState> emit,
+  ) async {
+    final matches = state.returns.where((item) => item.id == event.returnId);
+    if (matches.isEmpty ||
+        !matches.first.canCancel ||
+        state.cancelingReturnIds.contains(event.returnId)) {
+      return;
+    }
+
+    emit(
+      state.copyWith(
+        cancelingReturnIds: {...state.cancelingReturnIds, event.returnId},
+      ),
+    );
+    try {
+      final updated = await repository.cancelReturn(event.returnId);
+      emit(
+        state.copyWith(
+          returns: [
+            for (final item in state.returns)
+              if (item.id == updated.id) updated else item,
+          ],
+          cancelingReturnIds: {...state.cancelingReturnIds}
+            ..remove(event.returnId),
+        ),
+      );
+      add(LoadReturns(statusFilter: state.statusFilter));
+    } catch (error) {
+      emit(
+        state.copyWith(
+          cancelingReturnIds: {...state.cancelingReturnIds}
+            ..remove(event.returnId),
+          errorMessage: ErrorMapper.getUserMessage(
+            error,
+            context: 'canceling return',
+          ),
+        ),
+      );
+    }
   }
 }

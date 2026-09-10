@@ -443,6 +443,7 @@
   "accountReturnSelectItem": "Seleccionar artículo",
   "accountReturnNoReturnableItems": "Sin artículos retornables",
   "accountReturnNoReturnableItemsDescription": "Este pedido no tiene artículos aptos para devolución o cancelación.",
+  "accountReturnViewAction": "Ver",
   "accountReturnCancelAction": "Cancelar solicitud",
   "accountReturnCloseAction": "Marcar como resuelta",
   "accountReturnReopenAction": "Reabrir solicitud",

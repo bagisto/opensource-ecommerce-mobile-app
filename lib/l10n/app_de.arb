@@ -443,6 +443,7 @@
   "accountReturnSelectItem": "Artikel auswählen",
   "accountReturnNoReturnableItems": "Keine rückgabefähigen Artikel",
   "accountReturnNoReturnableItemsDescription": "Diese Bestellung enthält keine Artikel, die zurückgegeben oder storniert werden können.",
+  "accountReturnViewAction": "Ansehen",
   "accountReturnCancelAction": "Anfrage stornieren",
   "accountReturnCloseAction": "Als gelöst markieren",
   "accountReturnReopenAction": "Anfrage erneut öffnen",

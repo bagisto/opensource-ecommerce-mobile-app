@@ -1174,6 +1174,9 @@ class AppLocalizationsNl extends AppLocalizations {
       'Deze bestelling bevat geen artikelen die in aanmerking komen voor retour of annulering.';
 
   @override
+  String get accountReturnViewAction => 'Bekijken';
+
+  @override
   String get accountReturnCancelAction => 'Aanvraag annuleren';
 
   @override

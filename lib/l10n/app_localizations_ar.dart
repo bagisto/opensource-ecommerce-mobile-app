@@ -1154,6 +1154,9 @@ class AppLocalizationsAr extends AppLocalizations {
       'لا يحتوي هذا الطلب على عناصر مؤهلة للإرجاع أو الإلغاء.';
 
   @override
+  String get accountReturnViewAction => 'عرض';
+
+  @override
   String get accountReturnCancelAction => 'إلغاء الطلب';
 
   @override

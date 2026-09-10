@@ -27,13 +27,13 @@ class ReturnDetailPage extends StatelessWidget {
   const ReturnDetailPage({super.key, required this.returnId});
 
   /// Navigate to this page from any context.
-  static void navigate(
+  static Future<void> navigate(
     BuildContext context, {
     required int returnId,
     required AccountRepository repository,
-  }) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
+  }) async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
         builder: (_) => BlocProvider(
           create: (_) =>
               ReturnDetailBloc(repository: repository)

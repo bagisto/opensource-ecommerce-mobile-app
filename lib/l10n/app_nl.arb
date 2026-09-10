@@ -443,6 +443,7 @@
   "accountReturnSelectItem": "Selecteer artikel",
   "accountReturnNoReturnableItems": "Geen retourneerbare artikelen",
   "accountReturnNoReturnableItemsDescription": "Deze bestelling bevat geen artikelen die in aanmerking komen voor retour of annulering.",
+  "accountReturnViewAction": "Bekijken",
   "accountReturnCancelAction": "Aanvraag annuleren",
   "accountReturnCloseAction": "Markeren als opgelost",
   "accountReturnReopenAction": "Aanvraag heropenen",

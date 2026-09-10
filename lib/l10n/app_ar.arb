@@ -477,6 +477,7 @@
   "accountReturnSelectItem": "اختر عنصرًا",
   "accountReturnNoReturnableItems": "لا توجد عناصر قابلة للإرجاع",
   "accountReturnNoReturnableItemsDescription": "لا يحتوي هذا الطلب على عناصر مؤهلة للإرجاع أو الإلغاء.",
+  "accountReturnViewAction": "عرض",
   "accountReturnCancelAction": "إلغاء الطلب",
   "accountReturnCloseAction": "وضع علامة كمحلول",
   "accountReturnReopenAction": "إعادة فتح الطلب",

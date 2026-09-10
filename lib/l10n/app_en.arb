@@ -503,6 +503,7 @@
   "accountReturnSelectItem": "Select Item",
   "accountReturnNoReturnableItems": "No Returnable Items",
   "accountReturnNoReturnableItemsDescription": "This order has no items eligible for return or cancellation.",
+  "accountReturnViewAction": "View",
   "accountReturnCancelAction": "Cancel Request",
   "accountReturnCloseAction": "Mark as Solved",
   "accountReturnReopenAction": "Reopen Request",

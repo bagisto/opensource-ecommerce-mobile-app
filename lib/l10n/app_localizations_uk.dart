@@ -1172,6 +1172,9 @@ class AppLocalizationsUk extends AppLocalizations {
       'У цьому замовленні немає товарів, доступних для повернення чи скасування.';
 
   @override
+  String get accountReturnViewAction => 'Переглянути';
+
+  @override
   String get accountReturnCancelAction => 'Скасувати запит';
 
   @override

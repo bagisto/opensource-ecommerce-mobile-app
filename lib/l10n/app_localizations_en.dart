@@ -1162,6 +1162,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'This order has no items eligible for return or cancellation.';
 
   @override
+  String get accountReturnViewAction => 'View';
+
+  @override
   String get accountReturnCancelAction => 'Cancel Request';
 
   @override

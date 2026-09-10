@@ -348,6 +348,7 @@
   "accountReturnSelectItem": "Выберите товар",
   "accountReturnNoReturnableItems": "Нет товаров для возврата",
   "accountReturnNoReturnableItemsDescription": "В этом заказе нет товаров, доступных для возврата или отмены.",
+  "accountReturnViewAction": "Просмотр",
   "accountReturnCancelAction": "Отменить запрос",
   "accountReturnCloseAction": "Отметить как решённый",
   "accountReturnReopenAction": "Открыть запрос заново",

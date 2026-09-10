@@ -1171,6 +1171,9 @@ class AppLocalizationsTr extends AppLocalizations {
       'Bu siparişte iade veya iptal için uygun ürün bulunmuyor.';
 
   @override
+  String get accountReturnViewAction => 'Görüntüle';
+
+  @override
   String get accountReturnCancelAction => 'Talebi iptal et';
 
   @override

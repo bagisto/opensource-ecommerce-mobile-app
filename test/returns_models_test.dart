@@ -64,14 +64,47 @@ void main() {
       expect(result.images.single.url, 'https://x/a.jpg');
     });
 
-    test('terminal statuses disable cancel', () {
+    test('recognizes completed and rejected display statuses', () {
       for (final status in ['Canceled', 'Declined', 'Solved', 'Closed']) {
         final result = CustomerReturn.fromJson({
           '_id': 1,
           'statusTitle': status,
         });
         expect(result.isTerminal, true, reason: status);
-        expect(result.canCancel, false, reason: status);
+      }
+    });
+
+    test('solved and declined returns can still be canceled', () {
+      for (final status in [
+        (id: 6, title: 'Solved'),
+        (id: 7, title: 'Request Declined'),
+      ]) {
+        final result = CustomerReturn.fromJson({
+          '_id': 1,
+          'statusId': status.id,
+          'statusTitle': status.title,
+          'canReopen': status.id == 7,
+        });
+        expect(result.canCancel, true, reason: status.title);
+      }
+    });
+
+    test('canceled status ID disables cancel even with a custom label', () {
+      final result = CustomerReturn.fromJson({
+        '_id': 1,
+        'statusId': 9,
+        'statusTitle': 'Custom canceled label',
+      });
+      expect(result.canCancel, false);
+    });
+
+    test('canceled labels disable cancel when the status ID is absent', () {
+      for (final title in ['Canceled', 'Cancelled', 'Request Canceled']) {
+        final result = CustomerReturn.fromJson({
+          '_id': 1,
+          'statusTitle': title,
+        });
+        expect(result.canCancel, false, reason: title);
       }
     });
   });

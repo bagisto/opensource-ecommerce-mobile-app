@@ -1185,6 +1185,9 @@ class AppLocalizationsEs extends AppLocalizations {
       'Este pedido no tiene artículos aptos para devolución o cancelación.';
 
   @override
+  String get accountReturnViewAction => 'Ver';
+
+  @override
   String get accountReturnCancelAction => 'Cancelar solicitud';
 
   @override

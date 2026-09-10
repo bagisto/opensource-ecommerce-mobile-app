@@ -443,6 +443,7 @@
   "accountReturnSelectItem": "Sélectionner un article",
   "accountReturnNoReturnableItems": "Aucun article retournable",
   "accountReturnNoReturnableItemsDescription": "Cette commande ne contient aucun article éligible au retour ou à l'annulation.",
+  "accountReturnViewAction": "Voir",
   "accountReturnCancelAction": "Annuler la demande",
   "accountReturnCloseAction": "Marquer comme résolu",
   "accountReturnReopenAction": "Rouvrir la demande",

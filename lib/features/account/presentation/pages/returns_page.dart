@@ -21,6 +21,16 @@ import 'return_detail_page.dart';
 class ReturnsPage extends StatelessWidget {
   const ReturnsPage({super.key});
 
+  Future<void> _createReturn(BuildContext context) async {
+    final created = await CreateReturnPage.navigate(
+      context,
+      repository: context.read<AccountRepository>(),
+    );
+    if (created == true && context.mounted) {
+      context.read<ReturnsBloc>().add(const LoadReturns());
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -48,10 +58,7 @@ class ReturnsPage extends StatelessWidget {
           Builder(
             builder: (innerContext) => IconButton(
               tooltip: l10n.accountReturnRequest,
-              onPressed: () => CreateReturnPage.navigate(
-                innerContext,
-                repository: innerContext.read<AccountRepository>(),
-              ),
+              onPressed: () => _createReturn(innerContext),
               icon: const Icon(Icons.add, color: AppColors.primary500),
             ),
           ),
@@ -92,6 +99,7 @@ class ReturnsPage extends StatelessWidget {
             totalCount: state.totalCount,
             hasNextPage: state.hasNextPage,
             isLoadingMore: state.isLoadingMore,
+            cancelingReturnIds: state.cancelingReturnIds,
           );
         },
       ),
@@ -138,10 +146,7 @@ class ReturnsPage extends StatelessWidget {
               builder: (innerContext) => SizedBox(
                 height: 48,
                 child: ElevatedButton(
-                  onPressed: () => CreateReturnPage.navigate(
-                    innerContext,
-                    repository: innerContext.read<AccountRepository>(),
-                  ),
+                  onPressed: () => _createReturn(innerContext),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary500,
                     foregroundColor: AppColors.white,
@@ -223,12 +228,14 @@ class _ReturnList extends StatefulWidget {
   final int totalCount;
   final bool hasNextPage;
   final bool isLoadingMore;
+  final Set<int> cancelingReturnIds;
 
   const _ReturnList({
     required this.returns,
     required this.totalCount,
     required this.hasNextPage,
     required this.isLoadingMore,
+    required this.cancelingReturnIds,
   });
 
   @override
@@ -260,6 +267,40 @@ class _ReturnListState extends State<_ReturnList> {
     }
   }
 
+  Future<void> _openReturn(CustomerReturn customerReturn) async {
+    final returnId = customerReturn.id;
+    if (returnId == null || widget.cancelingReturnIds.contains(returnId)) return;
+    await ReturnDetailPage.navigate(
+      context,
+      returnId: returnId,
+      repository: context.read<AccountRepository>(),
+    );
+    if (mounted) context.read<ReturnsBloc>().add(const LoadReturns());
+  }
+
+  Future<void> _confirmCancel(CustomerReturn customerReturn) async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        content: Text(l10n.accountReturnCancelConfirmation),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.cartCancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.accountOk),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted && customerReturn.id != null) {
+      context.read<ReturnsBloc>().add(CancelListedReturn(customerReturn.id!));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
@@ -282,20 +323,19 @@ class _ReturnListState extends State<_ReturnList> {
         }
 
         final customerReturn = widget.returns[index - 1];
+        final canceling = widget.cancelingReturnIds.contains(customerReturn.id);
         return Padding(
           padding: const EdgeInsets.only(bottom: 4),
           child: GestureDetector(
-            onTap: () {
-              if (customerReturn.id != null) {
-                final repo = RepositoryProvider.of<AccountRepository>(context);
-                ReturnDetailPage.navigate(
-                  context,
-                  returnId: customerReturn.id!,
-                  repository: repo,
-                );
-              }
-            },
-            child: _ReturnCard(customerReturn: customerReturn),
+            onTap: canceling ? null : () => _openReturn(customerReturn),
+            child: _ReturnCard(
+              customerReturn: customerReturn,
+              canceling: canceling,
+              onView: customerReturn.id == null || canceling
+                  ? null
+                  : () => _openReturn(customerReturn),
+              onCancel: canceling ? null : () => _confirmCancel(customerReturn),
+            ),
           ),
         );
       },
@@ -348,7 +388,15 @@ class _CountHeader extends StatelessWidget {
 
 class _ReturnCard extends StatelessWidget {
   final CustomerReturn customerReturn;
-  const _ReturnCard({required this.customerReturn});
+  final bool canceling;
+  final VoidCallback? onView;
+  final VoidCallback? onCancel;
+  const _ReturnCard({
+    required this.customerReturn,
+    required this.canceling,
+    required this.onView,
+    required this.onCancel,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -419,6 +467,35 @@ class _ReturnCard extends StatelessWidget {
               fontSize: 14,
               color: isDark ? AppColors.neutral400 : const Color(0xFF525252),
             ),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            children: [
+              TextButton.icon(
+                onPressed: onView,
+                icon: const Icon(Icons.visibility_outlined, size: 18),
+                label: Text(l10n.accountReturnViewAction),
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.primary500,
+                ),
+              ),
+              if (customerReturn.canCancel || canceling)
+                TextButton.icon(
+                  onPressed: onCancel,
+                  icon: canceling
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.cancel_outlined, size: 18),
+                  label: Text(l10n.accountReturnCancelAction),
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.primary500,
+                  ),
+                ),
+            ],
           ),
         ],
       ),
