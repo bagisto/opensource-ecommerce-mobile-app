@@ -43,7 +43,6 @@ void main() {
         'postcode': 'NW16XE',
         'phone': '+441234567890',
         'defaultAddress': true,
-        'useForShipping': false,
         'addressType': 'billing',
         'createdAt': '2026-05-25T10:00:00Z',
       });

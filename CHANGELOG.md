@@ -1,5 +1,16 @@
 #### This changelog consists the bug & security fixes and new features being included in the releases listed below
 
+# CHANGELOG for v2.4.9
+
+## **v2.4.9 (10th of September, 2026)** - *Release*
+
+* [Enhancement] Added "View" and "Cancel Request" actions to the returns list, with cancellation confirmation, loading feedback, and translated action labels.
+* [Fixed] Fixed loading returnable items and submitting or cancelling return requests by aligning GraphQL queries and mutations with the Bagisto API.
+* [Fixed] Fixed the returns list not refreshing after creating a request or returning from the detail screen after cancelling, reopening, or marking a request as solved.
+* [Fixed] Fixed duplicate returns list screens after submitting a request, so Back returns directly to the account page.
+* [Fixed] Allowed cancellation of solved returns in line with the API and storefront, while preventing cancellation of requests that are already cancelled.
+* [Improvement] Prevented duplicate cancellation submissions and kept the returns list available when cancellation fails, with an error message and the option to retry.
+
 # CHANGELOG for v2.4.8
 
 ## **v2.4.8 (4th of September, 2026)** - *Release*
