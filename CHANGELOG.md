@@ -7,6 +7,7 @@
 * [Enhancement] Added "View" and "Cancel Request" actions to the returns list, with cancellation confirmation, loading feedback, and translated action labels.
 * [Fixed] Fixed loading returnable items and submitting or cancelling return requests by aligning GraphQL queries and mutations with the Bagisto API.
 * [Fixed] Fixed the returns list not refreshing after creating a request or returning from the detail screen after cancelling, reopening, or marking a request as solved.
+* [Fixed] Prevented outdated responses from skipping return list items or replacing refreshed data when loading more requests overlaps with a refresh.
 * [Fixed] Fixed duplicate returns list screens after submitting a request, so Back returns directly to the account page.
 * [Fixed] Allowed cancellation of solved returns in line with the API and storefront, while preventing cancellation of requests that are already cancelled.
 * [Improvement] Prevented duplicate cancellation submissions and kept the returns list available when cancellation fails, with an error message and the option to retry.

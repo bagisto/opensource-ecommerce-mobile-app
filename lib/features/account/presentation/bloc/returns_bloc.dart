@@ -115,6 +115,7 @@ class ReturnsState extends Equatable {
 
 class ReturnsBloc extends Bloc<ReturnsEvent, ReturnsState> {
   final AccountRepository repository;
+  int _loadGeneration = 0;
 
   ReturnsBloc({required this.repository}) : super(const ReturnsState()) {
     on<LoadReturns>(_onLoad);
@@ -124,10 +125,13 @@ class ReturnsBloc extends Bloc<ReturnsEvent, ReturnsState> {
   }
 
   Future<void> _onLoad(LoadReturns event, Emitter<ReturnsState> emit) async {
+    // Refresh invalidates responses from earlier loads and pagination requests.
+    final generation = ++_loadGeneration;
     emit(
       state.copyWith(
         status: ReturnsStatus.loading,
         statusFilter: event.statusFilter,
+        isLoadingMore: false,
       ),
     );
 
@@ -136,6 +140,7 @@ class ReturnsBloc extends Bloc<ReturnsEvent, ReturnsState> {
         first: 20,
         status: event.statusFilter,
       );
+      if (generation != _loadGeneration || emit.isDone) return;
 
       emit(
         state.copyWith(
@@ -147,6 +152,7 @@ class ReturnsBloc extends Bloc<ReturnsEvent, ReturnsState> {
         ),
       );
     } catch (e) {
+      if (generation != _loadGeneration || emit.isDone) return;
       debugPrint('❌ ReturnsBloc._onLoad error: $e');
       emit(
         state.copyWith(
@@ -164,7 +170,12 @@ class ReturnsBloc extends Bloc<ReturnsEvent, ReturnsState> {
     LoadMoreReturns event,
     Emitter<ReturnsState> emit,
   ) async {
-    if (!state.hasNextPage || state.isLoadingMore) return;
+    if (state.status == ReturnsStatus.loading ||
+        !state.hasNextPage ||
+        state.isLoadingMore) {
+      return;
+    }
+    final generation = _loadGeneration;
 
     emit(state.copyWith(isLoadingMore: true));
 
@@ -174,6 +185,7 @@ class ReturnsBloc extends Bloc<ReturnsEvent, ReturnsState> {
         after: state.endCursor,
         status: state.statusFilter,
       );
+      if (generation != _loadGeneration || emit.isDone) return;
 
       emit(
         state.copyWith(
@@ -186,6 +198,7 @@ class ReturnsBloc extends Bloc<ReturnsEvent, ReturnsState> {
         ),
       );
     } catch (e) {
+      if (generation != _loadGeneration || emit.isDone) return;
       debugPrint('❌ ReturnsBloc._onLoadMore error: $e');
       emit(
         state.copyWith(
