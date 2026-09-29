@@ -462,7 +462,7 @@ class ProductModel {
 
     return ProductModel(
       id: json['id']?.toString() ?? '',
-      numericId: json['_id'] as int?,
+      numericId: _parseInt(json['_id']),
       qty: _parseInt(json['qty']),
       sku: json['sku'] as String?,
       type: json['type'] as String?,
@@ -1344,7 +1344,7 @@ class ProductVariant {
 
     return ProductVariant(
       id: json['id']?.toString() ?? '',
-      numericId: json['_id'] as int?,
+      numericId: ProductModel._parseInt(json['_id']),
       sku: json['sku'] as String?,
       name: json['name'] as String?,
       price: ProductModel._parseDouble(json['price']),
@@ -1476,7 +1476,7 @@ class ProductImage {
   factory ProductImage.fromJson(Map<String, dynamic> json) {
     return ProductImage(
       id: json['id']?.toString() ?? '',
-      numericId: json['_id'] as int?,
+      numericId: ProductModel._parseInt(json['_id']),
       type: json['type'] as String?,
       path: json['path'] as String? ?? '',
       publicPath: json['publicPath'] as String?,
@@ -1504,7 +1504,7 @@ class SuperAttribute {
   factory SuperAttribute.fromJson(Map<String, dynamic> json) {
     return SuperAttribute(
       id: json['id']?.toString() ?? '',
-      numericId: json['_id'] as int?,
+      numericId: ProductModel._parseInt(json['_id']),
       code: json['code'] as String?,
       adminName: json['adminName'] as String?,
       options: _parseOptions(json['options']),
@@ -1547,7 +1547,7 @@ class AttributeOption {
     }
     return AttributeOption(
       id: json['id']?.toString() ?? '',
-      numericId: json['_id'] as int?,
+      numericId: ProductModel._parseInt(json['_id']),
       adminName: json['adminName'] as String?,
       swatchValue: json['swatchValue'] as String?,
       swatchValueUrl: json['swatchValueUrl'] as String?,
@@ -1718,7 +1718,7 @@ class DownloadableLink {
 
     return DownloadableLink(
       id: json['id']?.toString() ?? '',
-      numericId: json['_id'] as int?,
+      numericId: ProductModel._parseInt(json['_id']),
       type: json['type'] as String?,
       price: ProductModel._parseDouble(json['price']),
       formattedPrice: json['formattedPrice'] as String?,
@@ -1764,7 +1764,7 @@ class DownloadableSample {
 
     return DownloadableSample(
       id: json['id']?.toString() ?? '',
-      numericId: json['_id'] as int?,
+      numericId: ProductModel._parseInt(json['_id']),
       type: json['type'] as String?,
       fileUrl: json['fileUrl'] as String?,
       sortOrder: json['sortOrder'] as int?,

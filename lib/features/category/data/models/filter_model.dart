@@ -83,13 +83,13 @@ class FilterAttribute {
 
     return FilterAttribute(
       id: json['id']?.toString() ?? '',
-      numericId: json['_id'] as int?,
+      numericId: _parseInt(json['_id']),
       code: json['code'] as String? ?? '',
       adminName: json['adminName'] as String? ?? '',
       type: json['type'] as String?,
       swatchType: json['swatchType'] as String?,
       validation: json['validation'] as String?,
-      position: json['position'] as int?,
+      position: _parseInt(json['position']),
       isFilterable: json['isFilterable'] == true,
       isConfigurable: json['isConfigurable'] == true,
       maxPrice: _parseDouble(json['maxPrice']),
@@ -167,7 +167,7 @@ class FilterOption {
 
     return FilterOption(
       id: json['id']?.toString() ?? '',
-      numericId: json['_id'] as int?,
+      numericId: _parseInt(json['_id']),
       adminName: json['adminName'] as String? ?? '',
       label: label,
       sortOrder: json['sortOrder'] as int?,
@@ -249,3 +249,10 @@ const List<SortOption> sortByFields = [
     reverse: true,
   ),
 ];
+
+int? _parseInt(dynamic value) {
+  if (value == null) return null;
+  if (value is int) return value;
+  if (value is num) return value.toInt();
+  return int.tryParse(value.toString());
+}

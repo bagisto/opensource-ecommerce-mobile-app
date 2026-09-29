@@ -58,8 +58,8 @@ class CategoryModel {
 
     return CategoryModel(
       id: json['id']?.toString() ?? '',
-      numericId: json['_id'] as int?,
-      position: json['position'] as int?,
+      numericId: _parseInt(json['_id']),
+      position: _parseInt(json['position']),
       logoPath: json['logoPath'] as String?,
       logoUrl: json['logoUrl'] as String?,
       bannerUrl: json['bannerUrl'] as String?,
@@ -76,9 +76,9 @@ class CategoryModel {
   factory CategoryModel.fromHomeCategoryJson(Map<String, dynamic> json) {
     return CategoryModel(
       id: json['id']?.toString() ?? '',
-      numericId: json['_id'] as int?,
+      numericId: _parseInt(json['_id']),
       logoUrl: json['logoUrl'] as String?,
-      position: json['position'] as int?,
+      position: _parseInt(json['position']),
       status: json['status']?.toString(),
       translation: json['translation'] != null
           ? CategoryTranslation.fromJson(
@@ -117,3 +117,10 @@ class CategoryTranslation {
   }
 }
 
+
+int? _parseInt(dynamic value) {
+  if (value == null) return null;
+  if (value is int) return value;
+  if (value is num) return value.toInt();
+  return int.tryParse(value.toString());
+}

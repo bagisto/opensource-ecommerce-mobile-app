@@ -98,7 +98,7 @@ class HomeCategory extends Equatable {
     final translation = json['translation'] as Map<String, dynamic>? ?? {};
     return HomeCategory(
       id: json['id']?.toString() ?? '',
-      numericId: json['_id'] as int?,
+      numericId: _parseInt(json['_id']),
       name: translation['name'] as String? ?? '',
       slug: translation['slug'] as String? ?? '',
       logoUrl: json['logoUrl'] as String?,
@@ -325,4 +325,11 @@ double _toDouble(dynamic value) {
   if (value is num) return value.toDouble();
   if (value is String) return double.tryParse(value) ?? 0;
   return 0;
+}
+
+int? _parseInt(dynamic value) {
+  if (value == null) return null;
+  if (value is int) return value;
+  if (value is num) return value.toInt();
+  return int.tryParse(value.toString());
 }
