@@ -25,6 +25,16 @@ class SelectCategory extends CategoryEvent {
   List<Object?> get props => [category.id];
 }
 
+/// Select a top-level category by id, loading the category list first if
+/// needed. Used when another tab (e.g. Home) opens the Categories tab.
+class ShowCategory extends CategoryEvent {
+  final int categoryId;
+  const ShowCategory(this.categoryId);
+
+  @override
+  List<Object?> get props => [categoryId];
+}
+
 class LoadSubCategories extends CategoryEvent {
   final int parentId;
   const LoadSubCategories(this.parentId);
@@ -118,6 +128,7 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
   CategoryBloc({required this.repository}) : super(const CategoryState()) {
     on<LoadCategories>(_onLoadCategories);
     on<SelectCategory>(_onSelectCategory);
+    on<ShowCategory>(_onShowCategory);
     on<LoadSubCategories>(_onLoadSubCategories);
     on<LoadCategoryProducts>(_onLoadCategoryProducts);
     on<LoadMoreProducts>(_onLoadMoreProducts);
@@ -243,6 +254,23 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
         ),
       );
     }
+  }
+
+  Future<void> _onShowCategory(
+    ShowCategory event,
+    Emitter<CategoryState> emit,
+  ) async {
+    if (state.categories.isEmpty) {
+      await _onLoadCategories(LoadCategories(), emit);
+    }
+    final match = state.categories
+        .where((c) => c.numericId == event.categoryId)
+        .firstOrNull;
+    if (match == null ||
+        match.numericId == state.selectedCategory?.numericId) {
+      return;
+    }
+    await _onSelectCategory(SelectCategory(match), emit);
   }
 
   Future<void> _onLoadSubCategories(

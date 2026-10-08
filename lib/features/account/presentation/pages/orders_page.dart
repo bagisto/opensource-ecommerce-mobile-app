@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/bloc_refresh.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../data/models/account_models.dart';
 import '../../data/repository/account_repository.dart';
@@ -53,8 +54,11 @@ class OrdersPage extends StatelessWidget {
       ),
       body: BlocConsumer<OrdersBloc, OrdersState>(
         listener: (context, state) {
+          // A failed refresh keeps the old list on screen, so surface its
+          // error as a snackbar too.
           if (state.errorMessage != null &&
-              state.status != OrdersStatus.error) {
+              (state.status != OrdersStatus.error ||
+                  state.orders.isNotEmpty)) {
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
               ..showSnackBar(
@@ -73,22 +77,49 @@ class OrdersPage extends StatelessWidget {
             return const Center(child: CircularProgressIndicator());
           }
 
+          final Widget content;
           if (state.status == OrdersStatus.error && state.orders.isEmpty) {
-            return _buildErrorState(context, state.errorMessage);
+            content = _fillViewport(
+              _buildErrorState(context, state.errorMessage),
+            );
+          } else if (state.orders.isEmpty) {
+            content = _fillViewport(_buildEmptyState(context));
+          } else {
+            content = _OrderList(
+              orders: state.orders,
+              totalCount: state.totalCount,
+              hasNextPage: state.hasNextPage,
+              isLoadingMore: state.isLoadingMore,
+            );
           }
 
-          if (state.orders.isEmpty) {
-            return _buildEmptyState(context);
-          }
-
-          return _OrderList(
-            orders: state.orders,
-            totalCount: state.totalCount,
-            hasNextPage: state.hasNextPage,
-            isLoadingMore: state.isLoadingMore,
+          return RefreshIndicator(
+            color: AppColors.primary500,
+            onRefresh: () => _refresh(context),
+            child: content,
           );
         },
       ),
+    );
+  }
+
+  /// Pull-to-refresh: reloads the first page with the active status filter
+  /// and resolves once the reload finishes.
+  Future<void> _refresh(BuildContext context) {
+    final bloc = context.read<OrdersBloc>();
+    return refreshBloc<OrdersState>(
+      bloc,
+      () => bloc.add(LoadOrders(statusFilter: bloc.state.statusFilter)),
+      (s) => s.status == OrdersStatus.loaded || s.status == OrdersStatus.error,
+    );
+  }
+
+  /// Makes a non-list view pullable by placing it in an always-scrollable
+  /// viewport that fills the body.
+  Widget _fillViewport(Widget child) {
+    return CustomScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      slivers: [SliverFillRemaining(hasScrollBody: false, child: child)],
     );
   }
 
@@ -229,6 +260,7 @@ class _OrderListState extends State<_OrderList> {
   Widget build(BuildContext context) {
     return ListView.builder(
       controller: _scrollController,
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 20),
       // +1 for header, +1 for loading indicator if loading more
       itemCount: widget.orders.length + 1 + (widget.isLoadingMore ? 1 : 0),

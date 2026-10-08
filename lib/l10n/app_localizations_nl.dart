@@ -1894,4 +1894,101 @@ class AppLocalizationsNl extends AppLocalizations {
   @override
   String get accountReviewVideoLoadFailed =>
       'Deze video kan niet worden afgespeeld';
+
+  @override
+  String accountShippedCount(int count) {
+    return '$count verzonden';
+  }
+
+  @override
+  String get accountReturnNoEligibleOrders =>
+      'Er komen momenteel geen bestellingen in aanmerking voor retour';
+
+  @override
+  String get accountRequestReturn => 'Retour aanvragen';
+
+  @override
+  String get accountRefundBreakdown => 'Specificatie terugbetaling';
+
+  @override
+  String get accountSubtotalRefunded => 'Terugbetaald subtotaal';
+
+  @override
+  String get accountShippingRefunded => 'Terugbetaalde verzendkosten';
+
+  @override
+  String get accountTaxRefunded => 'Terugbetaalde belasting';
+
+  @override
+  String get accountDiscountRefunded => 'Terugbetaalde korting';
+
+  @override
+  String get accountRefunded => 'Terugbetaald';
+
+  @override
+  String get accountCanceledQty => 'Geannuleerd';
+
+  @override
+  String get productBookingCancellation => 'Annulering';
+
+  @override
+  String get productBookingCancellationNotAllowed =>
+      'Annuleren niet toegestaan';
+
+  @override
+  String get accountBookingItemsNotCanceled =>
+      'Boekingsartikelen in deze bestelling worden niet geannuleerd.';
+
+  @override
+  String cartQtyValue(int count) {
+    return 'Aantal: $count';
+  }
+
+  @override
+  String get checkoutAccountSuspended =>
+      'Je account is opgeschort. Je kunt de winkel bekijken, maar geen bestellingen plaatsen.';
+
+  @override
+  String get accountGenderRequiredLabel => 'Geslacht *';
+
+  @override
+  String get accountGenderRequired => 'Geslacht is verplicht';
+
+  @override
+  String get accountPhoneRequiredLabel => 'Telefoon *';
+
+  @override
+  String get cartGuestCheckoutNotAllowed =>
+      'Log in om deze artikelen af te rekenen.';
+
+  @override
+  String get accountEuWithdraw => 'Herroepen van de overeenkomst';
+
+  @override
+  String get accountEuWithdrawReason => 'Reden (optioneel)';
+
+  @override
+  String get accountEuWithdrawSubmit => 'Herroeping versturen';
+
+  @override
+  String get accountEuWithdrawSubmitted =>
+      'Je herroepingsverzoek is ontvangen.';
+
+  @override
+  String accountEuWithdrawStatus(String status) {
+    return 'Herroepingsverzoek: $status';
+  }
+
+  @override
+  String get accountEuWithdrawGuestDescription =>
+      'Voer het bestelnummer en het e-mailadres van de bestelling in om de overeenkomst te herroepen.';
+
+  @override
+  String get accountEuWithdrawOrderNumber => 'Bestelnummer *';
+
+  @override
+  String get accountEuWithdrawEmail => 'E-mail van de bestelling *';
+
+  @override
+  String get accountEuWithdrawFieldRequired => 'Dit veld is verplicht';
 }

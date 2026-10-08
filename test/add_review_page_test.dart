@@ -6,6 +6,8 @@ import 'package:bagisto_flutter/features/account/data/repository/account_reposit
 import 'package:bagisto_flutter/features/account/presentation/bloc/add_review_bloc.dart';
 import 'package:bagisto_flutter/features/account/presentation/pages/add_review_page.dart';
 import 'package:bagisto_flutter/features/account/presentation/pages/review_video_player_page.dart';
+import 'package:bagisto_flutter/features/auth/data/repository/auth_repository.dart';
+import 'package:bagisto_flutter/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:bagisto_flutter/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -200,8 +202,23 @@ Widget _buildTestApp({
   return MaterialApp(
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
-    home: BlocProvider(
-      create: (_) => AddReviewBloc(repository: accountRepository),
+    // The page reads AuthBloc to prefill the reviewer's name.
+    home: MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) => AuthBloc(
+            repository: AuthRepository(
+              client: GraphQLClient(
+                link: HttpLink('https://example.com/graphql'),
+                cache: GraphQLCache(store: InMemoryStore()),
+              ),
+            ),
+          ),
+        ),
+        BlocProvider(
+          create: (_) => AddReviewBloc(repository: accountRepository),
+        ),
+      ],
       child: AddReviewPage(
         productId: 10,
         productName: 'Arctic Frost Winter Accessories Bundle',

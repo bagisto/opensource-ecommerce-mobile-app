@@ -442,9 +442,11 @@ void main() {
         repository.lastCreatedCustomerAddressInput?['defaultAddress'],
         isTrue,
       );
+      // createAddUpdateCustomerAddressInput has no useForShipping field;
+      // sending it fails server validation (QA #40).
       expect(
-        repository.lastCreatedCustomerAddressInput?['useForShipping'],
-        isTrue,
+        repository.lastCreatedCustomerAddressInput,
+        isNot(contains('useForShipping')),
       );
       await bloc.close();
     },
@@ -510,8 +512,8 @@ void main() {
         isTrue,
       );
       expect(
-        repository.createdCustomerAddressInputs[0]['useForShipping'],
-        isFalse,
+        repository.createdCustomerAddressInputs[0],
+        isNot(contains('useForShipping')),
       );
       expect(
         repository.createdCustomerAddressInputs[1]['firstName'],
@@ -522,8 +524,8 @@ void main() {
         isFalse,
       );
       expect(
-        repository.createdCustomerAddressInputs[1]['useForShipping'],
-        isTrue,
+        repository.createdCustomerAddressInputs[1],
+        isNot(contains('useForShipping')),
       );
       expect(repository.createdCustomerAddressInputs[1]['city'], 'Delhi');
       await bloc.close();

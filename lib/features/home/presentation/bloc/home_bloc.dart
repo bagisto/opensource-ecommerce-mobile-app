@@ -143,14 +143,20 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   }
 
   Future<void> _doLoad(Emitter<HomeState> emit) async {
-    // 1) Fetch theme customizations + categories in parallel
-    final results = await Future.wait([
-      _repository.fetchThemeCustomizations(),
-      _repository.fetchHomeCategories(),
-    ]);
-
-    final customizations = results[0] as List<ThemeCustomization>;
-    final categories = results[1] as List<HomeCategory>;
+    // 1) Fetch theme customizations, then the categories the carousel
+    //    is configured for (its `parent_id` and `limit` filters).
+    final customizations = await _repository.fetchThemeCustomizations();
+    final carouselFilters =
+        customizations
+                .where((tc) => tc.type == 'category_carousel')
+                .firstOrNull
+                ?.options['filters']
+            as Map<String, dynamic>? ??
+        const {};
+    final categories = await _repository.fetchHomeCategories(
+      parentId: int.tryParse('${carouselFilters['parent_id']}') ?? 1,
+      limit: int.tryParse('${carouselFilters['limit']}'),
+    );
 
     // 2) Fetch all product_carousel sections in parallel
     final productCarousels = customizations

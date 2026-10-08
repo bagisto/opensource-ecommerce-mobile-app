@@ -66,6 +66,27 @@ class ReturnsQueries {
     }
   ''';
 
+  /// Orders that still have items eligible for a return. Plain list, no
+  /// pagination; `incrementId` narrows it to one order.
+  static const String getReturnableOrders = r'''
+    query returnableOrders($incrementId: String) {
+      returnableOrders(incrementId: $incrementId) {
+        id
+        _id
+        incrementId
+        status
+        statusLabel
+        grandTotal
+        formattedGrandTotal
+        orderCurrencyCode
+        totalQtyOrdered
+        totalReturnedQty
+        returnableQty
+        createdAt
+      }
+    }
+  ''';
+
   /// Items from an order that are still eligible for return/cancellation.
   /// Returns the full list; this field does not accept pagination arguments.
   static const String getReturnableItems = r'''

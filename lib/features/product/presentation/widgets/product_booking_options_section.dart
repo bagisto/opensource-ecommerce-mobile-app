@@ -43,6 +43,15 @@ class ProductBookingOptionsSection extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (booking.allowCancellation == false) ...[
+                _buildEventMetaRow(
+                  context: context,
+                  icon: Icons.event_busy_outlined,
+                  label: l10n.productBookingCancellation,
+                  value: l10n.productBookingCancellationNotAllowed,
+                ),
+                const SizedBox(height: 22),
+              ],
               if (type == 'event') ...[
                 _buildEventOverview(context, booking),
                 const SizedBox(height: 24),
@@ -183,16 +192,14 @@ class ProductBookingOptionsSection extends StatelessWidget {
                   _buildSlotField(context, booking, state),
                 ],
               ] else ...[
-              if ((booking.location ?? '').isNotEmpty) ...[
-                _label(context, l10n.productBookingLocation),
-                const SizedBox(height: 6),
-                Text(
-                  booking.location!,
-                  style: TextStyle(
-                    fontFamily: 'Roboto',
-                    fontSize: 14,
-                    color: isDark ? AppColors.neutral100 : AppColors.neutral900,
-                  ),
+              if ((booking.location ?? '').trim().isNotEmpty) ...[
+                _buildEventMetaRow(
+                  context: context,
+                  icon: Icons.location_on_outlined,
+                  label: l10n.productBookingLocation,
+                  value: booking.location!.trim(),
+                  actionLabel: l10n.productBookingViewOnMap,
+                  onTap: () => _openMap(booking.location!.trim()),
                 ),
                 const SizedBox(height: 12),
               ],
@@ -203,20 +210,6 @@ class ProductBookingOptionsSection extends StatelessWidget {
                   l10n.productBookingDurationMinutes(
                     booking.activeSlot!.duration!,
                   ),
-                  style: TextStyle(
-                    fontFamily: 'Roboto',
-                    fontSize: 14,
-                    color: isDark ? AppColors.neutral200 : AppColors.neutral700,
-                  ),
-                ),
-                const SizedBox(height: 12),
-              ],
-              if ((booking.availableFrom ?? '').isNotEmpty ||
-                  (booking.availableTo ?? '').isNotEmpty) ...[
-                _label(context, l10n.productBookingAvailability),
-                const SizedBox(height: 6),
-                Text(
-                  '${_formatAvailabilityBoundary(booking.availableFrom) ?? '-'} - ${_formatAvailabilityBoundary(booking.availableTo) ?? '-'}',
                   style: TextStyle(
                     fontFamily: 'Roboto',
                     fontSize: 14,
@@ -351,8 +344,6 @@ class ProductBookingOptionsSection extends StatelessWidget {
   ) {
     final hasLocation = (booking.location ?? '').trim().isNotEmpty;
     final slotDuration = booking.activeSlot?.duration;
-    final availableFrom = _formatAvailabilityBoundary(booking.availableFrom);
-    final availableTo = _formatAvailabilityBoundary(booking.availableTo);
     final l10n = AppLocalizations.of(context)!;
 
     return Column(
@@ -379,24 +370,6 @@ class ProductBookingOptionsSection extends StatelessWidget {
           ),
           const SizedBox(height: 22),
         ],
-        if (availableFrom != null) ...[
-          _buildEventMetaRow(
-            context: context,
-            icon: Icons.calendar_today_outlined,
-            label: l10n.productBookingAvailableFrom,
-            value: availableFrom,
-            iconTopPadding: 2,
-          ),
-          const SizedBox(height: 22),
-        ],
-        if (availableTo != null)
-          _buildEventMetaRow(
-            context: context,
-            icon: Icons.calendar_today_outlined,
-            label: l10n.productBookingAvailableTo,
-            value: availableTo,
-            iconTopPadding: 2,
-          ),
       ],
     );
   }
@@ -404,8 +377,6 @@ class ProductBookingOptionsSection extends StatelessWidget {
   Widget _buildTableOverview(BuildContext context, BookingProductData booking) {
     final hasLocation = (booking.location ?? '').trim().isNotEmpty;
     final slotDuration = booking.activeSlot?.duration;
-    final availableFrom = _formatAvailabilityBoundary(booking.availableFrom);
-    final availableTo = _formatAvailabilityBoundary(booking.availableTo);
     final l10n = AppLocalizations.of(context)!;
 
     return Column(
@@ -432,24 +403,6 @@ class ProductBookingOptionsSection extends StatelessWidget {
           ),
           const SizedBox(height: 22),
         ],
-        if (availableFrom != null) ...[
-          _buildEventMetaRow(
-            context: context,
-            icon: Icons.calendar_today_outlined,
-            label: l10n.productBookingAvailableFrom,
-            value: availableFrom,
-            iconTopPadding: 2,
-          ),
-          const SizedBox(height: 22),
-        ],
-        if (availableTo != null)
-          _buildEventMetaRow(
-            context: context,
-            icon: Icons.calendar_today_outlined,
-            label: l10n.productBookingAvailableTo,
-            value: availableTo,
-            iconTopPadding: 2,
-          ),
       ],
     );
   }
@@ -660,6 +613,19 @@ class ProductBookingOptionsSection extends StatelessWidget {
     );
   }
 
+  /// First day in [bounds] that has booking slots, or null if none.
+  DateTime? _firstBookableDate(
+    BookingProductData booking,
+    _BookingDateBounds bounds,
+  ) {
+    for (var day = bounds.firstDate;
+        !day.isAfter(bounds.lastDate);
+        day = DateTime(day.year, day.month, day.day + 1)) {
+      if (booking.isBookableOn(day)) return day;
+    }
+    return null;
+  }
+
   Widget _buildDateField(
     BuildContext context,
     {required BookingProductData booking,
@@ -689,14 +655,26 @@ class ProductBookingOptionsSection extends StatelessWidget {
         final selectedDate = _parseDateOnly(value?.toString());
         final initialDate = selectedDate != null &&
                 !selectedDate.isBefore(dateBounds.firstDate) &&
-                !selectedDate.isAfter(dateBounds.lastDate)
+                !selectedDate.isAfter(dateBounds.lastDate) &&
+                booking.isBookableOn(selectedDate)
             ? selectedDate
-            : dateBounds.firstDate;
+            : _firstBookableDate(booking, dateBounds);
+        if (initialDate == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(l10n.productBookingNoDatesAvailable),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+          return;
+        }
         final picked = await showDatePicker(
           context: context,
           firstDate: dateBounds.firstDate,
           lastDate: dateBounds.lastDate,
           initialDate: initialDate,
+          // Days without booking slots are greyed out, like the web.
+          selectableDayPredicate: booking.isBookableOn,
         );
         if (picked == null) return;
         final formatted =
@@ -982,14 +960,17 @@ class ProductBookingOptionsSection extends StatelessWidget {
                           );
                         }
                       : null,
-                  onIncrease: () {
-                    context.read<ProductDetailBloc>().add(
-                      UpdateBookingTicketQuantity(
-                        ticketId: ticket.id,
-                        quantity: qty + 1,
-                      ),
-                    );
-                  },
+                  // Never request more tickets than the event offers.
+                  onIncrease: ticket.qty > 0 && qty >= ticket.qty
+                      ? null
+                      : () {
+                          context.read<ProductDetailBloc>().add(
+                            UpdateBookingTicketQuantity(
+                              ticketId: ticket.id,
+                              quantity: qty + 1,
+                            ),
+                          );
+                        },
                 ),
               ],
             ),
@@ -1022,22 +1003,6 @@ class ProductBookingOptionsSection extends StatelessWidget {
     if (parsed == null) return value;
 
     return DateFormat('d MMMM, yyyy hh:mm a').format(parsed);
-  }
-
-  String? _formatAvailabilityBoundary(String? raw) {
-    final value = raw?.trim();
-    if (value == null || value.isEmpty) return null;
-
-    final parsed = _tryParseDateTime(value);
-    if (parsed == null) return value;
-
-    final hasExplicitDate =
-        value.contains('-') || value.contains('/') || value.contains('T');
-    if (hasExplicitDate) {
-      return DateFormat('d MMM yyyy, hh:mm a').format(parsed);
-    }
-
-    return DateFormat('hh:mm a').format(parsed).toLowerCase();
   }
 
   DateTime? _tryParseDateTime(String? raw) {
@@ -1136,7 +1101,7 @@ class _BookingDateBounds {
 class _EventTicketStepper extends StatelessWidget {
   final int quantity;
   final VoidCallback? onDecrease;
-  final VoidCallback onIncrease;
+  final VoidCallback? onIncrease;
 
   const _EventTicketStepper({
     required this.quantity,

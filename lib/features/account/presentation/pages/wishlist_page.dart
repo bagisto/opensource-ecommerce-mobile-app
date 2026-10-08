@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/bloc_refresh.dart';
 import '../../../../core/widgets/app_back_button.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../product/presentation/pages/product_detail_page.dart';
@@ -95,23 +96,50 @@ class WishlistPage extends StatelessWidget {
         },
         builder: (context, state) {
           final isDark = Theme.of(context).brightness == Brightness.dark;
-          if (state.status == WishlistStatus.loading) {
+          // Only block the screen on first load; a pull-to-refresh keeps the
+          // current items visible under the refresh spinner.
+          if (state.status == WishlistStatus.loading && state.items.isEmpty) {
             return const Center(
               child: CircularProgressIndicator(color: AppColors.primary500),
             );
           }
 
+          final Widget content;
           if (state.status == WishlistStatus.error && state.items.isEmpty) {
-            return _buildErrorState(context, state, isDark);
+            content = _fillViewport(_buildErrorState(context, state, isDark));
+          } else if (state.items.isEmpty) {
+            content = _fillViewport(_buildEmptyState(context, isDark));
+          } else {
+            content = _buildWishlistContent(context, state);
           }
 
-          if (state.items.isEmpty) {
-            return _buildEmptyState(context, isDark);
-          }
-
-          return _buildWishlistContent(context, state);
+          return RefreshIndicator(
+            color: AppColors.primary500,
+            onRefresh: () => _refresh(context),
+            child: content,
+          );
         },
       ),
+    );
+  }
+
+  /// Pull-to-refresh: reloads the wishlist and resolves once it finishes.
+  Future<void> _refresh(BuildContext context) {
+    final bloc = context.read<WishlistBloc>();
+    return refreshBloc<WishlistState>(
+      bloc,
+      () => bloc.add(const LoadWishlist()),
+      (s) =>
+          s.status == WishlistStatus.loaded || s.status == WishlistStatus.error,
+    );
+  }
+
+  /// Makes a non-list view pullable by placing it in an always-scrollable
+  /// viewport that fills the body.
+  Widget _fillViewport(Widget child) {
+    return CustomScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      slivers: [SliverFillRemaining(hasScrollBody: false, child: child)],
     );
   }
 
@@ -353,6 +381,7 @@ class _WishlistListState extends State<_WishlistList> {
           Expanded(
             child: ListView.builder(
               controller: _scrollController,
+              physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.only(top: 0, bottom: 24),
               itemCount: widget.items.length + (widget.isLoadingMore ? 1 : 0),
               itemBuilder: (context, index) {

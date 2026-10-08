@@ -26,6 +26,7 @@ Widget _wrap(String html, {Brightness brightness = Brightness.light}) =>
     );
 
 void main() {
+  linkTests();
   testWidgets('renders the home offer text like the storefront', (
     tester,
   ) async {
@@ -63,5 +64,67 @@ void main() {
     await tester.pumpWidget(_wrap('<div class="home-offer"><h1> </h1></div>'));
 
     expect(find.byKey(const ValueKey('home_offer_bar')), findsNothing);
+  });
+}
+
+Widget _wrapWithLinks(String html, ValueChanged<String> onLinkTap) =>
+    MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: Scaffold(
+        body: SingleChildScrollView(
+          child: StaticContentWidget(
+            html: html,
+            baseUrl: 'https://example.com',
+            onLinkTap: onLinkTap,
+          ),
+        ),
+      ),
+    );
+
+void linkTests() {
+  testWidgets('bold collections button follows the configured link', (
+    tester,
+  ) async {
+    String? tapped;
+    await tester.pumpWidget(
+      _wrapWithLinks(
+        '<div class="inline-col-wrapper"><img data-src="a.webp">'
+        '<h2>Bold</h2><a href="https://shop.test/winter-wear">'
+        '<button class="primary-button">View All</button></a></div>',
+        (link) => tapped = link,
+      ),
+    );
+
+    await tester.tap(find.byType(ElevatedButton));
+    expect(tapped, 'https://shop.test/winter-wear');
+  });
+
+  testWidgets('collection cards wrapped in links are tappable', (
+    tester,
+  ) async {
+    String? tapped;
+    await tester.pumpWidget(
+      _wrapWithLinks(
+        '<div class="collection-card-wrapper">'
+        '<a href="/games"><div class="single-collection-card">'
+        '<img data-src="storage/theme/8/1.webp"><h3>Games</h3></div></a>'
+        '</div>',
+        (link) => tapped = link,
+      ),
+    );
+
+    await tester.tap(find.byKey(const ValueKey('static_link_0')));
+    expect(tapped, '/games');
+  });
+
+  test('imageLinks maps images inside anchors to their href', () {
+    expect(
+      StaticContentWidget.imageLinks(
+        '<a href="/men"><img data-src="1.webp"></a><img src="2.webp">',
+      ),
+      {'1.webp': '/men'},
+    );
+    expect(StaticContentWidget.firstHref('<a href="#">x</a>'), isNull);
   });
 }

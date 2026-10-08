@@ -1868,4 +1868,99 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get accountReviewVideoLoadFailed => 'تعذر تشغيل هذا الفيديو';
+
+  @override
+  String accountShippedCount(int count) {
+    return '$count تم شحنها';
+  }
+
+  @override
+  String get accountReturnNoEligibleOrders =>
+      'لا توجد طلبات مؤهلة للإرجاع حاليًا';
+
+  @override
+  String get accountRequestReturn => 'طلب إرجاع';
+
+  @override
+  String get accountRefundBreakdown => 'تفاصيل الاسترداد';
+
+  @override
+  String get accountSubtotalRefunded => 'المجموع الفرعي المسترد';
+
+  @override
+  String get accountShippingRefunded => 'الشحن المسترد';
+
+  @override
+  String get accountTaxRefunded => 'الضريبة المستردة';
+
+  @override
+  String get accountDiscountRefunded => 'الخصم المسترد';
+
+  @override
+  String get accountRefunded => 'مسترد';
+
+  @override
+  String get accountCanceledQty => 'ملغى';
+
+  @override
+  String get productBookingCancellation => 'الإلغاء';
+
+  @override
+  String get productBookingCancellationNotAllowed => 'الإلغاء غير مسموح';
+
+  @override
+  String get accountBookingItemsNotCanceled =>
+      'لن يتم إلغاء عناصر الحجز في هذا الطلب.';
+
+  @override
+  String cartQtyValue(int count) {
+    return 'الكمية: $count';
+  }
+
+  @override
+  String get checkoutAccountSuspended =>
+      'تم تعليق حسابك. يمكنك تصفح المتجر لكن لا يمكنك إجراء الطلبات.';
+
+  @override
+  String get accountGenderRequiredLabel => 'الجنس *';
+
+  @override
+  String get accountGenderRequired => 'الجنس مطلوب';
+
+  @override
+  String get accountPhoneRequiredLabel => 'الهاتف *';
+
+  @override
+  String get cartGuestCheckoutNotAllowed =>
+      'يرجى تسجيل الدخول لإتمام شراء هذه المنتجات.';
+
+  @override
+  String get accountEuWithdraw => 'الانسحاب من العقد';
+
+  @override
+  String get accountEuWithdrawReason => 'السبب (اختياري)';
+
+  @override
+  String get accountEuWithdrawSubmit => 'إرسال طلب الانسحاب';
+
+  @override
+  String get accountEuWithdrawSubmitted => 'تم استلام طلب الانسحاب الخاص بك.';
+
+  @override
+  String accountEuWithdrawStatus(String status) {
+    return 'طلب الانسحاب: $status';
+  }
+
+  @override
+  String get accountEuWithdrawGuestDescription =>
+      'أدخل رقم الطلب والبريد الإلكتروني المستخدم للطلب للانسحاب من العقد.';
+
+  @override
+  String get accountEuWithdrawOrderNumber => 'رقم الطلب *';
+
+  @override
+  String get accountEuWithdrawEmail => 'البريد الإلكتروني للطلب *';
+
+  @override
+  String get accountEuWithdrawFieldRequired => 'هذا الحقل مطلوب';
 }

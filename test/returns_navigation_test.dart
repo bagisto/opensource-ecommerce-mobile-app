@@ -355,6 +355,17 @@ class _ReturnsRepository extends AccountRepository {
   );
 
   @override
+  Future<List<CustomerOrder>> getReturnableOrders({String? incrementId}) async =>
+      const [
+        CustomerOrder(
+          numericId: 42,
+          incrementId: '10042',
+          status: 'completed',
+          grandTotal: 20,
+        ),
+      ];
+
+  @override
   Future<List<ReturnableItem>> getReturnableItems(int orderId) async => const [
     ReturnableItem(
       orderItemId: 81,

@@ -213,13 +213,15 @@ class CreateReturnBloc extends Bloc<CreateReturnEvent, CreateReturnState> {
     );
 
     try {
-      final result = await repository.getCustomerOrders(first: 20);
+      // Only orders the backend still accepts returns for (return window,
+      // status, remaining quantity). The list is not paginated.
+      final orders = await repository.getReturnableOrders();
       emit(
         state.copyWith(
           status: CreateReturnStatus.loaded,
-          orders: result.orders,
-          hasNextPage: result.hasNextPage,
-          endCursor: result.endCursor,
+          orders: orders,
+          hasNextPage: false,
+          endCursor: null,
         ),
       );
     } catch (e) {
@@ -285,11 +287,20 @@ class CreateReturnBloc extends Bloc<CreateReturnEvent, CreateReturnState> {
         repository.getReturnReasons('return'),
       ]);
 
+      // Items with nothing left to return or cancel cannot be submitted.
+      final items = (results[0] as List<ReturnableItem>)
+          .where(
+            (item) =>
+                item.maxQuantityFor('return') > 0 ||
+                item.maxQuantityFor('cancel_items') > 0,
+          )
+          .toList();
+
       emit(
         state.copyWith(
           status: CreateReturnStatus.loaded,
           phase: CreateReturnPhase.fillForm,
-          items: results[0] as List<ReturnableItem>,
+          items: items,
           reasons: results[1] as List<ReturnReason>,
         ),
       );
@@ -318,6 +329,9 @@ class CreateReturnBloc extends Bloc<CreateReturnEvent, CreateReturnState> {
         items: const [],
       ),
     );
+    // Opened straight on one order (from the order page): the picker has
+    // not been loaded yet.
+    if (state.orders.isEmpty) add(const LoadCreateReturn());
   }
 
   Future<void> _onChangeResolutionType(

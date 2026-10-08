@@ -6,9 +6,11 @@ import '../../../../core/navigation/app_navigator.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_back_button.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../cart/presentation/bloc/cart_bloc.dart';
 import '../../data/models/account_models.dart';
 import '../../data/repository/account_repository.dart';
 import '../bloc/order_detail_bloc.dart';
+import 'create_return_page.dart';
 import 'invoice_detail_page.dart';
 import 'shipment_detail_bottom_sheet.dart';
 
@@ -107,6 +109,9 @@ class OrderDetailPage extends StatelessWidget {
           // Handle reorder success
           if (state.status == OrderDetailStatus.reorderSuccess &&
               state.successMessage != null) {
+            // Items were added server-side; reload the cart so the badge and
+            // product-card quantities update immediately.
+            context.read<CartBloc>().add(LoadCart());
             final itemsCount = state.reorderItemsCount ?? 0;
             // Show dialog with OK and Go to Cart buttons
             showDialog(
@@ -409,10 +414,18 @@ class _OrderDetailBodyState extends State<_OrderDetailBody> {
   Widget _buildDetailsTab(bool isDark) {
     final order = widget.order;
     final l10n = AppLocalizations.of(context)!;
+    final hasNonCancelableBooking = context.select<OrderDetailBloc, bool>(
+      (bloc) => bloc.state.hasNonCancelableBooking,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (hasNonCancelableBooking) ...[
+          _BookingNotCanceledNote(isDark: isDark),
+          const SizedBox(height: 16),
+        ],
+        _EuWithdrawalSection(orderId: widget.orderId, isDark: isDark),
         // "N Items Ordered" header — Figma: Roboto SemiBold 16, #262626
         Text(
           l10n.accountItemsOrdered(order.items.length),
@@ -586,7 +599,7 @@ class _OrderDetailBodyState extends State<_OrderDetailBody> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                l10n.accountInvoicedCount(displayShipments.length),
+                l10n.accountShippedCount(displayShipments.length),
                 style: TextStyle(
                   fontFamily: 'Roboto',
                   fontWeight: FontWeight.w500,
@@ -671,6 +684,9 @@ class _OrderDetailBodyState extends State<_OrderDetailBody> {
     final canCancel = context.select<OrderDetailBloc, bool>(
       (bloc) => bloc.state.order?.canCancel ?? false,
     );
+    final returnableOrder = context.select<OrderDetailBloc, CustomerOrder?>(
+      (bloc) => bloc.state.returnableOrder,
+    );
     final busy = isReordering || isCanceling;
 
     final reorderButton = SizedBox(
@@ -744,6 +760,42 @@ class _OrderDetailBodyState extends State<_OrderDetailBody> {
       ),
     );
 
+    final returnButton = SizedBox(
+      height: 48,
+      child: OutlinedButton(
+        key: const ValueKey('order_request_return'),
+        onPressed: busy || returnableOrder == null
+            ? null
+            : () => CreateReturnPage.navigate(
+                context,
+                repository: context.read<OrderDetailBloc>().repository,
+                order: returnableOrder,
+              ),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppColors.primary500,
+          side: const BorderSide(color: AppColors.primary500),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(54),
+          ),
+        ),
+        child: Text(
+          l10n.accountRequestReturn,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            fontFamily: 'Roboto',
+            fontWeight: FontWeight.w700,
+            fontSize: 15,
+          ),
+        ),
+      ),
+    );
+    final secondaryButton = canCancel
+        ? cancelButton
+        : returnableOrder != null
+        ? returnButton
+        : null;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
@@ -758,10 +810,10 @@ class _OrderDetailBodyState extends State<_OrderDetailBody> {
       ),
       child: SafeArea(
         top: false,
-        child: canCancel
+        child: secondaryButton != null
             ? Row(
                 children: [
-                  Expanded(child: cancelButton),
+                  Expanded(child: secondaryButton),
                   const SizedBox(width: 12),
                   Expanded(child: reorderButton),
                 ],
@@ -795,14 +847,24 @@ class _OrderDetailBodyState extends State<_OrderDetailBody> {
               color: isDark ? AppColors.neutral200 : AppColors.neutral900,
             ),
           ),
-          content: Text(
-            l10n.accountCancelOrderConfirmation,
-            style: TextStyle(
-              fontFamily: 'Roboto',
-              fontWeight: FontWeight.w400,
-              fontSize: 14,
-              color: isDark ? AppColors.neutral400 : AppColors.neutral500,
-            ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                l10n.accountCancelOrderConfirmation,
+                style: TextStyle(
+                  fontFamily: 'Roboto',
+                  fontWeight: FontWeight.w400,
+                  fontSize: 14,
+                  color: isDark ? AppColors.neutral400 : AppColors.neutral500,
+                ),
+              ),
+              if (bloc.state.hasNonCancelableBooking) ...[
+                const SizedBox(height: 12),
+                _BookingNotCanceledNote(isDark: isDark),
+              ],
+            ],
           ),
           actions: [
             TextButton(
@@ -1383,6 +1445,14 @@ class _ItemCard extends StatelessWidget {
                     _qtyRow(l10n.accountShipped, item.qtyShipped, isDark),
                     const SizedBox(height: 4),
                     _qtyRow(l10n.accountInvoiced, item.qtyInvoiced, isDark),
+                    if (item.qtyRefunded > 0) ...[
+                      const SizedBox(height: 4),
+                      _qtyRow(l10n.accountRefunded, item.qtyRefunded, isDark),
+                    ],
+                    if (item.qtyCanceled > 0) ...[
+                      const SizedBox(height: 4),
+                      _qtyRow(l10n.accountCanceledQty, item.qtyCanceled, isDark),
+                    ],
                   ],
                 ),
               ),
@@ -1562,8 +1632,43 @@ class _PriceBreakSection extends StatelessWidget {
           isBold: false,
           valueColor: isDark ? AppColors.neutral400 : AppColors.neutral500,
         ),
+        if (order.totalRefunded > 0) ..._refundBreakdown(l10n, isDark),
       ],
     );
+  }
+
+  /// Refunded amounts per component, as returned by the order API.
+  List<Widget> _refundBreakdown(AppLocalizations l10n, bool isDark) {
+    final rows = <(String, double?)>[
+      (l10n.accountSubtotalRefunded, order.subTotalRefunded),
+      (l10n.accountShippingRefunded, order.shippingRefunded),
+      (l10n.accountTaxRefunded, order.taxAmountRefunded),
+      (l10n.accountDiscountRefunded, order.discountRefunded),
+    ].where((row) => (row.$2 ?? 0) > 0);
+
+    return [
+      const SizedBox(height: 16),
+      Text(
+        l10n.accountRefundBreakdown,
+        style: TextStyle(
+          fontFamily: 'Roboto',
+          fontWeight: FontWeight.w600,
+          fontSize: 16,
+          color: isDark ? AppColors.neutral200 : AppColors.neutral800,
+        ),
+      ),
+      for (final row in rows) ...[
+        const SizedBox(height: 8),
+        _priceRow(row.$1, order.formatAmount(row.$2), isDark, isBold: false),
+      ],
+      const SizedBox(height: 8),
+      _priceRow(
+        l10n.accountTotalRefunded,
+        order.formatAmount(order.totalRefunded),
+        isDark,
+        isBold: true,
+      ),
+    ];
   }
 
   Widget _priceRow(
@@ -1818,4 +1923,167 @@ class _StatusChipColors {
     required this.border,
     required this.text,
   });
+}
+
+/// Info note for orders whose booking items cannot be canceled.
+class _BookingNotCanceledNote extends StatelessWidget {
+  final bool isDark;
+
+  const _BookingNotCanceledNote({required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      key: const ValueKey('order_booking_not_canceled_note'),
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.neutral800 : AppColors.neutral100,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(
+            Icons.info_outline,
+            size: 20,
+            color: AppColors.primary500,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              AppLocalizations.of(context)!.accountBookingItemsNotCanceled,
+              style: TextStyle(
+                fontFamily: 'Roboto',
+                fontSize: 14,
+                color: isDark ? AppColors.neutral200 : AppColors.neutral800,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// EU right of withdrawal for this order: a "Withdraw from Contract" action
+/// when the channel has it enabled, or the status of the existing request.
+class _EuWithdrawalSection extends StatelessWidget {
+  final int orderId;
+  final bool isDark;
+
+  const _EuWithdrawalSection({required this.orderId, required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return BlocConsumer<OrderDetailBloc, OrderDetailState>(
+      listenWhen: (previous, current) =>
+          previous.isWithdrawing &&
+          !current.isWithdrawing &&
+          current.euWithdrawal != null,
+      listener: (context, state) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Text(l10n.accountEuWithdrawSubmitted),
+              backgroundColor: AppColors.successGreen,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+      },
+      buildWhen: (previous, current) =>
+          previous.euWithdrawalEnabled != current.euWithdrawalEnabled ||
+          previous.euWithdrawal != current.euWithdrawal ||
+          previous.isWithdrawing != current.isWithdrawing,
+      builder: (context, state) {
+        final withdrawal = state.euWithdrawal;
+        if (withdrawal != null) {
+          return Padding(
+            key: const ValueKey('order_eu_withdrawal_status'),
+            padding: const EdgeInsets.only(bottom: 16),
+            child: Text(
+              [
+                l10n.accountEuWithdrawStatus(withdrawal.status),
+                if ((withdrawal.declinedReason ?? '').isNotEmpty)
+                  withdrawal.declinedReason!,
+              ].join('\n'),
+              style: TextStyle(
+                fontFamily: 'Roboto',
+                fontSize: 14,
+                color: isDark ? AppColors.neutral200 : AppColors.neutral800,
+              ),
+            ),
+          );
+        }
+        if (!state.euWithdrawalEnabled) return const SizedBox.shrink();
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: OutlinedButton(
+              key: const ValueKey('order_eu_withdraw'),
+              onPressed: state.isWithdrawing
+                  ? null
+                  : () => _confirm(context, l10n),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.primary500,
+                side: const BorderSide(color: AppColors.primary500),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(54),
+                ),
+              ),
+              child: state.isWithdrawing
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Text(
+                      l10n.accountEuWithdraw,
+                      style: const TextStyle(
+                        fontFamily: 'Roboto',
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
+                      ),
+                    ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _confirm(BuildContext context, AppLocalizations l10n) async {
+    final bloc = context.read<OrderDetailBloc>();
+    final reasonController = TextEditingController();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.accountEuWithdraw),
+        content: TextField(
+          controller: reasonController,
+          minLines: 2,
+          maxLines: 4,
+          decoration: InputDecoration(labelText: l10n.accountEuWithdrawReason),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.cartCancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.accountEuWithdrawSubmit),
+          ),
+        ],
+      ),
+    );
+    final reason = reasonController.text.trim();
+    reasonController.dispose();
+    if (confirmed != true) return;
+    bloc.add(WithdrawFromContract(orderId: orderId, reasonText: reason));
+  }
 }

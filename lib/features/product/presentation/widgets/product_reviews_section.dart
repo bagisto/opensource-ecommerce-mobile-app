@@ -559,7 +559,7 @@ class ProductReviewsSection extends StatelessWidget {
                       productId: product.numericId,
                     ),
                   ),
-                child: const ReviewsPage(),
+                child: ReviewsPage(productId: product.numericId),
               ),
             ),
           ),

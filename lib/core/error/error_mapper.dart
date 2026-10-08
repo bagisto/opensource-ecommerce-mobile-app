@@ -131,7 +131,7 @@ class ErrorMapper {
     // GraphQL-level errors (server returned errors in the response body)
     if (exception.graphqlErrors.isNotEmpty) {
       final msg = exception.graphqlErrors.first.message;
-      return _mapGraphQLErrorMessage(msg);
+      return _mapGraphQLErrorMessage(msg, context: context);
     }
 
     // Link-level errors (transport / HTTP issues)
@@ -152,7 +152,7 @@ class ErrorMapper {
   /// Bagisto sometimes returns semi-technical messages like
   /// "Variable \"$input\" of required type ... was not provided." or
   /// "Internal server error". We map the most common ones here.
-  static String _mapGraphQLErrorMessage(String message) {
+  static String _mapGraphQLErrorMessage(String message, {String? context}) {
     final l10n = _l10n();
     final lower = message.toLowerCase();
 
@@ -226,6 +226,10 @@ class ErrorMapper {
 
     // Otherwise, generic fallback
     debugPrint('⚠️ ErrorMapper — unmapped GraphQL error: $message');
+    // Say which step failed instead of a bare "Something went wrong".
+    if (context != null && context.isNotEmpty) {
+      return l10n.commonGenericErrorWithContext(context);
+    }
     return l10n.commonGenericError;
   }
 
@@ -257,6 +261,8 @@ class ErrorMapper {
     // If it contains typical code artefacts, it's probably not user-friendly
     if (message.contains('Exception') ||
         message.contains('Error:') ||
+        // Untranslated server keys, e.g. `bagistoapi::app.graphql.x.y`.
+        message.contains('::') ||
         message.contains('null') ||
         message.contains('type \'') ||
         message.contains('Stack Trace') ||

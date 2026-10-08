@@ -55,6 +55,9 @@ Maestro E2E flows live in `maestro/` (see `maestro/LABEL_BASED_INSTRUCTIONS.md`)
 - `lib/features/<feature>/`: `account`, `auth`, `cart`, `category`, `checkout`, `home`, `product`, `search`, `splash`
 - `lib/l10n/`: 10 `app_*.arb` files plus generated `app_localizations*.dart` (committed)
 - `Docs/`: setup guides; design specs under `Docs/superpowers/specs/`
+- `Docs/ai-memory/`: notes for AI agents on past fix rounds (root causes,
+  gotchas, backend-blocked issues). Read the relevant note before touching
+  those areas, and add a new dated note after a large fix round.
 - `test/`: flat directory of unit and widget tests
 
 ## House style

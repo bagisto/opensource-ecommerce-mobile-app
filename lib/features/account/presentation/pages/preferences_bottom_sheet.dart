@@ -1,3 +1,6 @@
+import '../../../../core/channel/channel_bootstrap_service.dart';
+import '../../../../core/graphql/graphql_client.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/currency/currency_cubit.dart';
@@ -47,7 +50,14 @@ class PreferencesBottomSheet extends StatefulWidget {
       backgroundColor: Colors.transparent,
       builder: (_) => MultiBlocProvider(
         providers: [
-          BlocProvider(create: (_) => PreferencesCubit()),
+          BlocProvider(
+            create: (_) => PreferencesCubit(
+              refreshChannel: () async => ChannelBootstrapService(
+                client: GraphQLClientProvider.buildClient(),
+                prefs: await SharedPreferences.getInstance(),
+              ).bootstrap(),
+            ),
+          ),
           BlocProvider.value(value: context.read<CurrencyCubit>()),
           BlocProvider.value(value: context.read<LocaleCubit>()),
         ],

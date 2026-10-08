@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -115,7 +117,15 @@ class _AccountMenuBody extends StatelessWidget {
       initials = 'U';
     }
 
-    return SingleChildScrollView(
+    AccountDashboardBloc? dashboardBloc;
+    try {
+      dashboardBloc = context.read<AccountDashboardBloc>();
+    } catch (_) {
+      // Not in tree — nothing to refresh.
+    }
+
+    final content = SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -137,6 +147,18 @@ class _AccountMenuBody extends StatelessWidget {
           const SizedBox(height: 24),
         ],
       ),
+    );
+
+    if (dashboardBloc == null) return content;
+    final bloc = dashboardBloc;
+    return RefreshIndicator(
+      color: AppColors.primary500,
+      onRefresh: () {
+        final completer = Completer<void>();
+        bloc.add(RefreshAccountDashboard(completer: completer));
+        return completer.future;
+      },
+      child: content,
     );
   }
 

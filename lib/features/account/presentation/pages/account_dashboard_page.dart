@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -88,12 +90,15 @@ class _AccountDashboardPageState extends State<AccountDashboardPage>
 
           return RefreshIndicator(
             color: AppColors.primary500,
-            onRefresh: () async {
+            onRefresh: () {
+              final completer = Completer<void>();
               context.read<AccountDashboardBloc>().add(
-                const RefreshAccountDashboard(),
+                RefreshAccountDashboard(completer: completer),
               );
+              return completer.future;
             },
             child: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
                 // Profile header
                 SliverToBoxAdapter(
@@ -187,6 +192,8 @@ class _AccountDashboardPageState extends State<AccountDashboardPage>
                   child: ProductReviewsSection(
                     reviews: state.reviews,
                     totalCount: state.reviewsTotalCount,
+                    onReviewTap: (review) =>
+                        openReviewedProduct(context, review),
                     onViewAll: () {
                       final repository = context.read<AccountRepository>();
                       Navigator.of(context).push(

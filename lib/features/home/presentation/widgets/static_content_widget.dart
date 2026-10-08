@@ -16,12 +16,17 @@ class StaticContentWidget extends StatelessWidget {
   /// Callback when "View All" or any action button is pressed
   final VoidCallback? onViewAllPressed;
 
+  /// Called with the raw `href` when content wrapped in an `<a>` link
+  /// configured in the admin HTML is tapped.
+  final ValueChanged<String>? onLinkTap;
+
   const StaticContentWidget({
     super.key,
     required this.html,
     this.css,
     required this.baseUrl,
     this.onViewAllPressed,
+    this.onLinkTap,
   });
 
   @override
@@ -30,7 +35,8 @@ class StaticContentWidget extends StatelessWidget {
     if (html.contains('home-offer')) {
       return _buildOfferBar(context);
     } else if (html.contains('top-collection-container') ||
-        html.contains('top-collection-grid')) {
+        html.contains('top-collection-grid') ||
+        html.contains('collection-card-wrapper')) {
       return _buildTopCollections(context);
     } else if (html.contains('inline-col-wrapper')) {
       return _buildBoldCollections(context);
@@ -41,6 +47,59 @@ class StaticContentWidget extends StatelessWidget {
 
     // Fallback: try to extract and render images
     return _buildGenericContent(context);
+  }
+
+  // ──────────────────────────────────────────────────────────────────────
+  // LINK HELPERS
+  // ──────────────────────────────────────────────────────────────────────
+
+  static final RegExp _anchorPattern = RegExp(
+    r'''<a\b[^>]*\bhref\s*=\s*["']([^"']*)["'][^>]*>(.*?)</a>''',
+    caseSensitive: false,
+    dotAll: true,
+  );
+
+  static bool _isNavigable(String href) {
+    final value = href.trim().toLowerCase();
+    return value.isNotEmpty &&
+        value != '#' &&
+        !value.startsWith('javascript:') &&
+        !value.startsWith('mailto:') &&
+        !value.startsWith('tel:');
+  }
+
+  /// First navigable `href` in [htmlContent], or null.
+  static String? firstHref(String htmlContent) {
+    for (final match in _anchorPattern.allMatches(htmlContent)) {
+      final href = match.group(1)?.trim() ?? '';
+      if (_isNavigable(href)) return href;
+    }
+    return null;
+  }
+
+  /// Maps each image URL (as written in the HTML) that sits inside an
+  /// `<a href>` to that link.
+  static Map<String, String> imageLinks(String htmlContent) {
+    final links = <String, String>{};
+    for (final match in _anchorPattern.allMatches(htmlContent)) {
+      final href = match.group(1)?.trim() ?? '';
+      if (!_isNavigable(href)) continue;
+      for (final url in _extractAllImageUrls(match.group(2) ?? '')) {
+        links.putIfAbsent(url, () => href);
+      }
+    }
+    return links;
+  }
+
+  /// Wraps [child] in a tap handler when [link] is set.
+  Widget _linked(String? link, int index, Widget child) {
+    if (link == null || onLinkTap == null) return child;
+    return GestureDetector(
+      key: ValueKey('static_link_$index'),
+      behavior: HitTestBehavior.opaque,
+      onTap: () => onLinkTap!(link),
+      child: child,
+    );
   }
 
   // ──────────────────────────────────────────────────────────────────────
@@ -160,11 +219,14 @@ class StaticContentWidget extends StatelessWidget {
     final title = titleMatch?.group(1)?.trim() ?? l10n.homeCollections;
 
     // Extract collection cards — find each card block, then extract image + title
+    // Top Collections use `top-collection-card`; the Game Container uses
+    // `single-collection-card`.
     final cardBlockPattern = RegExp(
-      r'<div class="top-collection-card"[^>]*>(.*?)</div>',
+      r'<div class="(?:top|single)-collection-card"[^>]*>(.*?)</div>',
       dotAll: true,
     );
     final titlePattern = RegExp(r'<h3[^>]*>(.*?)</h3>', dotAll: true);
+    final links = imageLinks(html);
 
     final cards = <_CollectionCard>[];
 
@@ -178,6 +240,7 @@ class StaticContentWidget extends StatelessWidget {
         _CollectionCard(
           imageUrl: _getFullUrl(imageUrl),
           title: cardTitle,
+          link: firstHref(blockHtml) ?? links[imageUrl],
         ),
       );
     }
@@ -245,7 +308,11 @@ class StaticContentWidget extends StatelessWidget {
             ),
             itemCount: cards.length,
             itemBuilder: (context, index) {
-              return _buildCollectionCard(cards[index], context);
+              return _linked(
+                cards[index].link,
+                index,
+                _buildCollectionCard(cards[index], context),
+              );
             },
           ),
         ),
@@ -330,6 +397,8 @@ class StaticContentWidget extends StatelessWidget {
     // Check for button
     final hasButton =
         html.contains('primary-button') || html.contains('<button');
+    // Admin can point the collection at a category/product with an <a href>.
+    final link = firstHref(html);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -411,7 +480,9 @@ class StaticContentWidget extends StatelessWidget {
                     if (hasButton) ...[
                       const SizedBox(height: 20),
                       ElevatedButton(
-                        onPressed: onViewAllPressed,
+                        onPressed: link != null && onLinkTap != null
+                            ? () => onLinkTap!(link)
+                            : onViewAllPressed,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary500,
                           foregroundColor: AppColors.white,
@@ -636,8 +707,9 @@ class StaticContentWidget extends StatelessWidget {
 class _CollectionCard {
   final String imageUrl;
   final String title;
+  final String? link;
 
-  _CollectionCard({required this.imageUrl, required this.title});
+  _CollectionCard({required this.imageUrl, required this.title, this.link});
 }
 
 class _ServiceCard {

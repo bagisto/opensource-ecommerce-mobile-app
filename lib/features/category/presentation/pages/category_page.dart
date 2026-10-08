@@ -149,6 +149,16 @@ class CategoryPage extends StatelessWidget {
                                 state.selectedCategory!.bannerUrl!.isNotEmpty)
                               const SizedBox(height: 32),
 
+                            // ── Description configured in admin ──
+                            if (state.selectedCategory?.plainDescription
+                                    .isNotEmpty ??
+                                false) ...[
+                              _CategoryDescription(
+                                text: state.selectedCategory!.plainDescription,
+                              ),
+                              const SizedBox(height: 24),
+                            ],
+
                             // ── Sub-category Sections ──
                             ..._buildSubCategorySections(
                                 context, state.subCategories),
@@ -225,6 +235,31 @@ class CategoryPage extends StatelessWidget {
               child: Text(l10n.commonRetry),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Plain-text category description shown under the chips/banner.
+class _CategoryDescription extends StatelessWidget {
+  final String text;
+
+  const _CategoryDescription({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Padding(
+      key: const ValueKey('category_description'),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontFamily: 'Roboto',
+          fontSize: 14,
+          height: 1.5,
+          color: isDark ? AppColors.neutral300 : AppColors.neutral700,
         ),
       ),
     );

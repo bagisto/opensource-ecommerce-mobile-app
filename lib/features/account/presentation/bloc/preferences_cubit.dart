@@ -85,14 +85,33 @@ class PreferencesCubit extends Cubit<PreferencesState> {
   static const String _localesCacheKey = 'cached_shop_locales';
   static const String _currenciesCacheKey = 'cached_shop_currencies';
 
-  PreferencesCubit() : super(const PreferencesState()) {
-    _initializeLocales();
-    _initializeCurrencies();
+  /// Re-reads the channel's locales and currencies from the API into the
+  /// cache (see `ChannelBootstrapService`), so languages or currencies the
+  /// admin assigned after app start show up.
+  final Future<void> Function()? refreshChannel;
+
+  PreferencesCubit({this.refreshChannel}) : super(const PreferencesState()) {
+    _initialize();
+  }
+
+  Future<void> _initialize() async {
+    await Future.wait([_initializeLocales(), _initializeCurrencies()]);
+    final refresh = refreshChannel;
+    if (refresh == null) return;
+    try {
+      await refresh();
+    } catch (e) {
+      _logPreferencesMessage('🔴 PreferencesCubit channel refresh failed: $e');
+      return;
+    }
+    if (isClosed) return;
+    await Future.wait([_initializeLocales(), _initializeCurrencies()]);
   }
 
   Future<void> _initializeLocales() async {
     _logPreferencesMessage('🟡 PreferencesCubit._initializeLocales started');
     final cachedLocales = await _loadCachedLocales();
+    if (isClosed) return;
     _logPreferencesMessage(
       '🟡 PreferencesCubit cache count: ${cachedLocales.length}',
     );
@@ -117,11 +136,13 @@ class PreferencesCubit extends Cubit<PreferencesState> {
 
   Future<void> _initializeCurrencies() async {
     final cachedCurrencies = await _loadCachedCurrencies();
+    if (isClosed) return;
     if (cachedCurrencies.isNotEmpty) {
       await CurrencyFormatter.syncCurrencySymbols({
         for (final currency in cachedCurrencies) currency.code: currency.symbol,
       });
     }
+    if (isClosed) return;
     final cachedSelectedCode = _resolveSelectedCurrencyCode(
       cachedCurrencies,
       state.selectedCurrency,

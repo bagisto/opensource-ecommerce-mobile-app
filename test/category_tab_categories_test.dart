@@ -15,6 +15,7 @@ Map<String, dynamic> _translation(int id, String name) => {
   'id': '/api/shop/category-translations/$id',
   'name': name,
   'slug': name.toLowerCase().replaceAll(' ', '-'),
+  'description': null,
   'urlPath': '',
 };
 
@@ -164,6 +165,7 @@ class _FakeRepository extends CategoryRepository {
 }
 
 void main() {
+  descriptionTests();
   test('category tab query uses the categories API with parent and children', () {
     final query = CategoryQueries.getCategoryTabCategories;
     expect(query, contains('categories('));
@@ -216,5 +218,32 @@ void main() {
     expect(loaded.subCategories.map((c) => c.name), ['Winter Wear']);
     expect(repository.treeCalled, isFalse);
     await bloc.close();
+  });
+}
+
+void descriptionTests() {
+  test('categories tab query requests the description', () {
+    expect(
+      CategoryQueries.getCategoryTabCategories,
+      matches(RegExp(r'translation \{[^}]*description', dotAll: true)),
+    );
+  });
+
+  test('plainDescription strips html and entities', () {
+    final category = CategoryModel.fromTreeJson({
+      'id': '/api/shop/categories/8',
+      '_id': 8,
+      'translation': {
+        'name': 'Electronics',
+        'description': '<p>Discover <b>cutting-edge</b>&nbsp;gear &amp; more</p>\n<p></p>',
+      },
+    });
+
+    expect(category.plainDescription, 'Discover cutting-edge gear & more');
+    expect(
+      CategoryModel.fromTreeJson({'id': 'x', 'translation': {'description': '<p> </p>'}})
+          .plainDescription,
+      isEmpty,
+    );
   });
 }

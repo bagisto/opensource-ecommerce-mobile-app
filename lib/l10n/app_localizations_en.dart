@@ -1876,4 +1876,100 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get accountReviewVideoLoadFailed => 'Unable to play this video';
+
+  @override
+  String accountShippedCount(int count) {
+    return '$count Shipped';
+  }
+
+  @override
+  String get accountReturnNoEligibleOrders =>
+      'No orders are eligible for a return right now';
+
+  @override
+  String get accountRequestReturn => 'Request a Return';
+
+  @override
+  String get accountRefundBreakdown => 'Refund Breakdown';
+
+  @override
+  String get accountSubtotalRefunded => 'Subtotal Refunded';
+
+  @override
+  String get accountShippingRefunded => 'Shipping Refunded';
+
+  @override
+  String get accountTaxRefunded => 'Tax Refunded';
+
+  @override
+  String get accountDiscountRefunded => 'Discount Refunded';
+
+  @override
+  String get accountRefunded => 'Refunded';
+
+  @override
+  String get accountCanceledQty => 'Canceled';
+
+  @override
+  String get productBookingCancellation => 'Cancellation';
+
+  @override
+  String get productBookingCancellationNotAllowed => 'Cancellation Not Allowed';
+
+  @override
+  String get accountBookingItemsNotCanceled =>
+      'Booking items in this order will not be canceled.';
+
+  @override
+  String cartQtyValue(int count) {
+    return 'Qty: $count';
+  }
+
+  @override
+  String get checkoutAccountSuspended =>
+      'Your account is suspended. You can browse the store, but you cannot place orders.';
+
+  @override
+  String get accountGenderRequiredLabel => 'Gender *';
+
+  @override
+  String get accountGenderRequired => 'Gender is required';
+
+  @override
+  String get accountPhoneRequiredLabel => 'Phone *';
+
+  @override
+  String get cartGuestCheckoutNotAllowed =>
+      'Please sign in to check out these items.';
+
+  @override
+  String get accountEuWithdraw => 'Withdraw from Contract';
+
+  @override
+  String get accountEuWithdrawReason => 'Reason (optional)';
+
+  @override
+  String get accountEuWithdrawSubmit => 'Submit Withdrawal';
+
+  @override
+  String get accountEuWithdrawSubmitted =>
+      'Your withdrawal request has been received.';
+
+  @override
+  String accountEuWithdrawStatus(String status) {
+    return 'Withdrawal request: $status';
+  }
+
+  @override
+  String get accountEuWithdrawGuestDescription =>
+      'Enter the order number and the email address used for the order to withdraw from your contract.';
+
+  @override
+  String get accountEuWithdrawOrderNumber => 'Order Number *';
+
+  @override
+  String get accountEuWithdrawEmail => 'Order Email *';
+
+  @override
+  String get accountEuWithdrawFieldRequired => 'This field is required';
 }

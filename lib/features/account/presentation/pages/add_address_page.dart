@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/utils/phone_validation.dart';
 import '../../../../core/error/error_mapper.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/selection_sheet.dart';
@@ -747,6 +748,10 @@ class _AddAddressPageState extends State<AddAddressPage> {
                 validator: (v) {
                   if (v == null || v.trim().isEmpty) {
                     return l10n.accountPhoneNumberRequired;
+                  }
+                  // Same `PhoneNumber` rule as the storefront.
+                  if (!isValidPhoneNumber(v)) {
+                    return l10n.accountPleaseEnterValidContactNumber;
                   }
                   return null;
                 },

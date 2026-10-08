@@ -12,7 +12,15 @@ class ImageCarousel extends StatefulWidget {
   final List<BannerImage> images;
   final String baseUrl;
 
-  const ImageCarousel({super.key, required this.images, this.baseUrl = ''});
+  /// Called when a banner with a configured link is tapped.
+  final ValueChanged<BannerImage>? onBannerTap;
+
+  const ImageCarousel({
+    super.key,
+    required this.images,
+    this.baseUrl = '',
+    this.onBannerTap,
+  });
 
   @override
   State<ImageCarousel> createState() => _ImageCarouselState();
@@ -96,31 +104,41 @@ class _ImageCarouselState extends State<ImageCarousel> {
                   setState(() => _currentPage = index);
                 },
                 itemBuilder: (context, index) {
-                  final url = _bannerUrl(widget.images[index]);
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: _horizontalPadding,
-                    ),
-                    child: ClipRRect(
-                      key: const ValueKey('home_banner_image_area'),
-                      borderRadius: BorderRadius.circular(12),
-                      child: ColoredBox(
-                        color: isDark
-                            ? AppColors.neutral800
-                            : AppColors.neutral100,
-                        child: Image.network(
-                          url,
-                          fit: BoxFit.contain,
-                          width: double.infinity,
-                          height: double.infinity,
-                          errorBuilder: (context, error, stackTrace) => Center(
-                            child: Icon(
-                              Icons.image_outlined,
-                              size: 48,
-                              color: isDark
-                                  ? AppColors.neutral500
-                                  : AppColors.neutral400,
-                            ),
+                  final banner = widget.images[index];
+                  final url = _bannerUrl(banner);
+                  final onTap =
+                      banner.linkSlug != null && widget.onBannerTap != null
+                      ? () => widget.onBannerTap!(banner)
+                      : null;
+                  return GestureDetector(
+                    key: ValueKey('home_banner_$index'),
+                    onTap: onTap,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: _horizontalPadding,
+                      ),
+                      child: ClipRRect(
+                        key: const ValueKey('home_banner_image_area'),
+                        borderRadius: BorderRadius.circular(12),
+                        child: ColoredBox(
+                          color: isDark
+                              ? AppColors.neutral800
+                              : AppColors.neutral100,
+                          child: Image.network(
+                            url,
+                            fit: BoxFit.contain,
+                            width: double.infinity,
+                            height: double.infinity,
+                            errorBuilder: (context, error, stackTrace) =>
+                                Center(
+                                  child: Icon(
+                                    Icons.image_outlined,
+                                    size: 48,
+                                    color: isDark
+                                        ? AppColors.neutral500
+                                        : AppColors.neutral400,
+                                  ),
+                                ),
                           ),
                         ),
                       ),

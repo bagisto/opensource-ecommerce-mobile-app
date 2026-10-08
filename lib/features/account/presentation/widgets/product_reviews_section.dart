@@ -2,8 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../product/presentation/pages/product_detail_page.dart';
 import '../../data/models/account_models.dart';
 import 'section_header.dart';
+
+/// Opens the product a customer review belongs to.
+void openReviewedProduct(BuildContext context, ProductReview review) {
+  final productId = review.productId;
+  if (productId == null || productId <= 0) return;
+  Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (_) => ProductDetailPage(
+        productId: productId.toString(),
+        productName: review.productName,
+      ),
+    ),
+  );
+}
 
 /// Product Reviews section
 /// Figma: node-id=220-7367
@@ -12,11 +27,15 @@ class ProductReviewsSection extends StatelessWidget {
   final int totalCount;
   final VoidCallback? onViewAll;
 
+  /// Called when a review card is tapped (e.g. to open its product).
+  final ValueChanged<ProductReview>? onReviewTap;
+
   const ProductReviewsSection({
     super.key,
     required this.reviews,
     required this.totalCount,
     this.onViewAll,
+    this.onReviewTap,
   });
 
   @override
@@ -48,7 +67,14 @@ class ProductReviewsSection extends StatelessWidget {
                     .take(3)
                     .map((review) => Padding(
                           padding: const EdgeInsets.only(bottom: 8),
-                          child: _buildReviewCard(context, review),
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: onReviewTap == null ||
+                                    review.productId == null
+                                ? null
+                                : () => onReviewTap!(review),
+                            child: _buildReviewCard(context, review),
+                          ),
                         ))
                     .toList(),
               ),

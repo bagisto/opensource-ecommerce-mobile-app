@@ -60,6 +60,39 @@ class CartRepository {
   GraphQLClient get _authedClient =>
       GraphQLClientProvider.buildClient(token: _token);
 
+  /// Whether a guest may check out these products: false when any of them
+  /// has guest checkout turned off in admin.
+  Future<bool> guestCheckoutAllowed(Iterable<int> productIds) async {
+    final results = await Future.wait(
+      productIds.toSet().map(
+        (id) => client.query(
+          QueryOptions(
+            document: gql(CartQueries.productGuestCheckout),
+            variables: {'id': '/api/shop/products/$id'},
+            fetchPolicy: FetchPolicy.networkOnly,
+          ),
+        ),
+      ),
+    );
+    for (final result in results) {
+      if (result.hasException) throw result.exception!;
+      if (!allowsGuestCheckout(result.data?['product']?['guestCheckout'])) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /// `guestCheckout` from the API: only an explicit off value (`0`) blocks;
+  /// an empty value means the attribute is not set on the product.
+  @visibleForTesting
+  static bool allowsGuestCheckout(dynamic value) {
+    if (value == null || value == true) return true;
+    if (value == false) return false;
+    final text = value.toString().trim();
+    return text.isEmpty || text != '0';
+  }
+
   /// Create a guest cart token
   Future<CartTokenResponse> createCartToken() async {
     debugPrint('[CartRepo] creating cart token...');
@@ -144,14 +177,26 @@ class CartRepository {
     }
 
     final data = result.data?['createAddProductInCart']?['addProductInCart'];
+    debugPrint('[CartRepo] addToCart response: $data');
+    return parseAddToCartPayload(data as Map<String, dynamic>?);
+  }
+
+  /// Reads the `addProductInCart` payload. The API can answer
+  /// `success: false` with a reason (e.g. requested booking quantity not
+  /// available) instead of a GraphQL error; that is thrown as an error
+  /// carrying the server message.
+  @visibleForTesting
+  static CartModel parseAddToCartPayload(Map<String, dynamic>? data) {
     if (data == null) {
-      debugPrint('[CartRepo] addToCart null payload: ${result.data}');
       throw Exception('Failed to add product to cart');
     }
-
-    debugPrint('[CartRepo] addToCart response: $data');
-    debugPrint('[CartRepo] addToCart success: ${data['message']}');
-    return CartModel.fromJson(data as Map<String, dynamic>);
+    if (data['success'] == false) {
+      final message = data['message']?.toString().trim() ?? '';
+      throw Exception(
+        message.isNotEmpty ? message : 'Failed to add product to cart',
+      );
+    }
+    return CartModel.fromJson(data);
   }
 
   static AddToCartRequest buildAddToCartRequest({

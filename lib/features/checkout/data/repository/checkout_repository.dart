@@ -62,6 +62,21 @@ String _checkoutInputValue(Map<String, dynamic> checkoutInput, String key) {
   return checkoutInput[key]?.toString() ?? '';
 }
 
+/// Uses the logged-in customer's account email for the checkout address
+/// emails, so the order records the registered email rather than whatever
+/// was typed in (or saved on) the address.
+Map<String, dynamic> applyCustomerEmail(
+  Map<String, dynamic> input,
+  String? customerEmail,
+) {
+  if (customerEmail == null || customerEmail.isEmpty) return input;
+  return {
+    ...input,
+    'billingEmail': customerEmail,
+    if (input.containsKey('shippingEmail')) 'shippingEmail': customerEmail,
+  };
+}
+
 bool shouldLogCheckoutOperation(String operation) {
   return operation != 'getCountries';
 }
@@ -270,61 +285,20 @@ class CheckoutRepository {
   }
 
   /// Alternative: Fetch states using country code
+  /// `countryStates` only accepts a numeric `countryId`, so resolve the
+  /// country code through the countries list first.
   Future<List<BagistoCountryState>> _getCountryStatesByCode(String countryCode) async {
     debugPrint('[CheckoutRepo] _getCountryStatesByCode countryCode=$countryCode');
-    
-    final result = await _authedClient.query(
-      QueryOptions(
-        document: gql(CheckoutQueries.getCountryStatesByCode),
-        variables: {'countryCode': countryCode, 'first': 200},
-        fetchPolicy: FetchPolicy.networkOnly,
-      ),
-    );
-
-    debugPrint('[CheckoutRepo] _getCountryStatesByCode raw result: ${result.data}');
-    
-    if (result.hasException) {
-      debugPrint('[CheckoutRepo] _getCountryStatesByCode error: ${result.exception}');
-      return [];
-    }
-
-    _logCheckoutApiDetails(
-      'getCountryStatesByCode',
-      variables: {'countryCode': countryCode, 'first': 200},
-      responseData: result.data,
-    );
-
-    final statesData = result.data?['countryStates'];
-    if (statesData == null) {
-      debugPrint('[CheckoutRepo] _getCountryStatesByCode: countryStates is null');
-      return [];
-    }
-
-    List<dynamic> statesList;
-    if (statesData is List) {
-      statesList = statesData;
-    } else if (statesData is Map) {
-      final edges = statesData['edges'] as List?;
-      if (edges != null) {
-        statesList = edges
-            .map((edge) => edge is Map ? edge['node'] : edge)
-            .where((node) => node != null)
-            .toList();
-      } else {
-        statesList = [];
-      }
-    } else {
-      return [];
-    }
-
-    return statesList
-        .map(
-          (e) => BagistoCountryState.fromJson(
-            (e ?? {}) as Map<String, dynamic>,
-          ),
-        )
-        .toList();
+    final code = countryCode.toUpperCase();
+    final countries = await getCountries();
+    final country = countries
+        .where((c) => c.code.toUpperCase() == code)
+        .firstOrNull;
+    if (country == null || country.numericId <= 0) return [];
+    // No countryCode here, so a failure cannot loop back into this method.
+    return getCountryStates(country.numericId);
   }
+
 
   /// Fetch saved checkout addresses (cursor connection format)
   Future<List<CheckoutAddress>> getCheckoutAddresses() async {
@@ -503,8 +477,9 @@ class CheckoutRepository {
 
   /// Save checkout address (billing + optional shipping)
   Future<CheckoutAddressResponse> saveCheckoutAddress(
-    Map<String, dynamic> input,
+    Map<String, dynamic> checkoutInput,
   ) async {
+    final input = applyCustomerEmail(checkoutInput, _customerEmail);
     debugPrint('[CheckoutRepo] saveCheckoutAddress input=$input');
     final result = await _authedClient.mutate(
       MutationOptions(
@@ -535,6 +510,26 @@ class CheckoutRepository {
 
     return CheckoutAddressResponse.fromJson(data);
   }
+
+  /// Whether the logged-in customer's account is suspended
+  /// (`readCustomerProfile.isSuspended`).
+  /// Also remembers the account email for [saveCheckoutAddress].
+  Future<bool> isCustomerSuspended() async {
+    final result = await _authedClient.query(
+      QueryOptions(
+        document: gql(CheckoutQueries.getCustomerSuspension),
+        fetchPolicy: FetchPolicy.networkOnly,
+      ),
+    );
+    if (result.hasException) throw result.exception!;
+    final profile = result.data?['readCustomerProfile'];
+    _customerEmail = profile?['email']?.toString();
+    final value = profile?['isSuspended'];
+    return value == true || value?.toString() == '1';
+  }
+
+  /// Logged-in customer's account email, once known.
+  String? _customerEmail;
 
   /// Save the checkout billing address into the customer's address book.
   ///

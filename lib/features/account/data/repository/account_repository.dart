@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import '../../../../core/error/error_mapper.dart';
+import '../../../../core/graphql/eu_withdrawal_queries.dart';
 import '../../../../core/graphql/account_queries.dart';
 import '../../../../core/graphql/returns_queries.dart';
 import '../models/account_models.dart';
@@ -1143,6 +1144,140 @@ class AccountRepository {
     return OrderDetail.fromJson(data as Map<String, dynamic>);
   }
 
+  /// `allowCancellation` of a booking product; null when unknown.
+  Future<bool?> getBookingAllowsCancellation(int productId) async {
+    final result = await client.query(
+      QueryOptions(
+        document: gql(AccountQueries.getBookingCancellation),
+        variables: {'id': '/api/shop/products/$productId'},
+        fetchPolicy: FetchPolicy.noCache,
+      ),
+    );
+
+    if (result.hasException) {
+      final message = _extractErrorMessage(result.exception!);
+      debugPrint('📦 AccountRepo.getBookingAllowsCancellation — error: $message');
+      throw AccountException(message);
+    }
+
+    final edges =
+        result.data?['product']?['bookingProducts']?['edges'] as List? ?? [];
+    final value = edges.isEmpty
+        ? null
+        : (edges.first as Map)['node']?['allowCancellation'];
+    if (value == null) return null;
+    return value == true || value.toString() == '1' || value == 1;
+  }
+
+  // ──────────────────────────────────────────────
+  // EU contract withdrawal
+  // ──────────────────────────────────────────────
+
+  /// Whether EU withdrawal is enabled for the channel (admin setting).
+  Future<bool> isEuWithdrawalEnabled() async {
+    final result = await client.query(
+      QueryOptions(
+        document: gql(EuWithdrawalQueries.getStatus),
+        fetchPolicy: FetchPolicy.networkOnly,
+      ),
+    );
+    if (result.hasException) {
+      throw AccountException(_extractErrorMessage(result.exception!));
+    }
+    return result.data?['euWithdrawalStatus']?['enabled'] == true;
+  }
+
+  /// The customer's withdrawal request for [orderId], if any.
+  Future<EuWithdrawal?> getEuWithdrawalForOrder(int orderId) async {
+    String? after;
+    do {
+      final result = await client.query(
+        QueryOptions(
+          document: gql(EuWithdrawalQueries.getWithdrawals),
+          variables: {'first': 50, 'after': ?after},
+          fetchPolicy: FetchPolicy.networkOnly,
+        ),
+      );
+      if (result.hasException) {
+        throw AccountException(_extractErrorMessage(result.exception!));
+      }
+      final connection = result.data?['euWithdrawals'] as Map<String, dynamic>?;
+      final edges = connection?['edges'] as List<dynamic>? ?? [];
+      for (final edge in edges) {
+        final node = (edge as Map)['node'];
+        if (node is Map<String, dynamic> &&
+            _parseIntValue(node['orderId']) == orderId) {
+          return EuWithdrawal.fromJson(node);
+        }
+      }
+      final pageInfo = connection?['pageInfo'] as Map<String, dynamic>?;
+      after = pageInfo?['hasNextPage'] == true
+          ? pageInfo!['endCursor'] as String?
+          : null;
+    } while (after != null);
+    return null;
+  }
+
+  /// Withdraw from the contract of the customer's order [orderId].
+  Future<EuWithdrawal> createEuWithdrawal({
+    required int orderId,
+    String? reasonText,
+  }) async {
+    final result = await client.mutate(
+      MutationOptions(
+        document: gql(EuWithdrawalQueries.createWithdrawal),
+        variables: {
+          'input': {
+            'orderId': orderId,
+            if (reasonText != null && reasonText.isNotEmpty)
+              'reasonText': reasonText,
+          },
+        },
+      ),
+    );
+    if (result.hasException) {
+      throw AccountException(_extractErrorMessage(result.exception!));
+    }
+    final data = result.data?['createEuWithdrawal']?['euWithdrawal'];
+    if (data is! Map<String, dynamic>) {
+      throw const AccountException('Failed to submit the withdrawal request');
+    }
+    return EuWithdrawal.fromJson(data);
+  }
+
+  /// Guest withdrawal for order [orderIncrementId] placed with [email].
+  Future<EuWithdrawal> createGuestEuWithdrawal({
+    required String orderIncrementId,
+    required String email,
+    String? reasonText,
+  }) async {
+    final result = await client.mutate(
+      MutationOptions(
+        document: gql(EuWithdrawalQueries.createGuestWithdrawal),
+        variables: {
+          'input': {
+            'orderIncrementId': orderIncrementId,
+            'email': email,
+            if (reasonText != null && reasonText.isNotEmpty)
+              'reasonText': reasonText,
+          },
+        },
+        fetchPolicy: FetchPolicy.noCache,
+      ),
+    );
+    if (result.hasException) {
+      throw AccountException(_extractErrorMessage(result.exception!));
+    }
+    final data = result.data?['createGuestEuWithdrawal']?['guestEuWithdrawal'];
+    if (data is! Map<String, dynamic>) {
+      throw const AccountException('Failed to submit the withdrawal request');
+    }
+    return EuWithdrawal.fromJson(data);
+  }
+
+  static int? _parseIntValue(dynamic value) =>
+      value is int ? value : int.tryParse('$value');
+
   /// Fetch customer invoices with cursor-based pagination.
   /// Supports optional [orderId] and [state] filters.
   Future<
@@ -1290,7 +1425,7 @@ class AccountRepository {
     final result = await client.query(
       QueryOptions(
         document: gql(AccountQueries.getCustomerOrderShipment),
-        variables: {'id': shipmentId},
+        variables: {'id': '/api/shop/customer-order-shipments/$shipmentId'},
         fetchPolicy: FetchPolicy.noCache,
       ),
     );
@@ -1559,6 +1694,36 @@ class AccountRepository {
   }
 
   /// Fetch order items still eligible for return/cancellation.
+  /// Orders the customer can still raise a return for (returnable quantity
+  /// above zero). Pass [incrementId] to check a single order.
+  Future<List<CustomerOrder>> getReturnableOrders({String? incrementId}) async {
+    debugPrint('↩️ AccountRepo.getReturnableOrders (incrementId=$incrementId)');
+
+    final result = await client.query(
+      QueryOptions(
+        document: gql(ReturnsQueries.getReturnableOrders),
+        variables: {'incrementId': ?incrementId},
+        fetchPolicy: FetchPolicy.networkOnly,
+      ),
+    );
+
+    if (result.hasException) {
+      final message = _extractErrorMessage(result.exception!);
+      debugPrint('↩️ AccountRepo.getReturnableOrders — error: $message');
+      throw AccountException(message);
+    }
+
+    final data = result.data?['returnableOrders'] as List<dynamic>? ?? [];
+    final orders = data
+        .whereType<Map<String, dynamic>>()
+        .where((json) => (int.tryParse('${json['returnableQty']}') ?? 0) > 0)
+        .map(CustomerOrder.fromJson)
+        .toList();
+
+    debugPrint('↩️ AccountRepo.getReturnableOrders — ${orders.length} orders');
+    return orders;
+  }
+
   Future<List<ReturnableItem>> getReturnableItems(int orderId) async {
     debugPrint('↩️ AccountRepo.getReturnableItems (orderId=$orderId)');
 

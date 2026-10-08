@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
@@ -19,7 +21,11 @@ class LoadAccountDashboard extends AccountDashboardEvent {
 }
 
 class RefreshAccountDashboard extends AccountDashboardEvent {
-  const RefreshAccountDashboard();
+  /// Completed when the refresh finishes, so a pull-to-refresh spinner can
+  /// wait for it.
+  final Completer<void>? completer;
+
+  const RefreshAccountDashboard({this.completer});
 }
 
 // ─── STATES ───
@@ -133,7 +139,11 @@ class AccountDashboardBloc
     RefreshAccountDashboard event,
     Emitter<AccountDashboardState> emit,
   ) async {
-    await _fetchAllData(emit);
+    try {
+      await _fetchAllData(emit);
+    } finally {
+      if (!(event.completer?.isCompleted ?? true)) event.completer!.complete();
+    }
   }
 
   Future<void> _fetchAllData(Emitter<AccountDashboardState> emit) async {

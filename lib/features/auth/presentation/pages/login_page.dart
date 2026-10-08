@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../../../../core/widgets/channel_logo.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../bloc/auth_bloc.dart';
@@ -367,10 +368,13 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget _buildLogo(bool isDark) {
     return Center(
-      child: SvgPicture.asset(
-        'assets/images/bagisto_logo.svg',
+      child: ChannelLogo(
         height: 60,
-        width: 60,
+        fallback: SvgPicture.asset(
+          'assets/images/bagisto_logo.svg',
+          height: 60,
+          width: 60,
+        ),
       ),
     );
   }

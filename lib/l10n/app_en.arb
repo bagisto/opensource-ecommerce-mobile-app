@@ -848,5 +848,54 @@
   "accountReviewFileTooLarge": "Each file must be 5 MB or smaller",
   "accountReviewUnsupportedFile": "Only images and videos are supported",
   "accountReviewPickFailed": "Could not add media. Please try again",
-  "accountReviewVideoLoadFailed": "Unable to play this video"
+  "accountReviewVideoLoadFailed": "Unable to play this video",
+  "accountShippedCount": "{count} Shipped",
+  "@accountShippedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "accountReturnNoEligibleOrders": "No orders are eligible for a return right now",
+  "accountRequestReturn": "Request a Return",
+  "accountRefundBreakdown": "Refund Breakdown",
+  "accountSubtotalRefunded": "Subtotal Refunded",
+  "accountShippingRefunded": "Shipping Refunded",
+  "accountTaxRefunded": "Tax Refunded",
+  "accountDiscountRefunded": "Discount Refunded",
+  "accountRefunded": "Refunded",
+  "accountCanceledQty": "Canceled",
+  "productBookingCancellation": "Cancellation",
+  "productBookingCancellationNotAllowed": "Cancellation Not Allowed",
+  "accountBookingItemsNotCanceled": "Booking items in this order will not be canceled.",
+  "cartQtyValue": "Qty: {count}",
+  "@cartQtyValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "checkoutAccountSuspended": "Your account is suspended. You can browse the store, but you cannot place orders.",
+  "accountGenderRequiredLabel": "Gender *",
+  "accountGenderRequired": "Gender is required",
+  "accountPhoneRequiredLabel": "Phone *",
+  "cartGuestCheckoutNotAllowed": "Please sign in to check out these items.",
+  "accountEuWithdraw": "Withdraw from Contract",
+  "accountEuWithdrawReason": "Reason (optional)",
+  "accountEuWithdrawSubmit": "Submit Withdrawal",
+  "accountEuWithdrawSubmitted": "Your withdrawal request has been received.",
+  "accountEuWithdrawStatus": "Withdrawal request: {status}",
+  "@accountEuWithdrawStatus": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "accountEuWithdrawGuestDescription": "Enter the order number and the email address used for the order to withdraw from your contract.",
+  "accountEuWithdrawOrderNumber": "Order Number *",
+  "accountEuWithdrawEmail": "Order Email *",
+  "accountEuWithdrawFieldRequired": "This field is required"
 }

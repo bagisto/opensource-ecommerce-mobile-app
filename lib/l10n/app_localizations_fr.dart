@@ -1912,4 +1912,100 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get accountReviewVideoLoadFailed => 'Impossible de lire cette vidéo';
+
+  @override
+  String accountShippedCount(int count) {
+    return '$count expédié(s)';
+  }
+
+  @override
+  String get accountReturnNoEligibleOrders =>
+      'Aucune commande n\'est éligible à un retour pour le moment';
+
+  @override
+  String get accountRequestReturn => 'Demander un retour';
+
+  @override
+  String get accountRefundBreakdown => 'Détail du remboursement';
+
+  @override
+  String get accountSubtotalRefunded => 'Sous-total remboursé';
+
+  @override
+  String get accountShippingRefunded => 'Livraison remboursée';
+
+  @override
+  String get accountTaxRefunded => 'Taxe remboursée';
+
+  @override
+  String get accountDiscountRefunded => 'Remise remboursée';
+
+  @override
+  String get accountRefunded => 'Remboursé';
+
+  @override
+  String get accountCanceledQty => 'Annulé';
+
+  @override
+  String get productBookingCancellation => 'Annulation';
+
+  @override
+  String get productBookingCancellationNotAllowed => 'Annulation non autorisée';
+
+  @override
+  String get accountBookingItemsNotCanceled =>
+      'Les articles de réservation de cette commande ne seront pas annulés.';
+
+  @override
+  String cartQtyValue(int count) {
+    return 'Qté : $count';
+  }
+
+  @override
+  String get checkoutAccountSuspended =>
+      'Votre compte est suspendu. Vous pouvez parcourir la boutique, mais pas passer de commande.';
+
+  @override
+  String get accountGenderRequiredLabel => 'Genre *';
+
+  @override
+  String get accountGenderRequired => 'Le genre est obligatoire';
+
+  @override
+  String get accountPhoneRequiredLabel => 'Téléphone *';
+
+  @override
+  String get cartGuestCheckoutNotAllowed =>
+      'Veuillez vous connecter pour commander ces articles.';
+
+  @override
+  String get accountEuWithdraw => 'Se rétracter du contrat';
+
+  @override
+  String get accountEuWithdrawReason => 'Motif (facultatif)';
+
+  @override
+  String get accountEuWithdrawSubmit => 'Envoyer la rétractation';
+
+  @override
+  String get accountEuWithdrawSubmitted =>
+      'Votre demande de rétractation a été reçue.';
+
+  @override
+  String accountEuWithdrawStatus(String status) {
+    return 'Demande de rétractation : $status';
+  }
+
+  @override
+  String get accountEuWithdrawGuestDescription =>
+      'Saisissez le numéro de commande et l\'e-mail utilisé pour la commande afin de vous rétracter.';
+
+  @override
+  String get accountEuWithdrawOrderNumber => 'Numéro de commande *';
+
+  @override
+  String get accountEuWithdrawEmail => 'E-mail de la commande *';
+
+  @override
+  String get accountEuWithdrawFieldRequired => 'Ce champ est obligatoire';
 }

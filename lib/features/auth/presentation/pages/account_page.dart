@@ -1,6 +1,8 @@
+import '../../../account/presentation/pages/guest_eu_withdrawal_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../../../../core/widgets/channel_logo.dart';
 import '../../../../core/currency/currency_cubit.dart';
 import '../../../../core/graphql/graphql_client.dart';
 import '../../../../core/locale/locale_cubit.dart';
@@ -156,6 +158,9 @@ class _LoggedOutView extends StatelessWidget {
                       // ── Sign Up & Login Buttons ──
                       _buildAuthButtons(context, isDark, l10n),
 
+                      // ── Guest EU withdrawal (when enabled in admin) ──
+                      const _GuestEuWithdrawalLink(),
+
                       const SizedBox(height: 36),
 
                       // ── "Sign in with" ──
@@ -199,10 +204,13 @@ class _LoggedOutView extends StatelessWidget {
   /// Bagisto logo icon + "bagisto" wordmark
   Widget _buildLogo(bool isDark) {
     return Center(
-      child: SvgPicture.asset(
-        'assets/images/bagisto_logo.svg',
+      child: ChannelLogo(
         height: 60,
-        width: 60,
+        fallback: SvgPicture.asset(
+          'assets/images/bagisto_logo.svg',
+          height: 60,
+          width: 60,
+        ),
       ),
     );
   }
@@ -319,6 +327,53 @@ class _LoggedOutView extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// "Withdraw from Contract" link for guests, shown only when the channel
+/// has EU withdrawal enabled (`euWithdrawalStatus`).
+class _GuestEuWithdrawalLink extends StatefulWidget {
+  const _GuestEuWithdrawalLink();
+
+  @override
+  State<_GuestEuWithdrawalLink> createState() => _GuestEuWithdrawalLinkState();
+}
+
+class _GuestEuWithdrawalLinkState extends State<_GuestEuWithdrawalLink> {
+  bool _enabled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    AccountRepository(client: GraphQLClientProvider.buildClient())
+        .isEuWithdrawalEnabled()
+        .then((enabled) {
+          if (mounted && enabled) setState(() => _enabled = true);
+        })
+        .catchError((Object e) {
+          debugPrint('⚠️ EU withdrawal status check failed: $e');
+        });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_enabled) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 16),
+      child: TextButton(
+        key: const ValueKey('guest_eu_withdraw_link'),
+        onPressed: () => GuestEuWithdrawalPage.navigate(context),
+        child: Text(
+          AppLocalizations.of(context)!.accountEuWithdraw,
+          style: const TextStyle(
+            fontFamily: 'Roboto',
+            fontWeight: FontWeight.w500,
+            fontSize: 14,
+            color: AppColors.primary500,
+          ),
         ),
       ),
     );

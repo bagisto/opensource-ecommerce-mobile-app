@@ -265,8 +265,7 @@ class AccountQueries {
     mutation createCustomerProfileDelete($input: createCustomerProfileDeleteInput!) {
       createCustomerProfileDelete(input: $input) {
         customerProfileDelete {
-          success
-          message
+          id
         }
       }
     }
@@ -588,6 +587,10 @@ class AccountQueries {
         baseGrandTotal
         grandTotalInvoiced
         grandTotalRefunded
+        subTotalRefunded
+        shippingRefunded
+        taxAmountRefunded
+        discountRefunded
         subTotal
         baseSubTotal
         taxAmount
@@ -618,6 +621,9 @@ class AccountQueries {
               qtyInvoiced
               qtyCanceled
               qtyRefunded
+              type
+              productType
+              productId
             }
           }
         }
@@ -910,11 +916,30 @@ mutation createReorderOrder($input: createReorderOrderInput!) {
     }
   ''';
 
+  /// Whether a booking product lets customers cancel booked slots.
+  /// `id` is the product IRI `/api/shop/products/{id}`.
+  static const String getBookingCancellation = r'''
+    query bookingCancellation($id: ID!) {
+      product(id: $id) {
+        id
+        bookingProducts {
+          edges {
+            node {
+              id
+              allowCancellation
+            }
+          }
+        }
+      }
+    }
+  ''';
+
   /// Get a single customer order shipment detail by ID.
-  /// Bagisto API query: customerOrderShipment(id: Int!)
+  /// Bagisto API query: customerOrderShipment(id: ID!), IRI
+  /// `/api/shop/customer-order-shipments/{id}`.
   /// Returns: Shipment with items
   static const String getCustomerOrderShipment = r'''
-    query getOrderShipment($id: Int!) {
+    query getOrderShipment($id: ID!) {
       customerOrderShipment(id: $id) {
         id
         _id

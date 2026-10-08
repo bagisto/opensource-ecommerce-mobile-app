@@ -9,6 +9,60 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
 void main() {
+  testWidgets('refunded order shows the refund breakdown', (
+    WidgetTester tester,
+  ) async {
+    final order = OrderDetail.fromJson({
+      'incrementId': '2470',
+      'status': 'closed',
+      'orderCurrencyCode': 'USD',
+      'grandTotal': 40,
+      'subTotal': 30,
+      'grandTotalRefunded': 40,
+      'subTotalRefunded': 30,
+      'shippingRefunded': 5,
+      'taxAmountRefunded': 5,
+      'discountRefunded': 0,
+      'items': {
+        'edges': [
+          {
+            'node': {
+              'name': 'Beanie',
+              'qtyOrdered': 2,
+              'qtyRefunded': 2,
+              'qtyCanceled': 0,
+              'price': 15,
+              'total': 30,
+            },
+          },
+        ],
+      },
+    });
+    expect(order.subTotalRefunded, 30);
+    expect(order.shippingRefunded, 5);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: BlocProvider(
+          create: (_) =>
+              OrderDetailBloc(repository: _FakeAccountRepository(order: order))
+                ..add(const LoadOrderDetail(2470)),
+          child: const OrderDetailPage(orderId: 2470),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(find.text('Refund Breakdown'), 200);
+    expect(find.text('Subtotal Refunded'), findsOneWidget);
+    expect(find.text('Shipping Refunded'), findsOneWidget);
+    expect(find.text('Tax Refunded'), findsOneWidget);
+    expect(find.text('Discount Refunded'), findsNothing);
+    expect(find.text('Refunded'), findsWidgets);
+  });
+
   testWidgets('tapping More info shows selected options', (
     WidgetTester tester,
   ) async {

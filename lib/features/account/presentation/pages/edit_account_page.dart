@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/utils/phone_validation.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
@@ -180,13 +181,22 @@ class _EditAccountPageState extends State<EditAccountPage> {
                           // Gender (dropdown)
                           _buildGenderField(context, isDark),
 
-                          // Phone
+                          // Phone * (required, like the storefront profile)
                           _buildInputField(
                             context,
-                            label: l10n.checkoutPhone,
+                            label: l10n.accountPhoneRequiredLabel,
                             controller: _phoneCtrl,
                             isDark: isDark,
                             keyboardType: TextInputType.phone,
+                            validator: (v) {
+                              if (v == null || v.trim().isEmpty) {
+                                return l10n.accountPhoneNumberRequired;
+                              }
+                              if (!isValidPhoneNumber(v)) {
+                                return l10n.accountPleaseEnterValidContactNumber;
+                              }
+                              return null;
+                            },
                           ),
 
                           // DOB (date picker)
@@ -313,7 +323,7 @@ class _EditAccountPageState extends State<EditAccountPage> {
     final labelColor = isDark ? AppColors.neutral300 : AppColors.neutral800;
     final bgColor = isDark ? AppColors.neutral900 : AppColors.white;
 
-    return Padding(
+    final field = Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Stack(
         clipBehavior: Clip.none,
@@ -372,7 +382,7 @@ class _EditAccountPageState extends State<EditAccountPage> {
               color: bgColor,
               padding: const EdgeInsets.symmetric(horizontal: 2),
               child: Text(
-                l10n.accountGender,
+                l10n.accountGenderRequiredLabel,
                 style: TextStyle(
                   fontFamily: 'Roboto',
                   fontWeight: FontWeight.w400,
@@ -382,6 +392,30 @@ class _EditAccountPageState extends State<EditAccountPage> {
               ),
             ),
           ),
+        ],
+      ),
+    );
+
+    // Gender * (required, like the storefront profile).
+    return FormField<String>(
+      validator: (_) =>
+          _selectedGender == null ? l10n.accountGenderRequired : null,
+      builder: (state) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          field,
+          if (state.hasError)
+            Padding(
+              padding: const EdgeInsets.only(left: 12, bottom: 4),
+              child: Text(
+                state.errorText!,
+                style: const TextStyle(
+                  fontFamily: 'Roboto',
+                  fontSize: 12,
+                  color: AppColors.errorRed,
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -722,6 +756,7 @@ class _EditAccountPageState extends State<EditAccountPage> {
             color: AppColors.primary500,
             borderRadius: BorderRadius.circular(54),
             child: InkWell(
+              key: const ValueKey('edit_profile_save'),
               onTap: state.isProcessing ? null : () => _onSaveProfile(context),
               borderRadius: BorderRadius.circular(54),
               child: Padding(

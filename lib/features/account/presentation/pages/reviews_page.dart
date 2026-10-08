@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/bloc_refresh.dart';
 import '../../../../core/widgets/app_back_button.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../data/models/account_models.dart';
 import '../bloc/review_bloc.dart';
+import '../widgets/product_reviews_section.dart' show openReviewedProduct;
 import '../widgets/review_attachments_strip.dart';
 
 /// Reviews Page — Figma node-id=245-5802
@@ -17,7 +19,11 @@ import '../widgets/review_attachments_strip.dart';
 /// Architecture:
 ///   BlocProvider<ReviewBloc> → ReviewsPage → Repository → GraphQL
 class ReviewsPage extends StatelessWidget {
-  const ReviewsPage({super.key});
+  /// Product the reviews were loaded for in [ReviewMode.product]; needed to
+  /// reload the same list on pull-to-refresh.
+  final int? productId;
+
+  const ReviewsPage({super.key, this.productId});
 
   @override
   Widget build(BuildContext context) {
@@ -48,8 +54,11 @@ class ReviewsPage extends StatelessWidget {
       ),
       body: BlocConsumer<ReviewBloc, ReviewState>(
         listener: (context, state) {
+          // A failed refresh keeps the old list on screen, so surface its
+          // error as a snackbar too.
           if (state.errorMessage != null &&
-              state.status != ReviewStatus.error) {
+              (state.status != ReviewStatus.error ||
+                  state.reviews.isNotEmpty)) {
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
               ..showSnackBar(
@@ -69,23 +78,55 @@ class ReviewsPage extends StatelessWidget {
             return const Center(child: CircularProgressIndicator());
           }
 
+          final Widget content;
           if (state.status == ReviewStatus.error &&
               state.reviews.isEmpty) {
-            return _buildErrorState(context, state.errorMessage);
+            content = _fillViewport(
+              _buildErrorState(context, state.errorMessage),
+            );
+          } else if (state.reviews.isEmpty) {
+            content = _fillViewport(_buildEmptyState(context));
+          } else {
+            content = _ReviewList(
+              reviews: state.reviews,
+              totalCount: state.totalCount,
+              hasNextPage: state.hasNextPage,
+              isLoadingMore: state.isLoadingMore,
+            );
           }
 
-          if (state.reviews.isEmpty) {
-            return _buildEmptyState(context);
+          // Product mode without a productId cannot reload the same list.
+          if (state.mode == ReviewMode.product && productId == null) {
+            return content;
           }
 
-          return _ReviewList(
-            reviews: state.reviews,
-            totalCount: state.totalCount,
-            hasNextPage: state.hasNextPage,
-            isLoadingMore: state.isLoadingMore,
+          return RefreshIndicator(
+            color: AppColors.primary500,
+            onRefresh: () => _refresh(context),
+            child: content,
           );
         },
       ),
+    );
+  }
+
+  /// Pull-to-refresh: reloads with the same mode/product the page was opened
+  /// with and resolves once the reload finishes.
+  Future<void> _refresh(BuildContext context) {
+    final bloc = context.read<ReviewBloc>();
+    return refreshBloc<ReviewState>(
+      bloc,
+      () => bloc.add(LoadReviews(mode: bloc.state.mode, productId: productId)),
+      (s) => s.status == ReviewStatus.loaded || s.status == ReviewStatus.error,
+    );
+  }
+
+  /// Makes a non-list view pullable by placing it in an always-scrollable
+  /// viewport that fills the body.
+  Widget _fillViewport(Widget child) {
+    return CustomScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      slivers: [SliverFillRemaining(hasScrollBody: false, child: child)],
     );
   }
 
@@ -355,6 +396,7 @@ class _ReviewListState extends State<_ReviewList> {
         Expanded(
           child: ListView.builder(
             controller: _scrollController,
+            physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.symmetric(horizontal: 20),
             // +1 for header, +1 for loading indicator if loading more
             itemCount:
@@ -378,7 +420,11 @@ class _ReviewListState extends State<_ReviewList> {
               final review = widget.reviews[index - 1];
               return Padding(
                 padding: const EdgeInsets.only(bottom: 8),
-                child: _ReviewCard(review: review),
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => openReviewedProduct(context, review),
+                  child: _ReviewCard(review: review),
+                ),
               );
             },
           ),

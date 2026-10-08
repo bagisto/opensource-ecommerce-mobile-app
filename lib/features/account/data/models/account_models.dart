@@ -1435,7 +1435,7 @@ class OrderItem {
       numericId: _parseInt(json['_id']),
       name: json['name']?.toString() ?? '',
       sku: json['sku']?.toString(),
-      type: json['type']?.toString(),
+      type: json['type']?.toString() ?? json['productType']?.toString(),
       qtyOrdered: _parseInt(json['qtyOrdered']) ?? 0,
       qtyShipped: _parseInt(json['qtyShipped']) ?? 0,
       qtyInvoiced: _parseInt(json['qtyInvoiced']) ?? 0,
@@ -1453,7 +1453,9 @@ class OrderItem {
       productImageUrl: imageUrl,
       productName: product is Map ? product['name']?.toString() : null,
       productUrlKey: product is Map ? product['urlKey']?.toString() : null,
-      productId: product is Map ? _parseInt(product['_id']) : null,
+      productId:
+          _parseInt(json['productId']) ??
+          (product is Map ? _parseInt(product['_id']) : null),
       additional: additionalMap,
     );
   }
@@ -1870,6 +1872,10 @@ class OrderDetail {
   final double? baseGrandTotal;
   final double? grandTotalInvoiced;
   final double? grandTotalRefunded;
+  final double? subTotalRefunded;
+  final double? shippingRefunded;
+  final double? taxAmountRefunded;
+  final double? discountRefunded;
   final double subTotal;
   final double? taxAmount;
   final double? discountAmount;
@@ -1903,6 +1909,10 @@ class OrderDetail {
     this.baseGrandTotal,
     this.grandTotalInvoiced,
     this.grandTotalRefunded,
+    this.subTotalRefunded,
+    this.shippingRefunded,
+    this.taxAmountRefunded,
+    this.discountRefunded,
     this.subTotal = 0,
     this.taxAmount,
     this.discountAmount,
@@ -2040,6 +2050,10 @@ class OrderDetail {
       baseGrandTotal: _parseDouble(json['baseGrandTotal']),
       grandTotalInvoiced: _parseDouble(json['grandTotalInvoiced']),
       grandTotalRefunded: _parseDouble(json['grandTotalRefunded']),
+      subTotalRefunded: _parseDouble(json['subTotalRefunded']),
+      shippingRefunded: _parseDouble(json['shippingRefunded']),
+      taxAmountRefunded: _parseDouble(json['taxAmountRefunded']),
+      discountRefunded: _parseDouble(json['discountRefunded']),
       subTotal: sub,
       taxAmount: _parseDouble(json['taxAmount']),
       discountAmount: _parseDouble(json['discountAmount']),
@@ -2285,6 +2299,35 @@ class ContactUsResponse {
     return ContactUsResponse(
       success: json['success'] as bool? ?? false,
       message: json['message']?.toString() ?? 'Unknown response',
+    );
+  }
+}
+
+/// An EU contract withdrawal request (`EuWithdrawal` / `GuestEuWithdrawal`).
+class EuWithdrawal {
+  final int? orderId;
+  final String? orderIncrementId;
+
+  /// Server status, e.g. `received`, `confirmed`, `declined`, `refunded`.
+  final String status;
+  final String? receivedAt;
+  final String? declinedReason;
+
+  const EuWithdrawal({
+    this.orderId,
+    this.orderIncrementId,
+    required this.status,
+    this.receivedAt,
+    this.declinedReason,
+  });
+
+  factory EuWithdrawal.fromJson(Map<String, dynamic> json) {
+    return EuWithdrawal(
+      orderId: _parseInt(json['orderId']),
+      orderIncrementId: json['orderIncrementId']?.toString(),
+      status: json['status']?.toString() ?? '',
+      receivedAt: json['receivedAt']?.toString(),
+      declinedReason: json['declinedReason']?.toString(),
     );
   }
 }

@@ -28,6 +28,20 @@ class CategoryModel {
   String get slug => translation?.slug ?? '';
   String get urlPath => translation?.urlPath ?? '';
   String? get imageUrl => logoUrl ?? logoPath;
+
+  /// Category description from the admin (HTML) as plain text; empty when
+  /// there is none.
+  String get plainDescription => (translation?.description ?? '')
+      .replaceAll(RegExp(r'<[^>]*>'), ' ')
+      .replaceAll('&nbsp;', ' ')
+      .replaceAll('&amp;', '&')
+      .replaceAll('&lt;', '<')
+      .replaceAll('&gt;', '>')
+      .replaceAll('&quot;', '"')
+      .replaceAll('&#39;', "'")
+      .replaceAll(RegExp(r'\s+'), ' ')
+      .replaceAll(RegExp(r' (?=[,.;:!?])'), '')
+      .trim();
   bool get isActive => isActiveStatus(status);
 
   /// Category status from the API: "1"/1/true = active, "0"/0/false =

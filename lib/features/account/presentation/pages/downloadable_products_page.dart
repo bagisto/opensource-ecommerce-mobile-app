@@ -6,6 +6,7 @@ import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import '../../../../core/constants/api_constants.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/bloc_refresh.dart';
 import '../../../../core/widgets/app_back_button.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../auth/domain/services/auth_storage.dart';
@@ -51,8 +52,11 @@ class DownloadableProductsPage extends StatelessWidget {
       ),
       body: BlocConsumer<DownloadableProductsBloc, DownloadableProductsState>(
         listener: (context, state) {
+          // A failed refresh keeps the old list on screen, so surface its
+          // error as a snackbar too.
           if (state.errorMessage != null &&
-              state.status != DownloadableProductsStatus.error) {
+              (state.status != DownloadableProductsStatus.error ||
+                  state.products.isNotEmpty)) {
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
               ..showSnackBar(
@@ -74,23 +78,51 @@ class DownloadableProductsPage extends StatelessWidget {
             return const Center(child: CircularProgressIndicator());
           }
 
+          final Widget content;
           if (state.status == DownloadableProductsStatus.error &&
               state.products.isEmpty) {
-            return _buildErrorState(context, state.errorMessage);
+            content = _fillViewport(
+              _buildErrorState(context, state.errorMessage),
+            );
+          } else if (state.products.isEmpty) {
+            content = _fillViewport(_buildEmptyState(context));
+          } else {
+            content = _DownloadableProductsList(
+              products: state.products,
+              totalCount: state.totalCount,
+              hasNextPage: state.hasNextPage,
+              isLoadingMore: state.isLoadingMore,
+            );
           }
 
-          if (state.products.isEmpty) {
-            return _buildEmptyState(context);
-          }
-
-          return _DownloadableProductsList(
-            products: state.products,
-            totalCount: state.totalCount,
-            hasNextPage: state.hasNextPage,
-            isLoadingMore: state.isLoadingMore,
+          return RefreshIndicator(
+            color: AppColors.primary500,
+            onRefresh: () => _refresh(context),
+            child: content,
           );
         },
       ),
+    );
+  }
+
+  /// Pull-to-refresh: reloads the first page and resolves once it finishes.
+  Future<void> _refresh(BuildContext context) {
+    final bloc = context.read<DownloadableProductsBloc>();
+    return refreshBloc<DownloadableProductsState>(
+      bloc,
+      () => bloc.add(const LoadDownloadableProducts()),
+      (s) =>
+          s.status == DownloadableProductsStatus.loaded ||
+          s.status == DownloadableProductsStatus.error,
+    );
+  }
+
+  /// Makes a non-list view pullable by placing it in an always-scrollable
+  /// viewport that fills the body.
+  Widget _fillViewport(Widget child) {
+    return CustomScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      slivers: [SliverFillRemaining(hasScrollBody: false, child: child)],
     );
   }
 
@@ -379,6 +411,7 @@ class _DownloadableProductsListState extends State<_DownloadableProductsList> {
         Expanded(
           child: ListView.builder(
             controller: _scrollController,
+            physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             itemCount: widget.products.length +
                 (widget.isLoadingMore ? 1 : 0),

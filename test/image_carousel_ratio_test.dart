@@ -40,4 +40,29 @@ void main() {
       await tester.pumpWidget(const SizedBox());
     });
   }
+
+  testWidgets('tapping a linked banner reports it', (tester) async {
+    BannerImage? tapped;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: ImageCarousel(
+              images: const [
+                BannerImage(
+                  imageUrl: 'https://example.com/a.webp',
+                  link: 'fashion',
+                ),
+              ],
+              onBannerTap: (banner) => tapped = banner,
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.byKey(const ValueKey('home_banner_0')));
+    expect(tapped?.linkSlug, 'fashion');
+    await tester.pumpWidget(const SizedBox());
+  });
 }

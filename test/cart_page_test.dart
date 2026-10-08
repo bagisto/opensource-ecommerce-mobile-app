@@ -69,6 +69,55 @@ void main() {
       expect(wishlistCubit.state.isWishlisted(77), isFalse);
     },
   );
+
+  testWidgets('coupon code stays in the field while it is being applied', (
+    WidgetTester tester,
+  ) async {
+    const cart = CartModel(
+      id: 1,
+      grandTotal: 120,
+      formattedGrandTotal: '\$120.00',
+      items: [
+        CartItemModel(
+          id: 11,
+          cartId: 1,
+          productId: 77,
+          name: 'Royal Luxe Leather Sofa',
+          price: 120,
+          total: 120,
+          quantity: 1,
+        ),
+      ],
+    );
+    final cartBloc = _TestCartBloc()..seedLoadedCart(cart);
+
+    await tester.pumpWidget(
+      MultiBlocProvider(
+        providers: [
+          BlocProvider<CartBloc>.value(value: cartBloc),
+          BlocProvider<WishlistCubit>.value(value: _TestWishlistCubit()),
+        ],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const CartPage(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final field = find.byType(TextField).first;
+    await tester.enterText(field, 'SAVE10');
+    cartBloc.seedState(cartBloc.state.copyWith(isApplyingCoupon: true));
+    await tester.pump();
+
+    expect(tester.widget<TextField>(field).controller?.text, 'SAVE10');
+
+    // A failed apply (still no coupon on the cart) clears the field.
+    cartBloc.seedState(cartBloc.state.copyWith(isApplyingCoupon: false));
+    await tester.pump();
+    expect(tester.widget<TextField>(field).controller?.text, isEmpty);
+  });
 }
 
 class _TestWishlistCubit extends WishlistCubit {
@@ -116,6 +165,8 @@ class _TestCartBloc extends CartBloc {
       ),
     );
   }
+
+  void seedState(CartState state) => emit(state);
 
   @override
   void add(CartEvent event) {

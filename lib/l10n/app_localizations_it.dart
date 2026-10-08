@@ -1905,4 +1905,101 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get accountReviewVideoLoadFailed =>
       'Impossibile riprodurre questo video';
+
+  @override
+  String accountShippedCount(int count) {
+    return '$count spedito/i';
+  }
+
+  @override
+  String get accountReturnNoEligibleOrders =>
+      'Nessun ordine è idoneo per un reso al momento';
+
+  @override
+  String get accountRequestReturn => 'Richiedi un reso';
+
+  @override
+  String get accountRefundBreakdown => 'Dettaglio rimborso';
+
+  @override
+  String get accountSubtotalRefunded => 'Subtotale rimborsato';
+
+  @override
+  String get accountShippingRefunded => 'Spedizione rimborsata';
+
+  @override
+  String get accountTaxRefunded => 'Imposta rimborsata';
+
+  @override
+  String get accountDiscountRefunded => 'Sconto rimborsato';
+
+  @override
+  String get accountRefunded => 'Rimborsato';
+
+  @override
+  String get accountCanceledQty => 'Annullato';
+
+  @override
+  String get productBookingCancellation => 'Cancellazione';
+
+  @override
+  String get productBookingCancellationNotAllowed =>
+      'Cancellazione non consentita';
+
+  @override
+  String get accountBookingItemsNotCanceled =>
+      'Gli articoli di prenotazione di questo ordine non verranno annullati.';
+
+  @override
+  String cartQtyValue(int count) {
+    return 'Qtà: $count';
+  }
+
+  @override
+  String get checkoutAccountSuspended =>
+      'Il tuo account è sospeso. Puoi navigare nel negozio, ma non puoi effettuare ordini.';
+
+  @override
+  String get accountGenderRequiredLabel => 'Genere *';
+
+  @override
+  String get accountGenderRequired => 'Il genere è obbligatorio';
+
+  @override
+  String get accountPhoneRequiredLabel => 'Telefono *';
+
+  @override
+  String get cartGuestCheckoutNotAllowed =>
+      'Accedi per completare l\'acquisto di questi articoli.';
+
+  @override
+  String get accountEuWithdraw => 'Recedere dal contratto';
+
+  @override
+  String get accountEuWithdrawReason => 'Motivo (facoltativo)';
+
+  @override
+  String get accountEuWithdrawSubmit => 'Invia recesso';
+
+  @override
+  String get accountEuWithdrawSubmitted =>
+      'La tua richiesta di recesso è stata ricevuta.';
+
+  @override
+  String accountEuWithdrawStatus(String status) {
+    return 'Richiesta di recesso: $status';
+  }
+
+  @override
+  String get accountEuWithdrawGuestDescription =>
+      'Inserisci il numero d\'ordine e l\'email usata per l\'ordine per recedere dal contratto.';
+
+  @override
+  String get accountEuWithdrawOrderNumber => 'Numero d\'ordine *';
+
+  @override
+  String get accountEuWithdrawEmail => 'Email dell\'ordine *';
+
+  @override
+  String get accountEuWithdrawFieldRequired => 'Questo campo è obbligatorio';
 }

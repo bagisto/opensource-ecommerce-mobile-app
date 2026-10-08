@@ -1908,4 +1908,100 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get accountReviewVideoLoadFailed =>
       'Dieses Video kann nicht abgespielt werden';
+
+  @override
+  String accountShippedCount(int count) {
+    return '$count versendet';
+  }
+
+  @override
+  String get accountReturnNoEligibleOrders =>
+      'Derzeit sind keine Bestellungen für eine Rücksendung berechtigt';
+
+  @override
+  String get accountRequestReturn => 'Rücksendung anfordern';
+
+  @override
+  String get accountRefundBreakdown => 'Erstattungsaufschlüsselung';
+
+  @override
+  String get accountSubtotalRefunded => 'Erstattete Zwischensumme';
+
+  @override
+  String get accountShippingRefunded => 'Erstattete Versandkosten';
+
+  @override
+  String get accountTaxRefunded => 'Erstattete Steuer';
+
+  @override
+  String get accountDiscountRefunded => 'Erstatteter Rabatt';
+
+  @override
+  String get accountRefunded => 'Erstattet';
+
+  @override
+  String get accountCanceledQty => 'Storniert';
+
+  @override
+  String get productBookingCancellation => 'Stornierung';
+
+  @override
+  String get productBookingCancellationNotAllowed =>
+      'Stornierung nicht möglich';
+
+  @override
+  String get accountBookingItemsNotCanceled =>
+      'Buchungsartikel in dieser Bestellung werden nicht storniert.';
+
+  @override
+  String cartQtyValue(int count) {
+    return 'Menge: $count';
+  }
+
+  @override
+  String get checkoutAccountSuspended =>
+      'Ihr Konto ist gesperrt. Sie können den Shop durchsuchen, aber keine Bestellungen aufgeben.';
+
+  @override
+  String get accountGenderRequiredLabel => 'Geschlecht *';
+
+  @override
+  String get accountGenderRequired => 'Geschlecht ist erforderlich';
+
+  @override
+  String get accountPhoneRequiredLabel => 'Telefon *';
+
+  @override
+  String get cartGuestCheckoutNotAllowed =>
+      'Bitte melden Sie sich an, um diese Artikel zu bestellen.';
+
+  @override
+  String get accountEuWithdraw => 'Vom Vertrag zurücktreten';
+
+  @override
+  String get accountEuWithdrawReason => 'Grund (optional)';
+
+  @override
+  String get accountEuWithdrawSubmit => 'Widerruf absenden';
+
+  @override
+  String get accountEuWithdrawSubmitted => 'Ihr Widerruf ist eingegangen.';
+
+  @override
+  String accountEuWithdrawStatus(String status) {
+    return 'Widerruf: $status';
+  }
+
+  @override
+  String get accountEuWithdrawGuestDescription =>
+      'Geben Sie die Bestellnummer und die bei der Bestellung verwendete E-Mail-Adresse ein, um vom Vertrag zurückzutreten.';
+
+  @override
+  String get accountEuWithdrawOrderNumber => 'Bestellnummer *';
+
+  @override
+  String get accountEuWithdrawEmail => 'E-Mail der Bestellung *';
+
+  @override
+  String get accountEuWithdrawFieldRequired => 'Dieses Feld ist erforderlich';
 }

@@ -16,6 +16,9 @@ class ChannelBootstrapService {
   static const String _localesCacheKey = 'cached_shop_locales';
   static const String _currenciesCacheKey = 'cached_shop_currencies';
 
+  /// Channel logo URL set in admin; absent when the channel has none.
+  static const String logoUrlCacheKey = 'cached_channel_logo_url';
+
   final GraphQLClient client;
   final SharedPreferences prefs;
 
@@ -63,6 +66,13 @@ class ChannelBootstrapService {
       _currenciesCacheKey,
       jsonEncode(_encodeCurrencies(currencies)),
     );
+
+    final logoUrl = channel['logoUrl']?.toString().trim() ?? '';
+    if (logoUrl.isEmpty) {
+      await prefs.remove(logoUrlCacheKey);
+    } else {
+      await prefs.setString(logoUrlCacheKey, logoUrl);
+    }
 
     // Only set defaults when the user has not already selected a preference.
     final savedLocale = prefs.getString(LocaleCubit.localeKey);

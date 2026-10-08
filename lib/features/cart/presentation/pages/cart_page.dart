@@ -10,6 +10,7 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../cart/data/models/cart_model.dart';
 import '../../../product/presentation/pages/product_detail_page.dart';
 import '../../../checkout/presentation/pages/checkout_page.dart';
+import '../../../auth/presentation/pages/login_page.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../account/data/repository/account_repository.dart';
 import '../../../account/presentation/bloc/wishlist_bloc.dart';
@@ -62,6 +63,8 @@ class _CartPageState extends State<CartPage> {
   final TextEditingController _couponController = TextEditingController();
   final FocusNode _couponFocusNode = FocusNode();
   final Set<int> _expandedItems = {};
+  bool _wasApplyingCoupon = false;
+  bool _hadCoupon = false;
 
   @override
   void dispose() {
@@ -70,13 +73,51 @@ class _CartPageState extends State<CartPage> {
     super.dispose();
   }
 
+  /// Guests may only check out when every cart product allows guest
+  /// checkout (`Product.guestCheckout`); otherwise they are sent to sign in.
+  Future<bool> _guestCheckoutAllowed(
+    BuildContext context,
+    CartBloc cartBloc,
+  ) async {
+    final productIds = cartBloc.state.cart.items
+        .map((item) => item.productId)
+        .where((id) => id > 0);
+    bool allowed;
+    try {
+      allowed = await cartBloc.repository.guestCheckoutAllowed(productIds);
+    } catch (e) {
+      // Checkout still validates on the server; don't block on a lookup
+      // failure.
+      debugPrint('[CartPage] guest checkout check failed: $e');
+      return true;
+    }
+    if (allowed || !context.mounted) return allowed;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(AppLocalizations.of(context)!.cartGuestCheckoutNotAllowed),
+      ),
+    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const LoginPage()));
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<CartBloc, CartState>(
       listener: (context, state) {
-        // Clear coupon input when cart has no coupon applied
-        // (covers: invalid code, cart emptied, coupon removed, new session)
-        if (!state.cart.hasCoupon) {
+        // Clear the coupon input only when an apply attempt ends without a
+        // coupon (invalid code) or an applied coupon goes away. Keep the
+        // typed code visible while it is being applied.
+        final applyFailed =
+            _wasApplyingCoupon &&
+            !state.isApplyingCoupon &&
+            !state.cart.hasCoupon;
+        final couponRemoved = _hadCoupon && !state.cart.hasCoupon;
+        _wasApplyingCoupon = state.isApplyingCoupon;
+        _hadCoupon = state.cart.hasCoupon;
+        if (applyFailed || couponRemoved) {
           _couponController.clear();
         }
 
@@ -452,9 +493,7 @@ class _CartPageState extends State<CartPage> {
                         children: [
                           Expanded(
                             child: Text(
-                              isBooking
-                                  ? '${item.displayPrice} x N/A'
-                                  : '${item.displayPrice} x ${item.quantity} ${item.quantity == 1 ? AppLocalizations.of(context)!.cartUnit : AppLocalizations.of(context)!.cartUnits}',
+                              '${item.displayPrice} x ${item.quantity} ${item.quantity == 1 ? AppLocalizations.of(context)!.cartUnit : AppLocalizations.of(context)!.cartUnits}',
                               style: TextStyle(
                                 fontFamily: 'Roboto',
                                 fontSize: 14,
@@ -564,7 +603,9 @@ class _CartPageState extends State<CartPage> {
                               ),
                               alignment: Alignment.center,
                               child: Text(
-                                'Qty: N/A',
+                                AppLocalizations.of(
+                                  context,
+                                )!.cartQtyValue(item.quantity),
                                 style: TextStyle(
                                   fontFamily: 'Roboto',
                                   fontSize: 14,
@@ -1282,6 +1323,11 @@ class _CartPageState extends State<CartPage> {
               onTap: () async {
                 final cartBloc = context.read<CartBloc>();
                 final authBloc = context.read<AuthBloc>();
+                if (authBloc.state is! AuthAuthenticated &&
+                    !await _guestCheckoutAllowed(context, cartBloc)) {
+                  return;
+                }
+                if (!context.mounted) return;
                 await Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (_) => MultiBlocProvider(

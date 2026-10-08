@@ -20,9 +20,11 @@ class CreateReturnPage extends StatelessWidget {
   const CreateReturnPage({super.key});
 
   /// Returns true when a request was submitted so the caller can refresh.
+  /// Pass [order] to skip the order picker and start with that order.
   static Future<bool?> navigate(
     BuildContext context, {
     required AccountRepository repository,
+    CustomerOrder? order,
   }) {
     return Navigator.of(context).push<bool>(
       MaterialPageRoute<bool>(
@@ -30,7 +32,11 @@ class CreateReturnPage extends StatelessWidget {
           value: repository,
           child: BlocProvider(
             create: (_) => CreateReturnBloc(repository: repository)
-              ..add(const LoadCreateReturn()),
+              ..add(
+                order != null
+                    ? SelectOrderForReturn(order)
+                    : const LoadCreateReturn(),
+              ),
             child: const CreateReturnPage(),
           ),
         ),
@@ -291,7 +297,8 @@ class _OrderPickerState extends State<_OrderPicker> {
               ),
               const SizedBox(height: 16),
               Text(
-                l10n.accountNoOrdersYet,
+                l10n.accountReturnNoEligibleOrders,
+                textAlign: TextAlign.center,
                 style: TextStyle(
                   fontFamily: 'Roboto',
                   fontWeight: FontWeight.w600,

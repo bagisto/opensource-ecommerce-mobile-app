@@ -7,6 +7,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'l10n/app_localizations.dart';
+import 'core/locale/locale_resolution.dart';
 import 'core/channel/channel_bootstrap_service.dart';
 import 'core/graphql/graphql_client.dart';
 import 'core/currency/currency_cubit.dart';
@@ -624,7 +625,9 @@ class _AppWithAuthCartSyncState extends State<_AppWithAuthCartSync> {
         child: BlocBuilder<ThemeCubit, ThemeMode>(
           builder: (context, themeMode) => BlocBuilder<LocaleCubit, Locale?>(
             builder: (context, locale) {
-              ErrorMapper.updateLocale(locale);
+              ErrorMapper.updateLocale(
+                resolveAppLocale(locale, AppLocalizations.supportedLocales),
+              );
               return MaterialApp(
                 onGenerateTitle: (context) =>
                     AppLocalizations.of(context)!.appTitle,
@@ -641,6 +644,8 @@ class _AppWithAuthCartSyncState extends State<_AppWithAuthCartSync> {
                   GlobalCupertinoLocalizations.delegate,
                 ],
                 supportedLocales: AppLocalizations.supportedLocales,
+                localeResolutionCallback: (deviceLocale, supported) =>
+                    resolveAppLocale(locale ?? deviceLocale, supported),
                 builder: (context, child) {
                   // Force the app's own typography scale — ignore the device's
                   // system font-size / Dynamic Type setting so layouts stay

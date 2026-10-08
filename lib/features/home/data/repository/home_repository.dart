@@ -26,7 +26,9 @@ class HomeRepository {
       QueryOptions(
         document: gql(ThemeQueries.getThemeCustomization),
         variables: const {'first': 50},
-        fetchPolicy: FetchPolicy.cacheAndNetwork,
+        // Admin edits must show on the next load; cache-and-network would
+        // hand back the previous response first.
+        fetchPolicy: FetchPolicy.networkOnly,
       ),
     );
 
@@ -49,12 +51,18 @@ class HomeRepository {
       ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
   }
 
-  /// Fetches categories for the horizontal category carousel.
-  Future<List<HomeCategory>> fetchHomeCategories() async {
+  /// Fetches categories for the horizontal category carousel: the active
+  /// direct children of [parentId] (the carousel's `parent_id` filter),
+  /// sorted by position and capped at [limit].
+  Future<List<HomeCategory>> fetchHomeCategories({
+    int parentId = 1,
+    int? limit,
+  }) async {
     final result = await _client.query(
       QueryOptions(
         document: gql(CategoryQueries.getHomeCategories),
-        fetchPolicy: FetchPolicy.cacheAndNetwork,
+        variables: const {'first': 100},
+        fetchPolicy: FetchPolicy.networkOnly,
       ),
     );
 
@@ -63,13 +71,21 @@ class HomeRepository {
     }
 
     final edges = result.data?['categories']?['edges'] as List? ?? [];
-    // The `categories` query also returns categories disabled in admin.
-    return edges
-        .where((e) => CategoryModel.isActiveStatus(e['node']?['status']))
-        .map((e) => HomeCategory.fromJson(e['node'] as Map<String, dynamic>))
-        .where((c) => c.numericId != 1) // exclude root category
+    // The `categories` query also returns disabled and nested categories.
+    final categories = edges
+        .map((e) => e['node'])
+        .whereType<Map<String, dynamic>>()
+        .where((node) => CategoryModel.isActiveStatus(node['status']))
+        .where((node) {
+          final parent = node['parent'] as Map<String, dynamic>?;
+          return int.tryParse('${parent?['_id']}') == parentId;
+        })
+        .map(HomeCategory.fromJson)
         .toList()
       ..sort((a, b) => a.position.compareTo(b.position));
+    return limit != null && limit > 0
+        ? categories.take(limit).toList()
+        : categories;
   }
 
   /// Fetches products with optional filter JSON and sorting.
@@ -92,7 +108,7 @@ class HomeRepository {
           'reverse': reverse,
           if (filter != null) 'filter': filter,
         },
-        fetchPolicy: FetchPolicy.cacheAndNetwork,
+        fetchPolicy: FetchPolicy.networkOnly,
       ),
     );
 
