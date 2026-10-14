@@ -77,7 +77,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
   String _bannerUrl(BannerImage banner) {
     final effectiveBaseUrl = widget.baseUrl.isNotEmpty
         ? widget.baseUrl
-        : Uri.parse(bagistoEndpoint).origin;
+        : bagistoPublicBaseUrl;
     return banner.fullImageUrl(effectiveBaseUrl);
   }
 

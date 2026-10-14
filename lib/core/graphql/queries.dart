@@ -1308,28 +1308,22 @@ $slotFields
   ''';
 }
 
-class ThemeQueries {
-  /// GET_THEME_CUSTOMIZATION
-  /// Source: nextjs-commerce/src/graphql/theme/queries/ThemeCustomization.ts
-  static const String getThemeCustomization = r'''
-    query themeCustomization($first: Int) {
-      themeCustomizations(first: $first) {
+class SectionQueries {
+  /// Published sections for the current channel's active theme.
+  static const String getSections = r'''
+    query sections($first: Int) {
+      sections(first: $first) {
         edges {
           node {
             id
+            _id
             type
             name
             status
             sortOrder
-            translations {
-              edges {
-                node {
-                  id
-                  themeCustomizationId
-                  locale
-                  options
-                }
-              }
+            translation {
+              locale
+              options
             }
           }
         }

@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../core/widgets/channel_logo.dart';
 import '../../../../core/error/error_mapper.dart';
@@ -19,6 +20,7 @@ import '../../../cart/presentation/bloc/cart_bloc.dart';
 import '../../../search/presentation/pages/search_page.dart';
 import '../bloc/home_bloc.dart';
 import '../widgets/category_carousel.dart';
+import '../widgets/footer_links_section.dart';
 import '../widgets/image_carousel.dart';
 import '../widgets/product_card_large.dart';
 import '../widgets/product_card_small.dart';
@@ -187,9 +189,15 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     }
     if (!context.mounted) return;
 
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => ProductDetailPage(urlKey: slug)),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => ProductDetailPage(urlKey: slug)));
+  }
+
+  Future<void> _openFooterLink(HomeFooterLink link) async {
+    final uri = Uri.tryParse(link.resolveUrl(bagistoPublicBaseUrl));
+    if (uri == null || (uri.scheme != 'http' && uri.scheme != 'https')) return;
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
   /// Quick-add a product to cart (for simple products only).
@@ -519,6 +527,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     // ── Build sections dynamically based on sortOrder from API ──
     // The API returns sections in sortOrder, so we render them in that order
     final List<Widget> sections = [];
+    final List<Widget> footerSections = [];
 
     // Process each customization in sortOrder
     for (final tc in state.customizations) {
@@ -569,7 +578,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               StaticContentWidget(
                 html: htmlRaw,
                 css: cssRaw,
-                baseUrl: Uri.parse(bagistoEndpoint).origin,
+                baseUrl: bagistoPublicBaseUrl,
                 onViewAllPressed: () => _openViewAll(context, tc.name),
                 onLinkTap: (link) => _openLink(context, link),
               ),
@@ -595,6 +604,19 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
             );
           }
           break;
+
+        case 'footer_links':
+          final columns = HomeFooterLink.columnsFromOptions(tc.options);
+          if (columns.any((column) => column.isNotEmpty)) {
+            footerSections.add(
+              FooterLinksSection(
+                title: tc.name,
+                columns: columns,
+                onLinkTap: _openFooterLink,
+              ),
+            );
+          }
+          break;
       }
     }
 
@@ -606,6 +628,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
     // Add Back to Top button
     sections.add(_buildBackToTopButton());
+    sections.addAll(footerSections);
     sections.add(const SizedBox(height: 16));
 
     return RefreshIndicator(

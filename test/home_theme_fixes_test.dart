@@ -1,8 +1,11 @@
 import 'dart:convert';
 
+import 'package:bagisto_flutter/core/constants/api_constants.dart';
 import 'package:bagisto_flutter/core/graphql/queries.dart';
 import 'package:bagisto_flutter/features/home/data/models/home_models.dart';
 import 'package:bagisto_flutter/features/home/data/repository/home_repository.dart';
+import 'package:bagisto_flutter/features/home/presentation/widgets/footer_links_section.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:http/http.dart' as http;
@@ -30,22 +33,24 @@ GraphQLClient _client(
   );
 }
 
-Map<String, dynamic> _themeData(String name) => {
-  'themeCustomizations': {
-    '__typename': 'ThemeCustomizationCursorConnection',
+Map<String, dynamic> _sectionsData(String name) => {
+  'sections': {
+    '__typename': 'SectionCursorConnection',
     'edges': [
       {
-        '__typename': 'ThemeCustomizationEdge',
+        '__typename': 'SectionEdge',
         'node': {
-          '__typename': 'ThemeCustomization',
-          'id': '/api/shop/theme-customizations/6',
+          '__typename': 'Section',
+          'id': '/api/shop/sections/6',
+          '_id': 6,
           'type': 'static_content',
           'name': name,
           'status': '1',
           'sortOrder': 1,
-          'translations': {
-            '__typename': 'ThemeCustomizationTranslationCursorConnection',
-            'edges': <Object>[],
+          'translation': {
+            '__typename': 'SectionTranslation',
+            'locale': 'en',
+            'options': jsonEncode({'html': '<p>$name</p>'}),
           },
         },
       },
@@ -79,48 +84,59 @@ Map<String, dynamic> _category(int id, String name, {int? parentId}) => {
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  test('theme customizations are refetched instead of served from cache',
-      () async {
-    var name = 'Bold Collections';
-    final repository = HomeRepository(client: _client(() => _themeData(name)));
+  test(
+    'homepage sections use the sections API and refetch fresh content',
+    () async {
+      var name = 'Bold Collections';
+      final requests = <Map<String, dynamic>>[];
+      final repository = HomeRepository(
+        client: _client(() => _sectionsData(name), requests: requests),
+      );
 
-    expect((await repository.fetchThemeCustomizations()).single.name,
-        'Bold Collections');
+      final first = await repository.fetchSections();
+      expect(requests.single['query'], contains('sections('));
+      expect(first.single.name, 'Bold Collections');
+      expect(first.single.options['html'], '<p>Bold Collections</p>');
 
-    name = 'Winter Collection';
-    expect((await repository.fetchThemeCustomizations()).single.name,
-        'Winter Collection');
-  });
+      name = 'Winter Collection';
+      expect(
+        (await repository.fetchSections()).single.name,
+        'Winter Collection',
+      );
+    },
+  );
 
-  test('home categories keep only direct children of the carousel parent',
-      () async {
-    final requests = <Map<String, dynamic>>[];
-    final repository = HomeRepository(
-      client: _client(
-        () => {
-          'categories': {
-            '__typename': 'CategoryCursorConnection',
-            'edges': [
-              for (final node in [
-                _category(1, 'Root'),
-                _category(23, 'Furniture', parentId: 1),
-                _category(19, 'Plastic Sofa', parentId: 23),
-                _category(8, 'Electronics', parentId: 1),
-              ])
-                {'__typename': 'CategoryEdge', 'node': node},
-            ],
+  test(
+    'home categories keep only direct children of the carousel parent',
+    () async {
+      final requests = <Map<String, dynamic>>[];
+      final repository = HomeRepository(
+        client: _client(
+          () => {
+            'categories': {
+              '__typename': 'CategoryCursorConnection',
+              'edges': [
+                for (final node in [
+                  _category(1, 'Root'),
+                  _category(23, 'Furniture', parentId: 1),
+                  _category(19, 'Plastic Sofa', parentId: 23),
+                  _category(8, 'Electronics', parentId: 1),
+                ])
+                  {'__typename': 'CategoryEdge', 'node': node},
+              ],
+            },
           },
-        },
-        requests: requests,
-      ),
-    );
+          requests: requests,
+        ),
+      );
 
-    final categories = await repository.fetchHomeCategories(parentId: 1);
+      final categories = await repository.fetchHomeCategories(parentId: 1);
 
-    expect(categories.map((c) => c.name), ['Electronics', 'Furniture']);
-    expect(requests.single['variables']['first'], 100);
-    expect(CategoryQueries.getHomeCategories, contains('parent'));
-  });
+      expect(categories.map((c) => c.name), ['Electronics', 'Furniture']);
+      expect(requests.single['variables']['first'], 100);
+      expect(CategoryQueries.getHomeCategories, contains('parent'));
+    },
+  );
 
   test('home categories honour the carousel limit', () async {
     final repository = HomeRepository(
@@ -187,6 +203,66 @@ void main() {
     expect(services.single.icon, 'icon-truck');
   });
 
+  test('footer links parse both columns and resolve localhost URLs', () {
+    final columns = HomeFooterLink.columnsFromOptions({
+      'column_1': [
+        {'title': 'About Us', 'url': 'http://localhost/page/about-us'},
+      ],
+      'column_2': [
+        {
+          'title': 'Privacy Policy',
+          'url': 'http://localhost/page/privacy-policy',
+        },
+      ],
+    });
+
+    final links = columns.expand((column) => column).toList();
+    expect(columns, hasLength(2));
+    expect(links.map((link) => link.title), ['About Us', 'Privacy Policy']);
+    expect(
+      links.first.resolveUrl(bagistoPublicBaseUrl),
+      'http://192.168.15.239/Bagisto-Api/new-setup/public/page/about-us',
+    );
+    expect(
+      links.last.resolveUrl(bagistoPublicBaseUrl),
+      'http://192.168.15.239/Bagisto-Api/new-setup/public/page/privacy-policy',
+    );
+  });
+
+  testWidgets('footer links render both columns and report selected link', (
+    tester,
+  ) async {
+    final columns = HomeFooterLink.columnsFromOptions({
+      'column_1': [
+        {'title': 'About Us', 'url': 'http://localhost/page/about-us'},
+      ],
+      'column_2': [
+        {
+          'title': 'Privacy Policy',
+          'url': 'http://localhost/page/privacy-policy',
+        },
+      ],
+    });
+    HomeFooterLink? selectedLink;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: FooterLinksSection(
+            title: 'Footer Links',
+            columns: columns,
+            onLinkTap: (link) => selectedLink = link,
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('About Us'), findsOneWidget);
+    expect(find.text('Privacy Policy'), findsOneWidget);
+    await tester.tap(find.text('About Us'));
+    expect(selectedLink?.title, 'About Us');
+  });
+
   test('banner link resolves to a slug', () {
     expect(BannerImage(imageUrl: 'a', link: 'fashion').linkSlug, 'fashion');
     expect(
@@ -198,5 +274,16 @@ void main() {
     );
     expect(BannerImage(imageUrl: 'a', link: '').linkSlug, isNull);
     expect(BannerImage(imageUrl: 'a', link: '/').linkSlug, isNull);
+  });
+
+  test('relative banner image URL preserves the Bagisto deployment path', () {
+    final banner = BannerImage(
+      imageUrl: 'storage/themes/default/sections/1/banner.webp',
+    );
+
+    expect(
+      banner.fullImageUrl(bagistoPublicBaseUrl),
+      'http://192.168.15.239/Bagisto-Api/new-setup/public/storage/themes/default/sections/1/banner.webp',
+    );
   });
 }

@@ -145,7 +145,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   Future<void> _doLoad(Emitter<HomeState> emit) async {
     // 1) Fetch theme customizations, then the categories the carousel
     //    is configured for (its `parent_id` and `limit` filters).
-    final customizations = await _repository.fetchThemeCustomizations();
+    final customizations = await _repository.fetchSections();
     final carouselFilters =
         customizations
                 .where((tc) => tc.type == 'category_carousel')

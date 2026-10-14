@@ -31,9 +31,17 @@ class ThemeCustomization extends Equatable {
     Map<String, dynamic>? enOptions;
     // The API may return locale codes in upper case (e.g. `AR`).
     final wantedLocale = preferredLocale.toLowerCase();
+    final translationNodes = <Map<String, dynamic>>[];
+    final currentTranslation = json['translation'];
+    if (currentTranslation is Map) {
+      translationNodes.add(Map<String, dynamic>.from(currentTranslation));
+    }
     final translations = json['translations']?['edges'] as List? ?? [];
     for (final edge in translations) {
       final node = edge['node'] as Map<String, dynamic>? ?? {};
+      translationNodes.add(node);
+    }
+    for (final node in translationNodes) {
       final locale = (node['locale'] as String? ?? '').toLowerCase();
 
       Map<String, dynamic>? parsed;
@@ -65,7 +73,8 @@ class ThemeCustomization extends Equatable {
       id: json['id']?.toString() ?? '',
       type: json['type'] as String? ?? '',
       name: json['name'] as String? ?? '',
-      status: json['status'] == true ||
+      status:
+          json['status'] == true ||
           json['status'] == 'true' ||
           json['status'] == 1 ||
           json['status'] == '1',
@@ -205,7 +214,9 @@ class HomeProduct extends Equatable {
       urlKey: json['urlKey'] as String? ?? '',
       baseImageUrl: json['baseImageUrl'] as String?,
       price: _toDouble(json['price']),
-      minimumPrice: json['minimumPrice'] != null ? _toDouble(json['minimumPrice']) : null,
+      minimumPrice: json['minimumPrice'] != null
+          ? _toDouble(json['minimumPrice'])
+          : null,
       specialPrice: parsedSpecialPrice,
       formattedPrice: json['formattedPrice'] as String?,
       formattedMinimumPrice: json['formattedMinimumPrice'] as String?,
@@ -332,11 +343,7 @@ class BannerImage extends Equatable {
   final String link;
   final String? title;
 
-  const BannerImage({
-    required this.imageUrl,
-    this.link = '',
-    this.title,
-  });
+  const BannerImage({required this.imageUrl, this.link = '', this.title});
 
   factory BannerImage.fromJson(Map<String, dynamic> json) {
     return BannerImage(
@@ -356,8 +363,12 @@ class BannerImage extends Equatable {
     if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
       return imageUrl;
     }
-    final cleanBase = baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
-    final cleanPath = imageUrl.startsWith('/') ? imageUrl.substring(1) : imageUrl;
+    final cleanBase = baseUrl.endsWith('/')
+        ? baseUrl.substring(0, baseUrl.length - 1)
+        : baseUrl;
+    final cleanPath = imageUrl.startsWith('/')
+        ? imageUrl.substring(1)
+        : imageUrl;
     return '$cleanBase/$cleanPath';
   }
 
@@ -371,8 +382,9 @@ class BannerImage extends Equatable {
 String? homeLinkSlug(String link) {
   final trimmed = link.trim();
   if (trimmed.isEmpty) return null;
-  final segments = (Uri.tryParse(trimmed)?.pathSegments ?? [trimmed])
-      .where((s) => s.isNotEmpty);
+  final segments = (Uri.tryParse(trimmed)?.pathSegments ?? [trimmed]).where(
+    (s) => s.isNotEmpty,
+  );
   return segments.isEmpty ? null : segments.last;
 }
 
@@ -408,6 +420,56 @@ class HomeService extends Equatable {
 
   @override
   List<Object?> get props => [title, description, icon];
+}
+
+/// A footer link configured in one of the section's columns.
+class HomeFooterLink extends Equatable {
+  final String title;
+  final String url;
+
+  const HomeFooterLink({required this.title, required this.url});
+
+  static List<List<HomeFooterLink>> columnsFromOptions(
+    Map<String, dynamic> options,
+  ) {
+    return ['column_1', 'column_2'].map((key) {
+      final entries = options[key] as List? ?? const [];
+      return entries
+          .whereType<Map>()
+          .map(
+            (entry) => HomeFooterLink(
+              title: entry['title']?.toString().trim() ?? '',
+              url: entry['url']?.toString().trim() ?? '',
+            ),
+          )
+          .where((link) => link.title.isNotEmpty && link.url.isNotEmpty)
+          .toList();
+    }).toList();
+  }
+
+  String resolveUrl(String publicBaseUrl) {
+    final uri = Uri.tryParse(url);
+    if (uri == null || uri.path.isEmpty) return '';
+    if (uri.hasScheme && uri.scheme != 'http' && uri.scheme != 'https') {
+      return '';
+    }
+
+    final isLocalhost =
+        uri.host == 'localhost' || uri.host == '127.0.0.1' || uri.host == '::1';
+    if (uri.hasScheme && !isLocalhost) return uri.toString();
+
+    final path = uri.path.startsWith('/') ? uri.path.substring(1) : uri.path;
+    return Uri.parse(publicBaseUrl)
+        .resolve(path)
+        .replace(
+          query: uri.hasQuery ? uri.query : null,
+          fragment: uri.hasFragment ? uri.fragment : null,
+        )
+        .toString();
+  }
+
+  @override
+  List<Object?> get props => [title, url];
 }
 
 double _toDouble(dynamic value) {
