@@ -2148,6 +2148,10 @@ class OrderDetail {
   /// Total refunded
   double get totalRefunded => grandTotalRefunded ?? 0;
 
+  /// Items with a refunded quantity, for the Refunds tab.
+  List<OrderItem> get refundedItems =>
+      items.where((item) => item.qtyRefunded > 0).toList();
+
   /// Total due = grandTotal - totalPaid
   double get totalDue {
     final due = grandTotal - totalPaid;

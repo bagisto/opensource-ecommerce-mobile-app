@@ -1919,21 +1919,6 @@ class AppLocalizationsIt extends AppLocalizations {
   String get accountRequestReturn => 'Richiedi un reso';
 
   @override
-  String get accountRefundBreakdown => 'Dettaglio rimborso';
-
-  @override
-  String get accountSubtotalRefunded => 'Subtotale rimborsato';
-
-  @override
-  String get accountShippingRefunded => 'Spedizione rimborsata';
-
-  @override
-  String get accountTaxRefunded => 'Imposta rimborsata';
-
-  @override
-  String get accountDiscountRefunded => 'Sconto rimborsato';
-
-  @override
   String get accountRefunded => 'Rimborsato';
 
   @override
@@ -2002,4 +1987,29 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get accountEuWithdrawFieldRequired => 'Questo campo è obbligatorio';
+
+  @override
+  String get accountRefunds => 'Rimborsi';
+
+  @override
+  String get accountShippingAndHandling => 'Spedizione e gestione';
+
+  @override
+  String get accountContactUsDescription =>
+      'Scrivici una nota e ti risponderemo il prima possibile';
+
+  @override
+  String get accountPhoneNumber => 'Numero di telefono';
+
+  @override
+  String get accountWhatsOnYourMind => 'Cosa hai in mente?';
+
+  @override
+  String get accountDescribeHere => 'Descrivi qui';
+
+  @override
+  String get accountSubmit => 'Invia';
+
+  @override
+  String get accountRefundedQty => 'Qtà rimborsata';
 }

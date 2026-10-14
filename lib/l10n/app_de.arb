@@ -814,11 +814,6 @@
   "accountShippedCount": "{count} versendet",
   "accountReturnNoEligibleOrders": "Derzeit sind keine Bestellungen für eine Rücksendung berechtigt",
   "accountRequestReturn": "Rücksendung anfordern",
-  "accountRefundBreakdown": "Erstattungsaufschlüsselung",
-  "accountSubtotalRefunded": "Erstattete Zwischensumme",
-  "accountShippingRefunded": "Erstattete Versandkosten",
-  "accountTaxRefunded": "Erstattete Steuer",
-  "accountDiscountRefunded": "Erstatteter Rabatt",
   "accountRefunded": "Erstattet",
   "accountCanceledQty": "Storniert",
   "productBookingCancellation": "Stornierung",
@@ -838,5 +833,13 @@
   "accountEuWithdrawGuestDescription": "Geben Sie die Bestellnummer und die bei der Bestellung verwendete E-Mail-Adresse ein, um vom Vertrag zurückzutreten.",
   "accountEuWithdrawOrderNumber": "Bestellnummer *",
   "accountEuWithdrawEmail": "E-Mail der Bestellung *",
-  "accountEuWithdrawFieldRequired": "Dieses Feld ist erforderlich"
+  "accountEuWithdrawFieldRequired": "Dieses Feld ist erforderlich",
+  "accountRefunds": "Erstattungen",
+  "accountShippingAndHandling": "Versand & Bearbeitung",
+  "accountContactUsDescription": "Schreiben Sie uns eine Nachricht, und wir melden uns so schnell wie möglich",
+  "accountPhoneNumber": "Telefonnummer",
+  "accountWhatsOnYourMind": "Was liegt Ihnen auf dem Herzen?",
+  "accountDescribeHere": "Hier beschreiben",
+  "accountSubmit": "Absenden",
+  "accountRefundedQty": "Erstattete Menge"
 }

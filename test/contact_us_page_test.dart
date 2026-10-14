@@ -22,16 +22,41 @@ void main() {
       ),
     );
 
-    // Same as the storefront: contact is optional, the rest required.
-    for (final label in ['Name', 'Email', 'Message']) {
+    // Same as the storefront: phone is optional, the rest required.
+    for (final label in ['Name', 'Email', 'What’s on your mind?']) {
       expect(
         find.text('$label *', findRichText: true),
         findsOneWidget,
         reason: label,
       );
     }
-    expect(find.text('Contact *', findRichText: true), findsNothing);
-    expect(find.text('Contact', findRichText: true), findsOneWidget);
+    expect(find.text('Phone Number *', findRichText: true), findsNothing);
+    expect(find.text('Phone Number', findRichText: true), findsWidgets);
+  });
+
+  testWidgets('texts match the storefront contact form', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: BlocProvider(
+            create: (_) => ContactUsCubit(),
+            child: const ContactUsPage(),
+          ),
+        ),
+      ),
+    );
+
+    expect(
+      find.text('Jot us a note, and we’ll get back to you as quickly as possible'),
+      findsOneWidget,
+    );
+    expect(find.widgetWithText(TextFormField, 'Describe Here'), findsOneWidget);
+    expect(find.widgetWithText(TextFormField, 'Phone Number'), findsOneWidget);
+    expect(find.text('Submit'), findsOneWidget);
   });
 
   testWidgets('contact accepts any storefront-valid phone and may be empty', (

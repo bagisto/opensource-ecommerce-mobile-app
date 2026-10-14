@@ -627,11 +627,6 @@
   "accountShippedCount": "Отправлено: {count}",
   "accountReturnNoEligibleOrders": "Сейчас нет заказов, доступных для возврата",
   "accountRequestReturn": "Запросить возврат",
-  "accountRefundBreakdown": "Детали возврата средств",
-  "accountSubtotalRefunded": "Возвращённая сумма товаров",
-  "accountShippingRefunded": "Возвращённая доставка",
-  "accountTaxRefunded": "Возвращённый налог",
-  "accountDiscountRefunded": "Возвращённая скидка",
   "accountRefunded": "Возвращено",
   "accountCanceledQty": "Отменено",
   "productBookingCancellation": "Отмена",
@@ -651,5 +646,13 @@
   "accountEuWithdrawGuestDescription": "Введите номер заказа и email, указанный в заказе, чтобы отказаться от договора.",
   "accountEuWithdrawOrderNumber": "Номер заказа *",
   "accountEuWithdrawEmail": "Email заказа *",
-  "accountEuWithdrawFieldRequired": "Обязательное поле"
+  "accountEuWithdrawFieldRequired": "Обязательное поле",
+  "accountRefunds": "Возвраты",
+  "accountShippingAndHandling": "Доставка и обработка",
+  "accountContactUsDescription": "Напишите нам, и мы ответим как можно скорее",
+  "accountPhoneNumber": "Номер телефона",
+  "accountWhatsOnYourMind": "Что вы хотите сообщить?",
+  "accountDescribeHere": "Опишите здесь",
+  "accountSubmit": "Отправить",
+  "accountRefundedQty": "Возвращено"
 }

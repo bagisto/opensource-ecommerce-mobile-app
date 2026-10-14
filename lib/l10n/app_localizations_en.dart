@@ -1890,21 +1890,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountRequestReturn => 'Request a Return';
 
   @override
-  String get accountRefundBreakdown => 'Refund Breakdown';
-
-  @override
-  String get accountSubtotalRefunded => 'Subtotal Refunded';
-
-  @override
-  String get accountShippingRefunded => 'Shipping Refunded';
-
-  @override
-  String get accountTaxRefunded => 'Tax Refunded';
-
-  @override
-  String get accountDiscountRefunded => 'Discount Refunded';
-
-  @override
   String get accountRefunded => 'Refunded';
 
   @override
@@ -1972,4 +1957,29 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get accountEuWithdrawFieldRequired => 'This field is required';
+
+  @override
+  String get accountRefunds => 'Refunds';
+
+  @override
+  String get accountShippingAndHandling => 'Shipping & Handling';
+
+  @override
+  String get accountContactUsDescription =>
+      'Jot us a note, and we’ll get back to you as quickly as possible';
+
+  @override
+  String get accountPhoneNumber => 'Phone Number';
+
+  @override
+  String get accountWhatsOnYourMind => 'What’s on your mind?';
+
+  @override
+  String get accountDescribeHere => 'Describe Here';
+
+  @override
+  String get accountSubmit => 'Submit';
+
+  @override
+  String get accountRefundedQty => 'Refunded Qty';
 }

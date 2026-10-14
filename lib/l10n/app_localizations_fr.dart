@@ -1926,21 +1926,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get accountRequestReturn => 'Demander un retour';
 
   @override
-  String get accountRefundBreakdown => 'Détail du remboursement';
-
-  @override
-  String get accountSubtotalRefunded => 'Sous-total remboursé';
-
-  @override
-  String get accountShippingRefunded => 'Livraison remboursée';
-
-  @override
-  String get accountTaxRefunded => 'Taxe remboursée';
-
-  @override
-  String get accountDiscountRefunded => 'Remise remboursée';
-
-  @override
   String get accountRefunded => 'Remboursé';
 
   @override
@@ -2008,4 +1993,29 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get accountEuWithdrawFieldRequired => 'Ce champ est obligatoire';
+
+  @override
+  String get accountRefunds => 'Remboursements';
+
+  @override
+  String get accountShippingAndHandling => 'Livraison et manutention';
+
+  @override
+  String get accountContactUsDescription =>
+      'Écrivez-nous un mot et nous vous répondrons dès que possible';
+
+  @override
+  String get accountPhoneNumber => 'Numéro de téléphone';
+
+  @override
+  String get accountWhatsOnYourMind => 'Qu’avez-vous en tête ?';
+
+  @override
+  String get accountDescribeHere => 'Décrivez ici';
+
+  @override
+  String get accountSubmit => 'Envoyer';
+
+  @override
+  String get accountRefundedQty => 'Qté remboursée';
 }

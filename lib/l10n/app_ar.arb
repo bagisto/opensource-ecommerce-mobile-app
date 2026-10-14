@@ -812,11 +812,6 @@
   "accountShippedCount": "{count} تم شحنها",
   "accountReturnNoEligibleOrders": "لا توجد طلبات مؤهلة للإرجاع حاليًا",
   "accountRequestReturn": "طلب إرجاع",
-  "accountRefundBreakdown": "تفاصيل الاسترداد",
-  "accountSubtotalRefunded": "المجموع الفرعي المسترد",
-  "accountShippingRefunded": "الشحن المسترد",
-  "accountTaxRefunded": "الضريبة المستردة",
-  "accountDiscountRefunded": "الخصم المسترد",
   "accountRefunded": "مسترد",
   "accountCanceledQty": "ملغى",
   "productBookingCancellation": "الإلغاء",
@@ -836,5 +831,13 @@
   "accountEuWithdrawGuestDescription": "أدخل رقم الطلب والبريد الإلكتروني المستخدم للطلب للانسحاب من العقد.",
   "accountEuWithdrawOrderNumber": "رقم الطلب *",
   "accountEuWithdrawEmail": "البريد الإلكتروني للطلب *",
-  "accountEuWithdrawFieldRequired": "هذا الحقل مطلوب"
+  "accountEuWithdrawFieldRequired": "هذا الحقل مطلوب",
+  "accountRefunds": "المبالغ المستردة",
+  "accountShippingAndHandling": "الشحن والتجهيز",
+  "accountContactUsDescription": "اكتب لنا ملاحظة، وسنعود إليك في أسرع وقت ممكن",
+  "accountPhoneNumber": "رقم الهاتف",
+  "accountWhatsOnYourMind": "بماذا تفكر؟",
+  "accountDescribeHere": "اكتب هنا",
+  "accountSubmit": "إرسال",
+  "accountRefundedQty": "الكمية المستردة"
 }

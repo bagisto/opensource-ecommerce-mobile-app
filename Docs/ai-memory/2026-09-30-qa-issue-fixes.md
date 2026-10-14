@@ -290,3 +290,160 @@ only. The following still need a device run with a logged-in QA account:
 - returns (#36, #59)
 - EU withdrawal on a backend where it is enabled (#34, #38)
 - booking add-to-cart (#118)
+
+## Follow-up (2026-10-14): out-of-stock products on the product page
+
+- Request: on the product page, show out-of-stock products dimmed like the
+  web and do not allow adding them to the cart.
+- `ProductDetailState.isOutOfStock` is true when the API's `isSaleable` is
+  not `1`/`true`. It checks the selected variant first, then the product.
+  The live API returns `""` for out-of-stock products (for example product
+  22). A missing value (`null`) is not treated as out of stock.
+- `ProductActionBar` dims Add to Cart and Buy Now and disables both taps.
+  As on the web, no extra "out of stock" label is shown.
+- Only the product page changed. Quick-add buttons on product cards were
+  not changed.
+- Test: `test/product_out_of_stock_test.dart`.
+
+## Follow-up (2026-10-14): product carousel with no filters missing from home
+
+- Symptom: on the local server
+  (`http://192.168.15.239/Bagisto-Api/new-setup/public/`) the web home page
+  shows the "test" product carousel, but the app does not.
+- Root cause: that section (`sections` id 15, `product_carousel`) was saved
+  without filters, and the API returns `options` as
+  `{"title": "test", "filters": []}`. The empty filters come back as a JSON
+  list, not a map. `HomeBloc` cast it with `as Map<String, dynamic>?`, which
+  threw. The per-section `catch` turned that into an empty product list,
+  and the home page hides empty carousels.
+- Fix: `ThemeCustomization.filters` returns an empty map for anything that
+  is not a map. `ThemeCustomization.title` uses `options.title` (as the web
+  does) and falls back to the section name. `HomeBloc` and `HomePage` use
+  these instead of casting.
+- Note: this server's API uses `sections` instead of `themeCustomizations`;
+  the app already queries `SectionQueries.getSections` (commit 4eb3c77).
+- Test: `test/home_product_carousel_filters_test.dart`.
+
+## Follow-up (2026-10-14): category carousel shows fewer categories than the web
+
+- Symptom: on the local server the web category carousel lists Root, Men
+  and Shirt; the app showed only Men.
+- Root cause, part 1: when a carousel had no `parent_id` filter, the app
+  defaulted it to `1`. That kept only the direct children of Root. The
+  storefront calls `/api/categories` with the carousel's own filters, so no
+  filter means every active category. Both carousel sections on that server
+  (ids 14 and 16) have no options.
+- Root cause, part 2: the app loaded categories once (from the first
+  carousel's filters) and reused that list for every carousel.
+- Fix:
+  - `HomeRepository.fetchHomeCategories({int? parentId, int? limit})`:
+    no `parentId` returns all active categories, sorted by position, then
+    by id.
+  - `HomeBloc` loads each carousel with its own filters into
+    `HomeState.categorySections`, keyed by section id. `HomePage` renders
+    from that map.
+  - Carousels that set `parent_id` (for example api-demo's carousel with
+    `parent_id: 1`, which issue #46 relied on) still keep only that
+    parent's children.
+- Test: `test/home_category_carousel_test.dart`. The old
+  `category_status_filter_test` expectation was updated to include Root.
+
+## Follow-up (2026-10-14): where a home category tap goes
+
+- Rule from the user: on home, tapping a category that has sub-categories
+  opens the Categories tab. Tapping a category with no sub-categories opens
+  its product catalog (`CategoryProductsGridPage`).
+- `HomeCategory.hasChildren` comes from the API's flat `categories` list:
+  a category has children when some active category's `parent._id` is its
+  id (`HomeRepository.fetchHomeCategories`).
+- `HomePage._openCategoryProducts` routes on `hasChildren`. Banner and
+  collection links that resolve to a top-level category set it from
+  `CategoryModel.children`.
+- Known edge case: Root has children, but the Categories tab does not list
+  Root. Tapping Root opens the tab with its current selection unchanged.
+- Test: `test/home_category_carousel_test.dart` (`hasChildren`).
+
+## Follow-up (2026-10-14): Refunds tab on order details
+
+- Request: the order details page should have a Refunds tab, like the web's
+  Information / Invoices / Shipments / Refunds tabs.
+- API reality: there is no refund (credit memo) query or connection, either
+  in the docs (`get-customer-order`) or in the local server schema. The
+  order only has refunded totals (`grandTotalRefunded`, `subTotalRefunded`,
+  `shippingRefunded`, `taxAmountRefunded`, `discountRefunded`) and per-item
+  `qtyRefunded` / `amountRefunded`.
+- Implementation (`order_detail_page.dart`, `_buildRefundsTab`):
+  - The tab shows only when `grandTotalRefunded > 0`.
+  - It lists refunded items (name, SKU, unit price, refunded quantity,
+    subtotal from `amountRefunded`).
+  - It then lists totals: subtotal, Shipping & Handling, tax and discount
+    (each only when above 0), and the grand total refunded.
+  - The old "Refund Breakdown" block in the Details tab was moved here, and
+    its l10n keys were removed.
+- Not possible without a backend change: separate "Refund #N" entries for
+  orders with several refunds, and the "Adjustment Refund" / "Adjustment
+  Fee" lines.
+- Test: `test/order_detail_page_test.dart` (Refunds tab present and hidden).
+
+## Follow-up (2026-10-14): Contact Us matches the web form (#89)
+
+- Reference: `http://192.168.15.239/theme/api-4.9/public/contact-us`.
+- The web form, from top to bottom:
+  1. Title "Contact Us" and the subtitle "Jot us a note, and we’ll get back
+     to you as quickly as possible".
+  2. Name * (`required`).
+  3. Email * (`required|email`).
+  4. Phone Number, optional (`phone` rule, `^\+?\d+$`).
+  5. "What’s on your mind?" * (`required`, placeholder "Describe Here",
+     10 rows).
+  6. A Submit button.
+- The other placeholders repeat the field labels.
+- App changes (`contact_us_page.dart`):
+  - Added the subtitle.
+  - Renamed the labels to "Phone Number" and "What’s on your mind?", and
+    set the placeholders to match the web.
+  - Made the message box taller (6 to 10 lines).
+  - The button now says "Submit".
+  - Validation was already aligned on 2026-09-30.
+- New l10n keys: `accountContactUsDescription`, `accountPhoneNumber`,
+  `accountWhatsOnYourMind`, `accountDescribeHere`, `accountSubmit`.
+- Test: `test/contact_us_page_test.dart`.
+
+## Follow-up (2026-10-14): Refunds tab now matches the web view
+
+- The user pasted the web Refunds view:
+  - Each refunded item shows SKU, Name, Price, "Item Status" and Subtotal.
+    The status reads like "Ordered (1) Invoiced (1) Shipped (1)
+    Refunded (1)".
+  - Then the order summary: Subtotal, Shipping & Handling, Tax (shown even
+    at $0.00), Grand Total, Total Paid, Total Refunded, Total Due.
+- `_buildRefundsTab` was rewritten to that layout:
+  - Items with `qtyRefunded > 0` are listed. Their status line always shows
+    Ordered, plus Invoiced, Shipped, Refunded and Canceled when above 0.
+    The item subtotal is `item.total`.
+  - The summary uses the order totals (`subTotal`, `shippingAmount`,
+    `taxAmount`, `discountAmount` when above 0, `grandTotal`, `totalPaid`,
+    `totalRefunded`, `totalDue`). This replaces the refunded-only amounts
+    used earlier the same day.
+- New l10n keys: `accountItemOrderedCount`, `accountItemInvoicedCount`,
+  `accountItemShippedCount`, `accountItemRefundedCount`,
+  `accountItemCanceledCount`, `accountItemStatus`.
+- Test: `test/order_detail_page_test.dart` ("Refunds tab matches the
+  storefront view").
+
+## Follow-up (2026-10-14): refund item card styled like invoice item cards
+
+- The user asked for refunded items to use the same layout as invoice item
+  cards.
+- Each refunded item now shows name and SKU. On the left are the quantity
+  rows `Ordered Qty`, `Shipped Qty`, `Invoiced Qty` and `Refunded Qty` (plus
+  `Canceled` when above 0), each written as `Label : n`. On the right are
+  `Unit Price:` and `Sub Total:`. The card background matches the invoice
+  cards.
+- This replaces the one-line "Ordered (1) Invoiced (1) …" status, and its
+  l10n keys (`accountItem*Count`, `accountItemStatus`) were removed. New
+  key: `accountRefundedQty`.
+- All values come from the `customerOrder` API (item quantities, `price`,
+  `total`, and the order totals). Nothing is hardcoded; the sample order in
+  the tests is fixture data only.
+

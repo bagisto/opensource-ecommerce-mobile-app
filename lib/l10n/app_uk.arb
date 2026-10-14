@@ -627,11 +627,6 @@
   "accountShippedCount": "Відправлено: {count}",
   "accountReturnNoEligibleOrders": "Наразі немає замовлень, доступних для повернення",
   "accountRequestReturn": "Запросити повернення",
-  "accountRefundBreakdown": "Деталі повернення коштів",
-  "accountSubtotalRefunded": "Повернена сума товарів",
-  "accountShippingRefunded": "Повернена доставка",
-  "accountTaxRefunded": "Повернений податок",
-  "accountDiscountRefunded": "Повернена знижка",
   "accountRefunded": "Повернено",
   "accountCanceledQty": "Скасовано",
   "productBookingCancellation": "Скасування",
@@ -651,5 +646,13 @@
   "accountEuWithdrawGuestDescription": "Введіть номер замовлення та email, вказаний у замовленні, щоб відмовитися від договору.",
   "accountEuWithdrawOrderNumber": "Номер замовлення *",
   "accountEuWithdrawEmail": "Email замовлення *",
-  "accountEuWithdrawFieldRequired": "Обов'язкове поле"
+  "accountEuWithdrawFieldRequired": "Обов'язкове поле",
+  "accountRefunds": "Повернення коштів",
+  "accountShippingAndHandling": "Доставка й обробка",
+  "accountContactUsDescription": "Напишіть нам, і ми відповімо якомога швидше",
+  "accountPhoneNumber": "Номер телефону",
+  "accountWhatsOnYourMind": "Що ви хочете повідомити?",
+  "accountDescribeHere": "Опишіть тут",
+  "accountSubmit": "Надіслати",
+  "accountRefundedQty": "Повернено"
 }

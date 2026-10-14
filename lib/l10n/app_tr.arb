@@ -814,11 +814,6 @@
   "accountShippedCount": "{count} gönderildi",
   "accountReturnNoEligibleOrders": "Şu anda iade için uygun sipariş yok",
   "accountRequestReturn": "İade talep et",
-  "accountRefundBreakdown": "İade dökümü",
-  "accountSubtotalRefunded": "İade edilen ara toplam",
-  "accountShippingRefunded": "İade edilen kargo",
-  "accountTaxRefunded": "İade edilen vergi",
-  "accountDiscountRefunded": "İade edilen indirim",
   "accountRefunded": "İade edildi",
   "accountCanceledQty": "İptal edildi",
   "productBookingCancellation": "İptal",
@@ -838,5 +833,13 @@
   "accountEuWithdrawGuestDescription": "Sözleşmeden caymak için sipariş numarasını ve siparişte kullanılan e-postayı girin.",
   "accountEuWithdrawOrderNumber": "Sipariş numarası *",
   "accountEuWithdrawEmail": "Sipariş e-postası *",
-  "accountEuWithdrawFieldRequired": "Bu alan zorunludur"
+  "accountEuWithdrawFieldRequired": "Bu alan zorunludur",
+  "accountRefunds": "İadeler",
+  "accountShippingAndHandling": "Kargo ve işlem",
+  "accountContactUsDescription": "Bize bir not bırakın, en kısa sürede size dönelim",
+  "accountPhoneNumber": "Telefon numarası",
+  "accountWhatsOnYourMind": "Aklınızda ne var?",
+  "accountDescribeHere": "Buraya yazın",
+  "accountSubmit": "Gönder",
+  "accountRefundedQty": "İade edilen adet"
 }

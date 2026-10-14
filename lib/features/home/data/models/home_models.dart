@@ -83,6 +83,21 @@ class ThemeCustomization extends Equatable {
     );
   }
 
+  /// Carousel filters (`options.filters`). The API sends an empty JSON list
+  /// (`[]`) when a section was saved without filters, so anything that is
+  /// not a map means "no filters".
+  Map<String, dynamic> get filters {
+    final raw = options['filters'];
+    return raw is Map ? Map<String, dynamic>.from(raw) : const {};
+  }
+
+  /// Heading shown on the storefront: the section's `options.title`, or its
+  /// admin name when no title is set.
+  String get title {
+    final optionTitle = options['title']?.toString().trim() ?? '';
+    return optionTitle.isNotEmpty ? optionTitle : name;
+  }
+
   @override
   List<Object?> get props => [id, type, name, status, sortOrder];
 }
@@ -96,6 +111,10 @@ class HomeCategory extends Equatable {
   final String? logoUrl;
   final int position;
 
+  /// Whether the category has active sub-categories. Tapping it then opens
+  /// the Categories tab instead of the product list.
+  final bool hasChildren;
+
   const HomeCategory({
     required this.id,
     this.numericId,
@@ -103,9 +122,13 @@ class HomeCategory extends Equatable {
     required this.slug,
     this.logoUrl,
     required this.position,
+    this.hasChildren = false,
   });
 
-  factory HomeCategory.fromJson(Map<String, dynamic> json) {
+  factory HomeCategory.fromJson(
+    Map<String, dynamic> json, {
+    bool hasChildren = false,
+  }) {
     final translation = json['translation'] as Map<String, dynamic>? ?? {};
     return HomeCategory(
       id: json['id']?.toString() ?? '',
@@ -114,11 +137,20 @@ class HomeCategory extends Equatable {
       slug: translation['slug'] as String? ?? '',
       logoUrl: json['logoUrl'] as String?,
       position: (json['position'] as num?)?.toInt() ?? 0,
+      hasChildren: hasChildren,
     );
   }
 
   @override
-  List<Object?> get props => [id, numericId, name, slug, logoUrl, position];
+  List<Object?> get props => [
+    id,
+    numericId,
+    name,
+    slug,
+    logoUrl,
+    position,
+    hasChildren,
+  ];
 }
 
 /// A product for homepage product carousels.

@@ -9,58 +9,108 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
 void main() {
-  testWidgets('refunded order shows the refund breakdown', (
+  Widget refundApp(OrderDetail order) => MaterialApp(
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    home: BlocProvider(
+      create: (_) =>
+          OrderDetailBloc(repository: _FakeAccountRepository(order: order))
+            ..add(const LoadOrderDetail(2470)),
+      child: const OrderDetailPage(orderId: 2470),
+    ),
+  );
+
+  testWidgets('Refunds tab matches the storefront view', (
     WidgetTester tester,
   ) async {
+    // Order #2 on the local server: Nike Shoes invoiced, shipped, refunded.
     final order = OrderDetail.fromJson({
-      'incrementId': '2470',
+      'incrementId': '2',
       'status': 'closed',
       'orderCurrencyCode': 'USD',
-      'grandTotal': 40,
-      'subTotal': 30,
-      'grandTotalRefunded': 40,
-      'subTotalRefunded': 30,
-      'shippingRefunded': 5,
-      'taxAmountRefunded': 5,
-      'discountRefunded': 0,
+      'grandTotal': 109,
+      'subTotal': 99,
+      'shippingAmount': 10,
+      'taxAmount': 0,
+      'grandTotalInvoiced': 109,
+      'grandTotalRefunded': 109,
+      'subTotalRefunded': 99,
+      'shippingRefunded': 10,
       'items': {
         'edges': [
           {
             'node': {
-              'name': 'Beanie',
-              'qtyOrdered': 2,
-              'qtyRefunded': 2,
-              'qtyCanceled': 0,
-              'price': 15,
-              'total': 30,
+              'sku': 'Ring-001',
+              'name': 'Nike Shoes',
+              'qtyOrdered': 1,
+              'qtyInvoiced': 1,
+              'qtyShipped': 1,
+              'qtyRefunded': 1,
+              'price': 99,
+              'total': 99,
+              'amountRefunded': 99,
             },
           },
         ],
       },
     });
-    expect(order.subTotalRefunded, 30);
-    expect(order.shippingRefunded, 5);
 
+    await tester.pumpWidget(refundApp(order));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Refunds'));
+    await tester.pumpAndSettle();
+
+    final tab = find.byKey(const ValueKey('order_refunds_tab'));
+    expect(tab, findsOneWidget);
+    Finder inTab(String text) =>
+        find.descendant(of: tab, matching: find.text(text));
+    expect(inTab('Nike Shoes'), findsOneWidget);
+    expect(inTab('SKU : Ring-001'), findsOneWidget);
+    // Item quantities use the same rows as invoice item cards.
+    for (final label in [
+      'Ordered Qty',
+      'Shipped Qty',
+      'Invoiced Qty',
+      'Refunded Qty',
+    ]) {
+      expect(inTab(label), findsOneWidget, reason: label);
+    }
+    expect(inTab(': 1'), findsNWidgets(4));
+    expect(inTab('Unit Price:'), findsOneWidget);
+    expect(inTab('Sub Total:'), findsOneWidget);
+    for (final label in [
+      'Shipping & Handling',
+      'Tax',
+      'Grand Total',
+      'Total Paid',
+      'Total Refunded',
+      'Total Due',
+    ]) {
+      expect(inTab(label), findsOneWidget, reason: label);
+    }
+    // Tax is listed even at zero, like the web; nothing is due.
+    expect(inTab(r'$0.00'), findsNWidgets(2));
+    expect(inTab(r'$109.00'), findsNWidgets(3));
+  });
+
+  testWidgets('order without refunds has no Refunds tab', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(
-      MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: BlocProvider(
-          create: (_) =>
-              OrderDetailBloc(repository: _FakeAccountRepository(order: order))
-                ..add(const LoadOrderDetail(2470)),
-          child: const OrderDetailPage(orderId: 2470),
+      refundApp(
+        const OrderDetail(
+          incrementId: '3',
+          status: 'completed',
+          grandTotal: 10,
+          subTotal: 10,
+          orderCurrencyCode: 'USD',
         ),
       ),
     );
     await tester.pumpAndSettle();
 
-    await tester.scrollUntilVisible(find.text('Refund Breakdown'), 200);
-    expect(find.text('Subtotal Refunded'), findsOneWidget);
-    expect(find.text('Shipping Refunded'), findsOneWidget);
-    expect(find.text('Tax Refunded'), findsOneWidget);
-    expect(find.text('Discount Refunded'), findsNothing);
-    expect(find.text('Refunded'), findsWidgets);
+    expect(find.text('Refunds'), findsNothing);
   });
 
   testWidgets('tapping More info shows selected options', (

@@ -211,6 +211,18 @@ class ProductDetailState extends Equatable {
     this.errorMessage,
   });
 
+  /// True when the API reports the product (or the selected variant) as not
+  /// saleable, e.g. out of stock. A missing `isSaleable` is not treated as
+  /// out of stock.
+  bool get isOutOfStock {
+    final variantSaleable = selectedVariant?.isSaleable;
+    if (variantSaleable != null) {
+      final value = variantSaleable.trim().toLowerCase();
+      if (value != '1' && value != 'true') return true;
+    }
+    return product?.isSaleable == false;
+  }
+
   /// Get the effective display price (variant price if selected, else product price)
   double get effectiveDisplayPrice {
     if (selectedVariant != null) return selectedVariant!.displayPrice;

@@ -814,11 +814,6 @@
   "accountShippedCount": "{count} spedito/i",
   "accountReturnNoEligibleOrders": "Nessun ordine è idoneo per un reso al momento",
   "accountRequestReturn": "Richiedi un reso",
-  "accountRefundBreakdown": "Dettaglio rimborso",
-  "accountSubtotalRefunded": "Subtotale rimborsato",
-  "accountShippingRefunded": "Spedizione rimborsata",
-  "accountTaxRefunded": "Imposta rimborsata",
-  "accountDiscountRefunded": "Sconto rimborsato",
   "accountRefunded": "Rimborsato",
   "accountCanceledQty": "Annullato",
   "productBookingCancellation": "Cancellazione",
@@ -838,5 +833,13 @@
   "accountEuWithdrawGuestDescription": "Inserisci il numero d'ordine e l'email usata per l'ordine per recedere dal contratto.",
   "accountEuWithdrawOrderNumber": "Numero d'ordine *",
   "accountEuWithdrawEmail": "Email dell'ordine *",
-  "accountEuWithdrawFieldRequired": "Questo campo è obbligatorio"
+  "accountEuWithdrawFieldRequired": "Questo campo è obbligatorio",
+  "accountRefunds": "Rimborsi",
+  "accountShippingAndHandling": "Spedizione e gestione",
+  "accountContactUsDescription": "Scrivici una nota e ti risponderemo il prima possibile",
+  "accountPhoneNumber": "Numero di telefono",
+  "accountWhatsOnYourMind": "Cosa hai in mente?",
+  "accountDescribeHere": "Descrivi qui",
+  "accountSubmit": "Invia",
+  "accountRefundedQty": "Qtà rimborsata"
 }

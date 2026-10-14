@@ -64,14 +64,26 @@ class ProductActionBar extends StatelessWidget {
           child: BlocBuilder<CartBloc, CartState>(
             builder: (context, cartState) {
               final isAdding = cartState.isAddingToCart;
+              // Out of stock: both actions dimmed and disabled, like the web.
+              final isOutOfStock = context.select<ProductDetailBloc, bool>(
+                (bloc) => bloc.state.isOutOfStock,
+              );
+              final disabledColor = isDark
+                  ? AppColors.neutral600
+                  : AppColors.neutral400;
 
               return Row(
                 children: [
                   // ── Add to Cart (secondary) ──
                   Expanded(
                     child: GestureDetector(
-                      onTap: isAdding ? null : () => _addToCart(context),
+                      onTap: isAdding || isOutOfStock
+                          ? null
+                          : () => _addToCart(context),
                       child: Container(
+                        key: isOutOfStock
+                            ? const ValueKey('product_add_to_cart_disabled')
+                            : null,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         decoration: BoxDecoration(
                           border: Border.all(
@@ -97,7 +109,9 @@ class ProductActionBar extends StatelessWidget {
                                   fontFamily: 'Roboto',
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
-                                  color: AppColors.primary500,
+                                  color: isOutOfStock
+                                      ? disabledColor
+                                      : AppColors.primary500,
                                 ),
                               ),
                       ),
@@ -109,11 +123,15 @@ class ProductActionBar extends StatelessWidget {
                   // ── Buy Now (primary) ──
                   Expanded(
                     child: GestureDetector(
-                      onTap: isAdding ? null : () => _buyNow(context),
+                      onTap: isAdding || isOutOfStock
+                          ? null
+                          : () => _buyNow(context),
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         decoration: BoxDecoration(
-                          color: AppColors.primary500,
+                          color: isOutOfStock
+                              ? disabledColor
+                              : AppColors.primary500,
                           borderRadius: BorderRadius.circular(54),
                         ),
                         alignment: Alignment.center,

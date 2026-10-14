@@ -75,9 +75,10 @@ void main() {
   test('home carousel hides inactive categories', () async {
     final repository = HomeRepository(client: _client(_categoriesData()));
 
+    // No carousel filter: every active category, like the storefront.
     final categories = await repository.fetchHomeCategories();
 
-    expect(categories.map((c) => c.name), ['Men', 'Books']);
+    expect(categories.map((c) => c.name), ['Root', 'Men', 'Books']);
   });
 
   test('search categories hide inactive categories', () async {

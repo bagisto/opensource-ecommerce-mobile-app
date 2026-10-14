@@ -1906,21 +1906,6 @@ class AppLocalizationsUk extends AppLocalizations {
   String get accountRequestReturn => 'Запросити повернення';
 
   @override
-  String get accountRefundBreakdown => 'Деталі повернення коштів';
-
-  @override
-  String get accountSubtotalRefunded => 'Повернена сума товарів';
-
-  @override
-  String get accountShippingRefunded => 'Повернена доставка';
-
-  @override
-  String get accountTaxRefunded => 'Повернений податок';
-
-  @override
-  String get accountDiscountRefunded => 'Повернена знижка';
-
-  @override
   String get accountRefunded => 'Повернено';
 
   @override
@@ -1987,4 +1972,29 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get accountEuWithdrawFieldRequired => 'Обов\'язкове поле';
+
+  @override
+  String get accountRefunds => 'Повернення коштів';
+
+  @override
+  String get accountShippingAndHandling => 'Доставка й обробка';
+
+  @override
+  String get accountContactUsDescription =>
+      'Напишіть нам, і ми відповімо якомога швидше';
+
+  @override
+  String get accountPhoneNumber => 'Номер телефону';
+
+  @override
+  String get accountWhatsOnYourMind => 'Що ви хочете повідомити?';
+
+  @override
+  String get accountDescribeHere => 'Опишіть тут';
+
+  @override
+  String get accountSubmit => 'Надіслати';
+
+  @override
+  String get accountRefundedQty => 'Повернено';
 }

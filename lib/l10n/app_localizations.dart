@@ -3570,36 +3570,6 @@ abstract class AppLocalizations {
   /// **'Request a Return'**
   String get accountRequestReturn;
 
-  /// No description provided for @accountRefundBreakdown.
-  ///
-  /// In en, this message translates to:
-  /// **'Refund Breakdown'**
-  String get accountRefundBreakdown;
-
-  /// No description provided for @accountSubtotalRefunded.
-  ///
-  /// In en, this message translates to:
-  /// **'Subtotal Refunded'**
-  String get accountSubtotalRefunded;
-
-  /// No description provided for @accountShippingRefunded.
-  ///
-  /// In en, this message translates to:
-  /// **'Shipping Refunded'**
-  String get accountShippingRefunded;
-
-  /// No description provided for @accountTaxRefunded.
-  ///
-  /// In en, this message translates to:
-  /// **'Tax Refunded'**
-  String get accountTaxRefunded;
-
-  /// No description provided for @accountDiscountRefunded.
-  ///
-  /// In en, this message translates to:
-  /// **'Discount Refunded'**
-  String get accountDiscountRefunded;
-
   /// No description provided for @accountRefunded.
   ///
   /// In en, this message translates to:
@@ -3719,6 +3689,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This field is required'**
   String get accountEuWithdrawFieldRequired;
+
+  /// No description provided for @accountRefunds.
+  ///
+  /// In en, this message translates to:
+  /// **'Refunds'**
+  String get accountRefunds;
+
+  /// No description provided for @accountShippingAndHandling.
+  ///
+  /// In en, this message translates to:
+  /// **'Shipping & Handling'**
+  String get accountShippingAndHandling;
+
+  /// No description provided for @accountContactUsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Jot us a note, and we’ll get back to you as quickly as possible'**
+  String get accountContactUsDescription;
+
+  /// No description provided for @accountPhoneNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone Number'**
+  String get accountPhoneNumber;
+
+  /// No description provided for @accountWhatsOnYourMind.
+  ///
+  /// In en, this message translates to:
+  /// **'What’s on your mind?'**
+  String get accountWhatsOnYourMind;
+
+  /// No description provided for @accountDescribeHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Describe Here'**
+  String get accountDescribeHere;
+
+  /// No description provided for @accountSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit'**
+  String get accountSubmit;
+
+  /// No description provided for @accountRefundedQty.
+  ///
+  /// In en, this message translates to:
+  /// **'Refunded Qty'**
+  String get accountRefundedQty;
 }
 
 class _AppLocalizationsDelegate

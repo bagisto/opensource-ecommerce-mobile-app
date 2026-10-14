@@ -621,6 +621,7 @@ class AccountQueries {
               qtyInvoiced
               qtyCanceled
               qtyRefunded
+              amountRefunded
               type
               productType
               productId

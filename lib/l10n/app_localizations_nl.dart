@@ -1908,21 +1908,6 @@ class AppLocalizationsNl extends AppLocalizations {
   String get accountRequestReturn => 'Retour aanvragen';
 
   @override
-  String get accountRefundBreakdown => 'Specificatie terugbetaling';
-
-  @override
-  String get accountSubtotalRefunded => 'Terugbetaald subtotaal';
-
-  @override
-  String get accountShippingRefunded => 'Terugbetaalde verzendkosten';
-
-  @override
-  String get accountTaxRefunded => 'Terugbetaalde belasting';
-
-  @override
-  String get accountDiscountRefunded => 'Terugbetaalde korting';
-
-  @override
   String get accountRefunded => 'Terugbetaald';
 
   @override
@@ -1991,4 +1976,29 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get accountEuWithdrawFieldRequired => 'Dit veld is verplicht';
+
+  @override
+  String get accountRefunds => 'Terugbetalingen';
+
+  @override
+  String get accountShippingAndHandling => 'Verzending & verwerking';
+
+  @override
+  String get accountContactUsDescription =>
+      'Stuur ons een bericht en we reageren zo snel mogelijk';
+
+  @override
+  String get accountPhoneNumber => 'Telefoonnummer';
+
+  @override
+  String get accountWhatsOnYourMind => 'Waar denk je aan?';
+
+  @override
+  String get accountDescribeHere => 'Beschrijf hier';
+
+  @override
+  String get accountSubmit => 'Versturen';
+
+  @override
+  String get accountRefundedQty => 'Terugbetaalde hoeveelheid';
 }

@@ -1900,21 +1900,6 @@ class AppLocalizationsTr extends AppLocalizations {
   String get accountRequestReturn => 'İade talep et';
 
   @override
-  String get accountRefundBreakdown => 'İade dökümü';
-
-  @override
-  String get accountSubtotalRefunded => 'İade edilen ara toplam';
-
-  @override
-  String get accountShippingRefunded => 'İade edilen kargo';
-
-  @override
-  String get accountTaxRefunded => 'İade edilen vergi';
-
-  @override
-  String get accountDiscountRefunded => 'İade edilen indirim';
-
-  @override
   String get accountRefunded => 'İade edildi';
 
   @override
@@ -1981,4 +1966,29 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get accountEuWithdrawFieldRequired => 'Bu alan zorunludur';
+
+  @override
+  String get accountRefunds => 'İadeler';
+
+  @override
+  String get accountShippingAndHandling => 'Kargo ve işlem';
+
+  @override
+  String get accountContactUsDescription =>
+      'Bize bir not bırakın, en kısa sürede size dönelim';
+
+  @override
+  String get accountPhoneNumber => 'Telefon numarası';
+
+  @override
+  String get accountWhatsOnYourMind => 'Aklınızda ne var?';
+
+  @override
+  String get accountDescribeHere => 'Buraya yazın';
+
+  @override
+  String get accountSubmit => 'Gönder';
+
+  @override
+  String get accountRefundedQty => 'İade edilen adet';
 }

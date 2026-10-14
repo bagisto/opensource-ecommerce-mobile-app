@@ -181,12 +181,23 @@ class _ContactUsPageState extends State<ContactUsPage> {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 4),
+                    Text(
+                      l10n.accountContactUsDescription,
+                      style: TextStyle(
+                        fontFamily: 'Roboto',
+                        fontSize: 14,
+                        color: secondaryTextColor,
+                      ),
+                    ),
                     const SizedBox(height: 20),
 
+                    // Fields, labels, placeholders and required marks follow
+                    // the storefront Contact Us form.
                     _buildTextField(
                       label: l10n.accountName,
                       controller: _nameController,
-                      hintText: l10n.accountEnterYourName,
+                      hintText: l10n.accountName,
                       inputBg: inputBg,
                       textColor: textColor,
                       secondaryTextColor: secondaryTextColor,
@@ -199,7 +210,7 @@ class _ContactUsPageState extends State<ContactUsPage> {
                     _buildTextField(
                       label: l10n.checkoutEmail,
                       controller: _emailController,
-                      hintText: l10n.accountEnterYourEmail,
+                      hintText: l10n.checkoutEmail,
                       keyboardType: TextInputType.emailAddress,
                       inputBg: inputBg,
                       textColor: textColor,
@@ -211,9 +222,9 @@ class _ContactUsPageState extends State<ContactUsPage> {
                     const SizedBox(height: 16),
 
                     _buildTextField(
-                      label: l10n.accountContact,
+                      label: l10n.accountPhoneNumber,
                       controller: _contactController,
-                      hintText: l10n.accountEnterYourPhoneNumber,
+                      hintText: l10n.accountPhoneNumber,
                       keyboardType: TextInputType.phone,
                       inputBg: inputBg,
                       textColor: textColor,
@@ -224,11 +235,11 @@ class _ContactUsPageState extends State<ContactUsPage> {
                     const SizedBox(height: 16),
 
                     _buildTextField(
-                      label: l10n.accountMessage,
+                      label: l10n.accountWhatsOnYourMind,
                       controller: _messageController,
-                      hintText: l10n.accountEnterYourMessage,
-                      minLines: 4,
-                      maxLines: 6,
+                      hintText: l10n.accountDescribeHere,
+                      minLines: 6,
+                      maxLines: 10,
                       inputBg: inputBg,
                       textColor: textColor,
                       secondaryTextColor: secondaryTextColor,
@@ -257,7 +268,7 @@ class _ContactUsPageState extends State<ContactUsPage> {
                               ),
                             ),
                             child: Text(
-                              l10n.accountSendMessage,
+                              l10n.accountSubmit,
                               style: const TextStyle(
                                 fontFamily: 'Roboto',
                                 fontWeight: FontWeight.w500,

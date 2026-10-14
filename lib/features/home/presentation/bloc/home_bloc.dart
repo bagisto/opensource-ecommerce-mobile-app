@@ -31,7 +31,11 @@ enum HomeStatus { initial, loading, loaded, refreshing, error }
 class HomeState extends Equatable {
   final HomeStatus status;
   final List<ThemeCustomization> customizations;
+  /// All categories shown by the category carousels (used to resolve links).
   final List<HomeCategory> categories;
+
+  /// Keyed by customization `id` → categories for that carousel.
+  final Map<String, List<HomeCategory>> categorySections;
 
   /// Keyed by customization `id` → products for that section.
   final Map<String, List<HomeProduct>> productSections;
@@ -41,6 +45,7 @@ class HomeState extends Equatable {
     this.status = HomeStatus.initial,
     this.customizations = const [],
     this.categories = const [],
+    this.categorySections = const {},
     this.productSections = const {},
     this.errorMessage,
   });
@@ -49,6 +54,7 @@ class HomeState extends Equatable {
     HomeStatus? status,
     List<ThemeCustomization>? customizations,
     List<HomeCategory>? categories,
+    Map<String, List<HomeCategory>>? categorySections,
     Map<String, List<HomeProduct>>? productSections,
     String? errorMessage,
   }) {
@@ -56,6 +62,7 @@ class HomeState extends Equatable {
       status: status ?? this.status,
       customizations: customizations ?? this.customizations,
       categories: categories ?? this.categories,
+      categorySections: categorySections ?? this.categorySections,
       productSections: productSections ?? this.productSections,
       errorMessage: errorMessage,
     );
@@ -66,6 +73,7 @@ class HomeState extends Equatable {
     status,
     customizations,
     categories,
+    categorySections,
     productSections,
     errorMessage,
   ];
@@ -143,20 +151,29 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   }
 
   Future<void> _doLoad(Emitter<HomeState> emit) async {
-    // 1) Fetch theme customizations, then the categories the carousel
-    //    is configured for (its `parent_id` and `limit` filters).
+    // 1) Fetch theme customizations, then each category carousel's
+    //    categories using its own `parent_id` and `limit` filters (none
+    //    means every active category, as on the storefront).
     final customizations = await _repository.fetchSections();
-    final carouselFilters =
-        customizations
-                .where((tc) => tc.type == 'category_carousel')
-                .firstOrNull
-                ?.options['filters']
-            as Map<String, dynamic>? ??
-        const {};
-    final categories = await _repository.fetchHomeCategories(
-      parentId: int.tryParse('${carouselFilters['parent_id']}') ?? 1,
-      limit: int.tryParse('${carouselFilters['limit']}'),
+    final categoryResults = await Future.wait(
+      customizations.where((tc) => tc.type == 'category_carousel').map((
+        tc,
+      ) async {
+        final filters = tc.filters;
+        return MapEntry(
+          tc.id,
+          await _repository.fetchHomeCategories(
+            parentId: int.tryParse('${filters['parent_id']}'),
+            limit: int.tryParse('${filters['limit']}'),
+          ),
+        );
+      }),
     );
+    final categorySections = Map.fromEntries(categoryResults);
+    final categories = {
+      for (final list in categorySections.values)
+        for (final category in list) category.id: category,
+    }.values.toList();
 
     // 2) Fetch all product_carousel sections in parallel
     final productCarousels = customizations
@@ -166,7 +183,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     final productResults = await Future.wait(
       productCarousels.map((tc) async {
         try {
-          final filters = tc.options['filters'] as Map<String, dynamic>? ?? {};
+          final filters = tc.filters;
           final sort = filters['sort'] as String?;
           final limitRaw = filters['limit'];
           final limit = limitRaw != null
@@ -229,6 +246,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         status: HomeStatus.loaded,
         customizations: customizations,
         categories: categories,
+        categorySections: categorySections,
         productSections: productSections,
         errorMessage: null,
       ),

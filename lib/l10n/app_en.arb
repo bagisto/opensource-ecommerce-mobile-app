@@ -859,11 +859,6 @@
   },
   "accountReturnNoEligibleOrders": "No orders are eligible for a return right now",
   "accountRequestReturn": "Request a Return",
-  "accountRefundBreakdown": "Refund Breakdown",
-  "accountSubtotalRefunded": "Subtotal Refunded",
-  "accountShippingRefunded": "Shipping Refunded",
-  "accountTaxRefunded": "Tax Refunded",
-  "accountDiscountRefunded": "Discount Refunded",
   "accountRefunded": "Refunded",
   "accountCanceledQty": "Canceled",
   "productBookingCancellation": "Cancellation",
@@ -897,5 +892,13 @@
   "accountEuWithdrawGuestDescription": "Enter the order number and the email address used for the order to withdraw from your contract.",
   "accountEuWithdrawOrderNumber": "Order Number *",
   "accountEuWithdrawEmail": "Order Email *",
-  "accountEuWithdrawFieldRequired": "This field is required"
+  "accountEuWithdrawFieldRequired": "This field is required",
+  "accountRefunds": "Refunds",
+  "accountShippingAndHandling": "Shipping & Handling",
+  "accountContactUsDescription": "Jot us a note, and we’ll get back to you as quickly as possible",
+  "accountPhoneNumber": "Phone Number",
+  "accountWhatsOnYourMind": "What’s on your mind?",
+  "accountDescribeHere": "Describe Here",
+  "accountSubmit": "Submit",
+  "accountRefundedQty": "Refunded Qty"
 }

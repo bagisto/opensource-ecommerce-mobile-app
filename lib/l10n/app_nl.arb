@@ -814,11 +814,6 @@
   "accountShippedCount": "{count} verzonden",
   "accountReturnNoEligibleOrders": "Er komen momenteel geen bestellingen in aanmerking voor retour",
   "accountRequestReturn": "Retour aanvragen",
-  "accountRefundBreakdown": "Specificatie terugbetaling",
-  "accountSubtotalRefunded": "Terugbetaald subtotaal",
-  "accountShippingRefunded": "Terugbetaalde verzendkosten",
-  "accountTaxRefunded": "Terugbetaalde belasting",
-  "accountDiscountRefunded": "Terugbetaalde korting",
   "accountRefunded": "Terugbetaald",
   "accountCanceledQty": "Geannuleerd",
   "productBookingCancellation": "Annulering",
@@ -838,5 +833,13 @@
   "accountEuWithdrawGuestDescription": "Voer het bestelnummer en het e-mailadres van de bestelling in om de overeenkomst te herroepen.",
   "accountEuWithdrawOrderNumber": "Bestelnummer *",
   "accountEuWithdrawEmail": "E-mail van de bestelling *",
-  "accountEuWithdrawFieldRequired": "Dit veld is verplicht"
+  "accountEuWithdrawFieldRequired": "Dit veld is verplicht",
+  "accountRefunds": "Terugbetalingen",
+  "accountShippingAndHandling": "Verzending & verwerking",
+  "accountContactUsDescription": "Stuur ons een bericht en we reageren zo snel mogelijk",
+  "accountPhoneNumber": "Telefoonnummer",
+  "accountWhatsOnYourMind": "Waar denk je aan?",
+  "accountDescribeHere": "Beschrijf hier",
+  "accountSubmit": "Versturen",
+  "accountRefundedQty": "Terugbetaalde hoeveelheid"
 }

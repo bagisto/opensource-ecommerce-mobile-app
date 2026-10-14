@@ -248,7 +248,13 @@ class _OrderDetailBodyState extends State<_OrderDetailBody> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context)!;
-    final tabs = [l10n.accountDetails, l10n.accountInvoices, l10n.accountShipments];
+    final tabs = [
+      l10n.accountDetails,
+      l10n.accountInvoices,
+      l10n.accountShipments,
+      // Refunds tab only for orders with a refund, like the storefront.
+      if (widget.order.totalRefunded > 0) l10n.accountRefunds,
+    ];
 
     return Column(
       children: [
@@ -275,6 +281,7 @@ class _OrderDetailBodyState extends State<_OrderDetailBody> {
                 if (_selectedTabIndex == 0) _buildDetailsTab(isDark),
                 if (_selectedTabIndex == 1) _buildInvoicesTab(isDark),
                 if (_selectedTabIndex == 2) _buildShipmentsTab(isDark),
+                if (_selectedTabIndex == 3) _buildRefundsTab(isDark),
 
                 const SizedBox(height: 24),
               ],
@@ -349,6 +356,7 @@ class _OrderDetailBodyState extends State<_OrderDetailBody> {
       Icons.info_outline, // Details
       Icons.description_outlined, // Invoices
       Icons.local_shipping_outlined, // Shipments
+      Icons.currency_exchange, // Refunds
     ];
 
     return Wrap(
@@ -639,6 +647,216 @@ class _OrderDetailBodyState extends State<_OrderDetailBody> {
             ),
           ),
         ],
+      ],
+    );
+  }
+
+  // ─── Refunds Tab ───
+  // Mirrors the storefront Refunds view: refunded items (name, SKU, item
+  // quantities, price, subtotal; laid out like invoice item cards) followed
+  // by the order summary. All values come from the customerOrder API.
+  Widget _buildRefundsTab(bool isDark) {
+    final order = widget.order;
+    final l10n = AppLocalizations.of(context)!;
+    final textColor = isDark ? AppColors.neutral200 : AppColors.neutral900;
+    final mutedColor = isDark ? AppColors.neutral400 : AppColors.neutral500;
+    final cardDecoration = BoxDecoration(
+      color: isDark ? AppColors.neutral800 : AppColors.neutral100,
+      border: Border.all(
+        color: isDark ? AppColors.neutral700 : AppColors.neutral200,
+      ),
+      borderRadius: BorderRadius.circular(10),
+    );
+
+    Widget row(String label, String value, {bool bold = false}) => Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontFamily: 'Roboto',
+                fontSize: 14,
+                fontWeight: bold ? FontWeight.w600 : FontWeight.w400,
+                color: bold ? textColor : mutedColor,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Flexible(
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
+              style: TextStyle(
+                fontFamily: 'Roboto',
+                fontSize: 14,
+                fontWeight: bold ? FontWeight.w600 : FontWeight.w400,
+                color: textColor,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    // Same quantity rows and price column as invoice item cards.
+    Widget qtyRow(String label, int qty) => Padding(
+      padding: const EdgeInsets.only(top: 6),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 90,
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontFamily: 'Roboto',
+                fontSize: 14,
+                color: AppColors.neutral500,
+              ),
+            ),
+          ),
+          Text(
+            ': $qty',
+            style: TextStyle(
+              fontFamily: 'Roboto',
+              fontSize: 14,
+              color: isDark ? AppColors.neutral200 : AppColors.neutral800,
+            ),
+          ),
+        ],
+      ),
+    );
+
+    Widget priceRow(String label, String value, {bool bold = false}) =>
+        Padding(
+          padding: const EdgeInsets.only(top: 6),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: 80,
+                child: Text(
+                  label,
+                  textAlign: TextAlign.right,
+                  style: TextStyle(
+                    fontFamily: 'Roboto',
+                    fontSize: 14,
+                    color: isDark ? AppColors.neutral400 : AppColors.neutral700,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 4),
+              Text(
+                value,
+                style: TextStyle(
+                  fontFamily: 'Roboto',
+                  fontSize: 14,
+                  fontWeight: bold ? FontWeight.w700 : FontWeight.w400,
+                  color: isDark ? AppColors.neutral200 : AppColors.neutral700,
+                ),
+              ),
+            ],
+          ),
+        );
+
+    return Column(
+      key: const ValueKey('order_refunds_tab'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final item in order.refundedItems)
+          Container(
+            width: double.infinity,
+            margin: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+            decoration: cardDecoration,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.name,
+                  style: TextStyle(
+                    fontFamily: 'Roboto',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: textColor,
+                  ),
+                ),
+                if ((item.sku ?? '').isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    l10n.accountSkuValue(item.sku!),
+                    style: TextStyle(
+                      fontFamily: 'Roboto',
+                      fontSize: 12,
+                      color: mutedColor,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 4),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          qtyRow(l10n.accountOrderedQty, item.qtyOrdered),
+                          qtyRow(l10n.accountShippedQty, item.qtyShipped),
+                          qtyRow(l10n.accountInvoicedQty, item.qtyInvoiced),
+                          qtyRow(l10n.accountRefundedQty, item.qtyRefunded),
+                          if (item.qtyCanceled > 0)
+                            qtyRow(l10n.accountCanceledQty, item.qtyCanceled),
+                        ],
+                      ),
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        priceRow(
+                          l10n.accountUnitPriceWithColon,
+                          order.formatAmount(item.price),
+                        ),
+                        priceRow(
+                          l10n.accountSubTotalWithColon,
+                          order.formatAmount(item.total),
+                          bold: true,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
+          decoration: cardDecoration,
+          child: Column(
+            children: [
+              row(l10n.cartSubTotal, order.formatAmount(order.subTotal)),
+              row(
+                l10n.accountShippingAndHandling,
+                order.formatAmount(order.shippingAmount ?? 0),
+              ),
+              row(l10n.cartTax, order.formatAmount(order.taxAmount ?? 0)),
+              if ((order.discountAmount ?? 0) > 0)
+                row(
+                  l10n.cartDiscount,
+                  '-${order.formatAmount(order.discountAmount)}',
+                ),
+              row(l10n.cartGrandTotal, order.formattedTotal, bold: true),
+              row(l10n.accountTotalPaid, order.formatAmount(order.totalPaid)),
+              row(
+                l10n.accountTotalRefunded,
+                order.formatAmount(order.totalRefunded),
+              ),
+              row(l10n.accountTotalDue, order.formatAmount(order.totalDue)),
+            ],
+          ),
+        ),
       ],
     );
   }
@@ -1632,43 +1850,8 @@ class _PriceBreakSection extends StatelessWidget {
           isBold: false,
           valueColor: isDark ? AppColors.neutral400 : AppColors.neutral500,
         ),
-        if (order.totalRefunded > 0) ..._refundBreakdown(l10n, isDark),
       ],
     );
-  }
-
-  /// Refunded amounts per component, as returned by the order API.
-  List<Widget> _refundBreakdown(AppLocalizations l10n, bool isDark) {
-    final rows = <(String, double?)>[
-      (l10n.accountSubtotalRefunded, order.subTotalRefunded),
-      (l10n.accountShippingRefunded, order.shippingRefunded),
-      (l10n.accountTaxRefunded, order.taxAmountRefunded),
-      (l10n.accountDiscountRefunded, order.discountRefunded),
-    ].where((row) => (row.$2 ?? 0) > 0);
-
-    return [
-      const SizedBox(height: 16),
-      Text(
-        l10n.accountRefundBreakdown,
-        style: TextStyle(
-          fontFamily: 'Roboto',
-          fontWeight: FontWeight.w600,
-          fontSize: 16,
-          color: isDark ? AppColors.neutral200 : AppColors.neutral800,
-        ),
-      ),
-      for (final row in rows) ...[
-        const SizedBox(height: 8),
-        _priceRow(row.$1, order.formatAmount(row.$2), isDark, isBold: false),
-      ],
-      const SizedBox(height: 8),
-      _priceRow(
-        l10n.accountTotalRefunded,
-        order.formatAmount(order.totalRefunded),
-        isDark,
-        isBold: true,
-      ),
-    ];
   }
 
   Widget _priceRow(

@@ -40,11 +40,12 @@ class HomeRepository {
       ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
   }
 
-  /// Fetches categories for the horizontal category carousel: the active
-  /// direct children of [parentId] (the carousel's `parent_id` filter),
-  /// sorted by position and capped at [limit].
+  /// Fetches categories for a category carousel: every active category, or
+  /// only the direct children of [parentId] when the carousel sets a
+  /// `parent_id` filter, sorted by position and capped at [limit]. Matches
+  /// the storefront's `/api/categories` call.
   Future<List<HomeCategory>> fetchHomeCategories({
-    int parentId = 1,
+    int? parentId,
     int? limit,
   }) async {
     final result = await _client.query(
@@ -61,18 +62,38 @@ class HomeRepository {
 
     final edges = result.data?['categories']?['edges'] as List? ?? [];
     // The `categories` query also returns disabled and nested categories.
+    final activeNodes = edges
+        .map((e) => e['node'])
+        .whereType<Map<String, dynamic>>()
+        .where((node) => CategoryModel.isActiveStatus(node['status']))
+        .toList();
+    // Ids that are the parent of an active category.
+    final parentIds = {
+      for (final node in activeNodes)
+        ?int.tryParse('${(node['parent'] as Map?)?['_id']}'),
+    };
     final categories =
-        edges
-            .map((e) => e['node'])
-            .whereType<Map<String, dynamic>>()
-            .where((node) => CategoryModel.isActiveStatus(node['status']))
+        activeNodes
             .where((node) {
+              if (parentId == null) return true;
               final parent = node['parent'] as Map<String, dynamic>?;
               return int.tryParse('${parent?['_id']}') == parentId;
             })
-            .map(HomeCategory.fromJson)
+            .map(
+              (node) => HomeCategory.fromJson(
+                node,
+                hasChildren: parentIds.contains(
+                  int.tryParse('${node['_id']}'),
+                ),
+              ),
+            )
             .toList()
-          ..sort((a, b) => a.position.compareTo(b.position));
+          ..sort((a, b) {
+            final byPosition = a.position.compareTo(b.position);
+            return byPosition != 0
+                ? byPosition
+                : (a.numericId ?? 0).compareTo(b.numericId ?? 0);
+          });
     return limit != null && limit > 0
         ? categories.take(limit).toList()
         : categories;

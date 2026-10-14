@@ -105,12 +105,12 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     );
   }
 
-  /// Open a home category in the Categories tab, the same flow as picking
-  /// it there. Falls back to the products grid outside the tab shell.
+  /// Open a home category: one with sub-categories opens in the Categories
+  /// tab; one without opens its product catalog.
   void _openCategoryProducts(BuildContext context, HomeCategory category) {
     final categoryId = category.numericId ?? 0;
     if (categoryId <= 0) return;
-    if (AppNavigator.maybeOf(context) != null) {
+    if (category.hasChildren && AppNavigator.maybeOf(context) != null) {
       context.read<CategoryBloc>().add(ShowCategory(categoryId));
       AppNavigator.goCategories(context);
       return;
@@ -172,6 +172,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               name: top.name,
               slug: top.slug,
               position: top.position ?? 0,
+              hasChildren: top.children.isNotEmpty,
             ),
           );
           return;
@@ -555,10 +556,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         case 'product_carousel':
           final products = state.productSections[tc.id] ?? [];
           if (products.isNotEmpty) {
-            final filters =
-                tc.options['filters'] as Map<String, dynamic>? ?? {};
-            final title = tc.name.isNotEmpty
-                ? tc.name
+            final filters = tc.filters;
+            final title = tc.title.isNotEmpty
+                ? tc.title
                 : l10n.homeDefaultProducts;
             sections.add(
               _buildHorizontalProductSection(
@@ -594,10 +594,11 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
           break;
 
         case 'category_carousel':
-          if (state.categories.isNotEmpty) {
+          final carouselCategories = state.categorySections[tc.id] ?? [];
+          if (carouselCategories.isNotEmpty) {
             sections.add(
               CategoryCarousel(
-                categories: state.categories,
+                categories: carouselCategories,
                 onCategoryTap: (category) =>
                     _openCategoryProducts(context, category),
               ),

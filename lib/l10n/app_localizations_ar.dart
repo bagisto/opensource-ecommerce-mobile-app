@@ -1882,21 +1882,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get accountRequestReturn => 'طلب إرجاع';
 
   @override
-  String get accountRefundBreakdown => 'تفاصيل الاسترداد';
-
-  @override
-  String get accountSubtotalRefunded => 'المجموع الفرعي المسترد';
-
-  @override
-  String get accountShippingRefunded => 'الشحن المسترد';
-
-  @override
-  String get accountTaxRefunded => 'الضريبة المستردة';
-
-  @override
-  String get accountDiscountRefunded => 'الخصم المسترد';
-
-  @override
   String get accountRefunded => 'مسترد';
 
   @override
@@ -1963,4 +1948,29 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get accountEuWithdrawFieldRequired => 'هذا الحقل مطلوب';
+
+  @override
+  String get accountRefunds => 'المبالغ المستردة';
+
+  @override
+  String get accountShippingAndHandling => 'الشحن والتجهيز';
+
+  @override
+  String get accountContactUsDescription =>
+      'اكتب لنا ملاحظة، وسنعود إليك في أسرع وقت ممكن';
+
+  @override
+  String get accountPhoneNumber => 'رقم الهاتف';
+
+  @override
+  String get accountWhatsOnYourMind => 'بماذا تفكر؟';
+
+  @override
+  String get accountDescribeHere => 'اكتب هنا';
+
+  @override
+  String get accountSubmit => 'إرسال';
+
+  @override
+  String get accountRefundedQty => 'الكمية المستردة';
 }

@@ -1903,21 +1903,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get accountRequestReturn => 'Запросить возврат';
 
   @override
-  String get accountRefundBreakdown => 'Детали возврата средств';
-
-  @override
-  String get accountSubtotalRefunded => 'Возвращённая сумма товаров';
-
-  @override
-  String get accountShippingRefunded => 'Возвращённая доставка';
-
-  @override
-  String get accountTaxRefunded => 'Возвращённый налог';
-
-  @override
-  String get accountDiscountRefunded => 'Возвращённая скидка';
-
-  @override
   String get accountRefunded => 'Возвращено';
 
   @override
@@ -1984,4 +1969,29 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get accountEuWithdrawFieldRequired => 'Обязательное поле';
+
+  @override
+  String get accountRefunds => 'Возвраты';
+
+  @override
+  String get accountShippingAndHandling => 'Доставка и обработка';
+
+  @override
+  String get accountContactUsDescription =>
+      'Напишите нам, и мы ответим как можно скорее';
+
+  @override
+  String get accountPhoneNumber => 'Номер телефона';
+
+  @override
+  String get accountWhatsOnYourMind => 'Что вы хотите сообщить?';
+
+  @override
+  String get accountDescribeHere => 'Опишите здесь';
+
+  @override
+  String get accountSubmit => 'Отправить';
+
+  @override
+  String get accountRefundedQty => 'Возвращено';
 }
