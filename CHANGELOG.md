@@ -1,5 +1,45 @@
 #### This changelog consists the bug & security fixes and new features being included in the releases listed below
 
+# CHANGELOG for v2.5.1
+
+## **v2.5.1 (14th of October, 2026)** - *Release*
+
+* [Enhancement] Added EU contract withdrawal: logged-in customers can withdraw from an order on the order detail page, and guests can submit a withdrawal from the account screen, when it is enabled in the admin.
+* [Enhancement] Added a "Request a Return" button on the order detail page for orders that are eligible for a return.
+* [Enhancement] Added a Refunds tab on the order detail page with the refunded items and the order totals, including the amount paid, refunded, and due.
+* [Enhancement] Added the Services Content and Footer Links homepage sections from the theme settings.
+* [Enhancement] Added pull-to-refresh to the profile, account dashboard, orders, wishlist, reviews, and downloadable products screens.
+* [Enhancement] Showed the category description on the Categories tab.
+* [Enhancement] Showed the store logo configured for the channel in the admin.
+* [Enhancement] Homepage banner and content links now open the linked category or product.
+* [Enhancement] Tapping a category on the homepage opens the Categories tab when it has sub-categories, and its product list otherwise.
+* [Improvement] Matched the Contact Us form to the storefront: the same fields, labels, placeholders, and required fields, with the phone number optional.
+* [Improvement] Applied the storefront phone number rule (digits with an optional leading +) to contact, address, checkout, and profile forms instead of a fixed 10-digit limit.
+* [Improvement] Phone and gender are now required on the edit profile form.
+* [Improvement] Out-of-stock products now show a disabled Add to Cart and Buy Now on the product page.
+* [Improvement] Discounted products now show the original price with a strikethrough, including configurable products, bundles, and catalog price rules.
+* [Improvement] Logged-in orders now use the customer's account email.
+* [Improvement] Suspended customers can browse the store but can no longer check out.
+* [Improvement] Guests are asked to sign in before checkout when a product in the cart does not allow guest checkout.
+* [Improvement] Booking products now grey out dates with no available slots, show "Cancellation Not Allowed" and "View on Map" where relevant, and no longer show availability details the storefront does not show.
+* [Improvement] Order details now show a note when a booking in the order cannot be canceled, and show refunded and canceled quantities for each item.
+* [Improvement] Error messages now say which step failed instead of a generic "Something went wrong".
+* [Improvement] Language and currency lists refresh from the store when the settings sheet opens; a language without app translations falls back to English.
+* [Fixed] Fixed the homepage showing outdated content after changes in the admin, and sorted homepage sections in the order set in the admin.
+* [Fixed] Fixed homepage product carousels saved without filters not appearing.
+* [Fixed] Fixed the homepage category carousel showing the wrong categories, including sub-categories shown as top-level categories.
+* [Fixed] Fixed shipment details not loading on the order detail page.
+* [Fixed] Fixed the return request flow so only eligible orders and items can be selected.
+* [Fixed] Fixed the cart badge not updating right after Reorder.
+* [Fixed] Fixed a failed order cancellation hiding the order; the reason is now shown instead.
+* [Fixed] Fixed the coupon code being cleared from the input box while it is being applied.
+* [Fixed] Fixed booking quantities showing as "N/A" in the cart and at checkout.
+* [Fixed] Fixed add to cart reporting success when the requested booking quantity is not available.
+* [Fixed] Fixed account deletion and the loading of states by country code, which were failing because of invalid requests.
+* [Fixed] Fixed a crash when the API returns numeric IDs or positions as text.
+* [Known Limitation] Some admin settings are not available through the Bagisto GraphQL API yet, so the app cannot follow them: wishlist, compare, image search, Buy Now, and social share toggles, cart summary mode, cart page toggle, redirect after login, reviewer name censoring, and the header and mini cart offer texts. These will be supported once the API exposes them.
+* [Known Limitation] The Refunds tab combines all refunds on an order, because the API does not yet list individual refunds or adjustment amounts.
+
 # CHANGELOG for v2.5.0
 
 ## **v2.5.0 (18th of September, 2026)** - *Release*
