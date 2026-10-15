@@ -336,6 +336,9 @@ class CustomerAddress {
 
 class RecentOrder {
   final String? id;
+
+  /// Order database id (`_id`), used to open the order detail page.
+  final int? numericId;
   final int? incrementId;
   final String status;
   final String? createdAt;
@@ -346,6 +349,7 @@ class RecentOrder {
 
   const RecentOrder({
     this.id,
+    this.numericId,
     this.incrementId,
     required this.status,
     this.createdAt,
@@ -390,8 +394,12 @@ class RecentOrder {
       }
     }
 
+    final iri = json['id']?.toString();
     return RecentOrder(
-      id: json['id']?.toString(),
+      id: iri,
+      numericId:
+          _parseInt(json['_id']) ??
+          (iri == null ? null : int.tryParse(iri.split('/').last)),
       incrementId: _parseInt(json['incrementId']),
       status: json['status']?.toString() ?? 'pending',
       createdAt: json['createdAt']?.toString(),

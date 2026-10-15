@@ -30,6 +30,7 @@ import '../pages/settings_bottom_sheet.dart';
 import '../pages/wishlist_page.dart';
 import '../widgets/account_menu_item.dart';
 import '../../../../core/widgets/app_back_button.dart';
+import '../../../../core/store_config/store_config.dart';
 
 /// Account Menu Page — Figma node-id=220-6770
 ///
@@ -243,6 +244,7 @@ class _AccountMenuBody extends StatelessWidget {
   /// Figma node: 220:6774
   Widget _buildMenuSection(BuildContext context, bool isDark) {
     final l10n = AppLocalizations.of(context)!;
+    final config = StoreConfig.of(context);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -282,19 +284,23 @@ class _AccountMenuBody extends StatelessWidget {
             onTap: () =>
                 _onMenuItemTap(context, AccountMenuAction.downloadableProducts),
           ),
-          const SizedBox(height: 2),
-          AccountMenuItem(
-            label: l10n.accountWishlist,
-            trailingIcon: Icons.chevron_right,
-            onTap: () => _onMenuItemTap(context, AccountMenuAction.wishlist),
-          ),
-          const SizedBox(height: 2),
-          AccountMenuItem(
-            label: l10n.accountCompareProducts,
-            trailingIcon: Icons.chevron_right,
-            onTap: () =>
-                _onMenuItemTap(context, AccountMenuAction.compareProducts),
-          ),
+          if (config.showWishlist) ...[
+            const SizedBox(height: 2),
+            AccountMenuItem(
+              label: l10n.accountWishlist,
+              trailingIcon: Icons.chevron_right,
+              onTap: () => _onMenuItemTap(context, AccountMenuAction.wishlist),
+            ),
+          ],
+          if (config.showCompare) ...[
+            const SizedBox(height: 2),
+            AccountMenuItem(
+              label: l10n.accountCompareProducts,
+              trailingIcon: Icons.chevron_right,
+              onTap: () =>
+                  _onMenuItemTap(context, AccountMenuAction.compareProducts),
+            ),
+          ],
           const SizedBox(height: 2),
           AccountMenuItem(
             label: l10n.accountProductReview,

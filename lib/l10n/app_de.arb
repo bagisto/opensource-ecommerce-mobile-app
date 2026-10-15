@@ -841,5 +841,7 @@
   "accountWhatsOnYourMind": "Was liegt Ihnen auf dem Herzen?",
   "accountDescribeHere": "Hier beschreiben",
   "accountSubmit": "Absenden",
-  "accountRefundedQty": "Erstattete Menge"
+  "cartMinimumOrderAmount": "Der Mindestbestellwert beträgt {amount}",
+  "accountPrice": "Preis",
+  "accountQty": "Menge"
 }

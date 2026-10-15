@@ -2,11 +2,14 @@ import 'package:bagisto_flutter/features/account/data/models/account_models.dart
 import 'package:bagisto_flutter/features/account/data/repository/account_repository.dart';
 import 'package:bagisto_flutter/features/account/presentation/bloc/order_detail_bloc.dart';
 import 'package:bagisto_flutter/features/account/presentation/pages/order_detail_page.dart';
+import 'package:bagisto_flutter/features/account/presentation/widgets/address_form_field.dart';
 import 'package:bagisto_flutter/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+
+import 'store_config_fakes.dart';
 
 void main() {
   Widget refundApp(OrderDetail order) => MaterialApp(
@@ -49,6 +52,14 @@ void main() {
               'price': 99,
               'total': 99,
               'amountRefunded': 99,
+              'additional': {
+                'attributes': [
+                  {
+                    'attribute_name': 'Booking From',
+                    'option_label': '18 October, 2026 01:00 PM',
+                  },
+                ],
+              },
             },
           },
         ],
@@ -67,31 +78,168 @@ void main() {
         find.descendant(of: tab, matching: find.text(text));
     expect(inTab('Nike Shoes'), findsOneWidget);
     expect(inTab('SKU : Ring-001'), findsOneWidget);
-    // Item quantities use the same rows as invoice item cards.
+    // Booking details from the item's `additional`, like the storefront.
+    expect(inTab('Booking From : 18 October, 2026 01:00 PM'), findsOneWidget);
+    // Web refund columns: Price, Qty (refunded), Subtotal (refunded).
+    expect(inTab('Price'), findsOneWidget);
+    expect(inTab('Qty'), findsOneWidget);
+    expect(inTab('1'), findsOneWidget);
+    // Order-level quantities and payment rows are not part of a refund.
     for (final label in [
       'Ordered Qty',
       'Shipped Qty',
       'Invoiced Qty',
-      'Refunded Qty',
-    ]) {
-      expect(inTab(label), findsOneWidget, reason: label);
-    }
-    expect(inTab(': 1'), findsNWidgets(4));
-    expect(inTab('Unit Price:'), findsOneWidget);
-    expect(inTab('Sub Total:'), findsOneWidget);
-    for (final label in [
-      'Shipping & Handling',
-      'Tax',
-      'Grand Total',
       'Total Paid',
-      'Total Refunded',
       'Total Due',
+      'Tax',
     ]) {
-      expect(inTab(label), findsOneWidget, reason: label);
+      expect(inTab(label), findsNothing, reason: label);
     }
-    // Tax is listed even at zero, like the web; nothing is due.
-    expect(inTab(r'$0.00'), findsNWidgets(2));
-    expect(inTab(r'$109.00'), findsNWidgets(3));
+    // Refund totals come from the order's *Refunded fields.
+    expect(inTab('Shipping & Handling'), findsOneWidget);
+    expect(inTab(r'$10.00'), findsOneWidget);
+    expect(inTab('Grand Total'), findsOneWidget);
+    expect(inTab(r'$109.00'), findsOneWidget);
+    // Price, item subtotal and refund subtotal.
+    expect(inTab(r'$99.00'), findsNWidgets(3));
+  });
+
+  testWidgets('Reorder is hidden when the cart page is disabled', (
+    WidgetTester tester,
+  ) async {
+    final config = seededStoreConfigCubit(const {'cartPageEnabled': false});
+    addTearDown(config.close);
+    await tester.pumpWidget(
+      BlocProvider.value(
+        value: config,
+        child: refundApp(
+          const OrderDetail(
+            incrementId: '3',
+            status: 'completed',
+            grandTotal: 10,
+            subTotal: 10,
+            orderCurrencyCode: 'USD',
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Reorder'), findsNothing);
+  });
+
+  for (final hidden in [true, false]) {
+    testWidgets('Reorder button ${hidden ? 'hidden' : 'shown'} by store config', (
+      WidgetTester tester,
+    ) async {
+      final config = seededStoreConfigCubit(
+        hidden ? const {'reorderEnabled': false} : const {},
+      );
+      addTearDown(config.close);
+      await tester.pumpWidget(
+        BlocProvider.value(
+          value: config,
+          child: refundApp(
+            const OrderDetail(
+              incrementId: '3',
+              status: 'completed',
+              grandTotal: 10,
+              subTotal: 10,
+              orderCurrencyCode: 'USD',
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Reorder'), hidden ? findsNothing : findsOneWidget);
+    });
+  }
+
+  testWidgets('withdraw dialog uses the app input field style', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: BlocProvider(
+          create: (_) => OrderDetailBloc(
+            repository: _FakeAccountRepository(
+              order: const OrderDetail(
+                numericId: 2,
+                incrementId: '2',
+                status: 'processing',
+                grandTotal: 10,
+                subTotal: 10,
+                orderCurrencyCode: 'USD',
+              ),
+              euWithdrawalEnabled: true,
+            ),
+          )..add(const LoadOrderDetail(2)),
+          child: const OrderDetailPage(orderId: 2),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.byKey(const ValueKey('order_eu_withdraw')));
+    await tester.tap(find.byKey(const ValueKey('order_eu_withdraw')));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AddressFormField), findsOneWidget);
+  });
+
+  testWidgets('Invoices and Shipments tabs hide when the order has none', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      refundApp(
+        const OrderDetail(
+          incrementId: '5',
+          status: 'pending',
+          grandTotal: 10,
+          subTotal: 10,
+          orderCurrencyCode: 'USD',
+          items: [
+            OrderItem(name: 'Ring', qtyOrdered: 1, price: 10, total: 10),
+          ],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Invoices'), findsNothing);
+    expect(find.text('Shipments'), findsNothing);
+  });
+
+  testWidgets('only the tabs with data are shown', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      refundApp(
+        const OrderDetail(
+          incrementId: '6',
+          status: 'processing',
+          grandTotal: 10,
+          subTotal: 10,
+          orderCurrencyCode: 'USD',
+          items: [
+            OrderItem(
+              name: 'Ring',
+              qtyOrdered: 1,
+              qtyInvoiced: 1,
+              price: 10,
+              total: 10,
+            ),
+          ],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Invoices'), findsOneWidget);
+    expect(find.text('Shipments'), findsNothing);
   });
 
   testWidgets('order without refunds has no Refunds tab', (
@@ -220,7 +368,9 @@ void main() {
 class _FakeAccountRepository extends AccountRepository {
   final OrderDetail order;
 
-  _FakeAccountRepository({required this.order})
+  final bool euWithdrawalEnabled;
+
+  _FakeAccountRepository({required this.order, this.euWithdrawalEnabled = false})
     : super(
         client: GraphQLClient(
           link: HttpLink('https://example.com/graphql'),
@@ -230,4 +380,14 @@ class _FakeAccountRepository extends AccountRepository {
 
   @override
   Future<OrderDetail> getCustomerOrder(int orderId) async => order;
+
+  @override
+  Future<bool> isEuWithdrawalEnabled() async => euWithdrawalEnabled;
+
+  @override
+  Future<EuWithdrawal?> getEuWithdrawalForOrder(int orderId) async => null;
+
+  @override
+  Future<List<CustomerOrder>> getReturnableOrders({String? incrementId}) async =>
+      const [];
 }

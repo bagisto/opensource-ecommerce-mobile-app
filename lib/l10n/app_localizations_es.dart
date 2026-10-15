@@ -2014,5 +2014,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get accountSubmit => 'Enviar';
 
   @override
-  String get accountRefundedQty => 'Cant. reembolsada';
+  String cartMinimumOrderAmount(String amount) {
+    return 'El importe mínimo del pedido es $amount';
+  }
+
+  @override
+  String get accountPrice => 'Precio';
+
+  @override
+  String get accountQty => 'Cant.';
 }

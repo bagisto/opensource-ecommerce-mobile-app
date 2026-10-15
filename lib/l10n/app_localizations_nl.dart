@@ -2000,5 +2000,13 @@ class AppLocalizationsNl extends AppLocalizations {
   String get accountSubmit => 'Versturen';
 
   @override
-  String get accountRefundedQty => 'Terugbetaalde hoeveelheid';
+  String cartMinimumOrderAmount(String amount) {
+    return 'Het minimale bestelbedrag is $amount';
+  }
+
+  @override
+  String get accountPrice => 'Prijs';
+
+  @override
+  String get accountQty => 'Aantal';
 }

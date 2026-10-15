@@ -20,6 +20,7 @@ import 'product_booking_options_section.dart';
 import 'product_bundle_options_section.dart';
 import 'product_customizable_options_section.dart';
 import 'product_grouped_products_section.dart';
+import '../../../../core/store_config/store_config.dart';
 
 /// Attributes section: Size swatches, Color swatches, Text swatches,
 /// Quantity picker, and Wishlist/Compare/Share action row
@@ -436,6 +437,12 @@ class ProductAttributesSection extends StatelessWidget {
             productId != 0 && wishlistState.isWishlisted(productId);
         final isProcessing =
             productId != 0 && wishlistState.isProcessing(productId);
+        final config = StoreConfig.of(context);
+        if (!config.showWishlist &&
+            !config.showCompare &&
+            !config.showSocialShare) {
+          return const SizedBox.shrink();
+        }
 
         return Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
@@ -445,6 +452,7 @@ class ProductAttributesSection extends StatelessWidget {
           ),
           child: Row(
             children: [
+              if (config.showWishlist)
               _buildActionItem(
                 context,
                 icon: isWishlisted ? Icons.favorite : Icons.favorite_border,
@@ -458,6 +466,7 @@ class ProductAttributesSection extends StatelessWidget {
                     ? null
                     : () => _toggleWishlist(context, productId),
               ),
+              if (config.showCompare)
               _buildActionItem(
                 context,
                 icon: Icons.compare_arrows,
@@ -465,6 +474,7 @@ class ProductAttributesSection extends StatelessWidget {
                 isDark: isDark,
                 onTap: () => _addToCompare(context),
               ),
+              if (config.showSocialShare)
               _buildActionItem(
                 context,
                 icon: Icons.share_outlined,

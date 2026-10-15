@@ -8,6 +8,7 @@ import '../../data/models/account_models.dart';
 import '../bloc/edit_account_bloc.dart';
 import '../widgets/edit_account_form_field.dart';
 import '../../../../core/widgets/app_back_button.dart';
+import '../../../../core/store_config/store_config.dart';
 
 /// Edit Account Page — Figma node-id=245-6502
 ///
@@ -47,6 +48,16 @@ class _EditAccountPageState extends State<EditAccountPage> {
 
   static const List<String> _genderOptions = ['Male', 'Female', 'Other'];
 
+  /// [value] as one of [_genderOptions], or null when empty or unknown, so
+  /// the required check cannot pass on a blank gender from the API.
+  static String? _validGender(String? value) {
+    final key = value?.trim().toLowerCase();
+    for (final option in _genderOptions) {
+      if (option.toLowerCase() == key) return option;
+    }
+    return null;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -54,7 +65,7 @@ class _EditAccountPageState extends State<EditAccountPage> {
     _firstNameCtrl = TextEditingController(text: p?.firstName ?? '');
     _lastNameCtrl = TextEditingController(text: p?.lastName ?? '');
     _phoneCtrl = TextEditingController(text: p?.phone ?? '');
-    _selectedGender = p?.gender;
+    _selectedGender = _validGender(p?.gender);
     _subscribedToNewsLetter = p?.subscribedToNewsLetter ?? false;
 
     // Parse DOB
@@ -203,7 +214,8 @@ class _EditAccountPageState extends State<EditAccountPage> {
                           _buildDobField(context, isDark),
 
                           // Subscribe Newsletters checkbox
-                          _buildNewsletterCheckbox(context, isDark),
+                          if (StoreConfig.of(context).showNewsletter)
+                            _buildNewsletterCheckbox(context, isDark),
 
                           const SizedBox(height: 8),
 
@@ -814,7 +826,7 @@ class _EditAccountPageState extends State<EditAccountPage> {
     _firstNameCtrl.text = profile.firstName;
     _lastNameCtrl.text = profile.lastName;
     _phoneCtrl.text = profile.phone ?? '';
-    _selectedGender = profile.gender;
+    _selectedGender = _validGender(profile.gender);
     _subscribedToNewsLetter = profile.subscribedToNewsLetter;
     if (profile.dateOfBirth != null && profile.dateOfBirth!.isNotEmpty) {
       _selectedDob = DateTime.tryParse(profile.dateOfBirth!);

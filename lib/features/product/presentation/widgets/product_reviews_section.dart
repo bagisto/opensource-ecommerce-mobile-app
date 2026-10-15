@@ -12,6 +12,8 @@ import '../../../account/presentation/pages/reviews_page.dart';
 import '../../../account/presentation/widgets/review_attachments_strip.dart';
 import '../../../category/data/models/product_model.dart';
 import '../bloc/product_detail_bloc.dart';
+import '../../../../core/store_config/store_config.dart';
+import 'review_entry.dart';
 
 /// Reviews section with rating summary, bars, and individual review cards
 /// Figma: Frame 1984079219 – Reviews with rating breakdown and review list
@@ -452,7 +454,8 @@ class ProductReviewsSection extends StatelessWidget {
           // ── Author ──
           if (review.name != null && review.name!.isNotEmpty)
             Text(
-              '— ${review.name!}',
+              // Admin "Censoring Reviewer Name" hides who wrote it.
+              '— ${StoreConfig.of(context).censorReviewerName ? censoredReviewerName(review.name!) : review.name!}',
               style: TextStyle(
                 fontFamily: 'Roboto',
                 fontSize: 14,
@@ -469,10 +472,16 @@ class ProductReviewsSection extends StatelessWidget {
   Widget _buildWriteReviewButton(BuildContext context) {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, authState) {
+        final entry = reviewEntryFor(
+          StoreConfig.of(context),
+          isLoggedIn: authState is AuthAuthenticated,
+        );
+        if (entry == ReviewEntry.hidden) return const SizedBox.shrink();
         return GestureDetector(
           onTap: () async {
             final productId = product.numericId;
             if (productId == null) return;
+            if (openLoginForReview(context, entry)) return;
 
             final submitted = await AddReviewPage.navigate(
               context,

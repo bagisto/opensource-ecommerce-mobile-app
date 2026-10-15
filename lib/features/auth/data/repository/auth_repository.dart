@@ -81,6 +81,7 @@ class AuthRepository {
     required String password,
     required String confirmPassword,
     String? deviceToken,
+    bool subscribeToNewsletter = true,
   }) async {
     debugPrint('📝 AuthRepo.register — $firstName $lastName <$email>');
 
@@ -100,7 +101,7 @@ class AuthRepository {
             'status': '1',
             'isVerified': '1',
             'isSuspended': '0',
-            'subscribedToNewsLetter': true,
+            'subscribedToNewsLetter': subscribeToNewsletter,
             if (token != null) 'deviceToken': token,
           },
         },

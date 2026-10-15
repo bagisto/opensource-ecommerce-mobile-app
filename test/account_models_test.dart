@@ -223,6 +223,28 @@ void main() {
       expect(order.baseImageUrl, 'https://example.com/img.jpg');
     });
 
+    test('numericId is the order database id, not the increment id', () {
+      final order = RecentOrder.fromJson({
+        'id': '/api/shop/customer-orders/7',
+        '_id': 7,
+        'incrementId': 2,
+        'status': 'pending',
+        'grandTotal': 0,
+      });
+      expect(order.numericId, 7);
+      expect(order.orderNumber, '#2');
+    });
+
+    test('numericId falls back to the IRI id', () {
+      final order = RecentOrder.fromJson({
+        'id': '/api/shop/customer-orders/9',
+        'incrementId': 3,
+        'status': 'pending',
+        'grandTotal': 0,
+      });
+      expect(order.numericId, 9);
+    });
+
     test('orderNumber uses increment id without zero padding', () {
       final order = RecentOrder.fromJson({
         'incrementId': 42,

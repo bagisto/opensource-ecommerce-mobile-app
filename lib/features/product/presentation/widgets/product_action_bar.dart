@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/store_config/store_config.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/navigation/app_navigator.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -18,6 +19,9 @@ class ProductActionBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // Cart page off in admin: no Add to Cart / Buy Now at all.
+    if (!StoreConfig.of(context).showCartPage) return const SizedBox.shrink();
 
     return BlocListener<CartBloc, CartState>(
       listener: (context, cartState) {
@@ -71,6 +75,7 @@ class ProductActionBar extends StatelessWidget {
               final disabledColor = isDark
                   ? AppColors.neutral600
                   : AppColors.neutral400;
+              final showBuyNow = StoreConfig.of(context).showBuyNow;
 
               return Row(
                 children: [
@@ -118,6 +123,7 @@ class ProductActionBar extends StatelessWidget {
                     ),
                   ),
 
+                  if (showBuyNow) ...[
                   const SizedBox(width: 16),
 
                   // ── Buy Now (primary) ──
@@ -147,6 +153,7 @@ class ProductActionBar extends StatelessWidget {
                       ),
                     ),
                   ),
+                  ],
                 ],
               );
             },

@@ -28,6 +28,8 @@ import '../widgets/recently_viewed_products_section.dart';
 import '../widgets/section_header.dart';
 import '../widgets/services_content_section.dart';
 import '../widgets/static_content_widget.dart';
+import '../../../../core/store_config/store_config_cubit.dart';
+import '../home_refresh.dart';
 
 /// The main Home page of the Bagisto Flutter app.
 ///
@@ -636,20 +638,32 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       color: AppColors.primary500,
       onRefresh: () async {
         final bloc = context.read<HomeBloc>();
+        StoreConfigCubit? storeConfig;
+        try {
+          storeConfig = context.read<StoreConfigCubit>();
+        } on ProviderNotFoundException {
+          storeConfig = null;
+        }
 
-        // Subscribe BEFORE dispatching to avoid missing the loaded emission
-        final future = bloc.stream
-            .firstWhere(
-              (s) =>
-                  s.status == HomeStatus.loaded || s.status == HomeStatus.error,
-            )
-            .timeout(
-              const Duration(seconds: 15),
-              onTimeout: () => bloc.state, // fallback to current state
-            );
+        await refreshHomeData(
+          storeConfig: storeConfig,
+          reloadHome: () async {
+            // Subscribe BEFORE dispatching to avoid missing the loaded emission
+            final future = bloc.stream
+                .firstWhere(
+                  (s) =>
+                      s.status == HomeStatus.loaded ||
+                      s.status == HomeStatus.error,
+                )
+                .timeout(
+                  const Duration(seconds: 15),
+                  onTimeout: () => bloc.state, // fallback to current state
+                );
 
-        bloc.add(const RefreshHome());
-        await future;
+            bloc.add(const RefreshHome());
+            await future;
+          },
+        );
       },
       child: ListView.separated(
         controller: _scrollController,

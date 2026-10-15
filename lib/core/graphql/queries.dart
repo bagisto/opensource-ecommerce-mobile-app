@@ -3,6 +3,36 @@
 library;
 
 class StoreConfigQueries {
+  /// Public store settings of the current channel (admin configuration).
+  static const String getStoreConfig = r'''
+    query storeConfig {
+      storeConfig {
+        id
+        guestCheckoutEnabled
+        reorderEnabled
+        minimumOrderEnabled
+        minimumOrderAmount
+        minimumOrderIncludesDiscount
+        minimumOrderIncludesTax
+        minimumOrderMessage
+        customerReviewEnabled
+        guestReviewEnabled
+        reviewerNameCensored
+        compareEnabled
+        wishlistEnabled
+        imageSearchEnabled
+        socialShareEnabled
+        newsletterEnabled
+        buyNowButtonEnabled
+        cartSummary
+        cartPageEnabled
+        loginRedirectTo
+        miniCartEnabled
+        miniCartOfferInfo
+      }
+    }
+  ''';
+
   /// Fetches the configured Bagisto channel with its locales, currencies,
   /// and defaults used during app startup.
   static const String getChannelById = r'''

@@ -2,6 +2,7 @@ import 'package:bagisto_flutter/features/account/data/models/account_models.dart
 import 'package:bagisto_flutter/features/account/data/repository/account_repository.dart';
 import 'package:bagisto_flutter/features/account/presentation/bloc/guest_eu_withdrawal_cubit.dart';
 import 'package:bagisto_flutter/features/account/presentation/pages/guest_eu_withdrawal_page.dart';
+import 'package:bagisto_flutter/features/account/presentation/widgets/address_form_field.dart';
 import 'package:bagisto_flutter/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -42,6 +43,13 @@ Widget _app(_FakeRepository repository) => MaterialApp(
 );
 
 void main() {
+  testWidgets('form uses the app input field style', (tester) async {
+    await tester.pumpWidget(_app(_FakeRepository()));
+
+    // Same outlined field with floating label as the address forms.
+    expect(find.byType(AddressFormField), findsNWidgets(3));
+  });
+
   testWidgets('guest submits order number, email and reason', (tester) async {
     final repository = _FakeRepository();
     await tester.pumpWidget(_app(repository));

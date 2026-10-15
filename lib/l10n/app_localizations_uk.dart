@@ -1996,5 +1996,13 @@ class AppLocalizationsUk extends AppLocalizations {
   String get accountSubmit => 'Надіслати';
 
   @override
-  String get accountRefundedQty => 'Повернено';
+  String cartMinimumOrderAmount(String amount) {
+    return 'Мінімальна сума замовлення: $amount';
+  }
+
+  @override
+  String get accountPrice => 'Ціна';
+
+  @override
+  String get accountQty => 'К-сть';
 }

@@ -13,6 +13,8 @@ import '../bloc/order_detail_bloc.dart';
 import 'create_return_page.dart';
 import 'invoice_detail_page.dart';
 import 'shipment_detail_bottom_sheet.dart';
+import '../../../../core/store_config/store_config.dart';
+import '../widgets/address_form_field.dart';
 
 /// Order Detail Page — Figma node-id=233-5499
 ///
@@ -230,6 +232,9 @@ class OrderDetailPage extends StatelessWidget {
 // Order Detail Body — tabbed content
 // ──────────────────────────────────────────────
 
+/// Tabs of the order detail page.
+enum _OrderTab { details, invoices, shipments, refunds }
+
 class _OrderDetailBody extends StatefulWidget {
   final OrderDetail order;
   final int orderId;
@@ -240,21 +245,38 @@ class _OrderDetailBody extends StatefulWidget {
 }
 
 class _OrderDetailBodyState extends State<_OrderDetailBody> {
-  int _selectedTabIndex = 0;
+  _OrderTab _selectedTab = _OrderTab.details;
   bool _invoicesExpanded = true;
   bool _shipmentsExpanded = true;
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final l10n = AppLocalizations.of(context)!;
+    final order = widget.order;
+    // Invoices / Shipments only when the order has some (loaded list, or an
+    // item already invoiced / shipped), like the storefront.
+    final hasInvoices =
+        context.select<OrderDetailBloc, bool>(
+          (bloc) => bloc.state.invoices.isNotEmpty,
+        ) ||
+        order.invoices.isNotEmpty ||
+        order.items.any((item) => item.qtyInvoiced > 0);
+    final hasShipments =
+        context.select<OrderDetailBloc, bool>(
+          (bloc) => bloc.state.shipments.isNotEmpty,
+        ) ||
+        order.shipments.isNotEmpty ||
+        order.items.any((item) => item.qtyShipped > 0);
     final tabs = [
-      l10n.accountDetails,
-      l10n.accountInvoices,
-      l10n.accountShipments,
+      _OrderTab.details,
+      if (hasInvoices) _OrderTab.invoices,
+      if (hasShipments) _OrderTab.shipments,
       // Refunds tab only for orders with a refund, like the storefront.
-      if (widget.order.totalRefunded > 0) l10n.accountRefunds,
+      if (order.totalRefunded > 0) _OrderTab.refunds,
     ];
+    final selectedTab = tabs.contains(_selectedTab)
+        ? _selectedTab
+        : _OrderTab.details;
 
     return Column(
       children: [
@@ -273,15 +295,17 @@ class _OrderDetailBodyState extends State<_OrderDetailBody> {
                 const SizedBox(height: 16),
 
                 // Tab chips
-                _buildTabChips(isDark, tabs),
+                _buildTabChips(isDark, tabs, selectedTab),
 
                 const SizedBox(height: 16),
 
                 // Tab content
-                if (_selectedTabIndex == 0) _buildDetailsTab(isDark),
-                if (_selectedTabIndex == 1) _buildInvoicesTab(isDark),
-                if (_selectedTabIndex == 2) _buildShipmentsTab(isDark),
-                if (_selectedTabIndex == 3) _buildRefundsTab(isDark),
+                switch (selectedTab) {
+                  _OrderTab.details => _buildDetailsTab(isDark),
+                  _OrderTab.invoices => _buildInvoicesTab(isDark),
+                  _OrderTab.shipments => _buildShipmentsTab(isDark),
+                  _OrderTab.refunds => _buildRefundsTab(isDark),
+                },
 
                 const SizedBox(height: 24),
               ],
@@ -351,23 +375,34 @@ class _OrderDetailBodyState extends State<_OrderDetailBody> {
   // Figma: active = bg rgba(255,105,0,0.1), border rgba(255,105,0,0.3), text #FF6900
   //        inactive = bg #F5F5F5, text #171717
   // Each tab has an icon: Details (info), Invoices (description), Shipments (local_shipping)
-  Widget _buildTabChips(bool isDark, List<String> tabs) {
-    const tabIcons = [
-      Icons.info_outline, // Details
-      Icons.description_outlined, // Invoices
-      Icons.local_shipping_outlined, // Shipments
-      Icons.currency_exchange, // Refunds
-    ];
+  Widget _buildTabChips(
+    bool isDark,
+    List<_OrderTab> tabs,
+    _OrderTab selectedTab,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
+    IconData iconFor(_OrderTab tab) => switch (tab) {
+      _OrderTab.details => Icons.info_outline,
+      _OrderTab.invoices => Icons.description_outlined,
+      _OrderTab.shipments => Icons.local_shipping_outlined,
+      _OrderTab.refunds => Icons.currency_exchange,
+    };
+    String labelFor(_OrderTab tab) => switch (tab) {
+      _OrderTab.details => l10n.accountDetails,
+      _OrderTab.invoices => l10n.accountInvoices,
+      _OrderTab.shipments => l10n.accountShipments,
+      _OrderTab.refunds => l10n.accountRefunds,
+    };
 
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: List.generate(tabs.length, (index) {
-        final isActive = index == _selectedTabIndex;
+      children: tabs.map((tab) {
+        final isActive = tab == selectedTab;
         return Material(
           color: Colors.transparent,
           child: InkWell(
-            onTap: () => setState(() => _selectedTabIndex = index),
+            onTap: () => setState(() => _selectedTab = tab),
             borderRadius: BorderRadius.circular(10),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -391,7 +426,7 @@ class _OrderDetailBodyState extends State<_OrderDetailBody> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    tabIcons[index],
+                    iconFor(tab),
                     size: 24,
                     color: isActive
                         ? AppColors.primary500
@@ -399,7 +434,7 @@ class _OrderDetailBodyState extends State<_OrderDetailBody> {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    tabs[index],
+                    labelFor(tab),
                     style: TextStyle(
                       fontFamily: 'Roboto',
                       fontWeight: FontWeight.w400,
@@ -414,7 +449,7 @@ class _OrderDetailBodyState extends State<_OrderDetailBody> {
             ),
           ),
         );
-      }),
+      }).toList(),
     );
   }
 
@@ -701,65 +736,35 @@ class _OrderDetailBodyState extends State<_OrderDetailBody> {
       ),
     );
 
-    // Same quantity rows and price column as invoice item cards.
-    Widget qtyRow(String label, int qty) => Padding(
-      padding: const EdgeInsets.only(top: 6),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 90,
-            child: Text(
-              label,
-              style: const TextStyle(
-                fontFamily: 'Roboto',
-                fontSize: 14,
-                color: AppColors.neutral500,
-              ),
-            ),
+    // One column of the storefront refund table: label above value.
+    Widget column(String label, String value, {bool bold = false}) => Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontFamily: 'Roboto',
+            fontSize: 12,
+            color: mutedColor,
           ),
-          Text(
-            ': $qty',
-            style: TextStyle(
-              fontFamily: 'Roboto',
-              fontSize: 14,
-              color: isDark ? AppColors.neutral200 : AppColors.neutral800,
-            ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: TextStyle(
+            fontFamily: 'Roboto',
+            fontSize: 14,
+            fontWeight: bold ? FontWeight.w600 : FontWeight.w400,
+            color: textColor,
           ),
-        ],
-      ),
+        ),
+      ],
     );
 
-    Widget priceRow(String label, String value, {bool bold = false}) =>
-        Padding(
-          padding: const EdgeInsets.only(top: 6),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SizedBox(
-                width: 80,
-                child: Text(
-                  label,
-                  textAlign: TextAlign.right,
-                  style: TextStyle(
-                    fontFamily: 'Roboto',
-                    fontSize: 14,
-                    color: isDark ? AppColors.neutral400 : AppColors.neutral700,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 4),
-              Text(
-                value,
-                style: TextStyle(
-                  fontFamily: 'Roboto',
-                  fontSize: 14,
-                  fontWeight: bold ? FontWeight.w700 : FontWeight.w400,
-                  color: isDark ? AppColors.neutral200 : AppColors.neutral700,
-                ),
-              ),
-            ],
-          ),
-        );
+    // Refund totals come from the order's *Refunded fields (the API has no
+    // refund / credit memo resource, so no refund number or adjustments).
+    final taxRefunded = order.taxAmountRefunded ?? 0;
+    final discountRefunded = order.discountRefunded ?? 0;
 
     return Column(
       key: const ValueKey('order_refunds_tab'),
@@ -769,7 +774,7 @@ class _OrderDetailBodyState extends State<_OrderDetailBody> {
           Container(
             width: double.infinity,
             margin: const EdgeInsets.only(bottom: 8),
-            padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+            padding: const EdgeInsets.all(12),
             decoration: cardDecoration,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -783,6 +788,18 @@ class _OrderDetailBodyState extends State<_OrderDetailBody> {
                     color: textColor,
                   ),
                 ),
+                for (final line in _ItemCard.optionLinesFor(item))
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Text(
+                      line,
+                      style: TextStyle(
+                        fontFamily: 'Roboto',
+                        fontSize: 12,
+                        color: textColor,
+                      ),
+                    ),
+                  ),
                 if ((item.sku ?? '').isNotEmpty) ...[
                   const SizedBox(height: 4),
                   Text(
@@ -794,36 +811,26 @@ class _OrderDetailBodyState extends State<_OrderDetailBody> {
                     ),
                   ),
                 ],
-                const SizedBox(height: 4),
+                const SizedBox(height: 10),
                 Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          qtyRow(l10n.accountOrderedQty, item.qtyOrdered),
-                          qtyRow(l10n.accountShippedQty, item.qtyShipped),
-                          qtyRow(l10n.accountInvoicedQty, item.qtyInvoiced),
-                          qtyRow(l10n.accountRefundedQty, item.qtyRefunded),
-                          if (item.qtyCanceled > 0)
-                            qtyRow(l10n.accountCanceledQty, item.qtyCanceled),
-                        ],
+                      child: column(
+                        l10n.accountPrice,
+                        order.formatAmount(item.price),
                       ),
                     ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        priceRow(
-                          l10n.accountUnitPriceWithColon,
-                          order.formatAmount(item.price),
+                    Expanded(
+                      child: column(l10n.accountQty, '${item.qtyRefunded}'),
+                    ),
+                    Expanded(
+                      child: column(
+                        l10n.accountSubTotalWithSpace,
+                        order.formatAmount(
+                          item.amountRefunded ?? item.price * item.qtyRefunded,
                         ),
-                        priceRow(
-                          l10n.accountSubTotalWithColon,
-                          order.formatAmount(item.total),
-                          bold: true,
-                        ),
-                      ],
+                        bold: true,
+                      ),
                     ),
                   ],
                 ),
@@ -836,24 +843,26 @@ class _OrderDetailBodyState extends State<_OrderDetailBody> {
           decoration: cardDecoration,
           child: Column(
             children: [
-              row(l10n.cartSubTotal, order.formatAmount(order.subTotal)),
+              row(
+                l10n.cartSubTotal,
+                order.formatAmount(order.subTotalRefunded ?? 0),
+              ),
               row(
                 l10n.accountShippingAndHandling,
-                order.formatAmount(order.shippingAmount ?? 0),
+                order.formatAmount(order.shippingRefunded ?? 0),
               ),
-              row(l10n.cartTax, order.formatAmount(order.taxAmount ?? 0)),
-              if ((order.discountAmount ?? 0) > 0)
+              if (taxRefunded > 0)
+                row(l10n.cartTax, order.formatAmount(taxRefunded)),
+              if (discountRefunded > 0)
                 row(
                   l10n.cartDiscount,
-                  '-${order.formatAmount(order.discountAmount)}',
+                  '-${order.formatAmount(discountRefunded)}',
                 ),
-              row(l10n.cartGrandTotal, order.formattedTotal, bold: true),
-              row(l10n.accountTotalPaid, order.formatAmount(order.totalPaid)),
               row(
-                l10n.accountTotalRefunded,
+                l10n.cartGrandTotal,
                 order.formatAmount(order.totalRefunded),
+                bold: true,
               ),
-              row(l10n.accountTotalDue, order.formatAmount(order.totalDue)),
             ],
           ),
         ),
@@ -1013,6 +1022,12 @@ class _OrderDetailBodyState extends State<_OrderDetailBody> {
         : returnableOrder != null
         ? returnButton
         : null;
+    // Reorder fills the cart, so it also needs the cart page.
+    final config = StoreConfig.of(context);
+    final showReorder = config.showReorder && config.showCartPage;
+    if (!showReorder && secondaryButton == null) {
+      return const SizedBox.shrink();
+    }
 
     return Container(
       width: double.infinity,
@@ -1028,7 +1043,9 @@ class _OrderDetailBodyState extends State<_OrderDetailBody> {
       ),
       child: SafeArea(
         top: false,
-        child: secondaryButton != null
+        child: !showReorder
+            ? SizedBox(width: double.infinity, child: secondaryButton)
+            : secondaryButton != null
             ? Row(
                 children: [
                   Expanded(child: secondaryButton),
@@ -1173,6 +1190,10 @@ class _ItemCard extends StatelessWidget {
   final String currencySymbol;
 
   const _ItemCard({required this.item, required this.currencySymbol});
+
+  /// Option / booking lines for [item] (e.g. "Booking From : ...").
+  static List<String> optionLinesFor(OrderItem item) =>
+      _ItemCard(item: item, currencySymbol: '')._selectedOptionLines();
 
   String _formatPrice(double amount) {
     return '$currencySymbol${amount.toStringAsFixed(2)}';
@@ -2246,11 +2267,16 @@ class _EuWithdrawalSection extends StatelessWidget {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(l10n.accountEuWithdraw),
-        content: TextField(
-          controller: reasonController,
-          minLines: 2,
-          maxLines: 4,
-          decoration: InputDecoration(labelText: l10n.accountEuWithdrawReason),
+        // Top padding leaves room for the field's floating label.
+        content: Padding(
+          padding: const EdgeInsets.only(top: 12),
+          child: AddressFormField(
+            controller: reasonController,
+            label: l10n.accountEuWithdrawReason,
+            keyboardType: TextInputType.multiline,
+            textInputAction: TextInputAction.newline,
+            maxLines: 4,
+          ),
         ),
         actions: [
           TextButton(

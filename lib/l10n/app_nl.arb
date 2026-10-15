@@ -841,5 +841,7 @@
   "accountWhatsOnYourMind": "Waar denk je aan?",
   "accountDescribeHere": "Beschrijf hier",
   "accountSubmit": "Versturen",
-  "accountRefundedQty": "Terugbetaalde hoeveelheid"
+  "cartMinimumOrderAmount": "Het minimale bestelbedrag is {amount}",
+  "accountPrice": "Prijs",
+  "accountQty": "Aantal"
 }

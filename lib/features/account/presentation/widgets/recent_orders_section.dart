@@ -64,10 +64,9 @@ class RecentOrdersSection extends StatelessWidget {
                   final order = orders[index];
                   return GestureDetector(
                     onTap: () {
-                      // incrementId is the numeric order ID used by the API
-                      // order.id may be a base64-encoded GraphQL ID
-                      final numId =
-                          order.incrementId ?? int.tryParse(order.id ?? '');
+                      // The detail query needs the order database id, not
+                      // the increment id shown as the order number.
+                      final numId = order.numericId;
                       debugPrint(
                         '📦 RecentOrder tap: id=${order.id}, '
                         'incrementId=${order.incrementId}, numId=$numId',

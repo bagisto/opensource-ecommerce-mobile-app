@@ -10,6 +10,7 @@ import '../bloc/wishlist_bloc.dart';
 import '../pages/wishlist_page.dart';
 import '../../../product/presentation/pages/product_detail_page.dart';
 import 'section_header.dart';
+import '../../../../core/store_config/store_config.dart';
 
 /// Wishlist items horizontal scroll section
 /// Figma: node-id=220-7227
@@ -25,6 +26,7 @@ class WishlistSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (!StoreConfig.of(context).showWishlist) return const SizedBox.shrink();
     final l10n = AppLocalizations.of(context)!;
 
     return Padding(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/store_config/store_config.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../data/models/home_models.dart';
@@ -61,7 +62,7 @@ class ProductCardLarge extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildImage(w, isDark),
+              _buildImage(context, w, isDark),
               const SizedBox(height: 10),
               Text(
                 product.name,
@@ -86,7 +87,7 @@ class ProductCardLarge extends StatelessWidget {
     );
   }
 
-  Widget _buildImage(double size, bool isDark) {
+  Widget _buildImage(BuildContext context, double size, bool isDark) {
     return Stack(
       children: [
         ClipRRect(
@@ -108,7 +109,7 @@ class ProductCardLarge extends StatelessWidget {
                 : _imagePlaceholder(isDark),
           ),
         ),
-        if (showWishlistIcon)
+        if (showWishlistIcon && StoreConfig.of(context).showWishlist)
           Positioned(
             top: 5,
             right: 5,

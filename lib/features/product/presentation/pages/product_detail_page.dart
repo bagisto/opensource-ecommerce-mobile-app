@@ -20,6 +20,7 @@ import '../widgets/product_reviews_section.dart';
 import '../widgets/product_related_section.dart';
 import '../widgets/product_detail_shimmer.dart';
 import '../../../../core/widgets/app_back_button.dart';
+import '../../../../core/store_config/store_config.dart';
 
 /// Product Detail Page matching Figma design
 /// Light: node 119-5125 | Dark: node 152-3594
@@ -376,9 +377,13 @@ class _ProductDetailView extends StatelessWidget {
               ),
 
               // Cart icon with dynamic badge
+              if (StoreConfig.of(context).showCartPage)
               BlocBuilder<CartBloc, CartState>(
                 builder: (context, cartState) {
-                  final count = cartState.itemCount;
+                  final count = StoreConfig.of(context).cartCount(
+                    itemsCount: cartState.cart.itemsCount,
+                    itemsQty: cartState.cart.itemsQty,
+                  );
                   return GestureDetector(
                     onTap: () {
                       // Pop back to MainShell and switch to Cart tab

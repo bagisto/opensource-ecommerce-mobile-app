@@ -7,6 +7,8 @@ import '../../../../core/widgets/app_back_button.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../bloc/auth_bloc.dart';
 import 'login_page.dart';
+import '../../../../core/store_config/store_config.dart';
+import '../auth_redirect.dart';
 
 /// Sign Up page for new customers
 /// Figma: authentication flow — registration screen
@@ -55,6 +57,10 @@ class _SignUpPageState extends State<SignUpPage> {
           email: _emailController.text.trim(),
           password: _passwordController.text,
           confirmPassword: _confirmPasswordController.text,
+          subscribeToNewsletter: StoreConfig.of(
+            context,
+            listen: false,
+          ).showNewsletter,
         ),
       );
     }
@@ -82,7 +88,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 backgroundColor: Color(0xFF00A63E),
               ),
             );
-            Navigator.of(context).popUntil((route) => route.isFirst);
+            navigateAfterAuth(context);
           } else if (state is AuthRegistrationSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(

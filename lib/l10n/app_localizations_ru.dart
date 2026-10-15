@@ -1993,5 +1993,13 @@ class AppLocalizationsRu extends AppLocalizations {
   String get accountSubmit => 'Отправить';
 
   @override
-  String get accountRefundedQty => 'Возвращено';
+  String cartMinimumOrderAmount(String amount) {
+    return 'Минимальная сумма заказа: $amount';
+  }
+
+  @override
+  String get accountPrice => 'Цена';
+
+  @override
+  String get accountQty => 'Кол-во';
 }

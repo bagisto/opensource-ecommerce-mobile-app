@@ -9,6 +9,7 @@ import '../../../cart/presentation/bloc/cart_bloc.dart';
 import '../../../auth/presentation/pages/account_page.dart';
 import '../helpers/main_shell_navigation_helpers.dart';
 import 'home_page.dart';
+import '../../../../core/store_config/store_config.dart';
 
 /// Main Shell with bottom navigation bar — modern e-commerce navigation.
 ///
@@ -42,6 +43,7 @@ class MainShellState extends State<MainShell> {
     final action = resolveMainShellTabRequest(
       currentIndex: _currentIndex,
       requestedIndex: index,
+      cartPageEnabled: StoreConfig.of(context, listen: false).showCartPage,
     );
 
     if (action.shouldSwitchTabs) {
@@ -63,6 +65,10 @@ class MainShellState extends State<MainShell> {
 
   /// Handle Android/iOS back button: go to previous tab, then exit
   Future<bool> _onWillPop() async {
+    // Skip the cart tab in history when the cart page is disabled.
+    if (!StoreConfig.of(context, listen: false).showCartPage) {
+      _tabHistory.removeWhere((tab) => tab == AppNavigator.cartTab);
+    }
     if (_tabHistory.isNotEmpty) {
       final previousTab = _tabHistory.removeLast();
       setState(() => _currentIndex = previousTab);
@@ -74,6 +80,11 @@ class MainShellState extends State<MainShell> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final showCartPage = StoreConfig.of(context).showCartPage;
+    // Cart page switched off while on the cart tab: show Home instead.
+    final visibleIndex = !showCartPage && _currentIndex == AppNavigator.cartTab
+        ? AppNavigator.homeTab
+        : _currentIndex;
 
     // ignore: deprecated_member_use
     return WillPopScope(
@@ -83,7 +94,7 @@ class MainShellState extends State<MainShell> {
         currentTab: () => _currentIndex,
         child: Scaffold(
           body: IndexedStack(
-            index: _currentIndex,
+            index: visibleIndex,
             children: [
               const HomePage(),
               const CategoryPage(),
@@ -128,12 +139,16 @@ class MainShellState extends State<MainShell> {
                 activeIcon: Icons.grid_view,
                 label: l10n.mainTabCategories,
               ),
+              if (StoreConfig.of(context).showCartPage)
               _buildNavItemWithBadge(
                 index: 2,
                 icon: Icons.shopping_cart_outlined,
                 activeIcon: Icons.shopping_cart,
                 label: l10n.mainTabCart,
-                badgeCount: context.watch<CartBloc>().state.itemCount,
+                badgeCount: StoreConfig.of(context).cartCount(
+                  itemsCount: context.watch<CartBloc>().state.cart.itemsCount,
+                  itemsQty: context.watch<CartBloc>().state.cart.itemsQty,
+                ),
               ),
               _buildNavItem(
                 index: 3,

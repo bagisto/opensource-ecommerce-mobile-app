@@ -38,6 +38,10 @@ class AuthRegisterRequested extends AuthEvent {
   final String confirmPassword;
   final String? deviceToken;
 
+  /// Subscribe the new account to the newsletter. Sent only when the store
+  /// has the newsletter enabled (`storeConfig.newsletterEnabled`).
+  final bool subscribeToNewsletter;
+
   const AuthRegisterRequested({
     required this.firstName,
     required this.lastName,
@@ -45,6 +49,7 @@ class AuthRegisterRequested extends AuthEvent {
     required this.password,
     required this.confirmPassword,
     this.deviceToken,
+    this.subscribeToNewsletter = true,
   });
 
   @override
@@ -55,6 +60,7 @@ class AuthRegisterRequested extends AuthEvent {
     password,
     confirmPassword,
     deviceToken,
+    subscribeToNewsletter,
   ];
 }
 
@@ -244,6 +250,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         password: event.password,
         confirmPassword: event.confirmPassword,
         deviceToken: deviceToken,
+        subscribeToNewsletter: event.subscribeToNewsletter,
       );
 
       debugPrint('✅ Registration successful — ${customer.displayName}');

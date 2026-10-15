@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../account/presentation/pages/add_review_page.dart';
 import '../bloc/product_detail_bloc.dart';
+import 'review_entry.dart';
 
 /// Product info: title, price row, short description, rating badge +
 /// review count, stock chip
@@ -177,6 +178,7 @@ class ProductInfoSection extends StatelessWidget {
     final count = product.reviewCount;
 
     if (count == 0) {
+      final reviewEntry = reviewEntryOf(context);
       return Row(
         children: [
           Icon(Icons.star_border, size: 18, color: isDark ? AppColors.neutral400 : AppColors.neutral500),
@@ -190,6 +192,7 @@ class ProductInfoSection extends StatelessWidget {
               color: isDark ? AppColors.neutral400 : AppColors.neutral500,
             ),
           ),
+          if (reviewEntry != ReviewEntry.hidden)
           Row(
             children: [
               const SizedBox(width: 6),
@@ -197,6 +200,7 @@ class ProductInfoSection extends StatelessWidget {
                 onTap: () async {
                   final productId = product.numericId;
                   if (productId == null) return;
+                  if (openLoginForReview(context, reviewEntry)) return;
 
                   final submitted = await AddReviewPage.navigate(
                     context,

@@ -6,6 +6,7 @@ import '../../../../core/widgets/app_back_button.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../data/repository/account_repository.dart';
 import '../bloc/guest_eu_withdrawal_cubit.dart';
+import '../widgets/address_form_field.dart';
 
 /// Guest EU contract withdrawal: order number, order email and an optional
 /// reason (`createGuestEuWithdrawal`).
@@ -119,30 +120,26 @@ class _GuestEuWithdrawalPageState extends State<GuestEuWithdrawalPage> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  TextFormField(
+                  // Labels already carry the "*" for required fields.
+                  AddressFormField(
                     controller: _orderController,
-                    decoration: InputDecoration(
-                      labelText: l10n.accountEuWithdrawOrderNumber,
-                    ),
+                    label: l10n.accountEuWithdrawOrderNumber,
                     validator: required,
                   ),
-                  const SizedBox(height: 16),
-                  TextFormField(
+                  const SizedBox(height: 20),
+                  AddressFormField(
                     controller: _emailController,
+                    label: l10n.accountEuWithdrawEmail,
                     keyboardType: TextInputType.emailAddress,
-                    decoration: InputDecoration(
-                      labelText: l10n.accountEuWithdrawEmail,
-                    ),
                     validator: required,
                   ),
-                  const SizedBox(height: 16),
-                  TextFormField(
+                  const SizedBox(height: 20),
+                  AddressFormField(
                     controller: _reasonController,
-                    minLines: 3,
-                    maxLines: 5,
-                    decoration: InputDecoration(
-                      labelText: l10n.accountEuWithdrawReason,
-                    ),
+                    label: l10n.accountEuWithdrawReason,
+                    keyboardType: TextInputType.multiline,
+                    textInputAction: TextInputAction.newline,
+                    maxLines: 4,
                   ),
                   if (state.errorMessage != null) ...[
                     const SizedBox(height: 16),

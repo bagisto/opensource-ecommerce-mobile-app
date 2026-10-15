@@ -2011,5 +2011,13 @@ class AppLocalizationsIt extends AppLocalizations {
   String get accountSubmit => 'Invia';
 
   @override
-  String get accountRefundedQty => 'Qtà rimborsata';
+  String cartMinimumOrderAmount(String amount) {
+    return 'L\'importo minimo dell\'ordine è $amount';
+  }
+
+  @override
+  String get accountPrice => 'Prezzo';
+
+  @override
+  String get accountQty => 'Qtà';
 }

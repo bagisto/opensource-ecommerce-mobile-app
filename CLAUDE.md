@@ -30,6 +30,15 @@ task-specific skills (for example `flutter-expert`), then the work itself.
 Do not skip these because a task "seems simple". Only skip a rule when the user
 explicitly says so for that prompt.
 
+## Owner rules and backend-blocked list
+
+Read `plan.md` at the repo root before any task. Key rules: use only the
+Bagisto **GraphQL** API (never the REST `/api/shop/...` endpoints), use only
+live API data (no hardcoded values), validate every query against the
+configured server, and never commit or push without the owner's permission.
+`plan.md` also lists features that are blocked because the GraphQL schema
+lacks the field.
+
 ## Project
 
 Bagisto open-source e-commerce mobile app. Flutter (Dart SDK ^3.10.8), package

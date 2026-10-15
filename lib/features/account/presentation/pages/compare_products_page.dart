@@ -9,6 +9,7 @@ import '../../data/models/account_models.dart';
 import '../bloc/compare_bloc.dart';
 import '../../../cart/presentation/bloc/cart_bloc.dart';
 import '../../../product/presentation/pages/product_detail_page.dart';
+import '../../../../core/store_config/store_config.dart';
 
 String _localizedCartMessage(BuildContext context, String message) {
   final l10n = AppLocalizations.of(context)!;
@@ -598,7 +599,11 @@ class _ProductCard extends StatelessWidget {
 
         return Row(
           children: [
-            // Orange "Add to Cart" pill button
+            // Orange "Add to Cart" pill button (hidden when the admin
+            // turned the cart page off)
+            if (!StoreConfig.of(context).showCartPage)
+              const Spacer()
+            else
             Expanded(
               child: BlocBuilder<CartBloc, CartState>(
                 builder: (context, cartState) {
@@ -839,6 +844,9 @@ class _WishlistIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<WishlistCubit, WishlistCubitState>(
       builder: (context, wishlistState) {
+        if (!StoreConfig.of(context).showWishlist) {
+          return const SizedBox.shrink();
+        }
         final isWishlisted = wishlistState.isWishlisted(productId);
         final isProcessing = wishlistState.isProcessing(productId);
 

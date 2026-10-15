@@ -8,6 +8,7 @@ import '../../../product/presentation/pages/product_detail_page.dart';
 import '../../data/models/account_models.dart';
 import '../bloc/wishlist_bloc.dart';
 import '../../../cart/presentation/bloc/cart_bloc.dart';
+import '../../../../core/store_config/store_config.dart';
 
 String _localizedWishlistMessage(BuildContext context, String message) {
   final l10n = AppLocalizations.of(context)!;
@@ -709,6 +710,8 @@ class _AddToCartButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    // Cart page off in admin: items cannot move to the cart.
+    if (!StoreConfig.of(context).showCartPage) return const SizedBox.shrink();
 
     return GestureDetector(
       onTap: onPressed,

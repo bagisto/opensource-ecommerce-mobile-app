@@ -841,5 +841,7 @@
   "accountWhatsOnYourMind": "Qu’avez-vous en tête ?",
   "accountDescribeHere": "Décrivez ici",
   "accountSubmit": "Envoyer",
-  "accountRefundedQty": "Qté remboursée"
+  "cartMinimumOrderAmount": "Le montant minimum de commande est de {amount}",
+  "accountPrice": "Prix",
+  "accountQty": "Qté"
 }

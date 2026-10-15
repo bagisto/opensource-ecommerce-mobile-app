@@ -654,5 +654,7 @@
   "accountWhatsOnYourMind": "Что вы хотите сообщить?",
   "accountDescribeHere": "Опишите здесь",
   "accountSubmit": "Отправить",
-  "accountRefundedQty": "Возвращено"
+  "cartMinimumOrderAmount": "Минимальная сумма заказа: {amount}",
+  "accountPrice": "Цена",
+  "accountQty": "Кол-во"
 }

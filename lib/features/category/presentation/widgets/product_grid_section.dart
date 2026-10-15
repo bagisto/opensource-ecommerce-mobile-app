@@ -8,6 +8,7 @@ import '../../data/models/product_model.dart';
 import '../../data/repository/category_repository.dart';
 import '../../../product/presentation/pages/product_detail_page.dart';
 import '../pages/category_products_grid_page.dart';
+import '../../../../core/store_config/store_config.dart';
 
 /// Products grid section
 /// Figma: Frame 21 – "Products" header + 2-column grid
@@ -209,6 +210,9 @@ class _ProductCard extends StatelessWidget {
                 // ── Heart Icon (top-right) ──
                 BlocBuilder<WishlistCubit, WishlistCubitState>(
                   builder: (context, wishlistState) {
+                    if (!StoreConfig.of(context).showWishlist) {
+                      return const SizedBox.shrink();
+                    }
                     final pid =
                         product.numericId ??
                         int.tryParse(product.id.split('/').last) ??

@@ -23,6 +23,7 @@ import '../../data/services/image_picker_service.dart';
 import '../../data/services/mlkit_vision_service.dart';
 import '../../data/repository/image_search_repository.dart';
 import '../bloc/image_search_bloc.dart';
+import '../../../../core/store_config/store_config.dart';
 
 /// Search page matching Figma design
 /// Light: node 113-7830 | Dark: node 113-7857
@@ -476,6 +477,7 @@ class _SearchPageViewState extends State<_SearchPageView> {
           const SizedBox(height: 8),
 
           // ── Image Search / Text Search buttons ──
+          if (StoreConfig.of(context).showImageSearch)
           Row(
             children: [
               Expanded(
@@ -875,6 +877,9 @@ class _SearchPageViewState extends State<_SearchPageView> {
                 // Wishlist icon
                 BlocBuilder<WishlistCubit, WishlistCubitState>(
                   builder: (context, wishlistState) {
+                    if (!StoreConfig.of(context).showWishlist) {
+                      return const SizedBox.shrink();
+                    }
                     final pid =
                         product.numericId ??
                         int.tryParse(product.id.split('/').last) ??

@@ -19,6 +19,7 @@ import '../../../auth/domain/services/auth_storage.dart';
 import '../../../../core/graphql/graphql_client.dart';
 import '../bloc/cart_bloc.dart';
 import '../../../../core/widgets/app_back_button.dart';
+import '../../../../core/store_config/store_config.dart';
 
 /// Cart page matching Figma design node 152-5713
 ///
@@ -79,6 +80,11 @@ class _CartPageState extends State<CartPage> {
     BuildContext context,
     CartBloc cartBloc,
   ) async {
+    // Store-wide admin switch (`storeConfig.guestCheckoutEnabled`).
+    if (!StoreConfig.of(context, listen: false).allowGuestCheckout) {
+      _sendGuestToLogin(context);
+      return false;
+    }
     final productIds = cartBloc.state.cart.items
         .map((item) => item.productId)
         .where((id) => id > 0);
@@ -92,6 +98,11 @@ class _CartPageState extends State<CartPage> {
       return true;
     }
     if (allowed || !context.mounted) return allowed;
+    _sendGuestToLogin(context);
+    return false;
+  }
+
+  void _sendGuestToLogin(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(AppLocalizations.of(context)!.cartGuestCheckoutNotAllowed),
@@ -100,7 +111,32 @@ class _CartPageState extends State<CartPage> {
     Navigator.of(
       context,
     ).push(MaterialPageRoute(builder: (_) => const LoginPage()));
-    return false;
+  }
+
+  /// "N Units in the Cart" or "N Items in the Cart", per the admin
+  /// cart summary setting.
+  String _cartSummaryText(BuildContext context, CartModel cart) {
+    final l10n = AppLocalizations.of(context)!;
+    final config = StoreConfig.of(context);
+    final count = config.cartCount(
+      itemsCount: cart.itemsCount,
+      itemsQty: cart.itemsQty,
+    );
+    final String unit;
+    if (config.cartSummaryShowsItemCount) {
+      unit = count == 1 ? l10n.accountItemSingular : l10n.accountItemPlural;
+    } else {
+      unit = count == 1 ? l10n.cartUnit : l10n.cartUnits;
+    }
+    return l10n.cartItemsInCart(count, unit);
+  }
+
+  /// Minimum order message from the API, or the app text with the amount.
+  String _minimumOrderMessage(BuildContext context, StoreConfig config) {
+    return config.minimumOrderMessage ??
+        AppLocalizations.of(context)!.cartMinimumOrderAmount(
+          CurrencyFormatter.formatAmount(config.minimumOrderAmount),
+        );
   }
 
   @override
@@ -200,6 +236,7 @@ class _CartPageState extends State<CartPage> {
             ),
           ),
           // Wishlist icon
+          if (StoreConfig.of(context).showWishlist)
           GestureDetector(
             onTap: () async {
               final accessToken = await AuthStorage.getToken();
@@ -276,18 +313,14 @@ class _CartPageState extends State<CartPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            _buildOfferInfo(context, isDark),
             const SizedBox(height: 8),
 
             // ── "N Items in the Cart" ──
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Text(
-                AppLocalizations.of(context)!.cartItemsInCart(
-                  state.cart.itemsQty,
-                  state.cart.itemsQty == 1
-                      ? AppLocalizations.of(context)!.cartUnit
-                      : AppLocalizations.of(context)!.cartUnits,
-                ),
+                _cartSummaryText(context, state.cart),
                 style: TextStyle(
                   fontFamily: 'Roboto',
                   fontSize: 14,
@@ -330,7 +363,43 @@ class _CartPageState extends State<CartPage> {
   }
 
   /// Empty cart state
+  /// Admin "Mini Cart Offer Information" text, shown on the full and the
+  /// empty cart like the storefront mini cart.
+  Widget _buildOfferInfo(BuildContext context, bool isDark) {
+    final offer = StoreConfig.of(context).cartOfferInfo;
+    if (offer == null) return const SizedBox.shrink();
+    return Container(
+      key: const ValueKey('cart_offer_info'),
+      width: double.infinity,
+      margin: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.neutral800 : AppColors.neutral100,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(
+        offer,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontFamily: 'Roboto',
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          color: isDark ? AppColors.neutral200 : AppColors.neutral900,
+        ),
+      ),
+    );
+  }
+
   Widget _buildEmptyCart(BuildContext context, bool isDark) {
+    return Column(
+      children: [
+        _buildOfferInfo(context, isDark),
+        Expanded(child: _buildEmptyCartMessage(context, isDark)),
+      ],
+    );
+  }
+
+  Widget _buildEmptyCartMessage(BuildContext context, bool isDark) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -633,6 +702,7 @@ class _CartPageState extends State<CartPage> {
                                   : AppColors.neutral600,
                             ),
                           ),
+                          if (StoreConfig.of(context).showWishlist) ...[
                           const SizedBox(width: 10),
                           BlocBuilder<WishlistCubit, WishlistCubitState>(
                             builder: (context, wishlistState) {
@@ -674,6 +744,7 @@ class _CartPageState extends State<CartPage> {
                               );
                             },
                           ),
+                          ],
                         ],
                       ),
 
@@ -1270,6 +1341,12 @@ class _CartPageState extends State<CartPage> {
 
   /// Figma: navigation-bar/add-to-cart (sticky bottom)
   Widget _buildBottomBar(BuildContext context, CartState state, bool isDark) {
+    final config = StoreConfig.of(context);
+    final meetsMinimumOrder = config.meetsMinimumOrder(
+      subtotal: state.cart.subtotal,
+      discount: state.cart.discountAmount,
+      tax: state.cart.taxAmount,
+    );
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
@@ -1283,7 +1360,25 @@ class _CartPageState extends State<CartPage> {
       ),
       child: SafeArea(
         top: false,
-        child: Row(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (!meetsMinimumOrder)
+              Padding(
+                key: const ValueKey('cart_minimum_order_message'),
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Text(
+                  _minimumOrderMessage(context, config),
+                  style: const TextStyle(
+                    fontFamily: 'Roboto',
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.errorRed,
+                  ),
+                ),
+              ),
+            Row(
           children: [
             // Price + "Amount to be Paid"
             Expanded(
@@ -1321,6 +1416,7 @@ class _CartPageState extends State<CartPage> {
             // Pay Now button (Figma: 131px wide, rounded 54)
             GestureDetector(
               onTap: () async {
+                if (!meetsMinimumOrder) return;
                 final cartBloc = context.read<CartBloc>();
                 final authBloc = context.read<AuthBloc>();
                 if (authBloc.state is! AuthAuthenticated &&
@@ -1349,7 +1445,9 @@ class _CartPageState extends State<CartPage> {
                   vertical: 12,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.primary500,
+                  color: meetsMinimumOrder
+                      ? AppColors.primary500
+                      : AppColors.neutral400,
                   borderRadius: BorderRadius.circular(54),
                 ),
                 alignment: Alignment.center,
@@ -1364,6 +1462,8 @@ class _CartPageState extends State<CartPage> {
                 ),
               ),
             ),
+          ],
+        ),
           ],
         ),
       ),

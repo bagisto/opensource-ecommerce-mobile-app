@@ -1981,5 +1981,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountSubmit => 'Submit';
 
   @override
-  String get accountRefundedQty => 'Refunded Qty';
+  String cartMinimumOrderAmount(String amount) {
+    return 'Minimum order amount is $amount';
+  }
+
+  @override
+  String get accountPrice => 'Price';
+
+  @override
+  String get accountQty => 'Qty';
 }

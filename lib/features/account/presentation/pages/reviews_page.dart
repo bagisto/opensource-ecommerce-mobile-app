@@ -8,6 +8,7 @@ import '../../data/models/account_models.dart';
 import '../bloc/review_bloc.dart';
 import '../widgets/product_reviews_section.dart' show openReviewedProduct;
 import '../widgets/review_attachments_strip.dart';
+import '../../../../core/store_config/store_config.dart';
 
 /// Reviews Page — Figma node-id=245-5802
 ///
@@ -590,7 +591,10 @@ class _ReviewCard extends StatelessWidget {
         // Product name — Figma node: 245:6085
         Expanded(
           child: Text(
-            review.productName ?? review.name,
+            review.productName ??
+                (StoreConfig.of(context).censorReviewerName
+                    ? censoredReviewerName(review.name)
+                    : review.name),
             style: TextStyle(
               fontFamily: 'Roboto',
               fontWeight: FontWeight.w500,

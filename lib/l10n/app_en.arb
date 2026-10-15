@@ -900,5 +900,14 @@
   "accountWhatsOnYourMind": "What’s on your mind?",
   "accountDescribeHere": "Describe Here",
   "accountSubmit": "Submit",
-  "accountRefundedQty": "Refunded Qty"
+  "cartMinimumOrderAmount": "Minimum order amount is {amount}",
+  "@cartMinimumOrderAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "accountPrice": "Price",
+  "accountQty": "Qty"
 }

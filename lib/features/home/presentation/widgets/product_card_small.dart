@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/store_config/store_config.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../data/models/home_models.dart';
 
@@ -77,6 +78,7 @@ class ProductCardSmall extends StatelessWidget {
                     ),
                   ),
                   // Wishlist heart icon (top-right)
+                  if (StoreConfig.of(context).showWishlist)
                   Positioned(
                     top: 4,
                     right: 4,

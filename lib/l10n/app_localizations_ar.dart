@@ -1972,5 +1972,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get accountSubmit => 'إرسال';
 
   @override
-  String get accountRefundedQty => 'الكمية المستردة';
+  String cartMinimumOrderAmount(String amount) {
+    return 'الحد الأدنى لمبلغ الطلب هو $amount';
+  }
+
+  @override
+  String get accountPrice => 'السعر';
+
+  @override
+  String get accountQty => 'الكمية';
 }

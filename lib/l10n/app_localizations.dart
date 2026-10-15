@@ -3732,11 +3732,23 @@ abstract class AppLocalizations {
   /// **'Submit'**
   String get accountSubmit;
 
-  /// No description provided for @accountRefundedQty.
+  /// No description provided for @cartMinimumOrderAmount.
   ///
   /// In en, this message translates to:
-  /// **'Refunded Qty'**
-  String get accountRefundedQty;
+  /// **'Minimum order amount is {amount}'**
+  String cartMinimumOrderAmount(String amount);
+
+  /// No description provided for @accountPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Price'**
+  String get accountPrice;
+
+  /// No description provided for @accountQty.
+  ///
+  /// In en, this message translates to:
+  /// **'Qty'**
+  String get accountQty;
 }
 
 class _AppLocalizationsDelegate

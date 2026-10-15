@@ -841,5 +841,7 @@
   "accountWhatsOnYourMind": "Aklınızda ne var?",
   "accountDescribeHere": "Buraya yazın",
   "accountSubmit": "Gönder",
-  "accountRefundedQty": "İade edilen adet"
+  "cartMinimumOrderAmount": "Minimum sipariş tutarı {amount}",
+  "accountPrice": "Fiyat",
+  "accountQty": "Adet"
 }

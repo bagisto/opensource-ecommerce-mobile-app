@@ -1990,5 +1990,13 @@ class AppLocalizationsTr extends AppLocalizations {
   String get accountSubmit => 'Gönder';
 
   @override
-  String get accountRefundedQty => 'İade edilen adet';
+  String cartMinimumOrderAmount(String amount) {
+    return 'Minimum sipariş tutarı $amount';
+  }
+
+  @override
+  String get accountPrice => 'Fiyat';
+
+  @override
+  String get accountQty => 'Adet';
 }

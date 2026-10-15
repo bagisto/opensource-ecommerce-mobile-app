@@ -17,6 +17,7 @@ import '../../../product/presentation/pages/product_detail_page.dart';
 import '../../../search/presentation/pages/search_page.dart';
 import '../../../../core/widgets/app_back_button.dart';
 import '../../../cart/presentation/bloc/cart_bloc.dart';
+import '../../../../core/store_config/store_config.dart';
 
 /// Category Products Grid Page – Figma node 63:2666
 ///
@@ -475,9 +476,13 @@ class _CategoryProductsGridViewState extends State<_CategoryProductsGridView>
           const SizedBox(width: 4),
 
           // ── Cart Icon with Badge ──
+          if (StoreConfig.of(context).showCartPage)
           BlocBuilder<CartBloc, CartState>(
             builder: (context, cartState) {
-              final count = cartState.itemCount;
+              final count = StoreConfig.of(context).cartCount(
+                itemsCount: cartState.cart.itemsCount,
+                itemsQty: cartState.cart.itemsQty,
+              );
               return GestureDetector(
                 onTap: () {
                   AppNavigator.navigateToCart(context);
@@ -835,6 +840,9 @@ class _ProductCardGrid extends StatelessWidget {
                   right: 8,
                   child: BlocBuilder<WishlistCubit, WishlistCubitState>(
                     builder: (context, wishlistState) {
+                      if (!StoreConfig.of(context).showWishlist) {
+                        return const SizedBox.shrink();
+                      }
                       final pid =
                           product.numericId ??
                           int.tryParse(product.id.split('/').last) ??
@@ -1302,6 +1310,9 @@ class _ProductCardList extends StatelessWidget {
           // ── Heart icon ──
           BlocBuilder<WishlistCubit, WishlistCubitState>(
             builder: (context, wishlistState) {
+              if (!StoreConfig.of(context).showWishlist) {
+                return const SizedBox.shrink();
+              }
               final pid =
                   product.numericId ??
                   int.tryParse(product.id.split('/').last) ??

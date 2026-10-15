@@ -572,6 +572,8 @@ class AccountQueries {
   static const String getCustomerOrder = r'''
     query getCustomerOrder($id: ID!) {
       customerOrder(id: $id) {
+        id
+        _id
         incrementId
         status
         channelName
