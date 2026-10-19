@@ -1,5 +1,16 @@
 #### This changelog consists the bug & security fixes and new features being included in the releases listed below
 
+# CHANGELOG for v2.5.2
+
+## **v2.5.2 (19th of October, 2026)** - *Release*
+
+* [Enhancement] Added support for Bagisto admin store configuration, so the app now follows settings for wishlist, compare, image search, social sharing, reviews, guest checkout, reorder, newsletter, minimum order amount, and login redirects.
+* [Improvement] Cart, Buy Now, and related cart actions now follow the admin cart page setting; the cart badge and summary follow the selected cart summary mode.
+* [Improvement] Refreshed store configuration at app startup and when the language or currency changes.
+* [Improvement] Applied the admin reviewer name censoring setting to product reviews.
+* [Improvement] Updated order detail tabs and refund information to match available order data and storefront behavior.
+* [Fixed] Improved order detail handling for invoices, shipments, and refunded quantities.
+
 # CHANGELOG for v2.5.1
 
 ## **v2.5.1 (14th of October, 2026)** - *Release*
