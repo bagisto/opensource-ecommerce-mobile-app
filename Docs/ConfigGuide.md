@@ -270,6 +270,7 @@ The current app build supports these locales:
 - `de` - German
 - `en` - English
 - `es` - Spanish
+- `fa` - Persian
 - `fr` - French
 - `it` - Italian
 - `nl` - Dutch

@@ -41,6 +41,7 @@ The current generated app supports:
 - `de`
 - `en`
 - `es`
+- `fa`
 - `fr`
 - `it`
 - `nl`
