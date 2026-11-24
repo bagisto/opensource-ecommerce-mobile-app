@@ -1,0 +1,48 @@
+# Git / tool noise
+.git/
+.DS_Store
+.idea/
+.vscode/
+.kilocode/
+.yoyo/
+.codex/
+.agents/
+.github/
+.metadata
+
+# Dependencies / generated
+.dart_tool/
+.flutter-plugins-dependencies
+.pub/
+.pub-cache/
+build/
+coverage/
+ios/.symlinks/
+ios/Pods/
+ios/Podfile.lock
+android/.gradle/
+linux/flutter/
+linux/flutter/ephemeral/
+windows/flutter/
+windows/flutter/ephemeral/
+ios/Flutter/
+macos/Flutter/
+macos/Flutter/ephemeral/
+**/generated_plugin_registrant.*
+**/generated_plugins.cmake
+
+# Generated outputs
+graphify-out/
+
+# Assets and non-code references
+assets/
+Docs/
+aidocs/
+maestro_run_outputs/
+xcodebuild_log.txt
+jks_details/
+pubspec.lock
+
+# Secret config files
+**/google-services.json
+**/GoogleService-Info.plist

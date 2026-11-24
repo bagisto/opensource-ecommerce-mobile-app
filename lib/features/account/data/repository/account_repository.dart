@@ -1,14 +1,13 @@
 import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import '../../../../core/error/error_mapper.dart';
 import '../../../../core/graphql/eu_withdrawal_queries.dart';
 import '../../../../core/graphql/account_queries.dart';
 import '../../../../core/graphql/returns_queries.dart';
+import '../utils/review_attachment_encoder.dart';
 import '../models/account_models.dart';
 import '../models/returns_models.dart';
-import '../utils/review_attachment_encoder.dart';
 
 void _logAccountApiMessage(String message) {
   debugPrint(message);
@@ -103,7 +102,9 @@ class AccountRepository {
 
     final edges = result.data?['locales']?['edges'] as List<dynamic>? ?? [];
     final locales = edges
-        .map((edge) => ShopLocale.fromJson(edge['node'] as Map<String, dynamic>))
+        .map(
+          (edge) => ShopLocale.fromJson(edge['node'] as Map<String, dynamic>),
+        )
         .toList();
 
     _logAccountApiMessage(
@@ -1001,8 +1002,9 @@ class AccountRepository {
   /// [comment] — full review text.
   /// [rating] — 1 to 5 star rating.
   /// [name] — reviewer's display name.
-  /// [attachments] — optional images/videos, sent as a JSON string of
-  /// Base64 data URIs. The key is omitted when the list is empty.
+  /// [attachmentPaths] — local file paths of photos/videos to attach,
+  /// encoded here as Base64 data URIs per the `createProductReviewInput`
+  /// schema (see https://api-docs.bagisto.com — `attachments` field).
   /// Returns the created ProductReview.
   Future<ProductReview> createProductReview({
     required int productId,
@@ -1010,12 +1012,9 @@ class AccountRepository {
     required String comment,
     required int rating,
     required String name,
-    List<File> attachments = const [],
+    List<String>? attachmentPaths,
   }) async {
-    debugPrint(
-      '📝 AccountRepo.createProductReview '
-      '(product=$productId, attachments=${attachments.length})',
-    );
+    debugPrint('📝 AccountRepo.createProductReview (product=$productId)');
 
     final input = <String, dynamic>{
       'productId': productId,
@@ -1024,8 +1023,13 @@ class AccountRepository {
       'rating': rating,
       'name': name,
     };
-    if (attachments.isNotEmpty) {
-      input['attachments'] = await ReviewAttachmentEncoder.encode(attachments);
+
+    if (attachmentPaths != null && attachmentPaths.isNotEmpty) {
+      // The encoder also maps .mov/.m4v to video/mp4: the server stores the
+      // declared type, and a QuickTime one comes back unplayable on iOS.
+      input['attachments'] = await ReviewAttachmentEncoder.encode(
+        attachmentPaths.map(File.new).toList(),
+      );
     }
 
     final result = await client.mutate(
@@ -1144,8 +1148,51 @@ class AccountRepository {
     return OrderDetail.fromJson(data as Map<String, dynamic>);
   }
 
-  /// `allowCancellation` of a booking product; null when unknown.
-  Future<bool?> getBookingAllowsCancellation(int productId) async {
+  /// Loads refund records for an order. Adjustment amounts belong to refund
+  /// records, not to the `CustomerOrder` type.
+  Future<List<CustomerRefund>> getCustomerRefunds(int orderId) async {
+    const pageSize = 50;
+    final refunds = <CustomerRefund>[];
+    String? after;
+    var hasNextPage = true;
+
+    while (hasNextPage) {
+      final result = await client.query(
+        QueryOptions(
+          document: gql(AccountQueries.getCustomerRefunds),
+          variables: {'orderId': orderId, 'first': pageSize, 'after': after},
+          fetchPolicy: FetchPolicy.noCache,
+        ),
+      );
+
+      if (result.hasException) {
+        throw AccountException(_extractErrorMessage(result.exception!));
+      }
+
+      final connection = result.data?['customerRefunds'];
+      if (connection == null) return refunds;
+
+      final edges = connection['edges'] as List<dynamic>? ?? const [];
+      refunds.addAll(
+        edges
+            .map((edge) => edge['node'] as Map<String, dynamic>)
+            .map(CustomerRefund.fromJson),
+      );
+
+      final pageInfo = connection['pageInfo'] as Map<String, dynamic>?;
+      hasNextPage = pageInfo?['hasNextPage'] == true;
+      final nextCursor = pageInfo?['endCursor']?.toString();
+      if (nextCursor == null || nextCursor == after) break;
+      after = nextCursor;
+    }
+
+    return refunds;
+  }
+
+  /// Cancellation rules for an ordered booking product.
+  Future<BookingProductOrderRules?> getBookingProductOrderRules(
+    int productId,
+  ) async {
     final result = await client.query(
       QueryOptions(
         document: gql(AccountQueries.getBookingCancellation),
@@ -1156,17 +1203,64 @@ class AccountRepository {
 
     if (result.hasException) {
       final message = _extractErrorMessage(result.exception!);
-      debugPrint('📦 AccountRepo.getBookingAllowsCancellation — error: $message');
+      debugPrint(
+        '📦 AccountRepo.getBookingProductOrderRules — error: $message',
+      );
       throw AccountException(message);
     }
 
     final edges =
         result.data?['product']?['bookingProducts']?['edges'] as List? ?? [];
-    final value = edges.isEmpty
-        ? null
-        : (edges.first as Map)['node']?['allowCancellation'];
-    if (value == null) return null;
-    return value == true || value.toString() == '1' || value == 1;
+    if (edges.isEmpty) return null;
+    final node = (edges.first as Map)['node'];
+    if (node is! Map) return null;
+    final rawCancellation = node['allowCancellation'];
+    bool? allowCancellation;
+    if (rawCancellation is bool) {
+      allowCancellation = rawCancellation;
+    } else {
+      final cancellationText = rawCancellation?.toString().toLowerCase();
+      if (cancellationText == '1' || cancellationText == 'true') {
+        allowCancellation = true;
+      } else if (cancellationText == '0' || cancellationText == 'false') {
+        allowCancellation = false;
+      }
+    }
+
+    return BookingProductOrderRules(allowCancellation: allowCancellation);
+  }
+
+  /// Orders the customer can still raise a return for (returnable quantity
+  /// above zero). Pass [incrementId] to check a single order.
+  ///
+  /// The quantity filter is applied on the raw JSON: `returnableQty` is only
+  /// needed to decide eligibility, so it never reaches [CustomerOrder].
+  Future<List<CustomerOrder>> getReturnableOrders({String? incrementId}) async {
+    debugPrint('↩️ AccountRepo.getReturnableOrders (incrementId=$incrementId)');
+
+    final result = await client.query(
+      QueryOptions(
+        document: gql(AccountQueries.getReturnableOrders),
+        variables: {'incrementId': ?incrementId},
+        fetchPolicy: FetchPolicy.noCache,
+      ),
+    );
+
+    if (result.hasException) {
+      final message = _extractErrorMessage(result.exception!);
+      debugPrint('↩️ AccountRepo.getReturnableOrders — error: $message');
+      throw AccountException(message);
+    }
+
+    final data = result.data?['returnableOrders'] as List<dynamic>? ?? [];
+    final orders = data
+        .whereType<Map<String, dynamic>>()
+        .where((json) => (int.tryParse('${json['returnableQty']}') ?? 0) > 0)
+        .map(CustomerOrder.fromJson)
+        .toList();
+
+    debugPrint('↩️ AccountRepo.getReturnableOrders — ${orders.length} orders');
+    return orders;
   }
 
   // ──────────────────────────────────────────────
@@ -1245,21 +1339,18 @@ class AccountRepository {
     return EuWithdrawal.fromJson(data);
   }
 
-  /// Guest withdrawal for order [orderIncrementId] placed with [email].
-  Future<EuWithdrawal> createGuestEuWithdrawal({
+  /// Emails a guest withdrawal link for [orderIncrementId] to [email].
+  Future<GuestEuWithdrawalLinkResponse> createGuestEuWithdrawal({
     required String orderIncrementId,
     required String email,
-    String? reasonText,
   }) async {
     final result = await client.mutate(
       MutationOptions(
-        document: gql(EuWithdrawalQueries.createGuestWithdrawal),
+        document: gql(EuWithdrawalQueries.createGuestWithdrawalLink),
         variables: {
           'input': {
             'orderIncrementId': orderIncrementId,
             'email': email,
-            if (reasonText != null && reasonText.isNotEmpty)
-              'reasonText': reasonText,
           },
         },
         fetchPolicy: FetchPolicy.noCache,
@@ -1268,11 +1359,12 @@ class AccountRepository {
     if (result.hasException) {
       throw AccountException(_extractErrorMessage(result.exception!));
     }
-    final data = result.data?['createGuestEuWithdrawal']?['guestEuWithdrawal'];
+    final data =
+        result.data?['createGuestEuWithdrawalLink']?['guestEuWithdrawalLink'];
     if (data is! Map<String, dynamic>) {
       throw const AccountException('Failed to submit the withdrawal request');
     }
-    return EuWithdrawal.fromJson(data);
+    return GuestEuWithdrawalLinkResponse.fromJson(data);
   }
 
   static int? _parseIntValue(dynamic value) =>
@@ -1601,9 +1693,12 @@ class AccountRepository {
     );
   }
 
-  // ─── Returns (RMA) ───
+  // ──────────────────────────────────────────────
+  // Returns (RMA)
+  // ──────────────────────────────────────────────
 
   /// Fetch customer return requests with cursor-based pagination.
+  /// Supports optional [status] filter (e.g. 1=Pending, 2=Solved, etc.).
   Future<
     ({
       List<CustomerReturn> returns,
@@ -1691,37 +1786,6 @@ class AccountRepository {
 
     debugPrint('↩️ AccountRepo.getCustomerReturn — success');
     return CustomerReturn.fromJson(data as Map<String, dynamic>);
-  }
-
-  /// Fetch order items still eligible for return/cancellation.
-  /// Orders the customer can still raise a return for (returnable quantity
-  /// above zero). Pass [incrementId] to check a single order.
-  Future<List<CustomerOrder>> getReturnableOrders({String? incrementId}) async {
-    debugPrint('↩️ AccountRepo.getReturnableOrders (incrementId=$incrementId)');
-
-    final result = await client.query(
-      QueryOptions(
-        document: gql(ReturnsQueries.getReturnableOrders),
-        variables: {'incrementId': ?incrementId},
-        fetchPolicy: FetchPolicy.networkOnly,
-      ),
-    );
-
-    if (result.hasException) {
-      final message = _extractErrorMessage(result.exception!);
-      debugPrint('↩️ AccountRepo.getReturnableOrders — error: $message');
-      throw AccountException(message);
-    }
-
-    final data = result.data?['returnableOrders'] as List<dynamic>? ?? [];
-    final orders = data
-        .whereType<Map<String, dynamic>>()
-        .where((json) => (int.tryParse('${json['returnableQty']}') ?? 0) > 0)
-        .map(CustomerOrder.fromJson)
-        .toList();
-
-    debugPrint('↩️ AccountRepo.getReturnableOrders — ${orders.length} orders');
-    return orders;
   }
 
   Future<List<ReturnableItem>> getReturnableItems(int orderId) async {
@@ -1817,6 +1881,7 @@ class AccountRepository {
     required int rmaReasonId,
     String? information,
     String? packageCondition,
+    List<String> images = const [],
   }) async {
     debugPrint(
       '↩️ AccountRepo.createReturn (orderId=$orderId, item=$orderItemId, qty=$rmaQty, type=$resolutionType)',
@@ -1835,6 +1900,9 @@ class AccountRepository {
     }
     if (packageCondition != null && packageCondition.isNotEmpty) {
       input['packageCondition'] = packageCondition;
+    }
+    if (images.isNotEmpty) {
+      input['images'] = images;
     }
 
     final result = await client.mutate(
@@ -1918,13 +1986,23 @@ class AccountRepository {
   Future<ReturnMessage> sendReturnMessage({
     required int returnId,
     required String message,
+    String? attachment,
+    String? attachmentName,
   }) async {
     debugPrint('↩️ AccountRepo.sendReturnMessage (returnId=$returnId)');
+
+    final input = <String, dynamic>{
+      'returnId': returnId,
+      'message': message,
+      if (attachment != null && attachment.isNotEmpty) 'attachment': attachment,
+      if (attachmentName != null && attachmentName.isNotEmpty)
+        'attachmentName': attachmentName,
+    };
 
     final result = await client.mutate(
       MutationOptions(
         document: gql(ReturnsQueries.createCustomerReturnMessage),
-        variables: {'returnId': returnId, 'message': message},
+        variables: {'input': input},
       ),
     );
 

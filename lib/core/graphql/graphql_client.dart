@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../currency/currency_cubit.dart';
 import '../constants/api_constants.dart';
+import '../../features/auth/domain/services/auth_storage.dart';
 import '../locale/locale_cubit.dart';
 
 /// Custom HTTP client wrapper with timeout support
@@ -17,8 +18,8 @@ class TimeoutHttpClient extends http.BaseClient {
 
   TimeoutHttpClient({Duration? connectTimeout, Duration? receiveTimeout})
     : _inner = http.Client(),
-      connectTimeout = connectTimeout ?? const Duration(seconds: 60),
-      receiveTimeout = receiveTimeout ?? const Duration(seconds: 60);
+      connectTimeout = connectTimeout ?? const Duration(seconds: 120),
+      receiveTimeout = receiveTimeout ?? const Duration(seconds: 120);
 
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) async {
@@ -66,6 +67,8 @@ class LoggingHttpClient extends http.BaseClient {
     final operationName = requestJson is Map<String, dynamic>
         ? requestJson['operationName']?.toString()
         : null;
+    final isPaymentOperation =
+        operationName?.toLowerCase().contains('payment') ?? false;
     final variables = requestJson is Map<String, dynamic>
         ? requestJson['variables']
         : null;
@@ -75,8 +78,11 @@ class LoggingHttpClient extends http.BaseClient {
     _logApiMessage('📝 API Name: ${operationName ?? 'unnamed'}');
     _logApiMessage('🔗 URL: ${request.url}');
     _logApiMessage('📨 Request Type: ${request.method}');
-    if (requestJson != null || variables != null) {
+    if ((requestJson != null || variables != null) && !isPaymentOperation) {
       _logApiMessage('🧩 Payload attached');
+      _logRequestPayload(requestJson, requestBody);
+    } else if (isPaymentOperation) {
+      _logApiMessage('🧩 Payment payload omitted from debug logs');
     }
 
     try {
@@ -88,9 +94,12 @@ class LoggingHttpClient extends http.BaseClient {
       _logApiMessage('✅ [API Response] (${stopwatch.elapsedMilliseconds}ms)');
       _logApiMessage('📝 API Name: ${operationName ?? 'unnamed'}');
       _logApiMessage('🔢 Status Code: ${response.statusCode}');
-      _logApiMessage(
-        '📦 Response Length: ${responseBody.length} chars',
-      );
+      _logApiMessage('📦 Response Length: ${responseBody.length} chars');
+      if (isPaymentOperation) {
+        _logApiMessage('📥 Payment response omitted from debug logs');
+      } else {
+        _logResponseBody(responseBody);
+      }
       _logApiMessage('═══════════════════════════════════════════');
 
       return http.StreamedResponse(
@@ -114,16 +123,34 @@ class LoggingHttpClient extends http.BaseClient {
   }
 
   Future<void> _attachDynamicHeaders(http.BaseRequest request) async {
-    final prefs = await SharedPreferences.getInstance();
-    final locale = prefs.getString(LocaleCubit.localeKey);
-    final currency = prefs.getString(CurrencyCubit.currencyKey);
-
-    request.headers['X-CHANNEL'] = channelCode;
-    if (locale != null && locale.isNotEmpty) {
-      request.headers['X-LOCALE'] = locale;
+    // X-STOREFRONT-KEY already scopes requests to the configured channel.
+    // Per Bagisto docs, X-Channel is optional to use the channel defaults.
+    // Sending X-CHANNEL: default causes a backend join conflict in Bagisto
+    // when sorting by NAME, causing it to fall back to ordering by product id.
+    if (channelCode.isNotEmpty && channelCode != 'default') {
+      request.headers['X-CHANNEL'] = channelCode;
     }
-    if (currency != null && currency.isNotEmpty) {
-      request.headers['X-CURRENCY'] = currency;
+
+    // Locale and currency are preferences, not requirements. If the store is
+    // unreachable — no plugin binding, first run — the request still goes out
+    // with the channel header and the server falls back to its defaults.
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final locale = prefs.getString(LocaleCubit.localeKey);
+      final currency = prefs.getString(CurrencyCubit.currencyKey);
+
+      // A request that already names a locale keeps it: the product editor
+      // edits one language at a time, which is not the app's own language.
+      if (locale != null &&
+          locale.isNotEmpty &&
+          !request.headers.containsKey('X-LOCALE')) {
+        request.headers['X-LOCALE'] = locale;
+      }
+      if (currency != null && currency.isNotEmpty) {
+        request.headers['X-CURRENCY'] = currency;
+      }
+    } catch (error) {
+      _logApiMessage('⚠️ Locale/currency headers unavailable: $error');
     }
   }
 
@@ -144,6 +171,48 @@ class LoggingHttpClient extends http.BaseClient {
     }
   }
 
+  void _logRequestPayload(dynamic requestJson, String requestBody) {
+    if (requestJson is Map<String, dynamic>) {
+      final query = requestJson['query'];
+      final variables = requestJson['variables'];
+
+      if (query is String && query.trim().isNotEmpty) {
+        _logApiMessage('📄 Query:');
+        _logApiMessage(query);
+      }
+
+      if (variables != null) {
+        _logApiMessage('🔧 Variables:');
+        _logApiMessage(_formatLogJson(variables));
+      }
+      return;
+    }
+
+    if (requestBody.trim().isEmpty) return;
+    _logApiMessage('📦 Request Body:');
+    _logApiMessage(requestBody);
+  }
+
+  void _logResponseBody(String responseBody) {
+    if (responseBody.trim().isEmpty) return;
+    _logApiMessage('📥 Response Body:');
+    _logApiMessage(_formatLogBody(responseBody));
+  }
+
+  String _formatLogBody(String body) {
+    final parsed = _tryParseJson(body);
+    if (parsed == null) return body;
+    return _formatLogJson(parsed);
+  }
+
+  String _formatLogJson(Object? value) {
+    try {
+      return const JsonEncoder.withIndent('  ').convert(value);
+    } catch (_) {
+      return value.toString();
+    }
+  }
+
   @override
   void close() {
     _inner.close();
@@ -160,7 +229,7 @@ class GraphQLClientProvider {
   // ─── Constants ────────────────────────────────────────────────────────────
 
   /// All GraphQL clients use this timeout. Change here once — applies everywhere.
-  static const _kTimeout = Duration(seconds: 60);
+  static const _kTimeout = Duration(seconds: 120);
 
   // ─── Cache ────────────────────────────────────────────────────────────────
 
@@ -180,7 +249,7 @@ class GraphQLClientProvider {
 
   /// **Use this everywhere** instead of constructing [GraphQLClient] manually.
   ///
-  /// Automatically applies the 60-second [_kTimeout] so you never have to
+  /// Automatically applies the 120-second [_kTimeout] so you never have to
   /// repeat it in individual repositories or pages.
   ///
   /// ```dart
@@ -207,13 +276,17 @@ class GraphQLClientProvider {
       },
     );
 
-    final Link link;
-    if (token != null && token.isNotEmpty) {
-      final authLink = AuthLink(getToken: () async => 'Bearer $token');
-      link = authLink.concat(httpLink);
-    } else {
-      link = httpLink;
-    }
+    final authLink = AuthLink(
+      getToken: () async {
+        if (token != null && token.isNotEmpty) return 'Bearer $token';
+        try {
+          final stored = await AuthStorage.getToken();
+          if (stored != null && stored.isNotEmpty) return 'Bearer $stored';
+        } catch (_) {}
+        return null;
+      },
+    );
+    final link = authLink.concat(httpLink);
 
     return GraphQLClient(
       cache: GraphQLCache(store: InMemoryStore()),

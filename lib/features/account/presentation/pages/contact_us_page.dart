@@ -116,7 +116,9 @@ class _ContactUsPageState extends State<ContactUsPage> {
     final l10n = AppLocalizations.of(context)!;
     final bgColor = isDark ? AppColors.neutral800 : AppColors.white;
     final textColor = isDark ? AppColors.neutral200 : AppColors.neutral900;
-    final secondaryTextColor = isDark ? AppColors.neutral400 : AppColors.neutral500;
+    final secondaryTextColor = isDark
+        ? AppColors.neutral400
+        : AppColors.neutral500;
     final inputBg = isDark ? AppColors.neutral700 : AppColors.neutral100;
 
     return Container(
@@ -140,7 +142,8 @@ class _ContactUsPageState extends State<ContactUsPage> {
             child: BlocListener<ContactUsCubit, ContactUsState>(
               listener: (context, state) {
                 if (state.isSuccess) {
-                  final message = state.successMessage ??
+                  final message =
+                      state.successMessage ??
                       l10n.accountMessageSentSuccessfully;
                   Navigator.of(context).pop(message);
                 } else if (state.errorMessage != null) {
@@ -155,146 +158,150 @@ class _ContactUsPageState extends State<ContactUsPage> {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                    // ── Header ──
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          l10n.accountContactUs,
-                          style: TextStyle(
-                            fontFamily: 'Roboto',
-                            fontWeight: FontWeight.w500,
-                            fontSize: 18,
-                            color: textColor,
-                          ),
-                        ),
-                        Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () => Navigator.of(context).pop(),
-                            child: Icon(
-                              Icons.close,
-                              size: 20,
-                              color: textColor,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      l10n.accountContactUsDescription,
-                      style: TextStyle(
-                        fontFamily: 'Roboto',
-                        fontSize: 14,
-                        color: secondaryTextColor,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Fields, labels, placeholders and required marks follow
-                    // the storefront Contact Us form.
-                    _buildTextField(
-                      label: l10n.accountName,
-                      controller: _nameController,
-                      hintText: l10n.accountName,
-                      inputBg: inputBg,
-                      textColor: textColor,
-                      secondaryTextColor: secondaryTextColor,
-                      isDark: isDark,
-                      isRequired: true,
-                      validator: _validateName,
-                    ),
-                    const SizedBox(height: 16),
-
-                    _buildTextField(
-                      label: l10n.checkoutEmail,
-                      controller: _emailController,
-                      hintText: l10n.checkoutEmail,
-                      keyboardType: TextInputType.emailAddress,
-                      inputBg: inputBg,
-                      textColor: textColor,
-                      secondaryTextColor: secondaryTextColor,
-                      isDark: isDark,
-                      isRequired: true,
-                      validator: _validateEmail,
-                    ),
-                    const SizedBox(height: 16),
-
-                    _buildTextField(
-                      label: l10n.accountPhoneNumber,
-                      controller: _contactController,
-                      hintText: l10n.accountPhoneNumber,
-                      keyboardType: TextInputType.phone,
-                      inputBg: inputBg,
-                      textColor: textColor,
-                      secondaryTextColor: secondaryTextColor,
-                      isDark: isDark,
-                      validator: _validatePhone,
-                    ),
-                    const SizedBox(height: 16),
-
-                    _buildTextField(
-                      label: l10n.accountWhatsOnYourMind,
-                      controller: _messageController,
-                      hintText: l10n.accountDescribeHere,
-                      minLines: 6,
-                      maxLines: 10,
-                      inputBg: inputBg,
-                      textColor: textColor,
-                      secondaryTextColor: secondaryTextColor,
-                      isDark: isDark,
-                      isRequired: true,
-                      validator: _validateMessage,
-                    ),
-                    const SizedBox(height: 24),
-
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed:
-                                state.isSubmitting ? null : _handleSubmit,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary500,
-                              disabledBackgroundColor: AppColors.primary600,
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 12,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            child: Text(
-                              l10n.accountSubmit,
-                              style: const TextStyle(
+                        // ── Header ──
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              l10n.accountContactUs,
+                              style: TextStyle(
                                 fontFamily: 'Roboto',
                                 fontWeight: FontWeight.w500,
-                                fontSize: 14,
-                                color: AppColors.white,
+                                fontSize: 18,
+                                color: textColor,
                               ),
                             ),
-                          ),
-                        ),
-                        if (state.isSubmitting) ...[
-                          const SizedBox(height: 12),
-                          const Center(
-                            child: SizedBox(
-                              height: 22,
-                              width: 22,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  AppColors.primary500,
+                            Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () => Navigator.of(context).pop(),
+                                child: Icon(
+                                  Icons.close,
+                                  size: 20,
+                                  color: textColor,
                                 ),
                               ),
                             ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          l10n.accountContactUsDescription,
+                          style: TextStyle(
+                            fontFamily: 'Roboto',
+                            fontSize: 14,
+                            color: secondaryTextColor,
                           ),
-                        ],
-                      ],
-                    ),
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Fields, labels, placeholders and required marks follow
+                        // the storefront Contact Us form.
+                        _buildTextField(
+                          label: l10n.accountName,
+                          controller: _nameController,
+                          hintText: l10n.accountName,
+                          inputBg: inputBg,
+                          textColor: textColor,
+                          secondaryTextColor: secondaryTextColor,
+                          isDark: isDark,
+                          validator: _validateName,
+                          isRequired: true,
+                        ),
+                        const SizedBox(height: 16),
+
+                        _buildTextField(
+                          label: l10n.checkoutEmail,
+                          controller: _emailController,
+                          hintText: l10n.checkoutEmail,
+                          keyboardType: TextInputType.emailAddress,
+                          inputBg: inputBg,
+                          textColor: textColor,
+                          secondaryTextColor: secondaryTextColor,
+                          isDark: isDark,
+                          validator: _validateEmail,
+                          isRequired: true,
+                        ),
+                        const SizedBox(height: 16),
+
+                        _buildTextField(
+                          label: l10n.accountPhoneNumber,
+                          controller: _contactController,
+                          hintText: l10n.accountPhoneNumber,
+                          keyboardType: TextInputType.phone,
+                          inputBg: inputBg,
+                          textColor: textColor,
+                          secondaryTextColor: secondaryTextColor,
+                          isDark: isDark,
+                          validator: _validatePhone,
+                          isRequired: false,
+                        ),
+                        const SizedBox(height: 16),
+
+                        _buildTextField(
+                          label: l10n.accountWhatsOnYourMind,
+                          controller: _messageController,
+                          hintText: l10n.accountDescribeHere,
+                          minLines: 6,
+                          maxLines: 10,
+                          inputBg: inputBg,
+                          textColor: textColor,
+                          secondaryTextColor: secondaryTextColor,
+                          isDark: isDark,
+                          validator: _validateMessage,
+                          isRequired: true,
+                        ),
+                        const SizedBox(height: 24),
+
+                        // The storefront keeps the button label steady and puts
+                        // the spinner underneath it while submitting.
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: state.isSubmitting
+                                    ? null
+                                    : _handleSubmit,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.primary500,
+                                  disabledBackgroundColor: AppColors.primary600,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                child: Text(
+                                  l10n.accountSubmit,
+                                  style: const TextStyle(
+                                    fontFamily: 'Roboto',
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 14,
+                                    color: AppColors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            if (state.isSubmitting) ...[
+                              const SizedBox(height: 12),
+                              const Center(
+                                child: SizedBox(
+                                  height: 22,
+                                  width: 22,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      AppColors.primary500,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
                       ],
                     ),
                   );
@@ -319,14 +326,14 @@ class _ContactUsPageState extends State<ContactUsPage> {
     required Color textColor,
     required Color secondaryTextColor,
     required bool isDark,
-    bool isRequired = false,
     String? Function(String?)? validator,
+    bool isRequired = false,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        RichText(
-          text: TextSpan(
+        Text.rich(
+          TextSpan(
             text: label,
             style: TextStyle(
               fontFamily: 'Roboto',
@@ -335,10 +342,13 @@ class _ContactUsPageState extends State<ContactUsPage> {
               color: textColor,
             ),
             children: isRequired
-                ? [
+                ? const [
                     TextSpan(
                       text: ' *',
-                      style: TextStyle(color: Colors.red.shade400),
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ]
                 : null,
@@ -403,11 +413,11 @@ class _ContactUsPageState extends State<ContactUsPage> {
 
     // Submit form
     context.read<ContactUsCubit>().submitContactForm(
-          name: name,
-          email: email,
-          contact: contact,
-          message: message,
-        );
+      name: name,
+      email: email,
+      contact: contact,
+      message: message,
+    );
   }
 
   // Validation mirrors the storefront contact form: name, email and message

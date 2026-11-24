@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
@@ -259,6 +260,11 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
 
     try {
       final result = await repository.getProducts(query: query, first: 20);
+
+      // The web records a search when it is submitted; so does the app.
+      unawaited(
+        repository.logSearchTerm(term: query, results: result.totalCount),
+      );
 
       if (result.products.isEmpty) {
         emit(

@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/navigation/app_navigator.dart';
 import '../../../../core/wishlist/wishlist_cubit.dart';
+import '../../../../core/store_config/store_config.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../data/models/product_model.dart';
 import '../../data/models/filter_model.dart';
@@ -17,7 +18,7 @@ import '../../../product/presentation/pages/product_detail_page.dart';
 import '../../../search/presentation/pages/search_page.dart';
 import '../../../../core/widgets/app_back_button.dart';
 import '../../../cart/presentation/bloc/cart_bloc.dart';
-import '../../../../core/store_config/store_config.dart';
+import '../widgets/category_banner.dart';
 
 /// Category Products Grid Page – Figma node 63:2666
 ///
@@ -41,6 +42,10 @@ class CategoryProductsGridPage extends StatelessWidget {
   final int categoryId;
   final String categoryName;
 
+  /// Optional category artwork and description supplied by the caller.
+  final String? categoryBannerUrl;
+  final String? categoryDescription;
+
   /// Category slug for fetching dynamic filter attributes.
   /// If empty, generic filters are fetched.
   final String categorySlug;
@@ -51,12 +56,22 @@ class CategoryProductsGridPage extends StatelessWidget {
   /// persists even when the user applies additional sort/filter options.
   final String? initialFilter;
 
+  /// Optional initial sort option from themeCustomization.
+  final SortOption? initialSort;
+
+  /// Category display mode from admin ('description_only', 'products_only', 'products_and_description')
+  final String? displayMode;
+
   const CategoryProductsGridPage({
     super.key,
     required this.categoryId,
     required this.categoryName,
+    this.categoryBannerUrl,
+    this.categoryDescription,
     this.categorySlug = '',
     this.initialFilter,
+    this.initialSort,
+    this.displayMode,
   });
 
   @override
@@ -64,22 +79,37 @@ class CategoryProductsGridPage extends StatelessWidget {
     return BlocProvider(
       create: (context) {
         final repository = context.read<CategoryRepository>();
-        return ProductListBloc(repository: repository)..add(
-          LoadProductList(
-            categoryId: categoryId,
-            categoryName: categoryName,
-            categorySlug: categorySlug,
-            initialFilter: initialFilter,
-          ),
-        );
+        return ProductListBloc(repository: repository, initialSort: initialSort)
+          ..add(
+            LoadProductList(
+              categoryId: categoryId,
+              categoryName: categoryName,
+              categorySlug: categorySlug,
+              initialFilter: initialFilter,
+              initialSort: initialSort,
+              displayMode: displayMode,
+            ),
+          );
       },
-      child: const _CategoryProductsGridView(),
+      child: _CategoryProductsGridView(
+        categoryBannerUrl: categoryBannerUrl,
+        categoryDescription: categoryDescription,
+        displayMode: displayMode,
+      ),
     );
   }
 }
 
 class _CategoryProductsGridView extends StatefulWidget {
-  const _CategoryProductsGridView();
+  final String? categoryBannerUrl;
+  final String? categoryDescription;
+  final String? displayMode;
+
+  const _CategoryProductsGridView({
+    this.categoryBannerUrl,
+    this.categoryDescription,
+    this.displayMode,
+  });
 
   @override
   State<_CategoryProductsGridView> createState() =>
@@ -191,6 +221,18 @@ class _CategoryProductsGridViewState extends State<_CategoryProductsGridView>
           '[GridPage] BlocBuilder rebuild: status=${state.status}, products=${state.products.length}',
         );
 
+        final currentDisplayMode = state.displayMode ?? widget.displayMode;
+        final showDescription = currentDisplayMode != 'products_only';
+        final showProducts = currentDisplayMode != 'description_only';
+
+        final bannerUrl = (widget.categoryBannerUrl?.isNotEmpty ?? false)
+            ? widget.categoryBannerUrl
+            : state.bannerUrl;
+        final description =
+            (widget.categoryDescription?.trim().isNotEmpty ?? false)
+            ? widget.categoryDescription
+            : state.description;
+
         return Scaffold(
           backgroundColor: isDark ? AppColors.neutral900 : AppColors.neutral50,
 
@@ -203,48 +245,114 @@ class _CategoryProductsGridViewState extends State<_CategoryProductsGridView>
                 // ─────────────────────────────
                 _buildNavBar(context, state),
 
-                if (state.filterAttributes.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: FilterChipRow(
-                      filterAttributes: state.filterAttributes,
-                      activeFilters: state.activeFilters,
-                      selectedPriceMin: state.selectedPriceMin,
-                      selectedPriceMax: state.selectedPriceMax,
-                      priceRangeMin: state.priceRangeMin,
-                      priceRangeMax: state.priceRangeMax,
-                      onChipTap: (attr) =>
-                          _showFilterForAttribute(context, state, attr),
+                if (!showProducts)
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (bannerUrl?.isNotEmpty ?? false)
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                top: 12,
+                                bottom: 12,
+                              ),
+                              child: CategoryBanner(bannerUrl: bannerUrl),
+                            ),
+                          if (showDescription &&
+                              (description?.trim().isNotEmpty ?? false))
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                              child: SizedBox(
+                                width: double.infinity,
+                                child: Text(
+                                  description!.trim(),
+                                  textAlign: TextAlign.start,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    height: 1.5,
+                                    color: isDark
+                                        ? AppColors.neutral300
+                                        : AppColors.neutral700,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
                   ),
 
-                _buildCountRow(context, state),
+                if (showProducts) ...[
+                  if (bannerUrl?.isNotEmpty ?? false)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12, bottom: 12),
+                      child: CategoryBanner(bannerUrl: bannerUrl),
+                    ),
 
-                // ─────────────────────────────
-                // 📦 SCROLLABLE PRODUCT SECTION
-                // ─────────────────────────────
-                Expanded(
-                  child: NotificationListener<ScrollNotification>(
-                    onNotification: (notification) {
-                      if (notification is ScrollEndNotification &&
-                          notification.metrics.extentAfter < 200) {
-                        context.read<ProductListBloc>().add(
-                          LoadMoreProductList(),
-                        );
-                      }
-                      return false;
-                    },
-                    child: CustomScrollView(
-                      slivers: [
-                        _buildSliverProductContent(context, state),
-
-                        const SliverPadding(
-                          padding: EdgeInsets.only(bottom: 80),
+                  if (showDescription &&
+                      (description?.trim().isNotEmpty ?? false))
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: Text(
+                          description!.trim(),
+                          textAlign: TextAlign.start,
+                          style: TextStyle(
+                            fontSize: 14,
+                            height: 1.5,
+                            color: isDark
+                                ? AppColors.neutral300
+                                : AppColors.neutral700,
+                          ),
                         ),
-                      ],
+                      ),
+                    ),
+
+                  if (state.filterAttributes.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: FilterChipRow(
+                        filterAttributes: state.filterAttributes,
+                        activeFilters: state.activeFilters,
+                        selectedPriceMin: state.selectedPriceMin,
+                        selectedPriceMax: state.selectedPriceMax,
+                        priceRangeMin: state.priceRangeMin,
+                        priceRangeMax: state.priceRangeMax,
+                        onChipTap: (attr) =>
+                            _showFilterForAttribute(context, state, attr),
+                      ),
+                    ),
+
+                  _buildCountRow(context, state),
+
+                  // ─────────────────────────────
+                  // 📦 SCROLLABLE PRODUCT SECTION
+                  // ─────────────────────────────
+                  Expanded(
+                    child: NotificationListener<ScrollNotification>(
+                      onNotification: (notification) {
+                        if (notification is ScrollEndNotification &&
+                            notification.metrics.extentAfter < 200) {
+                          context.read<ProductListBloc>().add(
+                            LoadMoreProductList(),
+                          );
+                        }
+                        return false;
+                      },
+                      child: CustomScrollView(
+                        slivers: [
+                          _buildSliverProductContent(context, state),
+
+                          const SliverPadding(
+                            padding: EdgeInsets.only(bottom: 80),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
+                ],
               ],
             ),
           ),
@@ -252,14 +360,17 @@ class _CategoryProductsGridViewState extends State<_CategoryProductsGridView>
           // ─────────────────────────────
           // ⬇ Bottom Sort/Filter Bar
           // ─────────────────────────────
-          bottomNavigationBar: BottomSortFilterBar(
-            sortBadge: state.isSortActive ? 1 : 0,
-            filterBadge: state.totalActiveFilterCount,
-            isGridView: _isGridView,
-            onSortTap: () => _showSortSheet(context, state),
-            onFilterTap: () => _showFilterSheet(context, state),
-            onViewToggle: () => setState(() => _isGridView = !_isGridView),
-          ),
+          bottomNavigationBar: showProducts
+              ? BottomSortFilterBar(
+                  sortBadge: state.isSortActive ? 1 : 0,
+                  filterBadge: state.totalActiveFilterCount,
+                  isGridView: _isGridView,
+                  onSortTap: () => _showSortSheet(context, state),
+                  onFilterTap: () => _showFilterSheet(context, state),
+                  onViewToggle: () =>
+                      setState(() => _isGridView = !_isGridView),
+                )
+              : null,
         );
       },
     );
@@ -326,20 +437,17 @@ class _CategoryProductsGridViewState extends State<_CategoryProductsGridView>
     const horizontalPadding = 20.0 * 2;
     const crossAxisSpacing = 12.0;
     final cardWidth =
-        (screenWidth - horizontalPadding - crossAxisSpacing * (crossAxisCount - 1)) /
-            crossAxisCount;
+        (screenWidth -
+            horizontalPadding -
+            crossAxisSpacing * (crossAxisCount - 1)) /
+        crossAxisCount;
     const textSectionHeight = 80.0;
     final mainAxisExtent = cardWidth + textSectionHeight;
 
     return SliverMainAxisGroup(
       slivers: [
         SliverPadding(
-          padding: EdgeInsets.fromLTRB(
-            20,
-            8,
-            20,
-            state.isLoadingMore ? 8 : 24,
-          ),
+          padding: EdgeInsets.fromLTRB(20, 8, 20, state.isLoadingMore ? 8 : 24),
           sliver: SliverGrid(
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: crossAxisCount,
@@ -477,58 +585,58 @@ class _CategoryProductsGridViewState extends State<_CategoryProductsGridView>
 
           // ── Cart Icon with Badge ──
           if (StoreConfig.of(context).showCartPage)
-          BlocBuilder<CartBloc, CartState>(
-            builder: (context, cartState) {
-              final count = StoreConfig.of(context).cartCount(
-                itemsCount: cartState.cart.itemsCount,
-                itemsQty: cartState.cart.itemsQty,
-              );
-              return GestureDetector(
-                onTap: () {
-                  AppNavigator.navigateToCart(context);
-                },
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: Icon(
-                        Icons.shopping_cart_outlined,
-                        size: 24,
-                        color: isDark
-                            ? AppColors.neutral200
-                            : AppColors.neutral900,
+            BlocBuilder<CartBloc, CartState>(
+              builder: (context, cartState) {
+                final count = StoreConfig.of(context).cartCount(
+                  itemsCount: cartState.cart.itemsCount,
+                  itemsQty: cartState.cart.itemsQty,
+                );
+                return GestureDetector(
+                  onTap: () {
+                    AppNavigator.navigateToCart(context);
+                  },
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Icon(
+                          Icons.shopping_cart_outlined,
+                          size: 24,
+                          color: isDark
+                              ? AppColors.neutral200
+                              : AppColors.neutral900,
+                        ),
                       ),
-                    ),
-                    if (count > 0)
-                      Positioned(
-                        top: 0,
-                        right: 0,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 4,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary500,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            '$count',
-                            style: const TextStyle(
-                              fontFamily: 'Roboto',
-                              fontSize: 12,
-                              fontWeight: FontWeight.w400,
-                              color: AppColors.white,
+                      if (count > 0)
+                        Positioned(
+                          top: 0,
+                          right: 0,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 4,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary500,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              '$count',
+                              style: const TextStyle(
+                                fontFamily: 'Roboto',
+                                fontSize: 12,
+                                fontWeight: FontWeight.w400,
+                                color: AppColors.white,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                  ],
-                ),
-              );
-            },
-          ),
+                    ],
+                  ),
+                );
+              },
+            ),
         ],
       ),
     );
@@ -617,6 +725,7 @@ class _CategoryProductsGridViewState extends State<_CategoryProductsGridView>
             const SizedBox(height: 12),
             Text(
               l10n.categoryNoProductsFound,
+              textAlign: TextAlign.center,
               style: TextStyle(
                 fontFamily: 'Roboto',
                 fontSize: 16,
@@ -627,6 +736,7 @@ class _CategoryProductsGridViewState extends State<_CategoryProductsGridView>
             const SizedBox(height: 8),
             Text(
               l10n.categoryTryAdjustingFilters,
+              textAlign: TextAlign.center,
               style: TextStyle(
                 fontFamily: 'Roboto',
                 fontSize: 14,
@@ -834,7 +944,34 @@ class _ProductCardGrid extends StatelessWidget {
                     ),
                   ),
                 ),
-
+                // Product Badge: "Sale" (red) or "New" (dark navy) top-left
+                if (product.hasSaleBadge || (product.isNew == true))
+                  Positioned(
+                    top: 8,
+                    left: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: product.hasSaleBadge
+                            ? const Color(0xFFDC2626)
+                            : const Color(0xFF0F172A),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        product.hasSaleBadge ? 'Sale' : 'New',
+                        style: const TextStyle(
+                          fontFamily: 'Roboto',
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                          height: 1.1,
+                        ),
+                      ),
+                    ),
+                  ),
                 Positioned(
                   top: 8,
                   right: 8,
@@ -904,9 +1041,7 @@ class _ProductCardGrid extends StatelessWidget {
                     fontSize: 14,
                     fontWeight: FontWeight.w400,
                     height: 1.2,
-                    color: isDark
-                        ? AppColors.neutral300
-                        : AppColors.neutral800,
+                    color: isDark ? AppColors.neutral300 : AppColors.neutral800,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -931,6 +1066,7 @@ class _ProductCardGrid extends StatelessWidget {
 
   Widget _buildPriceRow(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final prefix = product.priceLabelPrefix;
 
     return FittedBox(
       fit: BoxFit.scaleDown,
@@ -938,6 +1074,18 @@ class _ProductCardGrid extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
+          if (prefix != null && prefix.isNotEmpty) ...[
+            Text(
+              '$prefix ',
+              style: TextStyle(
+                fontFamily: 'Roboto',
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+                height: 1.0,
+                color: isDark ? AppColors.neutral400 : AppColors.neutral600,
+              ),
+            ),
+          ],
           // Current price
           Text(
             product.formattedDisplayPrice,
@@ -951,7 +1099,7 @@ class _ProductCardGrid extends StatelessWidget {
           ),
 
           if (product.originalPrice != null) ...[
-            const SizedBox(width: 3),
+            const SizedBox(width: 4),
             Text(
               product.formattedOriginalPrice ?? '',
               style: const TextStyle(
@@ -964,31 +1112,22 @@ class _ProductCardGrid extends StatelessWidget {
               ),
             ),
           ],
-
-          if (product.discountPercent != null) ...[
-            const SizedBox(width: 3),
-            Text(
-              AppLocalizations.of(
-                context,
-              )!.productDiscountOff(product.discountPercent.toString()),
-              style: const TextStyle(
-                fontFamily: 'Roboto',
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                height: 1.0,
-                color: AppColors.primary500,
-              ),
-            ),
-          ],
         ],
       ),
     );
   }
 
   Widget _buildRatingRow(BuildContext context) {
+    final reviewCount = product.totalReviewCount ?? product.reviewCount;
+    if (reviewCount == 0) {
+      return const SizedBox.shrink();
+    }
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final rating = product.averageRating;
-    final reviewCount = product.reviews.length;
+    final summaryCount = StoreConfig.of(context).reviewSummaryCount(
+      reviewCount: reviewCount,
+      starCount: product.reviewStarCount,
+    );
 
     return FittedBox(
       fit: BoxFit.scaleDown,
@@ -1021,7 +1160,7 @@ class _ProductCardGrid extends StatelessWidget {
           ),
           const SizedBox(width: 3),
           Text(
-            reviewCount > 0 ? '$reviewCount' : '0',
+            '$summaryCount',
             style: TextStyle(
               fontFamily: 'Roboto',
               fontSize: 14,
@@ -1208,6 +1347,20 @@ class _ProductCardList extends StatelessWidget {
                   alignment: Alignment.centerLeft,
                   child: Row(
                     children: [
+                      if (product.priceLabelPrefix != null &&
+                          product.priceLabelPrefix!.isNotEmpty) ...[
+                        Text(
+                          '${product.priceLabelPrefix!} ',
+                          style: TextStyle(
+                            fontFamily: 'Roboto',
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            color: isDark
+                                ? AppColors.neutral400
+                                : AppColors.neutral600,
+                          ),
+                        ),
+                      ],
                       Text(
                         product.formattedDisplayPrice,
                         style: TextStyle(
@@ -1231,78 +1384,65 @@ class _ProductCardList extends StatelessWidget {
                           ),
                         ),
                       ],
-                      if (product.discountPercent != null) ...[
-                        const SizedBox(width: 6),
-                        Text(
-                          AppLocalizations.of(context)!.productDiscountOff(
-                            product.discountPercent.toString(),
-                          ),
-                          style: const TextStyle(
-                            fontFamily: 'Roboto',
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.primary500,
-                          ),
-                        ),
-                      ],
                     ],
                   ),
                 ),
 
-                const SizedBox(height: 8),
-
                 // Rating
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 4,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.successGreen,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.star,
-                            size: 16,
-                            color: AppColors.white,
-                          ),
-                          const SizedBox(width: 1),
-                          Text(
-                            product.averageRating > 0
-                                ? product.averageRating.toStringAsFixed(1)
-                                : '0.0',
-                            style: const TextStyle(
-                              fontFamily: 'Roboto',
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
+                if ((product.totalReviewCount ?? product.reviewCount) > 0) ...[
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 4,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.successGreen,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.star,
+                              size: 16,
                               color: AppColors.white,
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    Flexible(
-                      child: Text(
-                        '${product.reviews.length}',
-                        style: TextStyle(
-                          fontFamily: 'Roboto',
-                          fontSize: 14,
-                          color: isDark
-                              ? AppColors.neutral100
-                              : AppColors.neutral900,
+                            const SizedBox(width: 1),
+                            Text(
+                              product.averageRating > 0
+                                  ? product.averageRating.toStringAsFixed(1)
+                                  : '0.0',
+                              style: const TextStyle(
+                                fontFamily: 'Roboto',
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.white,
+                              ),
+                            ),
+                          ],
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                  ],
-                ),
+                      const SizedBox(width: 4),
+                      Flexible(
+                        child: Text(
+                          '${StoreConfig.of(context).reviewSummaryCount(reviewCount: product.totalReviewCount ?? product.reviewCount, starCount: product.reviewStarCount)}',
+                          style: TextStyle(
+                            fontFamily: 'Roboto',
+                            fontSize: 14,
+                            color: isDark
+                                ? AppColors.neutral100
+                                : AppColors.neutral900,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),

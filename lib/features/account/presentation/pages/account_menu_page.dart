@@ -1,8 +1,10 @@
 import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/app_back_button.dart';
 import '../../../../core/wishlist/wishlist_cubit.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
@@ -14,7 +16,6 @@ import '../bloc/compare_bloc.dart';
 import '../bloc/downloadable_products_bloc.dart';
 import '../bloc/edit_account_bloc.dart';
 import '../bloc/orders_bloc.dart';
-import '../bloc/returns_bloc.dart';
 import '../bloc/review_bloc.dart';
 import '../bloc/wishlist_bloc.dart';
 import '../helpers/account_dashboard_helpers.dart';
@@ -28,9 +29,9 @@ import '../pages/returns_page.dart';
 import '../pages/reviews_page.dart';
 import '../pages/settings_bottom_sheet.dart';
 import '../pages/wishlist_page.dart';
-import '../widgets/account_menu_item.dart';
-import '../../../../core/widgets/app_back_button.dart';
+import '../bloc/returns_bloc.dart';
 import '../../../../core/store_config/store_config.dart';
+import '../widgets/account_menu_item.dart';
 
 /// Account Menu Page — Figma node-id=220-6770
 ///
@@ -137,6 +138,7 @@ class _AccountMenuBody extends StatelessWidget {
             name: userName,
             email: userEmail,
             initials: initials,
+            imageUrl: effectiveProfile?.imageUrl,
           ),
 
           const SizedBox(height: 4),
@@ -171,8 +173,12 @@ class _AccountMenuBody extends StatelessWidget {
     required String name,
     required String email,
     required String initials,
+    String? imageUrl,
   }) {
-    final l10n = AppLocalizations.of(context)!;
+    final cleanImageUrl = imageUrl?.trim();
+    final initialsText = initials.length > 2
+        ? initials.substring(0, 2)
+        : initials;
 
     return Padding(
       padding: const EdgeInsets.only(left: 20, right: 20, top: 0),
@@ -182,7 +188,7 @@ class _AccountMenuBody extends StatelessWidget {
           const AppBackButton(),
           const SizedBox(width: 8),
 
-          // Avatar circle — Figma node: 220:6794
+          // Avatar circle with image or initials fallback
           Container(
             width: 48,
             height: 48,
@@ -190,17 +196,45 @@ class _AccountMenuBody extends StatelessWidget {
               color: AppColors.primary500,
               shape: BoxShape.circle,
             ),
-            child: Center(
-              child: Text(
-                initials.length > 2 ? initials.substring(0, 2) : initials,
-                style: const TextStyle(
-                  fontFamily: 'Roboto',
-                  fontWeight: FontWeight.w600,
-                  fontSize: 18,
-                  color: AppColors.white,
-                ),
-              ),
-            ),
+            clipBehavior: Clip.antiAlias,
+            child: (cleanImageUrl != null && cleanImageUrl.isNotEmpty)
+                ? CachedNetworkImage(
+                    imageUrl: cleanImageUrl,
+                    fit: BoxFit.cover,
+                    placeholder: (_, _) => Center(
+                      child: Text(
+                        initialsText,
+                        style: const TextStyle(
+                          fontFamily: 'Roboto',
+                          fontWeight: FontWeight.w600,
+                          fontSize: 18,
+                          color: AppColors.white,
+                        ),
+                      ),
+                    ),
+                    errorWidget: (_, _, _) => Center(
+                      child: Text(
+                        initialsText,
+                        style: const TextStyle(
+                          fontFamily: 'Roboto',
+                          fontWeight: FontWeight.w600,
+                          fontSize: 18,
+                          color: AppColors.white,
+                        ),
+                      ),
+                    ),
+                  )
+                : Center(
+                    child: Text(
+                      initialsText,
+                      style: const TextStyle(
+                        fontFamily: 'Roboto',
+                        fontWeight: FontWeight.w600,
+                        fontSize: 18,
+                        color: AppColors.white,
+                      ),
+                    ),
+                  ),
           ),
           const SizedBox(width: 8),
 
@@ -327,7 +361,10 @@ class _AccountMenuBody extends StatelessWidget {
             onTap: () => _onMenuItemTap(context, AccountMenuAction.preferences),
           ),
           const SizedBox(height: 2),
-          AccountMenuItem(label: l10n.accountLogout, onTap: () => _onLogout(context)),
+          AccountMenuItem(
+            label: l10n.accountLogout,
+            onTap: () => _onLogout(context),
+          ),
         ],
       ),
     );
@@ -346,21 +383,6 @@ class _AccountMenuBody extends StatelessWidget {
                 create: (_) =>
                     OrdersBloc(repository: repository)..add(const LoadOrders()),
                 child: const OrdersPage(),
-              ),
-            ),
-          ),
-        );
-        break;
-      case AccountMenuAction.returns:
-        final repository = context.read<AccountRepository>();
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => RepositoryProvider.value(
-              value: repository,
-              child: BlocProvider(
-                create: (_) => ReturnsBloc(repository: repository)
-                  ..add(const LoadReturns()),
-                child: const ReturnsPage(),
               ),
             ),
           ),
@@ -505,6 +527,23 @@ class _AccountMenuBody extends StatelessWidget {
       case AccountMenuAction.preferences:
         PreferencesBottomSheet.show(context, showSettingsSection: false);
         break;
+
+      case AccountMenuAction.returns:
+        final repository = context.read<AccountRepository>();
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => RepositoryProvider.value(
+              value: repository,
+              child: BlocProvider(
+                create: (_) =>
+                    ReturnsBloc(repository: repository)
+                      ..add(const LoadReturns()),
+                child: const ReturnsPage(),
+              ),
+            ),
+          ),
+        );
+        break;
     }
   }
 
@@ -596,13 +635,13 @@ class _AccountMenuBody extends StatelessWidget {
 /// Enum for account menu actions
 enum AccountMenuAction {
   myOrders,
-  returns,
   downloadableProducts,
   wishlist,
   compareProducts,
   productReview,
   addressBook,
   editAccount,
+  returns,
   settings,
   preferences,
 }

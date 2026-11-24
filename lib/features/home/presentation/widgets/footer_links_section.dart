@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../data/models/home_models.dart';
 
+/// Renders a `footer_links` customization: the storefront footer's link
+/// columns, shown at the very bottom of the home page.
+///
+/// [columns] comes from [HomeFooterLink.columnsFromOptions]; empty columns are
+/// dropped so a single configured column spans the row.
 class FooterLinksSection extends StatelessWidget {
   final String title;
   final List<List<HomeFooterLink>> columns;
@@ -23,22 +28,26 @@ class FooterLinksSection extends StatelessWidget {
     if (visibleColumns.isEmpty) return const SizedBox.shrink();
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Divider(color: isDark ? AppColors.neutral700 : AppColors.neutral200),
           const SizedBox(height: 12),
-          Text(
-            title,
-            style: TextStyle(
-              fontFamily: 'Roboto',
-              fontWeight: FontWeight.w600,
-              fontSize: 16,
-              color: isDark ? AppColors.neutral100 : AppColors.neutral900,
+          // The heading is the section's own title, so it is skipped rather
+          // than replaced with a localized fallback when admin left it blank.
+          if (title.isNotEmpty) ...[
+            Text(
+              title,
+              style: TextStyle(
+                fontFamily: 'Roboto',
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
+                color: isDark ? AppColors.neutral100 : AppColors.neutral900,
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
+            const SizedBox(height: 8),
+          ],
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

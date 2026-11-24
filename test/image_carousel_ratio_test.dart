@@ -65,4 +65,29 @@ void main() {
     expect(tapped?.linkSlug, 'fashion');
     await tester.pumpWidget(const SizedBox());
   });
+
+  testWidgets('tapping a hash-based banner does not trigger onBannerTap', (tester) async {
+    BannerImage? tapped;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: ImageCarousel(
+              images: const [
+                BannerImage(
+                  imageUrl: 'https://example.com/a.webp',
+                  link: '#formal-wear-men',
+                ),
+              ],
+              onBannerTap: (banner) => tapped = banner,
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.byKey(const ValueKey('home_banner_0')));
+    expect(tapped, isNull);
+    await tester.pumpWidget(const SizedBox());
+  });
 }

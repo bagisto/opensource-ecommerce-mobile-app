@@ -9,6 +9,11 @@ class StoreConfigQueries {
       storeConfig {
         id
         guestCheckoutEnabled
+        cartCrossSellEnabled
+        relatedProductsLimit
+        upSellProductsLimit
+        crossSellProductsLimit
+        estimateShippingEnabled
         reorderEnabled
         minimumOrderEnabled
         minimumOrderAmount
@@ -18,10 +23,13 @@ class StoreConfigQueries {
         customerReviewEnabled
         guestReviewEnabled
         reviewerNameCensored
+        reviewSummary
         compareEnabled
         wishlistEnabled
         imageSearchEnabled
         socialShareEnabled
+        socialShareProviders
+        socialShareMessage
         newsletterEnabled
         buyNowButtonEnabled
         cartSummary
@@ -29,6 +37,19 @@ class StoreConfigQueries {
         loginRedirectTo
         miniCartEnabled
         miniCartOfferInfo
+        headerOfferTitle
+        headerOfferLinkTitle
+        headerOfferLink
+        orderNumberPrefix
+        orderNumberLength
+        orderNumberSuffix
+        taxCartDisplayPrices
+        taxCartDisplaySubtotal
+        taxCartDisplayShipping
+        taxCartShowBreakdown
+        taxOrderDisplayPrices
+        taxOrderDisplaySubtotal
+        taxOrderDisplayShipping
       }
     }
   ''';
@@ -88,7 +109,41 @@ class StoreConfigQueries {
   ''';
 }
 
+class NewsletterQueries {
+  /// Subscribes an email address to the storefront newsletter -- the
+  /// footer "Subscribe to stay in touch" box. Open to signed-out shoppers
+  /// (storefront key only); send the customer's bearer token too when one
+  /// is signed in, so the subscription links to their account.
+  ///
+  /// `success: true` means newly subscribed, `success: false` means the
+  /// address was already on the list -- both are normal outcomes, not
+  /// errors. There is no unsubscribe or "is this address subscribed"
+  /// query; unsubscribe only works via an emailed token link on web.
+  static const String subscribe = r'''
+    mutation CreateNewsletter($input: createNewsletterInput!) {
+      createNewsletter(input: $input) {
+        newsletter {
+          success
+          message
+        }
+      }
+    }
+  ''';
+}
+
 class CategoryQueries {
+  /// Records a storefront search so it shows in the admin's Search Terms.
+  /// Public: the storefront key is enough, no login.
+  static const String createSearchTerm = r'''
+    mutation CreateShopSearchTerm($input: createShopSearchTermInput!) {
+      createShopSearchTerm(input: $input) {
+        shopSearchTerm {
+          id
+        }
+      }
+    }
+  ''';
+
   /// GET_TREE_CATEGORIES – fetches hierarchical category tree
   /// Source: nextjs-commerce/src/graphql/catelog/queries/Category.ts
   static const String getTreeCategories = r'''
@@ -96,6 +151,7 @@ class CategoryQueries {
       treeCategories(parentId: $parentId) {
         id
         _id
+        displayMode
         position
         logoPath
         logoUrl
@@ -114,6 +170,7 @@ class CategoryQueries {
             node {
               id
               _id
+              displayMode
               position
               logoPath
               logoUrl
@@ -146,6 +203,7 @@ class CategoryQueries {
           node {
             id
             _id
+            displayMode
             position
             status
             logoUrl
@@ -166,6 +224,7 @@ class CategoryQueries {
                 node {
                   id
                   _id
+                  displayMode
                   position
                   status
                   logoUrl
@@ -174,6 +233,7 @@ class CategoryQueries {
                     id
                     name
                     slug
+                    description
                     urlPath
                   }
                 }
@@ -194,9 +254,11 @@ class CategoryQueries {
           node {
             id
             _id
-            logoUrl
-            position
+            displayMode
             status
+            logoUrl
+            bannerUrl
+            position
             parent {
               id
               _id
@@ -204,6 +266,7 @@ class CategoryQueries {
             translation {
               name
               slug
+              description
               id
               _id
             }
@@ -212,9 +275,54 @@ class CategoryQueries {
       }
     }
   ''';
+
+  /// Single category query by ID.
+  static const String getCategory = r'''
+    query Category($id: ID!) {
+      category(id: $id) {
+        id
+        _id
+        displayMode
+        logoUrl
+        bannerUrl
+        status
+        position
+        translation {
+          id
+          name
+          slug
+          description
+          urlPath
+        }
+      }
+    }
+  ''';
 }
 
 class ProductQueries {
+  /// Review media for one product, keyed by review id.
+  ///
+  /// The server only fills `attachments` on the top-level `productReviews`
+  /// query — on the product's own embedded `reviews` connection it always
+  /// answers null, whether or not a customer token is sent. So the product
+  /// page asks for the media separately and merges it in by review id.
+  /// Asked on its own, best effort: a server without the field still shows
+  /// the reviews, just without their photos and videos.
+  static const String getProductReviewAttachments = r'''
+    query productReviewAttachments($productId: Int, $first: Int) {
+      productReviews(first: $first, product_id: $productId) {
+        edges {
+          node {
+            id
+            _id
+            attachments
+            customerImageUrl
+          }
+        }
+      }
+    }
+  ''';
+
   /// Product core fragment fields
   static const String _productCoreFragment = r'''
     fragment ProductCore on Product {
@@ -222,17 +330,35 @@ class ProductQueries {
       _id
       sku
       type
+      bookingType
       name
+      new
+      featured
       price
       formattedPrice
       urlKey
       baseImageUrl
       minimumPrice
       formattedMinimumPrice
-      specialPrice
-      formattedSpecialPrice
+      maximumPrice
+      formattedMaximumPrice
       regularMinimumPrice
       formattedRegularMinimumPrice
+      regularMaximumPrice
+      formattedRegularMaximumPrice
+      specialPrice
+      formattedSpecialPrice
+      bookingProducts {
+        edges {
+          node {
+            type
+            startingPrice
+            formattedStartingPrice
+            startingRegularPrice
+            formattedStartingRegularPrice
+          }
+        }
+      }
       isSaleable
        reviews {
        totalCount
@@ -244,6 +370,7 @@ class ProductQueries {
             title
             comment
             createdAt
+            customerImageUrl
           }
         }
       }
@@ -257,15 +384,35 @@ class ProductQueries {
       _id
       sku
       name
+      new
+      featured
       urlKey
       type
+      bookingType
       baseImageUrl
       price
       formattedPrice
       minimumPrice
       formattedMinimumPrice
+      maximumPrice
+      formattedMaximumPrice
+      regularMinimumPrice
+      formattedRegularMinimumPrice
+      regularMaximumPrice
+      formattedRegularMaximumPrice
       specialPrice
       formattedSpecialPrice
+      bookingProducts {
+        edges {
+          node {
+            type
+            startingPrice
+            formattedStartingPrice
+            startingRegularPrice
+            formattedStartingRegularPrice
+          }
+        }
+      }
       isSaleable
        reviews {
        totalCount
@@ -277,6 +424,7 @@ class ProductQueries {
             title
             comment
             createdAt
+            customerImageUrl
           }
         }
       }
@@ -290,8 +438,10 @@ class ProductQueries {
       _id
       sku
       type
+      bookingType
       name
       urlKey
+      status
       description
       shortDescription
       price
@@ -325,6 +475,7 @@ class ProductQueries {
         }
       }
       reviews {
+        totalCount
         edges {
           node {
             rating
@@ -334,26 +485,21 @@ class ProductQueries {
             comment
             attachments
             createdAt
+            customerImageUrl
           }
         }
       }
       relatedProducts {
         edges {
           node {
-            id
-            _id
-            sku
-            name
-            urlKey
-            type
-            baseImageUrl
-            price
-            formattedPrice
-            minimumPrice
-            formattedMinimumPrice
-            specialPrice
-            formattedSpecialPrice
-            isSaleable
+            ...ProductSection
+          }
+        }
+      }
+      upSells {
+        edges {
+          node {
+            ...ProductSection
           }
         }
       }
@@ -554,6 +700,10 @@ class ProductQueries {
             id
             _id
             type
+            startingPrice
+            formattedStartingPrice
+            startingRegularPrice
+            formattedStartingRegularPrice
             qty
             location
             showLocation
@@ -661,6 +811,7 @@ class ProductQueries {
 
     final typeFields = _typeSpecificDetailedFields(productType);
     return '''
+    $_productSectionFragment
     $_productDetailedCommonFragment
 
     query GetProductByUrlKey(\$urlKey: String!) {
@@ -677,8 +828,10 @@ class ProductQueries {
       _id
       sku
       type
+      bookingType
       name
       urlKey
+      status
       description
       shortDescription
       price
@@ -686,6 +839,12 @@ class ProductQueries {
       baseImageUrl
       minimumPrice
       formattedMinimumPrice
+      maximumPrice
+      formattedMaximumPrice
+      regularMinimumPrice
+      formattedRegularMinimumPrice
+      regularMaximumPrice
+      formattedRegularMaximumPrice
       specialPrice
       formattedSpecialPrice
       isSaleable
@@ -698,6 +857,20 @@ class ProductQueries {
             publicPath
             type
             position
+          }
+        }
+      }
+      reviews {
+        edges {
+          node {
+            rating
+            id
+            name
+            title
+            comment
+            attachments
+            createdAt
+            customerImageUrl
           }
         }
       }
@@ -717,6 +890,10 @@ class ProductQueries {
   static const String _bookingCommonNodeFields = r'''
             _id
             type
+            startingPrice
+            formattedStartingPrice
+            startingRegularPrice
+            formattedStartingRegularPrice
             qty
             location
             showLocation
@@ -897,14 +1074,20 @@ $slotFields
       _id
       sku
       type
+      bookingType
       name
+      new
       urlKey
+      status
       description
       shortDescription
       price
+      formattedPrice
       baseImageUrl
       minimumPrice
+      formattedMinimumPrice
       specialPrice
+      formattedSpecialPrice
       maximumPrice
       formattedMaximumPrice
       regularMinimumPrice
@@ -977,6 +1160,7 @@ $slotFields
         }
       }
       reviews {
+        totalCount
         edges {
           node {
             rating
@@ -986,23 +1170,21 @@ $slotFields
             comment
             attachments
             createdAt
+            customerImageUrl
           }
         }
       }
       relatedProducts {
         edges {
           node {
-            id
-            _id
-            sku
-            name
-            urlKey
-            type
-            baseImageUrl
-            price
-            minimumPrice
-            specialPrice
-            isSaleable
+            ...ProductSection
+          }
+        }
+      }
+      upSells {
+        edges {
+          node {
+            ...ProductSection
           }
         }
       }
@@ -1135,6 +1317,10 @@ $slotFields
             id
             _id
             type
+            startingPrice
+            formattedStartingPrice
+            startingRegularPrice
+            formattedStartingRegularPrice
             qty
             location
             showLocation
@@ -1291,10 +1477,22 @@ $slotFields
     }
   ''';
 
+  /// Status-only lookup -- used to re-validate cached products (e.g. Recently
+  /// Viewed) without paying for the full detailed fragment.
+  static const String getProductStatusByUrlKey = r'''
+    query GetProductStatusByUrlKey($urlKey: String!) {
+      product(urlKey: $urlKey) {
+        urlKey
+        status
+      }
+    }
+  ''';
+
   /// GET_PRODUCT_BY_URL_KEY – single product detail
   /// Source: nextjs-commerce/src/graphql/catelog/queries/Product.ts
   static String getProductByUrlKey =
       '''
+    $_productSectionFragment
     $_productDetailedFragment
 
     query GetProductById(\$urlKey: String!) {
@@ -1328,11 +1526,42 @@ $slotFields
   /// GET_PRODUCT_BY_ID – single product detail by numeric id
   static String getProductById =
       '''
+    $_productSectionFragment
     $_productDetailedFragment
 
     query GetProductById(\$id: ID!) {
       product(id: \$id) {
         ...ProductDetailed
+      }
+    }
+  ''';
+}
+
+class ThemeQueries {
+  /// GET_THEME_CUSTOMIZATION
+  /// Source: nextjs-commerce/src/graphql/theme/queries/ThemeCustomization.ts
+  static const String getThemeCustomization = r'''
+    query themeCustomization($first: Int) {
+      themeCustomizations(first: $first) {
+        edges {
+          node {
+            id
+            type
+            name
+            status
+            sortOrder
+            translations {
+              edges {
+                node {
+                  id
+                  themeCustomizationId
+                  locale
+                  options
+                }
+              }
+            }
+          }
+        }
       }
     }
   ''';
@@ -1374,6 +1603,57 @@ class CartQueries {
       }
     }
   ''';
+
+  /// Cross-sell products for the current cart (Bearer token).
+  static const String getCartCrossSellProducts = r'''
+    query CartCrossSellProducts {
+      cartCrossSellProducts {
+        id
+        _id
+        sku
+        name
+        type
+        bookingType
+        urlKey
+        price
+        formattedPrice
+        minimumPrice
+        formattedMinimumPrice
+        maximumPrice
+        formattedMaximumPrice
+        regularMinimumPrice
+        formattedRegularMinimumPrice
+        regularMaximumPrice
+        formattedRegularMaximumPrice
+        specialPrice
+        formattedSpecialPrice
+        bookingProducts {
+          edges {
+            node {
+              type
+              startingPrice
+              formattedStartingPrice
+              startingRegularPrice
+              formattedStartingRegularPrice
+            }
+          }
+        }
+        new
+        featured
+        isSaleable
+        baseImageUrl
+        reviews {
+          totalCount
+          edges {
+            node {
+              id
+              rating
+            }
+          }
+        }
+      }
+    }
+  ''';
 }
 
 class CartMutations {
@@ -1401,11 +1681,18 @@ class CartMutations {
           cartToken
           subtotal
           formattedSubtotal
+          subTotalInclTax
+          formattedSubTotalInclTax
           itemsCount
           taxAmount
           formattedTaxAmount
+          taxTotal
+          formattedTaxTotal
           shippingAmount
           formattedShippingAmount
+          shippingAmountInclTax
+          formattedShippingAmountInclTax
+          appliedTaxes
           grandTotal
           formattedGrandTotal
           discountAmount
@@ -1420,8 +1707,14 @@ class CartMutations {
                 name
                 price
                 formattedPrice
+                priceInclTax
+                formattedPriceInclTax
                 total
                 formattedTotal
+                totalInclTax
+                formattedTotalInclTax
+                taxAmount
+                baseTaxAmount
                 baseImage
                 sku
                 quantity
@@ -1447,6 +1740,7 @@ class CartMutations {
       $productId: Int!
       $quantity: Int!
       $customizableOptions: Iterable
+      $additional: Iterable
     ) {
       createAddProductInCart(
         input: {
@@ -1454,6 +1748,7 @@ class CartMutations {
           productId: $productId
           quantity: $quantity
           customizableOptions: $customizableOptions
+          additional: $additional
         }
       ) {
         addProductInCart {
@@ -1627,12 +1922,19 @@ class CartMutations {
           itemsCount
           taxAmount
           formattedTaxAmount
+          taxTotal
+          formattedTaxTotal
+          appliedTaxes
           grandTotal
           formattedGrandTotal
           shippingAmount
           formattedShippingAmount
+          shippingAmountInclTax
+          formattedShippingAmountInclTax
           subtotal
           formattedSubtotal
+          subTotalInclTax
+          formattedSubTotalInclTax
           discountAmount
           formattedDiscountAmount
           couponCode
@@ -1647,8 +1949,14 @@ class CartMutations {
                 name
                 price
                 formattedPrice
+                priceInclTax
+                formattedPriceInclTax
                 total
                 formattedTotal
+                totalInclTax
+                formattedTotalInclTax
+                taxAmount
+                baseTaxAmount
                 baseImage
                 sku
                 quantity
@@ -1681,6 +1989,8 @@ class CartMutations {
           id
           taxAmount
           formattedTaxAmount
+          taxTotal
+          formattedTaxTotal
           shippingAmount
           formattedShippingAmount
           subtotal
@@ -1732,6 +2042,8 @@ class CartMutations {
           cartToken
           taxAmount
           formattedTaxAmount
+          taxTotal
+          formattedTaxTotal
           shippingAmount
           formattedShippingAmount
           subtotal
@@ -1781,12 +2093,19 @@ class CartMutations {
           formattedDiscountAmount
           subtotal
           formattedSubtotal
+          subTotalInclTax
+          formattedSubTotalInclTax
           grandTotal
           formattedGrandTotal
           taxAmount
           formattedTaxAmount
+          taxTotal
+          formattedTaxTotal
           shippingAmount
           formattedShippingAmount
+          shippingAmountInclTax
+          formattedShippingAmountInclTax
+          appliedTaxes
           itemsQty
           items {
             edges {
@@ -1826,12 +2145,19 @@ class CartMutations {
           formattedDiscountAmount
           subtotal
           formattedSubtotal
+          subTotalInclTax
+          formattedSubTotalInclTax
           grandTotal
           formattedGrandTotal
           taxAmount
           formattedTaxAmount
+          taxTotal
+          formattedTaxTotal
           shippingAmount
           formattedShippingAmount
+          shippingAmountInclTax
+          formattedShippingAmountInclTax
+          appliedTaxes
           itemsQty
           items {
             edges {
@@ -1869,6 +2195,8 @@ class CartMutations {
           cartToken
           taxAmount
           formattedTaxAmount
+          taxTotal
+          formattedTaxTotal
           subtotal
           formattedSubtotal
           shippingAmount
@@ -1904,6 +2232,35 @@ class CartMutations {
           success
           message
           sessionToken
+        }
+      }
+    }
+  ''';
+
+  /// CREATE_ESTIMATE_SHIPPING – estimates shipping rates & tax for destination.
+  /// If [shippingMethod] is passed, also selects it and recalculates totals.
+  static const String createEstimateShipping =
+      r'''
+    mutation CreateEstimateShipping(
+      $country: String!
+      $state: String
+      $postcode: String
+      $shippingMethod: String
+    ) {
+      createEstimateShipping(
+        input: {
+          country: $country
+          state: $state
+          postcode: $postcode
+          shippingMethod: $shippingMethod
+        }
+      ) {
+        estimateShipping {
+''' +
+      _cartResultFields +
+      r'''
+          shippingMethods
+          selectedShippingRate
         }
       }
     }

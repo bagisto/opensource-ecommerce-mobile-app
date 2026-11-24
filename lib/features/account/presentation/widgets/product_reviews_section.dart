@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../../../core/constants/asset_constants.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../product/presentation/pages/product_detail_page.dart';
@@ -51,9 +52,7 @@ class ProductReviewsSection extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: SectionHeader(
               title: l10n.accountProductReviews,
-              onViewAll: reviews.isNotEmpty
-                  ? onViewAll
-                  : null,
+              onViewAll: reviews.isNotEmpty ? onViewAll : null,
             ),
           ),
           const SizedBox(height: 2),
@@ -65,17 +64,18 @@ class ProductReviewsSection extends StatelessWidget {
               child: Column(
                 children: reviews
                     .take(3)
-                    .map((review) => Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: GestureDetector(
-                            behavior: HitTestBehavior.opaque,
-                            onTap: onReviewTap == null ||
-                                    review.productId == null
-                                ? null
-                                : () => onReviewTap!(review),
-                            child: _buildReviewCard(context, review),
-                          ),
-                        ))
+                    .map(
+                      (review) => Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: onReviewTap == null || review.productId == null
+                              ? null
+                              : () => onReviewTap!(review),
+                          child: _buildReviewCard(context, review),
+                        ),
+                      ),
+                    )
                     .toList(),
               ),
             ),
@@ -115,7 +115,6 @@ class ProductReviewsSection extends StatelessWidget {
 
   Widget _buildReviewCard(BuildContext context, ProductReview review) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       width: double.infinity,
@@ -130,18 +129,17 @@ class ProductReviewsSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Product info row
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Product image
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: Container(
                   width: 62,
                   height: 62,
                   color: isDark ? AppColors.neutral700 : AppColors.neutral200,
-                  child: review.productImageUrl != null
+                  child: review.productImageUrl != null &&
+                          review.productImageUrl!.isNotEmpty
                       ? CachedNetworkImage(
                           imageUrl: review.productImageUrl!,
                           fit: BoxFit.cover,
@@ -155,121 +153,65 @@ class ProductReviewsSection extends StatelessWidget {
                               ),
                             ),
                           ),
-                          errorWidget: (_, _, _) => Icon(
-                            Icons.star_outline,
-                            color: isDark
-                                ? AppColors.neutral500
-                                : AppColors.neutral400,
+                          errorWidget: (_, _, _) => Image.asset(
+                            AppAssets.productPlaceholder,
+                            fit: BoxFit.cover,
                           ),
                         )
-                      : Icon(
-                          Icons.star_outline,
-                          color: isDark
-                              ? AppColors.neutral500
-                              : AppColors.neutral400,
+                      : Image.asset(
+                          AppAssets.productPlaceholder,
+                          fit: BoxFit.cover,
                         ),
                 ),
               ),
               const SizedBox(width: 10),
-              // Product name
               Expanded(
-                child: Text(
-                  review.productName ?? l10n.productDefaultName,
-                  style: TextStyle(
-                    fontFamily: 'Roboto',
-                    fontWeight: FontWeight.w500,
-                    fontSize: 16,
-                    color: isDark
-                        ? AppColors.neutral200
-                        : AppColors.neutral900,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          // Status + Rating row + date
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Status badge + rating badge row
-              Row(
-                children: [
-                  // Status badge
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: review.isApproved
-                          ? const Color(0xFFD4EDDA)
-                          : const Color(0xFFFFF3CD),
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(
-                        color: review.isApproved
-                            ? const Color(0xFFC3E6CB)
-                            : const Color(0xFFFFECB5),
-                      ),
-                    ),
-                    child: Text(
-                      review.statusLabel,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      review.title,
                       style: TextStyle(
                         fontFamily: 'Roboto',
-                        fontWeight: FontWeight.w500,
-                        fontSize: 12,
-                        color: review.isApproved
-                            ? const Color(0xFF155724)
-                            : const Color(0xFF856404),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  _buildRatingBadge(review.rating),
-                  const SizedBox(width: 6),
-                  Flexible(
-                    child: Text(
-                      review.ratingLabel,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontFamily: 'Roboto',
-                        fontWeight: FontWeight.w500,
-                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
                         color: isDark
                             ? AppColors.neutral200
                             : AppColors.neutral900,
                       ),
                     ),
-                  ),
-                ],
-              ),
-              // Date text below badges
-              if (review.formattedDate.isNotEmpty) ...[
-                const SizedBox(height: 4),
-                Text(
-                  l10n.accountPostedOn(review.formattedDate),
-                  style: TextStyle(
-                    fontFamily: 'Roboto',
-                    fontWeight: FontWeight.w400,
-                    fontSize: 13,
-                    color: isDark ? AppColors.neutral400 : AppColors.neutral500,
-                  ),
+                    if (review.formattedDateTime.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        review.formattedDateTime,
+                        style: TextStyle(
+                          fontFamily: 'Roboto',
+                          fontSize: 13,
+                          color: isDark
+                              ? AppColors.neutral400
+                              : AppColors.neutral700,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 8),
+                    Row(
+                      children: List.generate(
+                        5,
+                        (index) => Icon(
+                          Icons.star,
+                          size: 18,
+                          color: index < review.rating
+                              ? const Color(0xFFFF9800)
+                              : AppColors.neutral500,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ],
           ),
-          const SizedBox(height: 12),
-          // Review title
-          Text(
-            review.title,
-            style: TextStyle(
-              fontFamily: 'Roboto',
-              fontWeight: FontWeight.w500,
-              fontSize: 14,
-              color: isDark ? AppColors.neutral200 : AppColors.neutral900,
-            ),
-          ),
           const SizedBox(height: 8),
-          // Review comment
           Text(
             review.comment,
             style: TextStyle(
@@ -280,35 +222,6 @@ class ProductReviewsSection extends StatelessWidget {
             ),
             maxLines: 4,
             overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRatingBadge(int rating) {
-    return Container(
-      padding: const EdgeInsets.only(left: 4, right: 6, top: 4, bottom: 4),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFE9A00),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(
-            Icons.star,
-            size: 16,
-            color: AppColors.white,
-          ),
-          Text(
-            rating.toStringAsFixed(1),
-            style: const TextStyle(
-              fontFamily: 'Roboto',
-              fontWeight: FontWeight.w700,
-              fontSize: 14,
-              color: AppColors.white,
-            ),
           ),
         ],
       ),

@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/widgets/channel_logo.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../bloc/auth_bloc.dart';
 import 'forgot_password_page.dart';
 import 'sign_up_page.dart';
-import '../../../../core/widgets/app_back_button.dart';
 import '../auth_redirect.dart';
+import '../../../../core/widgets/app_back_button.dart';
 
 /// Login page for existing customers
 /// Figma: authentication flow — login screen
@@ -32,8 +31,8 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController(text: 'pauldoe@example.com');
-  final _passwordController = TextEditingController(text: 'admin123');
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   bool _obscurePassword = true;
 
   @override
@@ -368,14 +367,9 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget _buildLogo(bool isDark) {
-    return Center(
+    return const Center(
       child: ChannelLogo(
-        height: 60,
-        fallback: SvgPicture.asset(
-          'assets/images/bagisto_logo.svg',
-          height: 60,
-          width: 60,
-        ),
+        height: 38,
       ),
     );
   }

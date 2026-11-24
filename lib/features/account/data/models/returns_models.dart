@@ -60,6 +60,68 @@ String _formatDate(String? raw) {
   }
 }
 
+/// Formatted full date-time: "October 5, 2026, 11:29:18 AM"
+String _formatFullDateTime(String? raw) {
+  if (raw == null || raw.isEmpty) return '';
+  try {
+    final date = DateTime.parse(raw).toLocal();
+    const months = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
+    final month = months[date.month - 1];
+    final day = date.day;
+    final year = date.year;
+    final hour12 = date.hour % 12 == 0 ? 12 : date.hour % 12;
+    final minute = date.minute.toString().padLeft(2, '0');
+    final second = date.second.toString().padLeft(2, '0');
+    final amPm = date.hour >= 12 ? 'PM' : 'AM';
+    return '$month $day, $year, $hour12:$minute:$second $amPm';
+  } catch (_) {
+    return raw;
+  }
+}
+
+/// Formatted conversation timestamp: "05-Oct-2026 18:37"
+String _formatConversationDateTime(String? raw) {
+  if (raw == null || raw.isEmpty) return '';
+  try {
+    final date = DateTime.parse(raw).toLocal();
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    final day = date.day.toString().padLeft(2, '0');
+    final month = months[date.month - 1];
+    final year = date.year;
+    final hour = date.hour.toString().padLeft(2, '0');
+    final minute = date.minute.toString().padLeft(2, '0');
+    return '$day-$month-$year $hour:$minute';
+  } catch (_) {
+    return raw;
+  }
+}
+
 // ─── Return Item Info (item snapshot inside a return) ───
 
 class ReturnItemInfo extends Equatable {
@@ -234,6 +296,9 @@ class CustomerReturn extends Equatable {
 
   /// Formatted date: "8 Oct 2025"
   String get formattedDate => _formatDate(createdAt);
+
+  /// Formatted full date-time: "October 5, 2026, 11:29:18 AM"
+  String get formattedDateTime => _formatFullDateTime(createdAt);
 
   /// Whether the display status describes a completed or rejected return.
   bool get isTerminal {
@@ -421,6 +486,25 @@ class ReturnMessage extends Equatable {
 
   /// Formatted date: "8 Oct 2025"
   String get formattedDate => _formatDate(createdAt);
+
+  /// Formatted conversation date time: "05-Oct-2026 18:37"
+  String get formattedDateTime => _formatConversationDateTime(createdAt);
+
+  /// Whether message has an attachment
+  bool get hasAttachment =>
+      (attachment != null && attachment!.isNotEmpty) ||
+      (attachmentUrl != null && attachmentUrl!.isNotEmpty);
+
+  /// Whether the attachment is an image file
+  bool get isImageAttachment {
+    if (!hasAttachment) return false;
+    final lower = (attachmentUrl ?? attachment ?? '').toLowerCase();
+    return lower.endsWith('.png') ||
+        lower.endsWith('.jpg') ||
+        lower.endsWith('.jpeg') ||
+        lower.endsWith('.webp') ||
+        lower.endsWith('.gif');
+  }
 
   @override
   List<Object?> get props => [

@@ -5,10 +5,10 @@ tags:
   - regression
   - android
 env:
-  SIGNUP_FIRST_NAME: "Demo"
+  SIGNUP_FIRST_NAME: "QA"
   SIGNUP_LAST_NAME: "User"
-  SIGNUP_EMAIL_PREFIX: "demo.signup"
-  NEW_USER_PASSWORD: "ExamplePass123!"
+  SIGNUP_EMAIL_PREFIX: "qa.signup"
+  NEW_USER_PASSWORD: "Passw0rd!"
 ---
 # Selector rule: keep this flow label-based only.
 # Run this after a clean app open so the guest home screen is visible.

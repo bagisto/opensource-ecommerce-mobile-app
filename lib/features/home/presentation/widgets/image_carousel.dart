@@ -75,9 +75,16 @@ class _ImageCarouselState extends State<ImageCarousel> {
   }
 
   String _bannerUrl(BannerImage banner) {
+    // The whole base, not just its origin. A banner arrives as a path
+    // relative to the install — `storage/theme/1/x.webp` — and an install
+    // under a sub-path needs that sub-path kept: dropping it asks
+    // `host/storage/...`, which this server answers with an HTML page rather
+    // than a 404, so the image decode fails and the banner shows as broken.
+    // The two are identical on an install at the domain root, which is why
+    // it went unnoticed.
     final effectiveBaseUrl = widget.baseUrl.isNotEmpty
         ? widget.baseUrl
-        : bagistoPublicBaseUrl;
+        : ApiEnv.base;
     return banner.fullImageUrl(effectiveBaseUrl);
   }
 
@@ -95,56 +102,60 @@ class _ImageCarouselState extends State<ImageCarousel> {
 
         return Column(
           children: [
-            SizedBox(
-              height: carouselHeight,
-              child: PageView.builder(
-                controller: _pageController,
-                itemCount: widget.images.length,
-                onPageChanged: (index) {
-                  setState(() => _currentPage = index);
-                },
-                itemBuilder: (context, index) {
-                  final banner = widget.images[index];
-                  final url = _bannerUrl(banner);
-                  final onTap =
-                      banner.linkSlug != null && widget.onBannerTap != null
-                      ? () => widget.onBannerTap!(banner)
-                      : null;
-                  return GestureDetector(
-                    key: ValueKey('home_banner_$index'),
-                    onTap: onTap,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: _horizontalPadding,
-                      ),
-                      child: ClipRRect(
-                        key: const ValueKey('home_banner_image_area'),
-                        borderRadius: BorderRadius.circular(12),
-                        child: ColoredBox(
-                          color: isDark
-                              ? AppColors.neutral800
-                              : AppColors.neutral100,
-                          child: Image.network(
-                            url,
-                            fit: BoxFit.contain,
-                            width: double.infinity,
-                            height: double.infinity,
-                            errorBuilder: (context, error, stackTrace) =>
-                                Center(
-                                  child: Icon(
-                                    Icons.image_outlined,
-                                    size: 48,
-                                    color: isDark
-                                        ? AppColors.neutral500
-                                        : AppColors.neutral400,
+            AnimatedSize(
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeInOut,
+              child: SizedBox(
+                height: carouselHeight,
+                child: PageView.builder(
+                  controller: _pageController,
+                  itemCount: widget.images.length,
+                  onPageChanged: (index) {
+                    setState(() => _currentPage = index);
+                  },
+                  itemBuilder: (context, index) {
+                    final banner = widget.images[index];
+                    final url = _bannerUrl(banner);
+                    final onTap =
+                        banner.linkSlug != null && widget.onBannerTap != null
+                        ? () => widget.onBannerTap!(banner)
+                        : null;
+                    return GestureDetector(
+                      key: ValueKey('home_banner_$index'),
+                      onTap: onTap,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: _horizontalPadding,
+                        ),
+                        child: ClipRRect(
+                          key: const ValueKey('home_banner_image_area'),
+                          borderRadius: BorderRadius.circular(12),
+                          child: ColoredBox(
+                            color: isDark
+                                ? AppColors.neutral800
+                                : AppColors.neutral100,
+                            child: Image.network(
+                              url,
+                              fit: BoxFit.contain,
+                              width: double.infinity,
+                              height: double.infinity,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Center(
+                                    child: Icon(
+                                      Icons.image_outlined,
+                                      size: 48,
+                                      color: isDark
+                                          ? AppColors.neutral500
+                                          : AppColors.neutral400,
+                                    ),
                                   ),
-                                ),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
             ),
             if (widget.images.length > 1) ...[

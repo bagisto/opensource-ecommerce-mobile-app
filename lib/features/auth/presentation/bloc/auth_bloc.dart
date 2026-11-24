@@ -37,9 +37,6 @@ class AuthRegisterRequested extends AuthEvent {
   final String password;
   final String confirmPassword;
   final String? deviceToken;
-
-  /// Subscribe the new account to the newsletter. Sent only when the store
-  /// has the newsletter enabled (`storeConfig.newsletterEnabled`).
   final bool subscribeToNewsletter;
 
   const AuthRegisterRequested({
@@ -255,9 +252,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
       debugPrint('✅ Registration successful — ${customer.displayName}');
 
-      // If the API returns a token, auto-login
+      // If the API returns a token, auto-login — but only once the server
+      // has actually marked the account verified. It may issue a token
+      // alongside isVerified: "0" when the admin requires email
+      // verification, and auto-logging in on that token would let an
+      // unverified customer straight past the check.
       final token = customer.token ?? customer.apiToken ?? '';
-      if (token.isNotEmpty) {
+      if (token.isNotEmpty && customer.isVerified != '0') {
         await AuthStorage.saveToken(token);
         await AuthStorage.saveUserInfo(
           name: customer.displayName,
@@ -271,6 +272,19 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             userEmail: customer.email,
             userId: customer.id,
             deviceToken: deviceToken,
+          ),
+        );
+      } else if (token.isNotEmpty) {
+        // A token came back, but the account is not verified — the account
+        // was created, but do not sign the customer in. Reusing
+        // AuthRegistrationSuccess (rather than AuthError) gets the same
+        // green toast + navigate-to-login handling the no-token branch
+        // below already has, which also clears the form for free by
+        // replacing this page.
+        emit(
+          const AuthRegistrationSuccess(
+            message:
+                'Registration successful! Verify your email account first.',
           ),
         );
       } else {

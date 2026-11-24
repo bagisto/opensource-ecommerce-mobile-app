@@ -4,9 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import '../../../../core/error/error_mapper.dart';
 import '../../../../core/graphql/graphql_client.dart';
+import '../../../../core/graphql/checkout_queries.dart';
 import '../../../../core/graphql/queries.dart';
+import '../../../checkout/data/models/checkout_model.dart';
 import '../../../product/domain/models/customizable_file_selection.dart';
 
+import '../../../category/data/models/product_model.dart';
 import '../models/cart_model.dart';
 
 class AddToCartRequest {
@@ -537,5 +540,125 @@ class CartRepository {
 
     debugPrint('[CartRepo] mergeCart success: ${data['message']}');
     return CartModel.fromJson(data as Map<String, dynamic>);
+  }
+
+  /// Estimate shipping rates and tax for the given destination.
+  /// If [shippingMethod] is provided, selects that shipping method on the cart.
+  Future<EstimateShippingResult> estimateShipping({
+    required String country,
+    String? state,
+    String? postcode,
+    String? shippingMethod,
+  }) async {
+    debugPrint(
+      '[CartRepo] estimateShipping: country=$country, state=$state, zip=$postcode, method=$shippingMethod',
+    );
+    final variables = <String, dynamic>{
+      'country': country,
+      if (state != null && state.isNotEmpty) 'state': state,
+      if (postcode != null && postcode.isNotEmpty) 'postcode': postcode,
+      if (shippingMethod != null && shippingMethod.isNotEmpty)
+        'shippingMethod': shippingMethod,
+    };
+
+    final result = await _authedClient.mutate(
+      MutationOptions(
+        document: gql(CartMutations.createEstimateShipping),
+        variables: variables,
+        fetchPolicy: FetchPolicy.noCache,
+      ),
+    );
+
+    if (result.hasException) {
+      debugPrint('[CartRepo] estimateShipping error: ${result.exception}');
+      throw result.exception!;
+    }
+
+    final data = result.data?['createEstimateShipping']?['estimateShipping'];
+    if (data == null) {
+      throw Exception('Failed to estimate shipping');
+    }
+
+    final cart = CartModel.fromJson(data as Map<String, dynamic>);
+    final rawMethods = data['shippingMethods'];
+    final shippingMethods = <ShippingRate>[];
+    if (rawMethods is List) {
+      for (final m in rawMethods) {
+        if (m is Map<String, dynamic>) {
+          shippingMethods.add(ShippingRate.fromJson(m));
+        }
+      }
+    }
+
+    final selectedRate = data['selectedShippingRate']?.toString();
+
+    return EstimateShippingResult(
+      cart: cart,
+      shippingMethods: shippingMethods,
+      selectedShippingRate: selectedRate,
+    );
+  }
+
+  /// Get available countries for the shipping estimator.
+  Future<List<BagistoCountry>> getCountries() async {
+    final result = await _authedClient.query(
+      QueryOptions(
+        document: gql(CheckoutQueries.getCountries),
+        fetchPolicy: FetchPolicy.cacheFirst,
+      ),
+    );
+    if (result.hasException) {
+      debugPrint('[CartRepo] getCountries error: ${result.exception}');
+      return const [];
+    }
+    final edges = result.data?['countries']?['edges'] as List<dynamic>? ?? [];
+    return edges
+        .map<BagistoCountry>((edge) => BagistoCountry.fromJson(edge['node']))
+        .toList()
+      ..sort((a, b) => a.name.compareTo(b.name));
+  }
+
+  /// Get states for a selected country.
+  Future<List<BagistoCountryState>> getCountryStates(int countryId) async {
+    final result = await _authedClient.query(
+      QueryOptions(
+        document: gql(CheckoutQueries.getCountryStates),
+        variables: {'countryId': countryId, 'first': 250},
+        fetchPolicy: FetchPolicy.cacheFirst,
+      ),
+    );
+    if (result.hasException) {
+      debugPrint('[CartRepo] getCountryStates error: ${result.exception}');
+      return const [];
+    }
+    final edges =
+        result.data?['countryStates']?['edges'] as List<dynamic>? ?? [];
+    return edges
+        .map<BagistoCountryState>(
+          (edge) => BagistoCountryState.fromJson(edge['node']),
+        )
+        .toList()
+      ..sort((a, b) => a.defaultName.compareTo(b.defaultName));
+  }
+
+  /// Get cross-sell products for the current cart.
+  Future<List<ProductModel>> getCartCrossSellProducts() async {
+    final result = await _authedClient.query(
+      QueryOptions(
+        document: gql(CartQueries.getCartCrossSellProducts),
+        fetchPolicy: FetchPolicy.noCache,
+      ),
+    );
+    if (result.hasException) {
+      debugPrint(
+        '[CartRepo] getCartCrossSellProducts error: ${result.exception}',
+      );
+      return const [];
+    }
+    final list = result.data?['cartCrossSellProducts'] as List<dynamic>? ?? [];
+    return list
+        .whereType<Map<String, dynamic>>()
+        .map((j) => ProductModel.fromJson(j))
+        .toList();
   }
 }

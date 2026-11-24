@@ -73,3 +73,15 @@ class ReviewAttachment extends Equatable {
   @override
   List<Object?> get props => [type, url];
 }
+
+/// A review id reduced to its number, so ids from different queries match.
+///
+/// The server hands the same review out under two IRIs: the product's own
+/// `reviews` connection says `/api/shop/reviews/17` while `productReviews`
+/// says `/theme/api-4.9/public/api/shop/reviews/17`. Only the trailing
+/// number is dependable, so that is what the media is keyed by.
+String reviewIdKey(Object? raw) {
+  final text = raw?.toString() ?? '';
+  final match = RegExp(r'(\d+)\s*$').firstMatch(text.trim());
+  return match?.group(1) ?? text.trim();
+}

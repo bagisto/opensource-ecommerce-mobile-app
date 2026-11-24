@@ -1,19 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/app_back_button.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../data/models/account_models.dart';
-import '../../../../core/widgets/app_back_button.dart';
 
 /// CMS Page Detail Page
 /// Displays the full content of a CMS page with HTML rendering
 class CmsPageDetailPage extends StatelessWidget {
   final CmsPage page;
 
-  const CmsPageDetailPage({
-    super.key,
-    required this.page,
-  });
+  const CmsPageDetailPage({super.key, required this.page});
 
   @override
   Widget build(BuildContext context) {
@@ -86,10 +83,7 @@ class CmsPageDetailPage extends StatelessWidget {
                   fontFamily: 'Roboto',
                   lineHeight: LineHeight.percent(160),
                 ),
-                'p': Style(
-                  margin: Margins.only(bottom: 12),
-                  color: textColor,
-                ),
+                'p': Style(margin: Margins.only(bottom: 12), color: textColor),
                 'h1': Style(
                   fontSize: FontSize(28.0),
                   fontWeight: FontWeight.bold,
@@ -120,12 +114,8 @@ class CmsPageDetailPage extends StatelessWidget {
                   color: textColor,
                   margin: Margins.symmetric(vertical: 8),
                 ),
-                'ul': Style(
-                  margin: Margins.symmetric(vertical: 12),
-                ),
-                'li': Style(
-                  margin: Margins.only(bottom: 8),
-                ),
+                'ul': Style(margin: Margins.symmetric(vertical: 12)),
+                'li': Style(margin: Margins.only(bottom: 8)),
                 'a': Style(
                   color: AppColors.primary500,
                   textDecoration: TextDecoration.underline,
@@ -153,7 +143,9 @@ class CmsPageDetailPage extends StatelessWidget {
                         fontFamily: 'Roboto',
                         fontWeight: FontWeight.w500,
                         fontSize: 12,
-                        color: isDark ? AppColors.neutral300 : AppColors.neutral600,
+                        color: isDark
+                            ? AppColors.neutral300
+                            : AppColors.neutral600,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -163,27 +155,14 @@ class CmsPageDetailPage extends StatelessWidget {
                         fontFamily: 'Roboto',
                         fontWeight: FontWeight.w400,
                         fontSize: 13,
-                        color: isDark ? AppColors.neutral400 : AppColors.neutral500,
+                        color: isDark
+                            ? AppColors.neutral400
+                            : AppColors.neutral500,
                       ),
                     ),
                   ],
                 ),
               ),
-
-            const SizedBox(height: 16),
-
-            // Page ID display (for debugging/reference)
-            Center(
-              child: Text(
-                l10n.accountPageId(page.pageId),
-                style: TextStyle(
-                  fontFamily: 'Roboto',
-                  fontWeight: FontWeight.w400,
-                  fontSize: 11,
-                  color: isDark ? AppColors.neutral500 : AppColors.neutral400,
-                ),
-              ),
-            ),
           ],
         ),
       ),

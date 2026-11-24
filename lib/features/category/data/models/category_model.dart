@@ -9,6 +9,7 @@ class CategoryModel {
   final String? logoUrl;
   final String? bannerUrl;
   final String? status;
+  final String? displayMode;
   final CategoryTranslation? translation;
   final List<CategoryModel> children;
 
@@ -20,6 +21,7 @@ class CategoryModel {
     this.logoUrl,
     this.bannerUrl,
     this.status,
+    this.displayMode,
     this.translation,
     this.children = const [],
   });
@@ -53,6 +55,11 @@ class CategoryModel {
     return value == '1' || value == 'true';
   }
 
+  /// The system-level Bagisto root category -- never customer-facing.
+  /// Identified by slug rather than a hardcoded id, since category ids
+  /// aren't guaranteed to be 1 on every install.
+  bool get isRoot => slug.toLowerCase() == 'root';
+
   /// Factory for treeCategories response
   factory CategoryModel.fromTreeJson(Map<String, dynamic> json) {
     // Parse children from cursor connection format: { edges: [{ node: {...} }] }
@@ -63,24 +70,28 @@ class CategoryModel {
       if (edges != null) {
         childrenList = edges
             .where((e) => e['node'] != null)
-            .map((e) =>
-                CategoryModel.fromTreeJson(e['node'] as Map<String, dynamic>))
-            .where((child) => child.isActive)
+            .map(
+              (e) =>
+                  CategoryModel.fromTreeJson(e['node'] as Map<String, dynamic>),
+            )
+            .where((cat) => cat.isActive)
             .toList();
       }
     }
 
     return CategoryModel(
       id: json['id']?.toString() ?? '',
-      numericId: _parseInt(json['_id']),
-      position: _parseInt(json['position']),
+      numericId: _parseIntValue(json['_id']),
+      position: _parseIntValue(json['position']),
       logoPath: json['logoPath'] as String?,
       logoUrl: json['logoUrl'] as String?,
       bannerUrl: json['bannerUrl'] as String?,
       status: json['status']?.toString(),
+      displayMode: json['displayMode'] as String?,
       translation: json['translation'] != null
           ? CategoryTranslation.fromJson(
-              json['translation'] as Map<String, dynamic>)
+              json['translation'] as Map<String, dynamic>,
+            )
           : null,
       children: childrenList,
     );
@@ -90,13 +101,15 @@ class CategoryModel {
   factory CategoryModel.fromHomeCategoryJson(Map<String, dynamic> json) {
     return CategoryModel(
       id: json['id']?.toString() ?? '',
-      numericId: _parseInt(json['_id']),
+      numericId: _parseIntValue(json['_id']),
       logoUrl: json['logoUrl'] as String?,
-      position: _parseInt(json['position']),
+      position: _parseIntValue(json['position']),
       status: json['status']?.toString(),
+      displayMode: json['displayMode'] as String?,
       translation: json['translation'] != null
           ? CategoryTranslation.fromJson(
-              json['translation'] as Map<String, dynamic>)
+              json['translation'] as Map<String, dynamic>,
+            )
           : null,
     );
   }
@@ -131,8 +144,9 @@ class CategoryTranslation {
   }
 }
 
-
-int? _parseInt(dynamic value) {
+/// An id or position the API may send as a number or as text. A bare cast
+/// throws on the string form and takes the whole screen down with it.
+int? _parseIntValue(dynamic value) {
   if (value == null) return null;
   if (value is int) return value;
   if (value is num) return value.toInt();

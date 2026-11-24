@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import '../../../../core/error/error_mapper.dart';
+import '../../data/models/account_models.dart';
 import '../../data/models/returns_models.dart';
 import '../../data/repository/account_repository.dart';
 
@@ -36,10 +37,18 @@ class LoadReturnMessages extends ReturnDetailEvent {
 class SendReturnMessage extends ReturnDetailEvent {
   final int returnId;
   final String message;
-  const SendReturnMessage({required this.returnId, required this.message});
+  final String? attachment;
+  final String? attachmentName;
+
+  const SendReturnMessage({
+    required this.returnId,
+    required this.message,
+    this.attachment,
+    this.attachmentName,
+  });
 
   @override
-  List<Object?> get props => [returnId, message];
+  List<Object?> get props => [returnId, message, attachment, attachmentName];
 }
 
 /// Cancel the return request
@@ -84,6 +93,8 @@ enum ReturnAction { none, canceling, closing, reopening }
 class ReturnDetailState extends Equatable {
   final ReturnDetailStatus status;
   final CustomerReturn? returnDetail;
+  final OrderDetail? orderDetail;
+  final String? customerName;
   final List<ReturnMessage> messages;
   final bool messagesLoading;
   final bool sendingMessage;
@@ -94,6 +105,8 @@ class ReturnDetailState extends Equatable {
   const ReturnDetailState({
     this.status = ReturnDetailStatus.initial,
     this.returnDetail,
+    this.orderDetail,
+    this.customerName,
     this.messages = const [],
     this.messagesLoading = false,
     this.sendingMessage = false,
@@ -105,6 +118,8 @@ class ReturnDetailState extends Equatable {
   ReturnDetailState copyWith({
     ReturnDetailStatus? status,
     CustomerReturn? returnDetail,
+    OrderDetail? orderDetail,
+    String? customerName,
     List<ReturnMessage>? messages,
     bool? messagesLoading,
     bool? sendingMessage,
@@ -115,6 +130,8 @@ class ReturnDetailState extends Equatable {
     return ReturnDetailState(
       status: status ?? this.status,
       returnDetail: returnDetail ?? this.returnDetail,
+      orderDetail: orderDetail ?? this.orderDetail,
+      customerName: customerName ?? this.customerName,
       messages: messages ?? this.messages,
       messagesLoading: messagesLoading ?? this.messagesLoading,
       sendingMessage: sendingMessage ?? this.sendingMessage,
@@ -128,6 +145,8 @@ class ReturnDetailState extends Equatable {
   List<Object?> get props => [
     status,
     returnDetail,
+    orderDetail,
+    customerName,
     messages,
     messagesLoading,
     sendingMessage,
@@ -179,10 +198,29 @@ class ReturnDetailBloc extends Bloc<ReturnDetailEvent, ReturnDetailState> {
 
     try {
       final detail = await repository.getCustomerReturn(event.returnId);
+      OrderDetail? orderDetail;
+      if (detail.orderId != null) {
+        try {
+          orderDetail = await repository.getCustomerOrder(detail.orderId!);
+        } catch (e) {
+          debugPrint('⚠️ Could not fetch order detail for RMA: $e');
+        }
+      }
+      String? customerName = state.customerName;
+      if (customerName == null) {
+        try {
+          final profile = await repository.getCustomerProfile();
+          if (profile.displayName.isNotEmpty) {
+            customerName = profile.displayName;
+          }
+        } catch (_) {}
+      }
       emit(
         state.copyWith(
           status: ReturnDetailStatus.loaded,
           returnDetail: detail,
+          orderDetail: orderDetail,
+          customerName: customerName,
         ),
       );
     } catch (e) {
@@ -228,6 +266,8 @@ class ReturnDetailBloc extends Bloc<ReturnDetailEvent, ReturnDetailState> {
       final sent = await repository.sendReturnMessage(
         returnId: event.returnId,
         message: text,
+        attachment: event.attachment,
+        attachmentName: event.attachmentName,
       );
       emit(
         state.copyWith(

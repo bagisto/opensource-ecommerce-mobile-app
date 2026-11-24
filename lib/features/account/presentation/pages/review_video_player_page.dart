@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -14,9 +16,9 @@ class ReviewVideoPlayerPage extends StatefulWidget {
     : assert((url == null) != (file == null));
 
   static Future<void> navigate(BuildContext context, String url) {
-    return Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => ReviewVideoPlayerPage(url: url)),
-    );
+    return Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => ReviewVideoPlayerPage(url: url)));
   }
 
   /// Play a picked (not yet uploaded) video.
@@ -33,6 +35,9 @@ class ReviewVideoPlayerPage extends StatefulWidget {
 class _ReviewVideoPlayerPageState extends State<ReviewVideoPlayerPage> {
   late VideoPlayerController _controller;
   bool _hasError = false;
+
+  /// The local copy made by [_playFromDownload], removed on the way out.
+  File? _downloaded;
 
   @override
   void initState() {
@@ -54,7 +59,51 @@ class _ReviewVideoPlayerPageState extends State<ReviewVideoPlayerPage> {
     } catch (e) {
       debugPrint('🎬 ReviewVideoPlayerPage load error: $e');
       if (!mounted || controller != _controller) return;
+      if (await _playFromDownload()) return;
+      if (!mounted || controller != _controller) return;
       setState(() => _hasError = true);
+    }
+  }
+
+  /// Plays the video from a local copy when streaming it refuses to start.
+  ///
+  /// Review videos are served as `application/octet-stream` under a
+  /// `.quicktime` name, with `X-Content-Type-Options: nosniff`, so the player
+  /// cannot tell it is a movie at all. Saved under the extension its own
+  /// header says, the very same bytes play.
+  Future<bool> _playFromDownload() async {
+    final url = widget.url;
+    if (url == null || _downloaded != null) return false;
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode != 200 || response.bodyBytes.isEmpty) {
+        return false;
+      }
+      final directory = await getTemporaryDirectory();
+      final file = File(
+        '${directory.path}/review_video_'
+        '${DateTime.now().microsecondsSinceEpoch}'
+        '${debugVideoExtensionFor(response.bodyBytes)}',
+      );
+      await file.writeAsBytes(response.bodyBytes);
+      if (!mounted) {
+        await file.delete().catchError((_) => file);
+        return false;
+      }
+
+      _downloaded = file;
+      final previous = _controller;
+      final controller = VideoPlayerController.file(file);
+      setState(() => _controller = controller);
+      await previous.dispose();
+      await controller.initialize();
+      if (!mounted || controller != _controller) return false;
+      await controller.play();
+      setState(() => _hasError = false);
+      return true;
+    } catch (e) {
+      debugPrint('🎬 ReviewVideoPlayerPage download fallback failed: $e');
+      return false;
     }
   }
 
@@ -71,6 +120,7 @@ class _ReviewVideoPlayerPageState extends State<ReviewVideoPlayerPage> {
   @override
   void dispose() {
     _controller.dispose();
+    _downloaded?.delete().catchError((_) => _downloaded!);
     super.dispose();
   }
 
@@ -201,4 +251,16 @@ class _ReviewVideoPlayerPageState extends State<ReviewVideoPlayerPage> {
       ),
     );
   }
+}
+
+/// The container these bytes really are, read from the ISO-BMFF `ftyp` box
+/// rather than trusted from the URL — review videos arrive named
+/// `.quicktime` under `application/octet-stream`, which names nothing.
+@visibleForTesting
+String debugVideoExtensionFor(List<int> bytes) {
+  if (bytes.length < 12) return '.mp4';
+  if (String.fromCharCodes(bytes.sublist(4, 8)) != 'ftyp') return '.mp4';
+  return String.fromCharCodes(bytes.sublist(8, 12)).startsWith('qt')
+      ? '.mov'
+      : '.mp4';
 }

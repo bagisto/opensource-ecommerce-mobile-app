@@ -120,7 +120,9 @@ class StaticContentWidget extends StatelessWidget {
     final srcMatch = RegExp(r'\bsrc="([^"]+)"').firstMatch(htmlSnippet);
     if (srcMatch != null) {
       final url = srcMatch.group(1) ?? '';
-      if (url.isNotEmpty && !url.contains('data:image') && !url.endsWith('.gif') ) {
+      if (url.isNotEmpty &&
+          !url.contains('data:image') &&
+          !url.endsWith('.gif')) {
         return url;
       }
     }
@@ -166,10 +168,7 @@ class StaticContentWidget extends StatelessWidget {
   /// Storefront mobile CSS: full-width #E8EDFE bar, centered DM Serif Display
   /// text, weight 500, 14px, 6px vertical padding.
   Widget _buildOfferBar(BuildContext context) {
-    final match = RegExp(
-      r'<h1[^>]*>(.*?)</h1>',
-      dotAll: true,
-    ).firstMatch(html);
+    final match = RegExp(r'<h1[^>]*>(.*?)</h1>', dotAll: true).firstMatch(html);
     final text = _plainText(match?.group(1) ?? '');
     if (text.isEmpty) return const SizedBox.shrink();
 
@@ -207,6 +206,14 @@ class StaticContentWidget extends StatelessWidget {
         .trim();
   }
 
+  /// A heading as text. The admin's editor can leave a link inside a heading,
+  /// or store its markup escaped, so tags are stripped, entities decoded, and
+  /// anything the decoding turned back into a tag is stripped once more.
+  static String _heading(String htmlSnippet) {
+    final once = _plainText(htmlSnippet);
+    return once.contains('<') ? _plainText(once) : once;
+  }
+
   /// Build "Top Collections" style layout
   /// A header with title followed by a grid of collection cards
   Widget _buildTopCollections(BuildContext context) {
@@ -216,8 +223,8 @@ class StaticContentWidget extends StatelessWidget {
       r'<h2[^>]*>(.*?)</h2>',
       dotAll: true,
     ).firstMatch(html);
-    final parsedTitle = _plainText(titleMatch?.group(1) ?? '');
-    final title = parsedTitle.isEmpty ? l10n.homeCollections : parsedTitle;
+    final rawTitle = _heading(titleMatch?.group(1) ?? '');
+    final title = rawTitle.isEmpty ? l10n.homeCollections : rawTitle;
 
     // Extract collection cards — find each card block, then extract image + title
     // Top Collections use `top-collection-card`; the Game Container uses
@@ -235,7 +242,7 @@ class StaticContentWidget extends StatelessWidget {
       final blockHtml = block.group(0) ?? '';
       final imageUrl = _extractBestImageUrl(blockHtml);
       final cardTitleMatch = titlePattern.firstMatch(blockHtml);
-      final cardTitle = _plainText(cardTitleMatch?.group(1) ?? '');
+      final cardTitle = _heading(cardTitleMatch?.group(1) ?? '');
 
       cards.add(
         _CollectionCard(
@@ -251,15 +258,12 @@ class StaticContentWidget extends StatelessWidget {
       final images = _extractAllImageUrls(html);
       final titles = titlePattern
           .allMatches(html)
-          .map((m) => _plainText(m.group(1) ?? ''))
+          .map((m) => _heading(m.group(1) ?? ''))
           .toList();
 
       for (int i = 0; i < images.length && i < titles.length; i++) {
         cards.add(
-          _CollectionCard(
-            imageUrl: _getFullUrl(images[i]),
-            title: titles[i],
-          ),
+          _CollectionCard(imageUrl: _getFullUrl(images[i]), title: titles[i]),
         );
       }
 
@@ -385,7 +389,7 @@ class StaticContentWidget extends StatelessWidget {
       r'<h2[^>]*>(.*?)</h2>',
       dotAll: true,
     ).firstMatch(html);
-    final title = _plainText(titleMatch?.group(1) ?? '');
+    final title = _heading(titleMatch?.group(1) ?? '');
 
     // Extract description
     final descMatch = RegExp(

@@ -339,7 +339,7 @@ class RecentOrder {
 
   /// Order database id (`_id`), used to open the order detail page.
   final int? numericId;
-  final int? incrementId;
+  final String? incrementId;
   final String status;
   final String? createdAt;
   final double grandTotal;
@@ -400,7 +400,7 @@ class RecentOrder {
       numericId:
           _parseInt(json['_id']) ??
           (iri == null ? null : int.tryParse(iri.split('/').last)),
-      incrementId: _parseInt(json['incrementId']),
+      incrementId: json['incrementId']?.toString(),
       status: json['status']?.toString() ?? 'pending',
       createdAt: json['createdAt']?.toString(),
       grandTotal: total,
@@ -411,8 +411,11 @@ class RecentOrder {
   }
 
   String get orderNumber {
-    if (incrementId != null) {
+    if (incrementId != null && incrementId!.isNotEmpty) {
       return '#$incrementId';
+    }
+    if (numericId != null) {
+      return '#$numericId';
     }
     return '#${id ?? '0'}';
   }
@@ -690,6 +693,16 @@ class ProductReview {
     } catch (_) {
       return createdAt ?? '';
     }
+  }
+
+  /// Full timestamp shown on the storefront's customer review cards.
+  String get formattedDateTime {
+    final value = createdAt?.trim() ?? '';
+    if (value.isEmpty) return '';
+    final match = RegExp(
+      r'^(\d{4}-\d{2}-\d{2})[T ](\d{2}:\d{2}:\d{2})',
+    ).firstMatch(value);
+    return match == null ? value : '${match.group(1)} ${match.group(2)}';
   }
 
   String get ratingLabel {
@@ -1092,7 +1105,7 @@ class CompareItem {
   final String? createdAt;
 
   /// Arbitrary product attributes for the comparison table.
-  /// Keys = attribute label (e.g. "Activity", "Seller").
+  /// Keys = attribute label (e.g. "Activity", "Brand").
   final Map<String, String> attributes;
 
   const CompareItem({
@@ -1347,7 +1360,9 @@ class OrderItem {
   final int qtyCanceled;
   final int qtyRefunded;
   final double price;
+  final double priceInclTax;
   final double total;
+  final double totalInclTax;
   final double? totalInvoiced;
   final double? amountRefunded;
   final double? discountAmount;
@@ -1361,6 +1376,13 @@ class OrderItem {
   final int? productId;
   final Map<String, dynamic>? additional;
 
+  bool get requiresShipping {
+    final normalizedType = type?.toLowerCase().trim();
+    return normalizedType != 'virtual' &&
+        normalizedType != 'downloadable' &&
+        normalizedType != 'booking';
+  }
+
   const OrderItem({
     this.id,
     this.numericId,
@@ -1373,7 +1395,9 @@ class OrderItem {
     this.qtyCanceled = 0,
     this.qtyRefunded = 0,
     this.price = 0,
+    this.priceInclTax = 0,
     this.total = 0,
+    this.totalInclTax = 0,
     this.totalInvoiced,
     this.amountRefunded,
     this.discountAmount,
@@ -1450,7 +1474,9 @@ class OrderItem {
       qtyCanceled: _parseInt(json['qtyCanceled']) ?? 0,
       qtyRefunded: _parseInt(json['qtyRefunded']) ?? 0,
       price: _parseDouble(json['price']) ?? 0,
+      priceInclTax: _parseDouble(json['priceInclTax'] ?? json['price_incl_tax']) ?? (_parseDouble(json['price']) ?? 0),
       total: _parseDouble(json['total']) ?? 0,
+      totalInclTax: _parseDouble(json['totalInclTax'] ?? json['total_incl_tax']) ?? (_parseDouble(json['total']) ?? 0),
       totalInvoiced: _parseDouble(json['totalInvoiced']),
       amountRefunded: _parseDouble(json['amountRefunded']),
       discountAmount: _parseDouble(json['discountAmount']),
@@ -1467,6 +1493,13 @@ class OrderItem {
       additional: additionalMap,
     );
   }
+}
+
+/// Booking product rules needed by customer order actions.
+class BookingProductOrderRules {
+  final bool? allowCancellation;
+
+  const BookingProductOrderRules({this.allowCancellation});
 }
 
 /// Address within an order (billing or shipping).
@@ -1563,6 +1596,8 @@ class OrderInvoice {
   final double? taxAmount;
   final double? shippingAmount;
   final double? discountAmount;
+  final double? subTotalInclTax;
+  final double? shippingAmountInclTax;
   final String? createdAt;
   final String? downloadUrl;
   final List<OrderInvoiceItem> items;
@@ -1577,6 +1612,8 @@ class OrderInvoice {
     this.taxAmount,
     this.shippingAmount,
     this.discountAmount,
+    this.subTotalInclTax,
+    this.shippingAmountInclTax,
     this.createdAt,
     this.downloadUrl,
     this.items = const [],
@@ -1605,6 +1642,8 @@ class OrderInvoice {
       taxAmount: _parseDouble(json['taxAmount']),
       shippingAmount: _parseDouble(json['shippingAmount']),
       discountAmount: _parseDouble(json['discountAmount']),
+      subTotalInclTax: _parseDouble(json['subTotalInclTax']),
+      shippingAmountInclTax: _parseDouble(json['shippingAmountInclTax']),
       createdAt: json['createdAt']?.toString(),
       downloadUrl: json['downloadUrl']?.toString(),
       items: items,
@@ -1844,6 +1883,7 @@ class OrderShipmentItem {
   final String? sku;
   final int qty;
   final double? weight;
+  final Map<String, dynamic>? additional;
 
   const OrderShipmentItem({
     this.id,
@@ -1851,17 +1891,82 @@ class OrderShipmentItem {
     this.sku,
     this.qty = 0,
     this.weight,
+    this.additional,
   });
 
   factory OrderShipmentItem.fromJson(Map<String, dynamic> json) {
+    Map<String, dynamic>? additionalMap;
+    final rawAdditional = json['additional'];
+    if (rawAdditional is Map<String, dynamic>) {
+      additionalMap = rawAdditional;
+    } else if (rawAdditional is Map) {
+      additionalMap = rawAdditional.map(
+        (key, value) => MapEntry(key.toString(), value),
+      );
+    } else if (rawAdditional is String && rawAdditional.trim().isNotEmpty) {
+      try {
+        final decoded = jsonDecode(rawAdditional);
+        if (decoded is Map<String, dynamic>) {
+          additionalMap = decoded;
+        } else if (decoded is Map) {
+          additionalMap = decoded.map(
+            (key, value) => MapEntry(key.toString(), value),
+          );
+        }
+      } catch (_) {
+        additionalMap = null;
+      }
+    }
+
     return OrderShipmentItem(
       id: json['id']?.toString(),
       name: json['name']?.toString() ?? '',
       sku: json['sku']?.toString(),
       qty: _parseInt(json['qty']) ?? 0,
       weight: _parseDouble(json['weight']),
+      additional: additionalMap,
     );
   }
+}
+
+/// A refund record returned by `customerRefunds` for an order.
+class CustomerRefund extends Equatable {
+  const CustomerRefund({
+    required this.id,
+    this.orderId,
+    this.adjustmentRefund,
+    this.adjustmentFee,
+    this.grandTotal,
+    this.orderCurrencyCode,
+  });
+
+  factory CustomerRefund.fromJson(Map<String, dynamic> json) {
+    return CustomerRefund(
+      id: _parseInt(json['_id']) ?? 0,
+      orderId: _parseInt(json['orderId']),
+      adjustmentRefund: _parseDouble(json['adjustmentRefund']),
+      adjustmentFee: _parseDouble(json['adjustmentFee']),
+      grandTotal: _parseDouble(json['grandTotal']),
+      orderCurrencyCode: json['orderCurrencyCode']?.toString(),
+    );
+  }
+
+  final int id;
+  final int? orderId;
+  final double? adjustmentRefund;
+  final double? adjustmentFee;
+  final double? grandTotal;
+  final String? orderCurrencyCode;
+
+  @override
+  List<Object?> get props => [
+    id,
+    orderId,
+    adjustmentRefund,
+    adjustmentFee,
+    grandTotal,
+    orderCurrencyCode,
+  ];
 }
 
 /// Full order detail model (single order with all nested data).
@@ -1885,9 +1990,11 @@ class OrderDetail {
   final double? taxAmountRefunded;
   final double? discountRefunded;
   final double subTotal;
+  final double subTotalInclTax;
   final double? taxAmount;
   final double? discountAmount;
   final double? shippingAmount;
+  final double shippingAmountInclTax;
   final String? shippingTitle;
   final String? shippingMethod;
   final String? couponCode;
@@ -1901,6 +2008,10 @@ class OrderDetail {
   final OrderPayment? payment;
   final List<OrderInvoice> invoices;
   final List<OrderShipment> shipments;
+
+  /// The order holds a booking item the customer may not cancel; the web
+  /// shows a notice for it.
+  final bool hasNonCancelableBooking;
 
   const OrderDetail({
     this.id,
@@ -1922,9 +2033,11 @@ class OrderDetail {
     this.taxAmountRefunded,
     this.discountRefunded,
     this.subTotal = 0,
+    this.subTotalInclTax = 0,
     this.taxAmount,
     this.discountAmount,
     this.shippingAmount,
+    this.shippingAmountInclTax = 0,
     this.shippingTitle,
     this.shippingMethod,
     this.couponCode,
@@ -1938,11 +2051,36 @@ class OrderDetail {
     this.payment,
     this.invoices = const [],
     this.shipments = const [],
+    this.hasNonCancelableBooking = false,
   });
 
   /// Whether this order can still be canceled by the customer.
-  /// Bagisto allows cancellation while the order is pending or processing.
+  /// Booking orders can be canceled while pending if their booking allows it,
+  /// or if non-booking items remain to be canceled.
+  bool get hasBookingItems =>
+      items.any((item) => item.type?.toLowerCase().trim() == 'booking');
+
+  bool get hasOnlyBookingItems =>
+      items.isNotEmpty &&
+      items.every((item) => item.type?.toLowerCase().trim() == 'booking');
+
+  /// Whether every ordered item is a product type that Bagisto does not ship.
+  bool get hasOnlyNonShippableItems =>
+      items.isNotEmpty &&
+      items.every((item) {
+        final type = item.type?.toLowerCase().trim();
+        return type == 'virtual' || type == 'downloadable' || type == 'booking';
+      });
+
+  bool get hasNonBookingItems =>
+      items.any((item) => item.type?.toLowerCase().trim() != 'booking');
+
   bool get canCancel {
+    if (hasBookingItems) {
+      return status.toLowerCase() == 'pending' &&
+          (!hasNonCancelableBooking || hasNonBookingItems);
+    }
+
     switch (status.toLowerCase()) {
       case 'pending':
       case 'pending_payment':
@@ -2044,6 +2182,7 @@ class OrderDetail {
     }
 
     return OrderDetail(
+      hasNonCancelableBooking: json['hasNonCancelableBooking'] == true,
       id: json['id']?.toString(),
       numericId: _parseInt(json['_id']),
       incrementId: json['incrementId']?.toString(),
@@ -2063,9 +2202,11 @@ class OrderDetail {
       taxAmountRefunded: _parseDouble(json['taxAmountRefunded']),
       discountRefunded: _parseDouble(json['discountRefunded']),
       subTotal: sub,
+      subTotalInclTax: _parseDouble(json['subTotalInclTax'] ?? json['sub_total_incl_tax']) ?? sub,
       taxAmount: _parseDouble(json['taxAmount']),
       discountAmount: _parseDouble(json['discountAmount']),
       shippingAmount: _parseDouble(json['shippingAmount']),
+      shippingAmountInclTax: _parseDouble(json['shippingAmountInclTax'] ?? json['shipping_amount_incl_tax']) ?? (_parseDouble(json['shippingAmount']) ?? 0),
       shippingTitle: json['shippingTitle']?.toString(),
       shippingMethod: json['shippingMethod']?.toString(),
       couponCode: json['couponCode']?.toString(),
@@ -2317,29 +2458,87 @@ class ContactUsResponse {
 
 /// An EU contract withdrawal request (`EuWithdrawal` / `GuestEuWithdrawal`).
 class EuWithdrawal {
+  final String? id;
+  final int? numericId;
+  final String? uuid;
   final int? orderId;
   final String? orderIncrementId;
+  final bool isGuest;
+  final String? customerEmail;
 
   /// Server status, e.g. `received`, `confirmed`, `declined`, `refunded`.
   final String status;
+  final String? reasonText;
   final String? receivedAt;
+  final String? confirmationSentAt;
+  final String? declinedAt;
   final String? declinedReason;
+  final String? refundedAt;
+  final String? refundNote;
+  final String? createdAt;
+  final String? updatedAt;
 
   const EuWithdrawal({
+    this.id,
+    this.numericId,
+    this.uuid,
     this.orderId,
     this.orderIncrementId,
+    this.isGuest = false,
+    this.customerEmail,
     required this.status,
+    this.reasonText,
     this.receivedAt,
+    this.confirmationSentAt,
+    this.declinedAt,
     this.declinedReason,
+    this.refundedAt,
+    this.refundNote,
+    this.createdAt,
+    this.updatedAt,
   });
 
   factory EuWithdrawal.fromJson(Map<String, dynamic> json) {
     return EuWithdrawal(
+      id: json['id']?.toString(),
+      numericId: _parseInt(json['_id'] ?? json['id']),
+      uuid: json['uuid']?.toString(),
       orderId: _parseInt(json['orderId']),
       orderIncrementId: json['orderIncrementId']?.toString(),
+      isGuest: json['isGuest'] == true,
+      customerEmail: json['customerEmail']?.toString(),
       status: json['status']?.toString() ?? '',
-      receivedAt: json['receivedAt']?.toString(),
+      reasonText:
+          json['reasonText']?.toString() ?? json['reason_text']?.toString(),
+      receivedAt:
+          json['receivedAt']?.toString() ?? json['received_at']?.toString(),
+      confirmationSentAt:
+          json['confirmationSentAt']?.toString() ??
+          json['confirmation_sent_at']?.toString(),
+      declinedAt: json['declinedAt']?.toString(),
       declinedReason: json['declinedReason']?.toString(),
+      refundedAt: json['refundedAt']?.toString(),
+      refundNote: json['refundNote']?.toString(),
+      createdAt: json['createdAt']?.toString(),
+      updatedAt: json['updatedAt']?.toString(),
+    );
+  }
+}
+
+/// Result of requesting a guest contract withdrawal email link.
+class GuestEuWithdrawalLinkResponse {
+  final bool success;
+  final String message;
+
+  const GuestEuWithdrawalLinkResponse({
+    required this.success,
+    required this.message,
+  });
+
+  factory GuestEuWithdrawalLinkResponse.fromJson(Map<String, dynamic> json) {
+    return GuestEuWithdrawalLinkResponse(
+      success: json['success'] as bool? ?? false,
+      message: json['message']?.toString() ?? 'Unknown response',
     );
   }
 }

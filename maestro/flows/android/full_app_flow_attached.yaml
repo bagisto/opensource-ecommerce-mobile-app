@@ -5,9 +5,6 @@ tags:
   - regression
   - android
   - attached
-env:
-  USER_EMAIL: "demo.user@example.com"
-  USER_PASSWORD: "ExamplePass123!"
 ---
 # Assumes the app is already open. This attached flow normalizes the current
 # screen first so it can recover from prior aborted runs.
@@ -120,11 +117,11 @@ env:
       - tapOn:
           id: login_email_field
       - eraseText
-      - inputText: ${USER_EMAIL}
+      - inputText: "t@t.com"
       - tapOn:
           id: login_password_field
       - eraseText
-      - inputText: ${USER_PASSWORD}
+      - inputText: "admin123"
       - tapOn:
           id: login_submit_button
           retryTapIfNoChange: true

@@ -12,7 +12,13 @@ class SectionHeader extends StatelessWidget {
   final double horizontalPadding;
   final TextStyle? titleStyle;
 
-  const SectionHeader({super.key, required this.title, this.onSeeAll, this.horizontalPadding = 20, this.titleStyle});
+  const SectionHeader({
+    super.key,
+    required this.title,
+    this.onSeeAll,
+    this.horizontalPadding = 20,
+    this.titleStyle,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -28,12 +34,16 @@ class SectionHeader extends StatelessWidget {
             Expanded(
               child: Text(
                 title,
-                style: titleStyle ?? TextStyle(
-                  fontFamily: 'Roboto',
-                  fontWeight: FontWeight.w500,
-                  fontSize: 18,
-                  color: isDark ? AppColors.neutral100 : AppColors.neutral900,
-                ),
+                style:
+                    titleStyle ??
+                    TextStyle(
+                      fontFamily: 'Roboto',
+                      fontWeight: FontWeight.w500,
+                      fontSize: 18,
+                      color: isDark
+                          ? AppColors.neutral100
+                          : AppColors.neutral900,
+                    ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),

@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:developer' as developer;
 
 import '../../../account/data/models/review_attachment.dart';
+import '../../../../core/currency/currency_formatter.dart';
+import '../../../../core/currency/product_price_display.dart';
 
 /// Product model matching Bagisto GraphQL schema
 /// Derived from: nextjs-commerce/src/graphql/catelog/fragments/Product.ts
@@ -12,8 +14,10 @@ class ProductModel {
   final int? qty;
   final String? sku;
   final String? type;
+  final String? bookingType;
   final String? name;
   final String? urlKey;
+  final bool? status;
   final String? description;
   final String? shortDescription;
   final double? price;
@@ -24,6 +28,8 @@ class ProductModel {
   final double? specialPrice;
   final String? formattedSpecialPrice;
   final bool? isSaleable;
+  final bool? isNew;
+  final bool? isFeatured;
   final String? color;
   final String? size;
   final String? brand;
@@ -42,7 +48,9 @@ class ProductModel {
   final List<SuperAttribute> superAttributes;
   final List<ProductVariant> variants;
   final List<ProductReview> reviews;
+  final int? totalReviewCount;
   final List<ProductModel> relatedProducts;
+  final List<ProductModel> upSells;
   final List<DownloadableLink> downloadableLinks;
   final List<DownloadableSample> downloadableSamples;
   final List<GroupedProductItem> groupedProducts;
@@ -56,8 +64,10 @@ class ProductModel {
     this.qty,
     this.sku,
     this.type,
+    this.bookingType,
     this.name,
     this.urlKey,
+    this.status,
     this.description,
     this.shortDescription,
     this.price,
@@ -68,6 +78,8 @@ class ProductModel {
     this.specialPrice,
     this.formattedSpecialPrice,
     this.isSaleable,
+    this.isNew,
+    this.isFeatured,
     this.color,
     this.size,
     this.brand,
@@ -86,7 +98,9 @@ class ProductModel {
     this.superAttributes = const [],
     this.variants = const [],
     this.reviews = const [],
+    this.totalReviewCount,
     this.relatedProducts = const [],
+    this.upSells = const [],
     this.downloadableLinks = const [],
     this.downloadableSamples = const [],
     this.groupedProducts = const [],
@@ -123,52 +137,43 @@ class ProductModel {
     return null;
   }
 
+  /// Calculates presentation price, prefix label, and strikethrough price
+  /// strictly following Bagisto Web price rules.
+  ProductPriceDisplay get priceDisplay =>
+      ProductPriceDisplay.fromProductModel(this);
+
+  /// Prefix label such as "Starting at", "Starting from", "As low as", or null.
+  String? get priceLabelPrefix => priceDisplay.label;
+
+  /// Whether a discount / strikethrough exists.
+  bool get hasDiscount => priceDisplay.hasDiscount;
+
+  /// Whether product cards should show the Sale badge. Grouped products do
+  /// not use a strikethrough price, but their API still reports current and
+  /// regular minimum prices when one of their items is discounted.
+  bool get hasSaleBadge =>
+      hasDiscount ||
+      (type?.toLowerCase() == 'grouped' &&
+          minimumPrice != null &&
+          minimumPrice! > 0 &&
+          regularMinimumPrice != null &&
+          regularMinimumPrice! > minimumPrice!);
+
   /// Get display price (special > minimum > regular)
   double get displayPrice {
     if (specialPrice != null && specialPrice! > 0) return specialPrice!;
     return minimumPrice ?? price ?? 0;
   }
 
-  String get formattedDisplayPrice {
-    if (specialPrice != null &&
-        specialPrice! > 0 &&
-        (formattedSpecialPrice?.isNotEmpty ?? false)) {
-      return formattedSpecialPrice!;
-    }
-    if (minimumPrice != null &&
-        minimumPrice! > 0 &&
-        (formattedMinimumPrice?.isNotEmpty ?? false)) {
-      return formattedMinimumPrice!;
-    }
-    if (formattedPrice?.isNotEmpty ?? false) {
-      return formattedPrice!;
-    }
-    return '';
-  }
+  String get formattedDisplayPrice => priceDisplay.displayPrice;
 
   /// Get original price (for strikethrough) — only if there's a real discount
   double? get originalPrice {
-    if (_hasRegularPriceDiscount) return regularMinimumPrice;
-    if (specialPrice != null &&
-        specialPrice! > 0 &&
-        price != null &&
-        specialPrice! < price!) {
-      return price;
-    }
+    if (formattedOriginalPrice != null) return regularMinimumPrice ?? price;
     return null;
   }
 
-  String? get formattedOriginalPrice {
-    if (originalPrice == null) return null;
-    if (_hasRegularPriceDiscount &&
-        (formattedRegularMinimumPrice?.isNotEmpty ?? false)) {
-      return formattedRegularMinimumPrice;
-    }
-    if (formattedPrice?.isNotEmpty ?? false) {
-      return formattedPrice;
-    }
-    return null;
-  }
+  String? get formattedOriginalPrice => priceDisplay.strikethroughPrice;
 
   /// Average rating
   double get averageRating {
@@ -193,6 +198,14 @@ class ProductModel {
 
   /// Total review count
   int get reviewCount => reviews.length;
+
+  /// Sum of the product's review star values for the `star_counts` summary.
+  int get reviewStarCount {
+    if (reviews.isNotEmpty) {
+      return reviews.fold<int>(0, (sum, review) => sum + review.rating.round());
+    }
+    return (averageRating * (totalReviewCount ?? reviewCount)).round();
+  }
 
   /// Whether this is a configurable product
   bool get isConfigurable => type == 'configurable';
@@ -482,12 +495,14 @@ class ProductModel {
 
     return ProductModel(
       id: json['id']?.toString() ?? '',
-      numericId: _parseInt(json['_id']),
+      numericId: _parseIntValue(json['_id']),
       qty: _parseInt(json['qty']),
       sku: json['sku'] as String?,
       type: json['type'] as String?,
+      bookingType: json['bookingType']?.toString(),
       name: json['name'] as String?,
       urlKey: json['urlKey'] as String?,
+      status: _parseBool(json['status']),
       description: json['description'] as String?,
       shortDescription: json['shortDescription'] as String?,
       price: _parseDouble(json['price']),
@@ -498,6 +513,10 @@ class ProductModel {
       specialPrice: _parseSpecialPrice(json['specialPrice']),
       formattedSpecialPrice: json['formattedSpecialPrice'] as String?,
       isSaleable: _parseBool(json['isSaleable']),
+      isNew: _parseBool(json['new'] ?? json['is_new'] ?? json['isNew']),
+      isFeatured: _parseBool(
+        json['featured'] ?? json['is_featured'] ?? json['isFeatured'],
+      ),
       color: json['color'] as String?,
       size: json['size'] as String?,
       brand: json['brand'] as String?,
@@ -518,7 +537,9 @@ class ProductModel {
       superAttributes: _parseSuperAttributes(json['superAttributes']),
       variants: _parseVariants(json['variants']),
       reviews: _parseReviews(json['reviews']),
+      totalReviewCount: _parseConnectionTotalCount(json['reviews']),
       relatedProducts: _parseRelatedProducts(json['relatedProducts']),
+      upSells: _parseRelatedProducts(json['upSells']),
       downloadableLinks: _parseDownloadableLinks(json['downloadableLinks']),
       downloadableSamples: _parseDownloadableSamples(
         json['downloadableSamples'],
@@ -588,6 +609,15 @@ class ProductModel {
     return edges
         .map((e) => ProductReview.fromJson(e['node'] as Map<String, dynamic>))
         .toList();
+  }
+
+  static int? _parseConnectionTotalCount(dynamic json) {
+    if (json is! Map) return null;
+    final count = json['totalCount'];
+    if (count is int) return count;
+    if (count is num) return count.toInt();
+    if (count is String) return int.tryParse(count.trim());
+    return null;
   }
 
   static List<ProductImage> _parseImages(dynamic json) {
@@ -1005,6 +1035,10 @@ class BookingProductData {
   final bool? allowCancellation;
   final String? availableFrom;
   final String? availableTo;
+  final double? startingPrice;
+  final String? formattedStartingPrice;
+  final double? startingRegularPrice;
+  final String? formattedStartingRegularPrice;
   final BookingSlotData? defaultSlot;
   final BookingSlotData? appointmentSlot;
   final BookingSlotData? rentalSlot;
@@ -1021,6 +1055,10 @@ class BookingProductData {
     this.allowCancellation,
     this.availableFrom,
     this.availableTo,
+    this.startingPrice,
+    this.formattedStartingPrice,
+    this.startingRegularPrice,
+    this.formattedStartingRegularPrice,
     this.defaultSlot,
     this.appointmentSlot,
     this.rentalSlot,
@@ -1039,6 +1077,13 @@ class BookingProductData {
       allowCancellation: ProductModel._parseBool(json['allowCancellation']),
       availableFrom: json['availableFrom']?.toString(),
       availableTo: json['availableTo']?.toString(),
+      startingPrice: ProductModel._parseDouble(json['startingPrice']),
+      formattedStartingPrice: json['formattedStartingPrice']?.toString(),
+      startingRegularPrice: ProductModel._parseDouble(
+        json['startingRegularPrice'],
+      ),
+      formattedStartingRegularPrice: json['formattedStartingRegularPrice']
+          ?.toString(),
       defaultSlot: BookingSlotData.fromDynamic(json['defaultSlot']),
       appointmentSlot: BookingSlotData.fromDynamic(json['appointmentSlot']),
       rentalSlot: BookingSlotData.fromDynamic(json['rentalSlot']),
@@ -1362,7 +1407,7 @@ class BookingEventTicket {
     if (formattedPrice?.isNotEmpty ?? false) {
       return formattedPrice!;
     }
-    return '';
+    return CurrencyFormatter.formatAmount(specialPrice ?? price ?? 0);
   }
 
   String? get originalPriceLabel {
@@ -1435,7 +1480,7 @@ class ProductVariant {
 
     return ProductVariant(
       id: json['id']?.toString() ?? '',
-      numericId: ProductModel._parseInt(json['_id']),
+      numericId: _parseIntValue(json['_id']),
       sku: json['sku'] as String?,
       name: json['name'] as String?,
       price: ProductModel._parseDouble(json['price']),
@@ -1491,7 +1536,7 @@ class ProductVariant {
     if (formattedPrice?.isNotEmpty ?? false) {
       return formattedPrice!;
     }
-    return '';
+    return CurrencyFormatter.formatAmount(displayPrice);
   }
 
   String? get originalPriceLabel {
@@ -1510,6 +1555,7 @@ class ProductReview {
   final String? title;
   final String? comment;
   final String? createdAt;
+  final String? customerImageUrl;
   final List<ReviewAttachment> attachments;
 
   const ProductReview({
@@ -1519,10 +1565,12 @@ class ProductReview {
     this.title,
     this.comment,
     this.createdAt,
+    this.customerImageUrl,
     this.attachments = const [],
   });
 
   factory ProductReview.fromJson(Map<String, dynamic> json) {
+    final customer = json['customer'] as Map<String, dynamic>?;
     return ProductReview(
       id: json['id']?.toString() ?? '',
       rating: (json['rating'] is int)
@@ -1532,6 +1580,14 @@ class ProductReview {
       title: json['title'] as String?,
       comment: json['comment'] as String?,
       createdAt: json['createdAt'] as String?,
+      customerImageUrl:
+          json['customerImageUrl']?.toString() ??
+          json['customerImage']?.toString() ??
+          customer?['image']?.toString() ??
+          customer?['imageUrl']?.toString() ??
+          customer?['avatar']?.toString() ??
+          json['avatar']?.toString() ??
+          json['profileImage']?.toString(),
       attachments: ReviewAttachment.parseList(json['attachments']),
     );
   }
@@ -1567,7 +1623,7 @@ class ProductImage {
   factory ProductImage.fromJson(Map<String, dynamic> json) {
     return ProductImage(
       id: json['id']?.toString() ?? '',
-      numericId: ProductModel._parseInt(json['_id']),
+      numericId: _parseIntValue(json['_id']),
       type: json['type'] as String?,
       path: json['path'] as String? ?? '',
       publicPath: json['publicPath'] as String?,
@@ -1595,7 +1651,7 @@ class SuperAttribute {
   factory SuperAttribute.fromJson(Map<String, dynamic> json) {
     return SuperAttribute(
       id: json['id']?.toString() ?? '',
-      numericId: ProductModel._parseInt(json['_id']),
+      numericId: _parseIntValue(json['_id']),
       code: json['code'] as String?,
       adminName: json['adminName'] as String?,
       options: _parseOptions(json['options']),
@@ -1638,7 +1694,7 @@ class AttributeOption {
     }
     return AttributeOption(
       id: json['id']?.toString() ?? '',
-      numericId: ProductModel._parseInt(json['_id']),
+      numericId: _parseIntValue(json['_id']),
       adminName: json['adminName'] as String?,
       swatchValue: json['swatchValue'] as String?,
       swatchValueUrl: json['swatchValueUrl'] as String?,
@@ -1809,7 +1865,7 @@ class DownloadableLink {
 
     return DownloadableLink(
       id: json['id']?.toString() ?? '',
-      numericId: ProductModel._parseInt(json['_id']),
+      numericId: _parseIntValue(json['_id']),
       type: json['type'] as String?,
       price: ProductModel._parseDouble(json['price']),
       formattedPrice: json['formattedPrice'] as String?,
@@ -1855,11 +1911,20 @@ class DownloadableSample {
 
     return DownloadableSample(
       id: json['id']?.toString() ?? '',
-      numericId: ProductModel._parseInt(json['_id']),
+      numericId: _parseIntValue(json['_id']),
       type: json['type'] as String?,
       fileUrl: json['fileUrl'] as String?,
       sortOrder: json['sortOrder'] as int?,
       title: title,
     );
   }
+}
+
+/// An id or position the API may send as a number or as text. A bare cast
+/// throws on the string form and takes the whole screen down with it.
+int? _parseIntValue(dynamic value) {
+  if (value == null) return null;
+  if (value is int) return value;
+  if (value is num) return value.toInt();
+  return int.tryParse(value.toString());
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 import '../../../../core/error/error_mapper.dart';
 import '../../data/models/category_model.dart';
 import '../../data/models/product_model.dart';
@@ -15,7 +16,13 @@ abstract class CategoryEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class LoadCategories extends CategoryEvent {}
+class LoadCategories extends CategoryEvent {
+  final bool refresh;
+  const LoadCategories({this.refresh = false});
+
+  @override
+  List<Object?> get props => [refresh];
+}
 
 class SelectCategory extends CategoryEvent {
   final CategoryModel category;
@@ -87,6 +94,7 @@ class CategoryState extends Equatable {
     List<CategoryModel>? categories,
     List<CategoryModel>? subCategories,
     CategoryModel? selectedCategory,
+    bool clearSelected = false,
     List<ProductModel>? products,
     PageInfo? pageInfo,
     int? totalProducts,
@@ -97,7 +105,9 @@ class CategoryState extends Equatable {
       status: status ?? this.status,
       categories: categories ?? this.categories,
       subCategories: subCategories ?? this.subCategories,
-      selectedCategory: selectedCategory ?? this.selectedCategory,
+      selectedCategory: clearSelected
+          ? null
+          : (selectedCategory ?? this.selectedCategory),
       products: products ?? this.products,
       pageInfo: pageInfo ?? this.pageInfo,
       totalProducts: totalProducts ?? this.totalProducts,
@@ -143,8 +153,12 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
     const maxAttempts = 3;
     for (int attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
-        // Top-level categories from the `categories` API (with children)
-        final categories = await repository.getCategoryTabCategories();
+        // The Categories tab lists active top-level categories with their
+        // children, which is exactly what this query returns. A refresh asks
+        // the network rather than the cache.
+        final categories = await repository.getCategoryTabCategories(
+          fetchPolicy: event.refresh ? FetchPolicy.networkOnly : null,
+        );
 
         CategoryModel? selected;
         List<CategoryModel> subCats = [];
@@ -153,18 +167,23 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
         int totalProducts = 0;
 
         if (categories.isNotEmpty) {
-          selected = categories.first;
+          final currentSelectedId = state.selectedCategory?.numericId;
+          selected = categories.firstWhere(
+            (c) => c.numericId == currentSelectedId,
+            orElse: () => categories.first,
+          );
 
           // Children are already included in tree response
           subCats = selected.children;
 
-          // Load products for first category using its numeric id
+          // Load products for selected category using its numeric id (skip if description_only)
           try {
             final catId = selected.numericId;
-            if (catId != null) {
+            if (catId != null && selected.displayMode != 'description_only') {
               final result = await repository.getFilterProducts(
                 filter: '{"category_id":$catId}',
                 first: 10,
+                useCacheFirst: !event.refresh,
               );
               products = result.products;
               pageInfo = result.pageInfo;
@@ -173,19 +192,31 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
           } catch (_) {
             // Products may not exist for this category
           }
-        }
 
-        emit(
-          state.copyWith(
-            status: CategoryStatus.loaded,
-            categories: categories,
-            selectedCategory: selected,
-            subCategories: subCats,
-            products: products,
-            pageInfo: pageInfo,
-            totalProducts: totalProducts,
-          ),
-        );
+          emit(
+            state.copyWith(
+              status: CategoryStatus.loaded,
+              categories: categories,
+              selectedCategory: selected,
+              subCategories: subCats,
+              products: products,
+              pageInfo: pageInfo,
+              totalProducts: totalProducts,
+            ),
+          );
+        } else {
+          emit(
+            state.copyWith(
+              status: CategoryStatus.loaded,
+              categories: const [],
+              clearSelected: true,
+              subCategories: const [],
+              products: const [],
+              pageInfo: null,
+              totalProducts: 0,
+            ),
+          );
+        }
         return; // success — exit retry loop
       } catch (e) {
         if (ErrorMapper.isNetworkError(e) && attempt < maxAttempts) {
@@ -229,7 +260,7 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
       // Load products using numeric id with JSON filter format per API docs
       final catId = event.category.numericId;
       PaginatedProducts? result;
-      if (catId != null) {
+      if (catId != null && event.category.displayMode != 'description_only') {
         result = await repository.getFilterProducts(
           filter: '{"category_id":$catId}',
           first: 10,

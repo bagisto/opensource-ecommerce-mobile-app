@@ -6,8 +6,8 @@ APP_ID_ANDROID: "com.webkul.bagisto.mobikul"
 APP_ID_IOS: "com.webkul.bagistoApp.iOS"
 
 # Test accounts
-USER_EMAIL: "demo.user@example.com"
-USER_PASSWORD: "ExamplePass123!"
+USER_EMAIL: "t@t.com"
+USER_PASSWORD: "admin123"
 
 # Checkout data
 ADDRESS_FULL_NAME: "QA User"
@@ -34,9 +34,9 @@ EXISTING_USER_ERROR: "Email already exists"
 MANDATORY_FIELD_ERROR: "This field is required"
 
 # New signup user (use a fresh, unique email)
-NEW_USER_EMAIL: "new.user@example.com"
-NEW_USER_PASSWORD: "ExamplePass123!"
-FIRST_NAME: "Demo"
+NEW_USER_EMAIL: "qa_new_user+1775130588@example.com"
+NEW_USER_PASSWORD: "Passw0rd!"
+FIRST_NAME: "QA"
 LAST_NAME: "User"
 
 # Product under test

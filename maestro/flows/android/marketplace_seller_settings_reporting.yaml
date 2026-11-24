@@ -1,0 +1,181 @@
+appId: com.webkul.bagisto.mobikul
+name: Marketplace Seller - Settings and Reporting (Android)
+tags:
+  - android
+  - marketplace
+  - seller
+  - regression
+---
+# Covers the vendor Settings group and Reporting group from the drawer.
+# Non-destructive: opens tabs/sheets only, no save/delete/export actions.
+
+- runFlow: helpers/open_marketplace_seller_dashboard.yaml
+
+- tapOn:
+    text: "^Open navigation menu$"
+    waitToSettleTimeoutMs: 1000
+- tapOn:
+    text: "(?s)^Settings.*"
+    waitToSettleTimeoutMs: 500
+- tapOn:
+    text: "^General$"
+    waitToSettleTimeoutMs: 1500
+- extendedWaitUntil:
+    visible:
+      text: "^Settings$"
+    timeout: 20000
+- assertVisible:
+    text: "(?s)^(General|Users|Roles).*"
+- assertVisible:
+    text: "^(Preferences|Change password|Account health)$"
+- tapOn:
+    text: "(?s)^Users.*"
+    waitToSettleTimeoutMs: 800
+- assertVisible:
+    text: "^(Staff|Add staff member|No staff members yet)$"
+- tapOn:
+    text: "(?s)^Roles.*"
+    waitToSettleTimeoutMs: 800
+- assertVisible:
+    text: "^(Roles|Add role|No roles yet|Full access|Limited access)$"
+- back
+
+- extendedWaitUntil:
+    visible:
+      text: "(?s)^Dashboard.*"
+    timeout: 15000
+- tapOn:
+    text: "^Open navigation menu$"
+    waitToSettleTimeoutMs: 1000
+- tapOn:
+    text: "(?s)^Settings.*"
+    waitToSettleTimeoutMs: 500
+- tapOn:
+    text: "^Inventory$"
+    waitToSettleTimeoutMs: 1500
+- extendedWaitUntil:
+    visible:
+      text: "^Stock locations$"
+    timeout: 20000
+- assertVisible:
+    text: "^(Add location|No stock locations yet|Code|Name)$"
+- runFlow:
+    when:
+      visible:
+        text: "^Add location$"
+    commands:
+      - tapOn:
+          text: "^Add location$"
+          waitToSettleTimeoutMs: 800
+      - assertVisible:
+          text: "^(Add location|Code|Name|Cancel|Save)$"
+      - back
+- back
+
+- extendedWaitUntil:
+    visible:
+      text: "(?s)^Dashboard.*"
+    timeout: 15000
+- tapOn:
+    text: "^Open navigation menu$"
+    waitToSettleTimeoutMs: 1000
+- scrollUntilVisible:
+    element:
+      text: "(?s)^Reporting.*"
+    direction: DOWN
+    timeout: 8000
+    speed: 40
+    visibilityPercentage: 50
+    centerElement: true
+- tapOn:
+    text: "(?s)^Reporting.*"
+    waitToSettleTimeoutMs: 500
+- tapOn:
+    text: "^Sales$"
+    below:
+      text: "(?s)^Reporting.*"
+    waitToSettleTimeoutMs: 1500
+- extendedWaitUntil:
+    visible:
+      text: "^Reports$"
+    timeout: 20000
+- assertVisible:
+    text: "(?s)^(Sales|Products|Customers|Daily|Monthly|Yearly|No figures for this period|Export as spreadsheet|Total sales).*"
+- tapOn:
+    text: "^Daily$"
+    waitToSettleTimeoutMs: 800
+- tapOn:
+    text: "^Monthly$"
+    waitToSettleTimeoutMs: 800
+- assertVisible:
+    text: "^Monthly$"
+- tapOn:
+    text: "^Monthly$"
+    waitToSettleTimeoutMs: 800
+- tapOn:
+    text: "^Yearly$"
+    waitToSettleTimeoutMs: 800
+- assertVisible:
+    text: "^Yearly$"
+- back
+
+- extendedWaitUntil:
+    visible:
+      text: "(?s)^Dashboard.*"
+    timeout: 15000
+- tapOn:
+    text: "^Open navigation menu$"
+    waitToSettleTimeoutMs: 1000
+- scrollUntilVisible:
+    element:
+      text: "(?s)^Reporting.*"
+    direction: DOWN
+    timeout: 8000
+    speed: 40
+    visibilityPercentage: 50
+    centerElement: true
+- tapOn:
+    text: "(?s)^Reporting.*"
+    waitToSettleTimeoutMs: 500
+- tapOn:
+    text: "^Products$"
+    below:
+      text: "(?s)^Reporting.*"
+    waitToSettleTimeoutMs: 1500
+- extendedWaitUntil:
+    visible:
+      text: "^Reports$"
+    timeout: 20000
+- assertVisible:
+    text: "(?s)^(Products|Sales|Customers|Daily|Monthly|Yearly|No figures for this period|Export as spreadsheet|Total).*"
+- back
+
+- extendedWaitUntil:
+    visible:
+      text: "(?s)^Dashboard.*"
+    timeout: 15000
+- tapOn:
+    text: "^Open navigation menu$"
+    waitToSettleTimeoutMs: 1000
+- scrollUntilVisible:
+    element:
+      text: "(?s)^Reporting.*"
+    direction: DOWN
+    timeout: 8000
+    speed: 40
+    visibilityPercentage: 50
+    centerElement: true
+- tapOn:
+    text: "(?s)^Reporting.*"
+    waitToSettleTimeoutMs: 500
+- tapOn:
+    text: "^Customers$"
+    below:
+      text: "(?s)^Reporting.*"
+    waitToSettleTimeoutMs: 1500
+- extendedWaitUntil:
+    visible:
+      text: "^Reports$"
+    timeout: 20000
+- assertVisible:
+    text: "(?s)^(Customers|Sales|Products|Daily|Monthly|Yearly|No figures for this period|Export as spreadsheet|Total).*"

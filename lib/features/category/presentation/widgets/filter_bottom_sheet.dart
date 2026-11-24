@@ -574,7 +574,9 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
 
   bool _isColorSwatchAttribute(FilterAttribute attr) {
     return attr.swatchType == 'color' ||
-        attr.code == 'color' ||
+        attr.code.toLowerCase() == 'color' ||
+        attr.code.toLowerCase().contains('color') ||
+        attr.displayName.toLowerCase().contains('color') ||
         attr.options.any((o) => o.hasColorSwatch);
   }
 
@@ -592,7 +594,10 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
         children: attr.options.map((option) {
           final optionId = option.resolvedId;
           final isSelected = selectedValues.contains(optionId);
-          final swatchColor = _parseColor(option.swatchValue);
+          final swatchColor = _parseColor(
+            option.swatchValue,
+            fallbackName: option.displayName,
+          );
 
           return GestureDetector(
             onTap: () => _toggleOption(attr.code, optionId),
@@ -610,7 +615,7 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
                           ? AppColors.primary500
                           : (isDark
                               ? AppColors.neutral600
-                              : AppColors.neutral200),
+                              : AppColors.neutral300),
                       width: isSelected ? 2.5 : 1,
                     ),
                     boxShadow: isSelected
@@ -625,7 +630,14 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
                         : null,
                   ),
                   child: isSelected
-                      ? const Icon(Icons.check, size: 18, color: AppColors.white)
+                      ? Icon(
+                          Icons.check,
+                          size: 18,
+                          color: (swatchColor != null &&
+                                  swatchColor.computeLuminance() > 0.65)
+                              ? Colors.black87
+                              : AppColors.white,
+                        )
                       : null,
                 ),
                 const SizedBox(height: 6),
@@ -650,26 +662,6 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                const SizedBox(height: 2),
-                SizedBox(
-                  width: 56,
-                  child: Text(
-                    option.swatchValue?.isNotEmpty == true
-                        ? '#${option.swatchValue!.replaceFirst('#', '').toUpperCase()}'
-                        : '',
-                    style: TextStyle(
-                      fontFamily: 'Roboto',
-                      fontSize: 9,
-                      fontWeight: FontWeight.w400,
-                      color: isDark
-                          ? AppColors.neutral500
-                          : AppColors.neutral500,
-                    ),
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
               ],
             ),
           );
@@ -678,17 +670,205 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
     );
   }
 
-  Color? _parseColor(String? hexColor) {
-    if (hexColor == null || hexColor.isEmpty) return null;
+  Color? _parseColor(String? hexOrName, {String? fallbackName}) {
+    if (hexOrName != null && hexOrName.trim().isNotEmpty) {
+      final hex = _parseHex(hexOrName);
+      if (hex != null) return hex;
+      final named = _getColorByName(hexOrName);
+      if (named != null) return named;
+    }
+    if (fallbackName != null && fallbackName.trim().isNotEmpty) {
+      final hex = _parseHex(fallbackName);
+      if (hex != null) return hex;
+      final named = _getColorByName(fallbackName);
+      if (named != null) return named;
+    }
+    return null;
+  }
+
+  Color? _parseHex(String value) {
     try {
-      final hex = hexColor.replaceFirst('#', '');
-      if (hex.length == 6) {
+      final hex = value.trim().replaceFirst('#', '');
+      if (hex.length == 6 && RegExp(r'^[0-9a-fA-F]{6}$').hasMatch(hex)) {
         return Color(int.parse('FF$hex', radix: 16));
       }
-      if (hex.length == 8) {
+      if (hex.length == 8 && RegExp(r'^[0-9a-fA-F]{8}$').hasMatch(hex)) {
         return Color(int.parse(hex, radix: 16));
       }
+      if (hex.length == 3 && RegExp(r'^[0-9a-fA-F]{3}$').hasMatch(hex)) {
+        final r = hex[0];
+        final g = hex[1];
+        final b = hex[2];
+        return Color(int.parse('FF$r$r$g$g$b$b', radix: 16));
+      }
     } catch (_) {}
+    return null;
+  }
+
+  static const Map<String, Color> _colorNameMap = {
+    // Primary & basic
+    'red': Color(0xFFE53935),
+    'green': Color(0xFF43A047),
+    'blue': Color(0xFF1E88E5),
+    'yellow': Color(0xFFFDD835),
+    'black': Color(0xFF000000),
+    'white': Color(0xFFFFFFFF),
+    'orange': Color(0xFFFB8C00),
+    'purple': Color(0xFF8E24AA),
+    'pink': Color(0xFFE91E63),
+    'brown': Color(0xFF795548),
+    'grey': Color(0xFF9E9E9E),
+    'gray': Color(0xFF9E9E9E),
+
+    // Blues
+    'navy': Color(0xFF000080),
+    'navy blue': Color(0xFF000080),
+    'navyblue': Color(0xFF000080),
+    'dark blue': Color(0xFF0D47A1),
+    'darkblue': Color(0xFF0D47A1),
+    'light blue': Color(0xFF64B5F6),
+    'lightblue': Color(0xFF64B5F6),
+    'sky blue': Color(0xFF87CEEB),
+    'skyblue': Color(0xFF87CEEB),
+    'royal blue': Color(0xFF4169E1),
+    'royalblue': Color(0xFF4169E1),
+    'baby blue': Color(0xFF89CFF0),
+    'babyblue': Color(0xFF89CFF0),
+    'cyan': Color(0xFF00BCD4),
+    'teal': Color(0xFF00897B),
+    'turquoise': Color(0xFF40E0D0),
+    'aqua': Color(0xFF00FFFF),
+    'indigo': Color(0xFF3F51B5),
+    'denim': Color(0xFF1560BD),
+    'midnight blue': Color(0xFF191970),
+    'cobalt': Color(0xFF0047AB),
+
+    // Reds & Pinks
+    'crimson': Color(0xFFDC143C),
+    'maroon': Color(0xFF800000),
+    'burgundy': Color(0xFF800020),
+    'wine': Color(0xFF722F37),
+    'ruby': Color(0xFFE0115F),
+    'scarlet': Color(0xFFFF2400),
+    'coral': Color(0xFFFF7F50),
+    'salmon': Color(0xFFFA8072),
+    'hot pink': Color(0xFFFF69B4),
+    'hotpink': Color(0xFFFF69B4),
+    'light pink': Color(0xFFF8BBD0),
+    'lightpink': Color(0xFFF8BBD0),
+    'deep pink': Color(0xFFFF1493),
+    'deeppink': Color(0xFFFF1493),
+    'magenta': Color(0xFFFF00FF),
+    'fuchsia': Color(0xFFFF00FF),
+    'rose': Color(0xFFFF007F),
+    'rose gold': Color(0xFFB76E79),
+    'rosegold': Color(0xFFB76E79),
+    'blush': Color(0xFFDE5D83),
+    'peach': Color(0xFFFFDAB9),
+    'rust': Color(0xFFB7410E),
+
+    // Greens
+    'dark green': Color(0xFF1B5E20),
+    'darkgreen': Color(0xFF1B5E20),
+    'light green': Color(0xFF81C784),
+    'lightgreen': Color(0xFF81C784),
+    'lime': Color(0xFFCDDC39),
+    'lime green': Color(0xFF32CD32),
+    'limegreen': Color(0xFF32CD32),
+    'olive': Color(0xFF808000),
+    'olive green': Color(0xFF556B2F),
+    'olivegreen': Color(0xFF556B2F),
+    'mint': Color(0xFF98FF98),
+    'mint green': Color(0xFF98FF98),
+    'mintgreen': Color(0xFF98FF98),
+    'emerald': Color(0xFF50C878),
+    'forest green': Color(0xFF228B22),
+    'forestgreen': Color(0xFF228B22),
+    'sage': Color(0xFF9CAF88),
+    'sage green': Color(0xFF9CAF88),
+    'sea green': Color(0xFF2E8B57),
+
+    // Yellows & Oranges
+    'light yellow': Color(0xFFFFF59D),
+    'dark yellow': Color(0xFFFBC02D),
+    'mustard': Color(0xFFFFDB58),
+    'mustard yellow': Color(0xFFFFDB58),
+    'gold': Color(0xFFFFD700),
+    'golden': Color(0xFFFFD700),
+    'amber': Color(0xFFFFBF00),
+    'lemon': Color(0xFFFFF44F),
+    'dark orange': Color(0xFFFF8C00),
+    'light orange': Color(0xFFFFB74D),
+    'apricot': Color(0xFFFBCEB1),
+    'tangerine': Color(0xFFF28500),
+    'terracotta': Color(0xFFE2725B),
+
+    // Purples & Violets
+    'violet': Color(0xFF7B1FA2),
+    'dark purple': Color(0xFF4A148C),
+    'light purple': Color(0xFFCE93D8),
+    'lavender': Color(0xFFE6E6FA),
+    'lilac': Color(0xFFC8A2C8),
+    'plum': Color(0xFFDDA0DD),
+    'mauve': Color(0xFFE0B0FF),
+    'palatinate purple': Color(0xFF682860),
+
+    // Neutrals & Greys
+    'off white': Color(0xFFFAF9F6),
+    'offwhite': Color(0xFFFAF9F6),
+    'ivory': Color(0xFFFFFFF0),
+    'cream': Color(0xFFFFFDD0),
+    'snow': Color(0xFFFFFAFA),
+    'pearl': Color(0xFFEAE0C8),
+    'beige': Color(0xFFF5F5DC),
+    'khaki': Color(0xFFC3B091),
+    'tan': Color(0xFFD2B48C),
+    'camel': Color(0xFFC19A6B),
+    'sand': Color(0xFFC2B280),
+    'caramel': Color(0xFFFFD59A),
+    'chocolate': Color(0xFF7B3F00),
+    'coffee': Color(0xFF6F4E37),
+    'dark brown': Color(0xFF4E342E),
+    'light brown': Color(0xFFBCAAA4),
+    'copper': Color(0xFFB87333),
+    'bronze': Color(0xFFCD7F32),
+    'charcoal': Color(0xFF36454F),
+    'jet black': Color(0xFF0A0A0A),
+    'dark grey': Color(0xFF424242),
+    'dark gray': Color(0xFF424242),
+    'light grey': Color(0xFFE0E0E0),
+    'light gray': Color(0xFFE0E0E0),
+    'silver': Color(0xFFC0C0C0),
+    'ash grey': Color(0xFFB2BEB5),
+    'ash gray': Color(0xFFB2BEB5),
+    'lavender grey': Color(0xFFC4C3D0),
+    'slate': Color(0xFF708090),
+    'slate grey': Color(0xFF708090),
+    'slate gray': Color(0xFF708090),
+    'dark lava': Color(0xFF483C32),
+  };
+
+  static Color? _getColorByName(String name) {
+    final normalized = name.toLowerCase().trim();
+    if (_colorNameMap.containsKey(normalized)) {
+      return _colorNameMap[normalized];
+    }
+    final cleaned = normalized
+        .replaceAll(RegExp(r'[-_/]+'), ' ')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+    if (_colorNameMap.containsKey(cleaned)) {
+      return _colorNameMap[cleaned];
+    }
+    final noSpaces = cleaned.replaceAll(' ', '');
+    if (_colorNameMap.containsKey(noSpaces)) {
+      return _colorNameMap[noSpaces];
+    }
+    for (final part in cleaned.split(' ')) {
+      if (_colorNameMap.containsKey(part)) {
+        return _colorNameMap[part];
+      }
+    }
     return null;
   }
 
@@ -750,7 +930,7 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
                       width: 24,
                       height: 24,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) =>
+                      errorBuilder: (context, error, stackTrace) =>
                           const SizedBox.shrink(),
                     ),
                   ),
@@ -758,14 +938,17 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
                 ],
 
                 // ── Color swatch (if any, for inline display) ──
-                if (option.hasColorSwatch &&
+                if ((option.hasColorSwatch || _isColorSwatchAttribute(attr)) &&
                     !option.hasImageSwatch) ...[
                   Container(
                     width: 20,
                     height: 20,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: _parseColor(option.swatchValue) ??
+                      color: _parseColor(
+                            option.swatchValue,
+                            fallbackName: option.displayName,
+                          ) ??
                           AppColors.neutral300,
                       border: Border.all(
                         color: isDark

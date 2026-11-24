@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/widgets/channel_logo.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_back_button.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../bloc/auth_bloc.dart';
-import 'login_page.dart';
-import '../../../../core/store_config/store_config.dart';
 import '../auth_redirect.dart';
+import '../../../../core/store_config/store_config.dart';
+import 'login_page.dart';
 
 /// Sign Up page for new customers
 /// Figma: authentication flow — registration screen
@@ -412,14 +411,9 @@ class _SignUpPageState extends State<SignUpPage> {
   }
 
   Widget _buildLogo(bool isDark) {
-    return Center(
+    return const Center(
       child: ChannelLogo(
-        height: 60,
-        fallback: SvgPicture.asset(
-          'assets/images/bagisto_logo.svg',
-          height: 60,
-          width: 60,
-        ),
+        height: 38,
       ),
     );
   }

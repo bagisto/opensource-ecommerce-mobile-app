@@ -7,14 +7,14 @@ env:
   APP_ID_IOS: "com.webkul.bagistoApp.iOS"
 
   # Credentials
-  USER_EMAIL: "demo.user@example.com"
-  USER_PASSWORD: "ExamplePass123!"
-  NEW_USER_EMAIL: "new.user@example.com"
-  NEW_USER_PASSWORD: "ExamplePass123!"
-  FORGOT_PASSWORD_EMAIL: "demo.user@example.com"
-  SIGNUP_FIRST_NAME: "Demo"
+  USER_EMAIL: "t@t.com"
+  USER_PASSWORD: "admin123"
+  NEW_USER_EMAIL: "qa_new_user+001@example.com"
+  NEW_USER_PASSWORD: "Passw0rd!"
+  FORGOT_PASSWORD_EMAIL: "t@t.com"
+  SIGNUP_FIRST_NAME: "QA"
   SIGNUP_LAST_NAME: "User"
-  SIGNUP_EMAIL_PREFIX: "demo.signup"
+  SIGNUP_EMAIL_PREFIX: "qa.signup"
 
   # Product under test
   PRODUCT_NAME: "Apple iPhone Smartphone"

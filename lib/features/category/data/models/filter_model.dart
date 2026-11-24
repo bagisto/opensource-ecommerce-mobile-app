@@ -52,8 +52,7 @@ class FilterAttribute {
 
   /// Parse from the legacy `attribute(id:)` response
   factory FilterAttribute.fromJson(Map<String, dynamic> json) {
-    final optionEdges =
-        json['options']?['edges'] as List<dynamic>? ?? [];
+    final optionEdges = json['options']?['edges'] as List<dynamic>? ?? [];
 
     return FilterAttribute(
       id: json['id']?.toString() ?? '',
@@ -68,13 +67,11 @@ class FilterAttribute {
 
   /// Parse from the `categoryAttributeFilters` API response node
   factory FilterAttribute.fromCategoryFilterJson(Map<String, dynamic> json) {
-    final optionEdges =
-        json['options']?['edges'] as List<dynamic>? ?? [];
+    final optionEdges = json['options']?['edges'] as List<dynamic>? ?? [];
 
     // Extract translated name
     String? translatedName;
-    final translationEdges =
-        json['translations']?['edges'] as List<dynamic>?;
+    final translationEdges = json['translations']?['edges'] as List<dynamic>?;
     if (translationEdges != null && translationEdges.isNotEmpty) {
       final firstTranslation =
           translationEdges.first['node'] as Map<String, dynamic>?;
@@ -83,13 +80,13 @@ class FilterAttribute {
 
     return FilterAttribute(
       id: json['id']?.toString() ?? '',
-      numericId: _parseInt(json['_id']),
+      numericId: _parseIntValue(json['_id']),
       code: json['code'] as String? ?? '',
       adminName: json['adminName'] as String? ?? '',
       type: json['type'] as String?,
       swatchType: json['swatchType'] as String?,
       validation: json['validation'] as String?,
-      position: _parseInt(json['position']),
+      position: _parseIntValue(json['position']),
       isFilterable: json['isFilterable'] == true,
       isConfigurable: json['isConfigurable'] == true,
       maxPrice: _parseDouble(json['maxPrice']),
@@ -156,8 +153,7 @@ class FilterOption {
       label = directTranslation['label'] as String?;
     }
     if (label == null || label.isEmpty) {
-      final translationEdges =
-          json['translations']?['edges'] as List<dynamic>?;
+      final translationEdges = json['translations']?['edges'] as List<dynamic>?;
       if (translationEdges != null && translationEdges.isNotEmpty) {
         final firstTranslation =
             translationEdges.first['node'] as Map<String, dynamic>?;
@@ -167,7 +163,7 @@ class FilterOption {
 
     return FilterOption(
       id: json['id']?.toString() ?? '',
-      numericId: _parseInt(json['_id']),
+      numericId: _parseIntValue(json['_id']),
       adminName: json['adminName'] as String? ?? '',
       label: label,
       sortOrder: json['sortOrder'] as int?,
@@ -193,8 +189,7 @@ class FilterOption {
       (label != null && label!.isNotEmpty) ? label! : adminName;
 
   /// Whether this option has a color swatch
-  bool get hasColorSwatch =>
-      swatchValue != null && swatchValue!.isNotEmpty;
+  bool get hasColorSwatch => swatchValue != null && swatchValue!.isNotEmpty;
 
   /// Whether this option has an image swatch
   bool get hasImageSwatch =>
@@ -216,41 +211,32 @@ class SortOption {
 }
 
 /// Predefined sort options matching Bagisto API docs
-/// Sort key options: PRICE, TITLE, NEWEST, BEST_SELLING
+/// Sort key options: PRICE, NAME, CREATED_AT
 const List<SortOption> sortByFields = [
-  SortOption(
-    key: 'name-asc',
-    sortKey: 'TITLE',
-    reverse: false,
-  ),
-  SortOption(
-    key: 'name-desc',
-    sortKey: 'TITLE',
-    reverse: true,
-  ),
-  SortOption(
-    key: 'newest',
-    sortKey: 'NEWEST',
-    reverse: true,
-  ),
-  SortOption(
-    key: 'oldest',
-    sortKey: 'NEWEST',
-    reverse: false,
-  ),
-  SortOption(
-    key: 'price-asc',
-    sortKey: 'PRICE',
-    reverse: false,
-  ),
-  SortOption(
-    key: 'price-desc',
-    sortKey: 'PRICE',
-    reverse: true,
-  ),
+  SortOption(key: 'name-asc', sortKey: 'NAME', reverse: false),
+  SortOption(key: 'name-desc', sortKey: 'NAME', reverse: true),
+  SortOption(key: 'price-asc', sortKey: 'PRICE', reverse: false),
+  SortOption(key: 'price-desc', sortKey: 'PRICE', reverse: true),
+  SortOption(key: 'created_at-desc', sortKey: 'CREATED_AT', reverse: true),
+  SortOption(key: 'created_at-asc', sortKey: 'CREATED_AT', reverse: false),
 ];
 
-int? _parseInt(dynamic value) {
+/// Resolves a SortOption from an API or UI sort key.
+/// Supports both API values (`created_at-desc`, `created_at-asc`)
+/// and legacy UI aliases (`newest`, `oldest`).
+SortOption? sortOptionFromKey(String? key) {
+  if (key == null || key.isEmpty) return null;
+  final normalized = switch (key) {
+    'newest' => 'created_at-desc',
+    'oldest' => 'created_at-asc',
+    _ => key,
+  };
+  return sortByFields.where((o) => o.key == normalized).firstOrNull;
+}
+
+/// An id or position the API may send as a number or as text. A bare cast
+/// throws on the string form and takes the whole screen down with it.
+int? _parseIntValue(dynamic value) {
   if (value == null) return null;
   if (value is int) return value;
   if (value is num) return value.toInt();

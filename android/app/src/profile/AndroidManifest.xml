@@ -4,4 +4,7 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Video playback goes through Android's own HTTP stack, which blocks
+         plain http; dev servers on the LAN are http. -->
+    <application android:usesCleartextTraffic="true" />
 </manifest>

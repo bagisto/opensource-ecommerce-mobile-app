@@ -1,0 +1,35 @@
+appId: com.webkul.bagisto.mobikul
+name: Marketplace Seller - Marketing Discounts Blocked Route (Android)
+tags:
+  - android
+  - marketplace
+  - seller
+  - blocked
+---
+# Reproduces the current app issue on the vendor Discounts & deals page.
+# This is intentionally non-destructive and uses label-based navigation.
+
+- runFlow: helpers/open_marketplace_seller_dashboard.yaml
+
+- tapOn:
+    text: "^Open navigation menu$"
+    waitToSettleTimeoutMs: 1000
+- scrollUntilVisible:
+    element:
+      text: "(?s)^Discounts.*deals$"
+    direction: DOWN
+    timeout: 12000
+    speed: 60
+    visibilityPercentage: 10
+    centerElement: false
+- tapOn:
+    text: "(?s)^Discounts.*deals$"
+    waitToSettleTimeoutMs: 1500
+
+# Expected Marketplace behavior would be the Marketing screen and discount tabs.
+# The installed app currently renders a Flutter provider error screen whose text is
+# not exposed through Android accessibility, so capture the visual state and assert
+# that the intended page never appears.
+- takeScreenshot: marketing-provider-error
+- assertNotVisible:
+    text: "^Marketing$"

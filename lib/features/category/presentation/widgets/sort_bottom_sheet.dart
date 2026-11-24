@@ -137,8 +137,10 @@ class SortBottomSheet extends StatelessWidget {
       case 'name-desc':
         return l10n.categorySortZA;
       case 'newest':
+      case 'created_at-desc':
         return l10n.categorySortNewest;
       case 'oldest':
+      case 'created_at-asc':
         return l10n.categorySortOldest;
       case 'price-asc':
         return l10n.categorySortCheapest;

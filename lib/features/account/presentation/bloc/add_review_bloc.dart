@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
@@ -16,33 +14,33 @@ abstract class AddReviewEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-/// Submit a new product review
+/// Submit a new product review.
+///
+/// For a logged-in customer, [guestName] is left null — the reviewer's name
+/// is looked up from their own profile when the review is sent. Guests have
+/// no profile to pull from, so they type a name in and it's carried here.
 class SubmitReview extends AddReviewEvent {
   final int productId;
   final String title;
   final String comment;
   final int rating;
-  final String name;
-  final List<File> attachments;
+  final String? guestName;
+
+  /// Local file paths of photos/videos picked for this review, if any.
+  final List<String>? attachmentPaths;
 
   const SubmitReview({
     required this.productId,
     required this.title,
     required this.comment,
     required this.rating,
-    required this.name,
-    this.attachments = const [],
+    this.guestName,
+    this.attachmentPaths,
   });
 
   @override
-  List<Object?> get props => [
-    productId,
-    title,
-    comment,
-    rating,
-    name,
-    attachments.map((file) => file.path).toList(),
-  ];
+  List<Object?> get props =>
+      [productId, title, comment, rating, guestName, attachmentPaths];
 }
 
 /// Clear transient messages
@@ -107,13 +105,22 @@ class AddReviewBloc extends Bloc<AddReviewEvent, AddReviewState> {
     emit(state.copyWith(status: AddReviewStatus.submitting));
 
     try {
+      // Guest reviewers type their own name in (no profile to pull from).
+      // Logged-in customers keep the existing behaviour untouched — their
+      // own profile name is what the review is attributed to, matching the
+      // storefront's behaviour.
+      final guestName = event.guestName?.trim();
+      final name = (guestName != null && guestName.isNotEmpty)
+          ? guestName
+          : (await repository.getCustomerProfile()).displayName;
+
       final review = await repository.createProductReview(
         productId: event.productId,
         title: event.title,
         comment: event.comment,
         rating: event.rating,
-        name: event.name,
-        attachments: event.attachments,
+        name: name,
+        attachmentPaths: event.attachmentPaths,
       );
 
       emit(

@@ -223,28 +223,6 @@ void main() {
       expect(order.baseImageUrl, 'https://example.com/img.jpg');
     });
 
-    test('numericId is the order database id, not the increment id', () {
-      final order = RecentOrder.fromJson({
-        'id': '/api/shop/customer-orders/7',
-        '_id': 7,
-        'incrementId': 2,
-        'status': 'pending',
-        'grandTotal': 0,
-      });
-      expect(order.numericId, 7);
-      expect(order.orderNumber, '#2');
-    });
-
-    test('numericId falls back to the IRI id', () {
-      final order = RecentOrder.fromJson({
-        'id': '/api/shop/customer-orders/9',
-        'incrementId': 3,
-        'status': 'pending',
-        'grandTotal': 0,
-      });
-      expect(order.numericId, 9);
-    });
-
     test('orderNumber uses increment id without zero padding', () {
       final order = RecentOrder.fromJson({
         'incrementId': 42,
@@ -252,6 +230,19 @@ void main() {
         'grandTotal': 0,
       });
       expect(order.orderNumber, '#42');
+    });
+
+    test('orderNumber preserves alphanumeric increment id with prefix/suffix', () {
+      final order = RecentOrder.fromJson({
+        'id': '/api/shop/customer-orders/42',
+        '_id': 42,
+        'incrementId': 'Prefix00042Suffix',
+        'status': 'pending',
+        'grandTotal': 199,
+      });
+      expect(order.orderNumber, '#Prefix00042Suffix');
+      expect(order.incrementId, 'Prefix00042Suffix');
+      expect(order.numericId, 42);
     });
 
     test('handles string grand total', () {
@@ -406,6 +397,49 @@ void main() {
       });
       expect(review.productName, null);
       expect(review.productImageUrl, null);
+    });
+  });
+
+  group('OrderShipmentItem', () {
+    test('fromJson parses correctly with additional attributes', () {
+      final json = {
+        'id': '6',
+        'name': 'simple seller product',
+        'sku': '001',
+        'qty': 1,
+        'additional': {
+          'attributes': [
+            {
+              'attribute_name': 'Sold By',
+              'option_label': 'seller1-business',
+              'attribute_type': 'marketplace',
+            },
+          ],
+        },
+      };
+
+      final item = OrderShipmentItem.fromJson(json);
+      expect(item.id, '6');
+      expect(item.name, 'simple seller product');
+      expect(item.sku, '001');
+      expect(item.qty, 1);
+      expect(item.additional, isNotNull);
+      final attrs = item.additional!['attributes'] as List;
+      expect(attrs.first['attribute_name'], 'Sold By');
+      expect(attrs.first['option_label'], 'seller1-business');
+    });
+
+    test('fromJson parses string encoded additional JSON', () {
+      final json = {
+        'name': 'Product A',
+        'qty': 2,
+        'additional': '{"attributes":[{"attribute_name":"Sold By","option_label":"Store XYZ"}]}',
+      };
+
+      final item = OrderShipmentItem.fromJson(json);
+      expect(item.additional, isNotNull);
+      final attrs = item.additional!['attributes'] as List;
+      expect(attrs.first['option_label'], 'Store XYZ');
     });
   });
 

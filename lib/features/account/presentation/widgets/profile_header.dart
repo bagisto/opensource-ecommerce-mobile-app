@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -28,6 +29,9 @@ class ProfileHeader extends StatelessWidget {
     final email = profile?.email ?? fallbackEmail ?? '';
     final initials =
         profile?.initials ?? (name.isNotEmpty ? name[0].toUpperCase() : 'U');
+    final initialsText =
+        initials.length > 2 ? initials.substring(0, 2) : initials;
+    final imageUrl = profile?.imageUrl?.trim();
 
     return SafeArea(
       bottom: false,
@@ -36,25 +40,53 @@ class ProfileHeader extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
         child: Row(
           children: [
-            // Avatar circle with initials
+            // Avatar circle with image or initials fallback
             Container(
               width: 48,
               height: 48,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppColors.primary500,
                 shape: BoxShape.circle,
               ),
-              child: Center(
-                child: Text(
-                  initials.length > 2 ? initials.substring(0, 2) : initials,
-                  style: const TextStyle(
-                    fontFamily: 'Roboto',
-                    fontWeight: FontWeight.w600,
-                    fontSize: 18,
-                    color: AppColors.white,
-                  ),
-                ),
-              ),
+              clipBehavior: Clip.antiAlias,
+              child: (imageUrl != null && imageUrl.isNotEmpty)
+                  ? CachedNetworkImage(
+                      imageUrl: imageUrl,
+                      fit: BoxFit.cover,
+                      placeholder: (_, _) => Center(
+                        child: Text(
+                          initialsText,
+                          style: const TextStyle(
+                            fontFamily: 'Roboto',
+                            fontWeight: FontWeight.w600,
+                            fontSize: 18,
+                            color: AppColors.white,
+                          ),
+                        ),
+                      ),
+                      errorWidget: (_, _, _) => Center(
+                        child: Text(
+                          initialsText,
+                          style: const TextStyle(
+                            fontFamily: 'Roboto',
+                            fontWeight: FontWeight.w600,
+                            fontSize: 18,
+                            color: AppColors.white,
+                          ),
+                        ),
+                      ),
+                    )
+                  : Center(
+                      child: Text(
+                        initialsText,
+                        style: const TextStyle(
+                          fontFamily: 'Roboto',
+                          fontWeight: FontWeight.w600,
+                          fontSize: 18,
+                          color: AppColors.white,
+                        ),
+                      ),
+                    ),
             ),
             const SizedBox(width: 8),
             // Name and email

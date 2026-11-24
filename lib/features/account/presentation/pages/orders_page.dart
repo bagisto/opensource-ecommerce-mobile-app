@@ -384,7 +384,7 @@ class _OrderCard extends StatelessWidget {
               children: [
                 // Order number — Figma: Roboto Medium 14, #171717
                 Text(
-                  order.orderNumber,
+                  order.orderNumber.replaceFirst(RegExp(r'^#'), ''),
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontFamily: 'Roboto',

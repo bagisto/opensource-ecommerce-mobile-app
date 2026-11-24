@@ -5,11 +5,6 @@ import 'package:bagisto_flutter/features/category/data/models/category_model.dar
 import 'package:bagisto_flutter/features/category/data/models/product_model.dart';
 import 'package:bagisto_flutter/features/category/data/repository/category_repository.dart';
 import 'package:bagisto_flutter/features/category/presentation/bloc/category_bloc.dart';
-import 'package:bagisto_flutter/features/category/presentation/pages/category_page.dart';
-import 'package:bagisto_flutter/features/category/presentation/widgets/category_banner.dart';
-import 'package:bagisto_flutter/l10n/app_localizations.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:http/http.dart' as http;
@@ -131,11 +126,12 @@ class _FakeRepository extends CategoryRepository {
   bool treeCalled = false;
 
   @override
-  Future<List<CategoryModel>> getCategoryTabCategories() async => const [
+  Future<List<CategoryModel>> getCategoryTabCategories({
+    FetchPolicy? fetchPolicy,
+  }) async => const [
     CategoryModel(
       id: '/api/shop/categories/2',
       numericId: 2,
-      bannerUrl: 'https://example.com/men.webp',
       translation: CategoryTranslation(name: 'Men'),
       children: [
         CategoryModel(
@@ -148,7 +144,10 @@ class _FakeRepository extends CategoryRepository {
   ];
 
   @override
-  Future<List<CategoryModel>> getTreeCategories({int? parentId}) async {
+  Future<List<CategoryModel>> getTreeCategories({
+    int? parentId,
+    FetchPolicy? fetchPolicy,
+  }) async {
     treeCalled = true;
     return const [];
   }
@@ -172,17 +171,14 @@ class _FakeRepository extends CategoryRepository {
 
 void main() {
   descriptionTests();
-  test(
-    'category tab query uses the categories API with parent and children',
-    () {
-      final query = CategoryQueries.getCategoryTabCategories;
-      expect(query, contains('categories('));
-      expect(query, isNot(contains('treeCategories')));
-      for (final field in ['parent', 'children', 'status', 'pageInfo']) {
-        expect(query, contains(field));
-      }
-    },
-  );
+  test('category tab query uses the categories API with parent and children', () {
+    final query = CategoryQueries.getCategoryTabCategories;
+    expect(query, contains('categories('));
+    expect(query, isNot(contains('treeCategories')));
+    for (final field in ['parent', 'children', 'status', 'pageInfo']) {
+      expect(query, contains(field));
+    }
+  });
 
   test(
     'tab shows top-level active categories except Root, sorted by position',
@@ -228,31 +224,6 @@ void main() {
     expect(repository.treeCalled, isFalse);
     await bloc.close();
   });
-
-  testWidgets('category name is absent from the category banner', (
-    tester,
-  ) async {
-    final bloc = CategoryBloc(repository: _FakeRepository());
-    bloc.add(LoadCategories());
-    await bloc.stream.firstWhere(
-      (state) => state.status == CategoryStatus.loaded,
-    );
-
-    await tester.pumpWidget(
-      MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: BlocProvider.value(value: bloc, child: const CategoryPage()),
-      ),
-    );
-
-    final banner = find.byType(CategoryBanner);
-    expect(banner, findsOneWidget);
-    expect(
-      find.descendant(of: banner, matching: find.text('Men')),
-      findsNothing,
-    );
-  });
 }
 
 void descriptionTests() {
@@ -269,17 +240,14 @@ void descriptionTests() {
       '_id': 8,
       'translation': {
         'name': 'Electronics',
-        'description':
-            '<p>Discover <b>cutting-edge</b>&nbsp;gear &amp; more</p>\n<p></p>',
+        'description': '<p>Discover <b>cutting-edge</b>&nbsp;gear &amp; more</p>\n<p></p>',
       },
     });
 
     expect(category.plainDescription, 'Discover cutting-edge gear & more');
     expect(
-      CategoryModel.fromTreeJson({
-        'id': 'x',
-        'translation': {'description': '<p> </p>'},
-      }).plainDescription,
+      CategoryModel.fromTreeJson({'id': 'x', 'translation': {'description': '<p> </p>'}})
+          .plainDescription,
       isEmpty,
     );
   });

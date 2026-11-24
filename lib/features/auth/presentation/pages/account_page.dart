@@ -1,7 +1,6 @@
 import '../../../account/presentation/pages/guest_eu_withdrawal_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/widgets/channel_logo.dart';
 import '../../../../core/currency/currency_cubit.dart';
 import '../../../../core/graphql/graphql_client.dart';
@@ -76,7 +75,7 @@ class _AccountPageState extends State<AccountPage> {
           _dashboardBloc?.close();
           _dashboardBloc = null;
           _currentToken = null;
-          return const _LoggedOutView();
+          return _LoggedOutView(isActive: widget.isActive);
         },
       ),
     );
@@ -116,7 +115,9 @@ class _AccountPageState extends State<AccountPage> {
 
 /// ─── LOGGED OUT VIEW ───
 class _LoggedOutView extends StatelessWidget {
-  const _LoggedOutView();
+  final bool isActive;
+
+  const _LoggedOutView({required this.isActive});
 
   @override
   Widget build(BuildContext context) {
@@ -159,7 +160,7 @@ class _LoggedOutView extends StatelessWidget {
                       _buildAuthButtons(context, isDark, l10n),
 
                       // ── Guest EU withdrawal (when enabled in admin) ──
-                      const _GuestEuWithdrawalLink(),
+                      _GuestEuWithdrawalLink(isActive: isActive),
 
                       const SizedBox(height: 36),
 
@@ -201,16 +202,10 @@ class _LoggedOutView extends StatelessWidget {
     );
   }
 
-  /// Bagisto logo icon + "bagisto" wordmark
   Widget _buildLogo(bool isDark) {
-    return Center(
+    return const Center(
       child: ChannelLogo(
-        height: 60,
-        fallback: SvgPicture.asset(
-          'assets/images/bagisto_logo.svg',
-          height: 60,
-          width: 60,
-        ),
+        height: 38,
       ),
     );
   }
@@ -336,7 +331,9 @@ class _LoggedOutView extends StatelessWidget {
 /// "Withdraw from Contract" link for guests, shown only when the channel
 /// has EU withdrawal enabled (`euWithdrawalStatus`).
 class _GuestEuWithdrawalLink extends StatefulWidget {
-  const _GuestEuWithdrawalLink();
+  final bool isActive;
+
+  const _GuestEuWithdrawalLink({required this.isActive});
 
   @override
   State<_GuestEuWithdrawalLink> createState() => _GuestEuWithdrawalLinkState();
@@ -348,14 +345,26 @@ class _GuestEuWithdrawalLinkState extends State<_GuestEuWithdrawalLink> {
   @override
   void initState() {
     super.initState();
-    AccountRepository(client: GraphQLClientProvider.buildClient())
-        .isEuWithdrawalEnabled()
-        .then((enabled) {
-          if (mounted && enabled) setState(() => _enabled = true);
-        })
-        .catchError((Object e) {
-          debugPrint('⚠️ EU withdrawal status check failed: $e');
-        });
+    _loadEnabledStatus();
+  }
+
+  @override
+  void didUpdateWidget(_GuestEuWithdrawalLink oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isActive && !oldWidget.isActive) {
+      _loadEnabledStatus();
+    }
+  }
+
+  Future<void> _loadEnabledStatus() async {
+    try {
+      final enabled = await AccountRepository(
+        client: GraphQLClientProvider.buildClient(),
+      ).isEuWithdrawalEnabled();
+      if (mounted) setState(() => _enabled = enabled);
+    } catch (e) {
+      debugPrint('⚠️ EU withdrawal status check failed: $e');
+    }
   }
 
   @override

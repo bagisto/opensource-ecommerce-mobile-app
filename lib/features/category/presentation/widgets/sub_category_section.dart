@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/category_circular_image.dart';
 import '../../data/models/category_model.dart';
 import '../../data/repository/category_repository.dart';
 import '../pages/category_products_grid_page.dart';
@@ -109,8 +109,6 @@ class _SubCategoryChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return GestureDetector(
       onTap: () {
         final catId = category.numericId;
@@ -134,6 +132,9 @@ class _SubCategoryChip extends StatelessWidget {
                   categoryId: resolvedId!,
                   categoryName: category.name,
                   categorySlug: category.slug,
+                  categoryBannerUrl: category.bannerUrl,
+                  categoryDescription: category.plainDescription,
+                  displayMode: category.displayMode,
                 ),
               ),
             ),
@@ -146,37 +147,9 @@ class _SubCategoryChip extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           // ── Circle Image ──
-          Container(
-            width: 64,
-            height: 64,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: isDark ? AppColors.neutral800 : AppColors.neutral100,
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: category.imageUrl != null && category.imageUrl!.isNotEmpty
-                ? CachedNetworkImage(
-                    imageUrl: category.imageUrl!,
-                    fit: BoxFit.cover,
-                    placeholder: (ctx, url) => Container(
-                      color: isDark
-                          ? AppColors.neutral700
-                          : AppColors.neutral200,
-                    ),
-                    errorWidget: (ctx, url, err) => Icon(
-                      Icons.category_outlined,
-                      color: isDark
-                          ? AppColors.neutral400
-                          : AppColors.neutral500,
-                    ),
-                  )
-                : Icon(
-                    Icons.category_outlined,
-                    size: 28,
-                    color: isDark
-                        ? AppColors.neutral400
-                        : AppColors.neutral500,
-                  ),
+          CategoryCircularImage(
+            imageUrl: category.imageUrl,
+            size: 64,
           ),
           const SizedBox(height: 7),
           // ── Name ──

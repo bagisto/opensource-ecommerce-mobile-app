@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../../../core/constants/asset_constants.dart';
 import '../../../../core/theme/app_theme.dart';
 import 'fullscreen_image_viewer.dart';
 
@@ -36,15 +37,11 @@ class _ProductImageCarouselState extends State<ProductImageCarousel> {
     final screenWidth = MediaQuery.of(context).size.width;
 
     if (widget.imageUrls.isEmpty) {
-      return Container(
+      return Image.asset(
+        AppAssets.largeProductPlaceholder,
+        fit: BoxFit.cover,
         width: screenWidth,
         height: screenWidth,
-        color: isDark ? AppColors.neutral800 : AppColors.neutral100,
-        child: Icon(
-          Icons.image_outlined,
-          size: 64,
-          color: AppColors.neutral400,
-        ),
       );
     }
 
@@ -70,22 +67,13 @@ class _ProductImageCarouselState extends State<ProductImageCarousel> {
                 child: CachedNetworkImage(
                   imageUrl: widget.imageUrls[index],
                   fit: BoxFit.cover,
-                  placeholder: (ctx, url) => Container(
-                    color: isDark ? AppColors.neutral800 : AppColors.neutral100,
-                    child: const Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.primary500,
-                        strokeWidth: 2,
-                      ),
-                    ),
+                  placeholder: (ctx, url) => Image.asset(
+                    AppAssets.largeProductPlaceholder,
+                    fit: BoxFit.cover,
                   ),
-                  errorWidget: (ctx, url, err) => Container(
-                    color: isDark ? AppColors.neutral800 : AppColors.neutral100,
-                    child: Icon(
-                      Icons.broken_image_outlined,
-                      size: 48,
-                      color: AppColors.neutral400,
-                    ),
+                  errorWidget: (ctx, url, err) => Image.asset(
+                    AppAssets.largeProductPlaceholder,
+                    fit: BoxFit.cover,
                   ),
                 ),
               );

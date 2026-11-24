@@ -1,11 +1,16 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
+import '../../../../core/constants/asset_constants.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_back_button.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../data/models/account_models.dart';
 import '../../data/models/returns_models.dart';
 import '../../data/repository/account_repository.dart';
+import '../../data/utils/return_image_encoder.dart';
 import '../bloc/create_return_bloc.dart';
 
 /// Create Return Page — request a return/cancellation, matching the web
@@ -450,6 +455,10 @@ class _CreateReturnForm extends StatefulWidget {
 }
 
 class _CreateReturnFormState extends State<_CreateReturnForm> {
+  final ImagePicker _imagePicker = ImagePicker();
+  final List<XFile> _images = [];
+  final List<Uint8List> _imagePreviews = [];
+  bool _preparingImages = false;
   int? _selectedOrderItemId;
   int _quantity = 1;
   int? _selectedReasonId;
@@ -482,6 +491,7 @@ class _CreateReturnFormState extends State<_CreateReturnForm> {
       _selectedOrderItemId != null &&
       _selectedReasonId != null &&
       _agreed &&
+      !_preparingImages &&
       widget.state.status != CreateReturnStatus.submitting;
 
   void _clampQuantity() {
@@ -545,6 +555,8 @@ class _CreateReturnFormState extends State<_CreateReturnForm> {
                   maxLines: 3,
                 ),
                 const SizedBox(height: 16),
+                _buildEvidenceImages(isDark, l10n),
+                const SizedBox(height: 16),
                 _buildAgreementCheckbox(isDark, l10n),
                 const SizedBox(height: 8),
               ],
@@ -554,6 +566,145 @@ class _CreateReturnFormState extends State<_CreateReturnForm> {
         _buildBottomBar(isDark, l10n, state),
       ],
     );
+  }
+
+  Widget _buildEvidenceImages(bool isDark, AppLocalizations l10n) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: _sectionLabel(isDark, l10n.accountReturnEvidenceImages),
+            ),
+            OutlinedButton.icon(
+              onPressed: _showImageSourcePicker,
+              icon: const Icon(Icons.add_photo_alternate_outlined, size: 18),
+              label: Text(l10n.accountReturnAddImages),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.primary500,
+                side: const BorderSide(color: AppColors.primary500),
+                visualDensity: VisualDensity.compact,
+              ),
+            ),
+          ],
+        ),
+        if (_images.isNotEmpty) ...[
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 84,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: _images.length,
+              separatorBuilder: (_, _) => const SizedBox(width: 8),
+              itemBuilder: (context, index) => SizedBox(
+                width: 84,
+                child: Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.memory(
+                        _imagePreviews[index],
+                        width: 84,
+                        height: 84,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    Positioned(
+                      top: 2,
+                      right: 2,
+                      child: Material(
+                        color: Colors.black54,
+                        shape: const CircleBorder(),
+                        child: InkWell(
+                          customBorder: const CircleBorder(),
+                          onTap: () => setState(() {
+                            _images.removeAt(index);
+                            _imagePreviews.removeAt(index);
+                          }),
+                          child: const Padding(
+                            padding: EdgeInsets.all(4),
+                            child: Icon(
+                              Icons.close,
+                              size: 16,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Future<void> _showImageSourcePicker() async {
+    final l10n = AppLocalizations.of(context)!;
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined),
+              title: Text(l10n.accountReviewChooseFromGallery),
+              onTap: () => Navigator.pop(context, ImageSource.gallery),
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt_outlined),
+              title: Text(l10n.accountReviewTakePhoto),
+              onTap: () => Navigator.pop(context, ImageSource.camera),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (source == null || !mounted) return;
+
+    final List<XFile> picked;
+    if (source == ImageSource.gallery) {
+      picked = await _imagePicker.pickMultiImage(imageQuality: 85);
+    } else {
+      final image = await _imagePicker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 85,
+      );
+      picked = image == null ? const [] : [image];
+    }
+    if (!mounted || picked.isEmpty) return;
+
+    final l10nAfterPick = AppLocalizations.of(context)!;
+    final validImages = <XFile>[];
+    final previewBytes = <Uint8List>[];
+    for (final image in picked) {
+      final bytes = await image.readAsBytes();
+      if (bytes.length > ReturnImageEncoder.maxFileBytes) {
+        _showImageMessage(l10nAfterPick.accountReviewAttachmentTooLarge);
+      } else {
+        validImages.add(image);
+        previewBytes.add(bytes);
+      }
+    }
+    if (validImages.isNotEmpty && mounted) {
+      setState(() {
+        _images.addAll(validImages);
+        _imagePreviews.addAll(previewBytes);
+      });
+    }
+  }
+
+  void _showImageMessage(String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
+      );
   }
 
   Widget _buildSelectedOrderHeader(
@@ -652,30 +803,30 @@ class _CreateReturnFormState extends State<_CreateReturnForm> {
           ),
           child: Row(
             children: [
-              if (item.baseImageUrl != null && item.baseImageUrl!.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.network(
-                      item.baseImageUrl!,
-                      width: 48,
-                      height: 48,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) => Container(
-                        width: 48,
-                        height: 48,
-                        color: isDark
-                            ? AppColors.neutral700
-                            : AppColors.neutral100,
-                        child: Icon(
-                          Icons.image_outlined,
-                          color: AppColors.neutral400,
-                        ),
-                      ),
-                    ),
+              Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: SizedBox(
+                    width: 48,
+                    height: 48,
+                    child: item.baseImageUrl != null &&
+                            item.baseImageUrl!.isNotEmpty
+                        ? Image.network(
+                            item.baseImageUrl!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, _, _) => Image.asset(
+                              AppAssets.productPlaceholder,
+                              fit: BoxFit.cover,
+                            ),
+                          )
+                        : Image.asset(
+                            AppAssets.productPlaceholder,
+                            fit: BoxFit.cover,
+                          ),
                   ),
                 ),
+              ),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -1001,7 +1152,8 @@ class _CreateReturnFormState extends State<_CreateReturnForm> {
     AppLocalizations l10n,
     CreateReturnState state,
   ) {
-    final submitting = state.status == CreateReturnStatus.submitting;
+    final submitting =
+        state.status == CreateReturnStatus.submitting || _preparingImages;
 
     return Container(
       width: double.infinity,
@@ -1056,8 +1208,30 @@ class _CreateReturnFormState extends State<_CreateReturnForm> {
     );
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     _clampQuantity();
+    setState(() => _preparingImages = true);
+    final l10n = AppLocalizations.of(context)!;
+    List<String> images;
+    try {
+      images = await ReturnImageEncoder.encode(_images);
+    } on ReturnImageEncodingException catch (error) {
+      if (!mounted) return;
+      setState(() => _preparingImages = false);
+      _showImageMessage(
+        error.message == 'image_too_large'
+            ? l10n.accountReviewAttachmentTooLarge
+            : l10n.categorySomethingWentWrong,
+      );
+      return;
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _preparingImages = false);
+      _showImageMessage(l10n.categorySomethingWentWrong);
+      return;
+    }
+    if (!mounted) return;
+    setState(() => _preparingImages = false);
     context.read<CreateReturnBloc>().add(
       SubmitReturn(
         orderItemId: _selectedOrderItemId!,
@@ -1065,6 +1239,7 @@ class _CreateReturnFormState extends State<_CreateReturnForm> {
         rmaReasonId: _selectedReasonId!,
         information: _informationController.text.trim(),
         packageCondition: _conditionController.text.trim(),
+        images: images,
       ),
     );
   }

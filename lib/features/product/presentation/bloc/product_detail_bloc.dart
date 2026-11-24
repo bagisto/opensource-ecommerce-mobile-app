@@ -1,6 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:equatable/equatable.dart';
 import '../../../../core/error/error_mapper.dart';
+import '../../../account/data/models/review_attachment.dart';
 import '../../../category/data/models/product_model.dart';
 import '../../../category/data/repository/category_repository.dart';
 
@@ -188,6 +191,10 @@ class ProductDetailState extends Equatable {
   final bool isMoreInfoExpanded;
   final String? errorMessage;
 
+  /// Review media, keyed by review id. The product's own `reviews`
+  /// connection never carries it, so it is fetched alongside.
+  final Map<String, List<ReviewAttachment>> reviewAttachments;
+
   const ProductDetailState({
     this.status = ProductDetailStatus.initial,
     this.product,
@@ -203,6 +210,7 @@ class ProductDetailState extends Equatable {
     this.bookingForm = const {},
     this.customizableOptionValues = const {},
     this.bookingTicketQuantities = const {},
+    this.reviewAttachments = const {},
     this.bookingSlots = const [],
     this.isBookingSlotsLoading = false,
     this.bookingSlotsError,
@@ -213,7 +221,7 @@ class ProductDetailState extends Equatable {
 
   /// True when the API reports the product (or the selected variant) as not
   /// saleable, e.g. out of stock. A missing `isSaleable` is not treated as
-  /// out of stock.
+  /// out of stock, so a server that omits it keeps the buttons live.
   bool get isOutOfStock {
     final variantSaleable = selectedVariant?.isSaleable;
     if (variantSaleable != null) {
@@ -257,12 +265,14 @@ class ProductDetailState extends Equatable {
     bool? isDescriptionExpanded,
     bool? isMoreInfoExpanded,
     String? errorMessage,
+    Map<String, List<ReviewAttachment>>? reviewAttachments,
     bool clearBookingSlotsError = false,
   }) {
     return ProductDetailState(
       status: status ?? this.status,
       product: product ?? this.product,
       relatedProducts: relatedProducts ?? this.relatedProducts,
+      reviewAttachments: reviewAttachments ?? this.reviewAttachments,
       selectedAttributes: selectedAttributes ?? this.selectedAttributes,
       selectedVariant: clearSelectedVariant
           ? null
@@ -318,6 +328,7 @@ class ProductDetailState extends Equatable {
     isDescriptionExpanded,
     isMoreInfoExpanded,
     errorMessage,
+    reviewAttachments,
   ];
 }
 
@@ -357,6 +368,18 @@ class ProductDetailBloc extends Bloc<ProductDetailEvent, ProductDetailState> {
         productType: event.productType,
       );
 
+      // Deactivated on the admin side -- treat exactly like not-found so it
+      // can't be viewed or purchased from here on.
+      if (product.status == false) {
+        emit(
+          state.copyWith(
+            status: ProductDetailStatus.error,
+            errorMessage: ErrorMapper.productUnavailableMessage,
+          ),
+        );
+        return;
+      }
+
       // Related products are already included in the detailed query response
       List<ProductModel> related = product.relatedProducts;
 
@@ -391,6 +414,8 @@ class ProductDetailBloc extends Bloc<ProductDetailEvent, ProductDetailState> {
           clearBookingSlotsError: true,
         ),
       );
+
+      await _loadReviewAttachments(product, emit);
     } catch (e) {
       emit(
         state.copyWith(
@@ -401,6 +426,27 @@ class ProductDetailBloc extends Bloc<ProductDetailEvent, ProductDetailState> {
           ),
         ),
       );
+    }
+  }
+
+  /// Fills in the review photos and videos the product query leaves out.
+  ///
+  /// Best effort: the reviews are already on screen by now, so a server that
+  /// cannot answer this simply leaves them without media.
+  Future<void> _loadReviewAttachments(
+    ProductModel product,
+    Emitter<ProductDetailState> emit,
+  ) async {
+    final productId = product.numericId;
+    if (productId == null || product.reviews.isEmpty) return;
+    try {
+      final attachments = await repository.getProductReviewAttachments(
+        productId,
+      );
+      if (attachments.isEmpty) return;
+      emit(state.copyWith(reviewAttachments: attachments));
+    } catch (e) {
+      debugPrint('⚠️ ProductDetailBloc review attachments failed: $e');
     }
   }
 
@@ -416,7 +462,20 @@ class ProductDetailBloc extends Bloc<ProductDetailEvent, ProductDetailState> {
         urlKey: event.urlKey,
         productId: event.productId,
         productType: event.productType,
+        fetchPolicy: FetchPolicy.networkOnly,
       );
+
+      // Deactivated on the admin side since the last load -- drop out of the
+      // page instead of refreshing it with data that's no longer purchasable.
+      if (product.status == false) {
+        emit(
+          state.copyWith(
+            status: ProductDetailStatus.error,
+            errorMessage: ErrorMapper.productUnavailableMessage,
+          ),
+        );
+        return;
+      }
 
       // Related products are already included in the detailed query response
       List<ProductModel> related = product.relatedProducts;
@@ -452,6 +511,8 @@ class ProductDetailBloc extends Bloc<ProductDetailEvent, ProductDetailState> {
           clearBookingSlotsError: true,
         ),
       );
+
+      await _loadReviewAttachments(product, emit);
     } catch (e) {
       // On refresh error, keep the current product data if available
       if (currentProduct != null) {
@@ -884,6 +945,7 @@ class ProductDetailBloc extends Bloc<ProductDetailEvent, ProductDetailState> {
     required String urlKey,
     String? productId,
     String? productType,
+    FetchPolicy? fetchPolicy,
   }) async {
     final normalizedUrlKey = urlKey.trim();
     final normalizedProductId = productId?.trim();
@@ -893,6 +955,7 @@ class ProductDetailBloc extends Bloc<ProductDetailEvent, ProductDetailState> {
         return await repository.getProductByUrlKey(
           normalizedUrlKey,
           productType: productType,
+          fetchPolicy: fetchPolicy ?? FetchPolicy.cacheAndNetwork,
         );
       } catch (_) {
         if (normalizedProductId == null || normalizedProductId.isEmpty) {
@@ -905,6 +968,7 @@ class ProductDetailBloc extends Bloc<ProductDetailEvent, ProductDetailState> {
       return repository.getProductById(
         normalizedProductId,
         productType: productType,
+        fetchPolicy: fetchPolicy ?? FetchPolicy.cacheAndNetwork,
       );
     }
 

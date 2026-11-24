@@ -104,6 +104,28 @@ class ChannelBootstrapService {
     );
   }
 
+  /// Fetches the channel logo URL from the server. Returns an empty string
+  /// if the channel has no logo configured, or null on network failure.
+  static Future<String?> fetchChannelLogoUrl(GraphQLClient client) async {
+    try {
+      final result = await client.query(
+        QueryOptions(
+          document: gql(StoreConfigQueries.getChannelById),
+          variables: {'id': channelId.toString()},
+          fetchPolicy: FetchPolicy.networkOnly,
+        ),
+      );
+
+      if (result.hasException) throw result.exception!;
+
+      final channel = result.data?['channel'] as Map<String, dynamic>?;
+      return channel?['logoUrl']?.toString().trim() ?? '';
+    } catch (e) {
+      debugPrint('🔴 ChannelBootstrapService fetchChannelLogoUrl failed: $e');
+      return null;
+    }
+  }
+
   List<ShopLocale> _parseLocales(Map<String, dynamic> channel) {
     final edges = channel['locales']?['edges'] as List<dynamic>? ?? const [];
     return edges

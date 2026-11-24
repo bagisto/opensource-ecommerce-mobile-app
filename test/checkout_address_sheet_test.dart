@@ -532,53 +532,6 @@ void main() {
     },
   );
 
-  testWidgets(
-    'CheckoutAddressSelectionSheet shows Add New Address and calls callbacks',
-    (WidgetTester tester) async {
-      CheckoutAddress? tappedAddress;
-      var addTapped = false;
-
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: CheckoutAddressSelectionSheet(
-              title: 'Select Shipping Address',
-              addButtonLabel: 'Add New Address',
-              addresses: const [
-                CheckoutAddress(
-                  id: 'addr-1',
-                  firstName: 'Paul',
-                  lastName: 'Doe',
-                  address: 'New Noida',
-                  city: 'Noida',
-                  state: 'UP',
-                  country: 'IN',
-                  postcode: '201306',
-                  phone: '5467756767',
-                ),
-              ],
-              selectedAddressId: 'addr-1',
-              onAddressSelected: (address) => tappedAddress = address,
-              onAddNewAddress: () => addTapped = true,
-              phoneLabelBuilder: (phone) => 'Phone: $phone',
-            ),
-          ),
-        ),
-      );
-
-      expect(find.text('Add New Address'), findsOneWidget);
-
-      await tester.tap(find.text('Paul Doe'));
-      await tester.pump();
-
-      await tester.tap(find.text('Add New Address'));
-      await tester.pump();
-
-      expect(tappedAddress?.id, 'addr-1');
-      expect(addTapped, isTrue);
-    },
-  );
-
   test(
     'SaveCheckoutAddressEvent keeps separate selected billing and shipping addresses for manual checkout input',
     () async {
@@ -643,6 +596,53 @@ void main() {
 
       await emission;
       await bloc.close();
+    },
+  );
+
+  testWidgets(
+    'CheckoutAddressSelectionSheet shows Add New Address and calls callbacks',
+    (WidgetTester tester) async {
+      CheckoutAddress? tappedAddress;
+      var addTapped = false;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CheckoutAddressSelectionSheet(
+              title: 'Select Shipping Address',
+              addButtonLabel: 'Add New Address',
+              addresses: const [
+                CheckoutAddress(
+                  id: 'addr-1',
+                  firstName: 'Paul',
+                  lastName: 'Doe',
+                  address: 'New Noida',
+                  city: 'Noida',
+                  state: 'UP',
+                  country: 'IN',
+                  postcode: '201306',
+                  phone: '5467756767',
+                ),
+              ],
+              selectedAddressId: 'addr-1',
+              onAddressSelected: (address) => tappedAddress = address,
+              onAddNewAddress: () => addTapped = true,
+              phoneLabelBuilder: (phone) => 'Phone: $phone',
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Add New Address'), findsOneWidget);
+
+      await tester.tap(find.text('Paul Doe'));
+      await tester.pump();
+
+      await tester.tap(find.text('Add New Address'));
+      await tester.pump();
+
+      expect(tappedAddress?.id, 'addr-1');
+      expect(addTapped, isTrue);
     },
   );
 

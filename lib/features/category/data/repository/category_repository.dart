@@ -1,6 +1,10 @@
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import '../../../../core/constants/api_constants.dart';
 import '../../../../core/graphql/queries.dart';
+import '../../../../core/locale/locale_cubit.dart';
+import '../../../account/data/models/review_attachment.dart';
 import '../models/category_model.dart';
 import '../models/filter_model.dart';
 import '../models/product_model.dart';
@@ -10,9 +14,71 @@ class CategoryRepository {
 
   CategoryRepository({required this.client});
 
+  /// Tells the store what was searched, so the admin sees it under
+  /// Marketing → Search Terms like a web search.
+  ///
+  /// Best effort: a failure here must never get in the way of the search.
+  Future<void> logSearchTerm({
+    required String term,
+    required int results,
+  }) async {
+    try {
+      String? locale;
+      try {
+        locale = (await SharedPreferences.getInstance()).getString(
+          LocaleCubit.localeKey,
+        );
+      } catch (_) {}
+
+      await client.mutate(
+        MutationOptions(
+          document: gql(CategoryQueries.createSearchTerm),
+          variables: {
+            'input': {
+              'term': term,
+              'results': results,
+              'channel': channelCode,
+              if (locale != null && locale.isNotEmpty) 'locale': locale,
+            },
+          },
+          fetchPolicy: FetchPolicy.noCache,
+        ),
+      );
+    } catch (e) {
+      debugPrint('[CategoryRepo] logSearchTerm failed: $e');
+    }
+  }
+
+  /// Fetch a single category by numeric id.
+  Future<CategoryModel?> getCategory(
+    int id, {
+    FetchPolicy? fetchPolicy,
+  }) async {
+    try {
+      final result = await client.query(
+        QueryOptions(
+          document: gql(CategoryQueries.getCategory),
+          variables: {'id': '/api/shop/categories/$id'},
+          fetchPolicy: fetchPolicy ?? FetchPolicy.cacheAndNetwork,
+        ),
+      );
+
+      if (result.hasException) return null;
+      final data = result.data?['category'] as Map<String, dynamic>?;
+      if (data == null) return null;
+      return CategoryModel.fromTreeJson(data);
+    } catch (e) {
+      debugPrint('[CategoryRepo] getCategory failed: $e');
+      return null;
+    }
+  }
+
   /// Fetch tree categories (hierarchical)
   /// Maps to: GET_TREE_CATEGORIES from nextjs-commerce
-  Future<List<CategoryModel>> getTreeCategories({int? parentId}) async {
+  Future<List<CategoryModel>> getTreeCategories({
+    int? parentId,
+    FetchPolicy? fetchPolicy,
+  }) async {
     final Map<String, dynamic> variables = {};
     if (parentId != null) {
       variables['parentId'] = parentId;
@@ -22,7 +88,7 @@ class CategoryRepository {
       QueryOptions(
         document: gql(CategoryQueries.getTreeCategories),
         variables: variables,
-        fetchPolicy: FetchPolicy.cacheAndNetwork,
+        fetchPolicy: fetchPolicy ?? FetchPolicy.cacheAndNetwork,
       ),
     );
 
@@ -33,11 +99,28 @@ class CategoryRepository {
     final data = result.data?['treeCategories'] as List<dynamic>?;
     if (data == null) return [];
 
-    // Server filters inactive categories here; filter again in case it stops.
-    return data
+    final categories = data
         .map((json) => CategoryModel.fromTreeJson(json as Map<String, dynamic>))
-        .where((category) => category.isActive)
         .toList();
+
+    // With no parentId, the API hands back the system Root category itself
+    // rather than its children -- promote those children to the top level
+    // instead of showing "Root" as a customer-facing category. Only applies
+    // to the initial, unscoped fetch; a real parentId (drilling into an
+    // actual category) is returned as-is.
+    if (parentId == null) {
+      final promoted = <CategoryModel>[];
+      for (final category in categories) {
+        if (category.isRoot) {
+          promoted.addAll(category.children.where((c) => c.isActive));
+        } else if (category.isActive) {
+          promoted.add(category);
+        }
+      }
+      return promoted;
+    }
+
+    return categories.where((c) => c.isActive).toList();
   }
 
   /// Root category of the default channel. Its children are the storefront's
@@ -47,7 +130,11 @@ class CategoryRepository {
   /// Categories tab: all categories from the `categories` query, keeping
   /// active top-level ones (no parent, or parent is the root) except the
   /// root itself, sorted by position. Children come from each category.
-  Future<List<CategoryModel>> getCategoryTabCategories() async {
+  /// [fetchPolicy] lets a pull-to-refresh ask for `networkOnly`; the default
+  /// serves the cache first, as the tab's first paint wants.
+  Future<List<CategoryModel>> getCategoryTabCategories({
+    FetchPolicy? fetchPolicy,
+  }) async {
     final nodes = <Map<String, dynamic>>[];
     String? after;
 
@@ -56,7 +143,7 @@ class CategoryRepository {
         QueryOptions(
           document: gql(CategoryQueries.getCategoryTabCategories),
           variables: {'first': 100, 'after': ?after},
-          fetchPolicy: FetchPolicy.cacheAndNetwork,
+          fetchPolicy: fetchPolicy ?? FetchPolicy.cacheAndNetwork,
         ),
       );
 
@@ -67,9 +154,7 @@ class CategoryRepository {
       final connection = result.data?['categories'] as Map<String, dynamic>?;
       final edges = connection?['edges'] as List<dynamic>? ?? [];
       nodes.addAll(
-        edges
-            .map((edge) => edge['node'])
-            .whereType<Map<String, dynamic>>(),
+        edges.map((edge) => edge['node']).whereType<Map<String, dynamic>>(),
       );
 
       final pageInfo = connection?['pageInfo'] as Map<String, dynamic>? ?? {};
@@ -94,11 +179,13 @@ class CategoryRepository {
 
   /// Fetch flat home categories
   /// Maps to: GET_HOME_CATEGORIES from nextjs-commerce
-  Future<List<CategoryModel>> getHomeCategories() async {
+  Future<List<CategoryModel>> getHomeCategories({
+    FetchPolicy? fetchPolicy,
+  }) async {
     final result = await client.query(
       QueryOptions(
         document: gql(CategoryQueries.getHomeCategories),
-        fetchPolicy: FetchPolicy.cacheAndNetwork,
+        fetchPolicy: fetchPolicy ?? FetchPolicy.cacheAndNetwork,
       ),
     );
 
@@ -108,14 +195,13 @@ class CategoryRepository {
 
     final edges = result.data?['categories']?['edges'] as List<dynamic>? ?? [];
 
-    // The `categories` query also returns categories disabled in admin.
     return edges
         .map(
           (edge) => CategoryModel.fromHomeCategoryJson(
             edge['node'] as Map<String, dynamic>,
           ),
         )
-        .where((category) => category.isActive)
+        .where((category) => !category.isRoot && category.isActive)
         .toList();
   }
 
@@ -212,6 +298,7 @@ class CategoryRepository {
   Future<ProductModel> getProductByUrlKey(
     String urlKey, {
     String? productType,
+    FetchPolicy fetchPolicy = FetchPolicy.cacheAndNetwork,
   }) async {
     final normalizedType = (productType ?? '').toLowerCase().trim();
     if (normalizedType == 'booking') {
@@ -224,7 +311,7 @@ class CategoryRepository {
         QueryOptions(
           document: gql(query),
           variables: {'urlKey': urlKey},
-          fetchPolicy: FetchPolicy.cacheAndNetwork,
+          fetchPolicy: fetchPolicy,
         ),
       );
 
@@ -245,7 +332,7 @@ class CategoryRepository {
       QueryOptions(
         document: gql(query),
         variables: {'urlKey': urlKey},
-        fetchPolicy: FetchPolicy.cacheAndNetwork,
+        fetchPolicy: fetchPolicy,
       ),
     );
 
@@ -265,6 +352,7 @@ class CategoryRepository {
   Future<ProductModel> getProductById(
     String productId, {
     String? productType,
+    FetchPolicy fetchPolicy = FetchPolicy.cacheAndNetwork,
   }) async {
     final normalizedType = (productType ?? '').toLowerCase().trim();
     if (normalizedType == 'booking') {
@@ -275,7 +363,7 @@ class CategoryRepository {
         QueryOptions(
           document: gql(query),
           variables: {'id': productId},
-          fetchPolicy: FetchPolicy.cacheAndNetwork,
+          fetchPolicy: fetchPolicy,
         ),
       );
 
@@ -296,7 +384,7 @@ class CategoryRepository {
       QueryOptions(
         document: gql(query),
         variables: {'id': productId},
-        fetchPolicy: FetchPolicy.cacheAndNetwork,
+        fetchPolicy: fetchPolicy,
       ),
     );
 
@@ -506,6 +594,41 @@ class CategoryRepository {
   }
 
   /// Fetch related products for a given product
+  /// Review media for [productId], keyed by [reviewIdKey] so it matches a
+  /// review however that review's own query spelled its id.
+  ///
+  /// See [ProductQueries.getProductReviewAttachments] for why this is a
+  /// separate request rather than a field on the product.
+  Future<Map<String, List<ReviewAttachment>>> getProductReviewAttachments(
+    int productId, {
+    int first = 50,
+  }) async {
+    final result = await client.query(
+      QueryOptions(
+        document: gql(ProductQueries.getProductReviewAttachments),
+        variables: {'productId': productId, 'first': first},
+        fetchPolicy: FetchPolicy.noCache,
+      ),
+    );
+
+    if (result.hasException) throw result.exception!;
+
+    final edges =
+        result.data?['productReviews']?['edges'] as List<dynamic>? ?? [];
+    final byId = <String, List<ReviewAttachment>>{};
+    for (final edge in edges) {
+      final node = (edge as Map?)?['node'];
+      if (node is! Map) continue;
+      final attachments = ReviewAttachment.parseList(node['attachments']);
+      if (attachments.isEmpty) continue;
+      for (final raw in [node['_id'], node['id']]) {
+        final key = reviewIdKey(raw);
+        if (key.isNotEmpty) byId[key] = attachments;
+      }
+    }
+    return byId;
+  }
+
   Future<List<ProductModel>> getRelatedProducts(
     String urlKey, {
     int first = 10,

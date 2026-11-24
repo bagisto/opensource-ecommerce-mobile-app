@@ -111,6 +111,26 @@ class CheckoutQueries {
     }
   ''';
 
+  /// States for one country.
+  ///
+  /// The server filters by the country's numeric id; there is no code-based
+  /// filter, so callers resolve the code to an id from [getCountries] first.
+  static const String getCountryStatesByCode = r'''
+    query countryStatesByCountryId($countryId: Int!, $first: Int) {
+      countryStates(countryId: $countryId, first: $first) {
+        edges {
+          node {
+            id
+            _id
+            code
+            defaultName
+            countryId
+            countryCode
+          }
+        }
+      }
+    }
+  ''';
 }
 
 class CheckoutMutations {
@@ -155,6 +175,73 @@ class CheckoutMutations {
     }
   ''';
 
+  /// Build the provider-specific instructions for the selected online method.
+  static const String createCheckoutPaymentInitiation = r'''
+    mutation createCheckoutPaymentInitiation($input: createCheckoutPaymentInitiationInput!) {
+      createCheckoutPaymentInitiation(input: $input) {
+        checkoutPaymentInitiation {
+          method
+          type
+          redirectUrl
+          formAction
+          formFields
+          sdkData
+        }
+      }
+    }
+  ''';
+
+  /// PayPal Standard needs the reference and return URLs for app-side
+  /// confirmation after its form POST returns from the gateway.
+  static const String createPaypalStandardPaymentInitiation = r'''
+    mutation createCheckoutPaymentInitiation($input: createCheckoutPaymentInitiationInput!) {
+      createCheckoutPaymentInitiation(input: $input) {
+        checkoutPaymentInitiation {
+          method
+          type
+          redirectUrl
+          formAction
+          formFields
+          sdkData
+          reference
+          successUrl
+          failureUrl
+        }
+      }
+    }
+  ''';
+
+  /// Verify a Razorpay checkout callback and place the verified order.
+  static const String createCheckoutPaymentConfirmation = r'''
+    mutation createCheckoutPaymentConfirmation($input: createCheckoutPaymentConfirmationInput!) {
+      createCheckoutPaymentConfirmation(input: $input) {
+        checkoutPaymentConfirmation {
+          orderId
+          orderIncrementId
+          status
+          success
+          message
+        }
+      }
+    }
+  ''';
+
+  /// Confirm PayPal Standard with the server-generated payment reference.
+  static const String createPaypalStandardPaymentConfirmation = r'''
+    mutation createCheckoutPaymentConfirmation($input: createCheckoutPaymentConfirmationInput!) {
+      createCheckoutPaymentConfirmation(input: $input) {
+        checkoutPaymentConfirmation {
+          orderId
+          orderIncrementId
+          status
+          success
+          paymentStatus
+          message
+        }
+      }
+    }
+  ''';
+
   /// Place order.
   /// Note: `createCheckoutOrderPayloadData` no longer exposes
   /// `orderIncrementId` — selecting it fails validation (verified against the
@@ -189,6 +276,8 @@ class CheckoutMutations {
           formattedSubtotal
           taxAmount
           formattedTaxAmount
+          taxTotal
+          formattedTaxTotal
           shippingAmount
           formattedShippingAmount
         }
@@ -212,6 +301,8 @@ class CheckoutMutations {
           formattedSubtotal
           taxAmount
           formattedTaxAmount
+          taxTotal
+          formattedTaxTotal
           shippingAmount
           formattedShippingAmount
         }

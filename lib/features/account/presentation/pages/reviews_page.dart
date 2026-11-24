@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/constants/asset_constants.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/bloc_refresh.dart';
 import '../../../../core/widgets/app_back_button.dart';
@@ -7,15 +8,13 @@ import '../../../../l10n/app_localizations.dart';
 import '../../data/models/account_models.dart';
 import '../bloc/review_bloc.dart';
 import '../widgets/product_reviews_section.dart' show openReviewedProduct;
-import '../widgets/review_attachments_strip.dart';
-import '../../../../core/store_config/store_config.dart';
 
 /// Reviews Page — Figma node-id=245-5802
 ///
 /// Displays a list of the customer's product reviews:
 ///   - AppBar: back arrow + "Reviews" title
 ///   - Count header: "N Reviews" + sort icon
-///   - Review cards with product image, name, rating badge, date, title, comment
+///   - Review cards with product image, review title, date, stars and comment
 ///
 /// Architecture:
 ///   BlocProvider<ReviewBloc> → ReviewsPage → Repository → GraphQL
@@ -31,8 +30,9 @@ class ReviewsPage extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context)!;
     final mode = context.read<ReviewBloc>().state.mode;
-    final pageTitle =
-        mode == ReviewMode.product ? l10n.accountProductReviews : l10n.accountMyReviews;
+    final pageTitle = mode == ReviewMode.product
+        ? l10n.accountProductReviews
+        : l10n.accountMyReviews;
 
     return Scaffold(
       backgroundColor: isDark ? AppColors.neutral900 : AppColors.white,
@@ -74,14 +74,12 @@ class ReviewsPage extends StatelessWidget {
           }
         },
         builder: (context, state) {
-          if (state.status == ReviewStatus.loading &&
-              state.reviews.isEmpty) {
+          if (state.status == ReviewStatus.loading && state.reviews.isEmpty) {
             return const Center(child: CircularProgressIndicator());
           }
 
           final Widget content;
-          if (state.status == ReviewStatus.error &&
-              state.reviews.isEmpty) {
+          if (state.status == ReviewStatus.error && state.reviews.isEmpty) {
             content = _fillViewport(
               _buildErrorState(context, state.errorMessage),
             );
@@ -199,9 +197,8 @@ class ReviewsPage extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             TextButton(
-              onPressed: () => context
-                  .read<ReviewBloc>()
-                  .add(const LoadReviews()),
+              onPressed: () =>
+                  context.read<ReviewBloc>().add(const LoadReviews()),
               child: Text(
                 l10n.commonRetry,
                 style: TextStyle(
@@ -260,8 +257,7 @@ class _ReviewListState extends State<_ReviewList> {
 
   void _onScroll() {
     // Update scroll arrow visibility
-    final hasScrollableContent =
-        _scrollController.position.maxScrollExtent > 0;
+    final hasScrollableContent = _scrollController.position.maxScrollExtent > 0;
     final atTop = _scrollController.position.pixels <= 0;
     final atBottom =
         _scrollController.position.pixels >=
@@ -413,7 +409,8 @@ class _ReviewListState extends State<_ReviewList> {
                 return const Padding(
                   padding: EdgeInsets.symmetric(vertical: 16),
                   child: Center(
-                      child: CircularProgressIndicator(strokeWidth: 2)),
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
                 );
               }
 
@@ -504,30 +501,79 @@ class _ReviewCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Product header: image + name ──
-          _buildProductHeader(context),
-
-          const SizedBox(height: 8),
-
-          // ── Rating row + date ──
-          _buildRatingRow(context),
-
-          const SizedBox(height: 12),
-
-          // ── Review title ──
-          Text(
-            review.title,
-            style: TextStyle(
-              fontFamily: 'Roboto',
-              fontWeight: FontWeight.w500,
-              fontSize: 14,
-              color: isDark ? AppColors.neutral200 : AppColors.neutral900,
-            ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 62,
+                height: 62,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  color: isDark ? AppColors.neutral700 : AppColors.neutral200,
+                ),
+                clipBehavior: Clip.antiAlias,
+                child:
+                    review.productImageUrl != null &&
+                        review.productImageUrl!.isNotEmpty
+                    ? Image.network(
+                        review.productImageUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) => Image.asset(
+                          AppAssets.productPlaceholder,
+                          fit: BoxFit.cover,
+                        ),
+                      )
+                    : Image.asset(
+                        AppAssets.productPlaceholder,
+                        fit: BoxFit.cover,
+                      ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      review.title,
+                      style: TextStyle(
+                        fontFamily: 'Roboto',
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                        color: isDark
+                            ? AppColors.neutral200
+                            : AppColors.neutral900,
+                      ),
+                    ),
+                    if (review.formattedDateTime.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        review.formattedDateTime,
+                        style: const TextStyle(
+                          fontFamily: 'Roboto',
+                          fontSize: 13,
+                          color: AppColors.neutral500,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 8),
+                    Row(
+                      children: List.generate(
+                        5,
+                        (index) => Icon(
+                          Icons.star,
+                          size: 18,
+                          color: index < review.rating
+                              ? const Color(0xFFFF9800)
+                              : AppColors.neutral500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-
-          const SizedBox(height: 8),
-
-          // ── Review comment ──
+          const SizedBox(height: 12),
           Text(
             review.comment,
             style: TextStyle(
@@ -537,176 +583,8 @@ class _ReviewCard extends StatelessWidget {
               color: isDark ? AppColors.neutral300 : AppColors.neutral700,
             ),
           ),
-
-          if (review.attachments.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            ReviewAttachmentsStrip(attachments: review.attachments),
-          ],
         ],
       ),
-    );
-  }
-
-  /// Product header: 62×62 rounded-8 image + product name
-  /// Figma node: 245:6082
-  Widget _buildProductHeader(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Product image — 62×62, rounded-8
-        Container(
-          width: 62,
-          height: 62,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            color: isDark ? AppColors.neutral700 : const Color(0x1A0E1019),
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: review.productImageUrl != null &&
-                  review.productImageUrl!.isNotEmpty
-              ? Image.network(
-                  review.productImageUrl!,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Center(
-                    child: Icon(
-                      Icons.image_not_supported_outlined,
-                      size: 28,
-                      color: AppColors.neutral400,
-                    ),
-                  ),
-                )
-              : Center(
-                  child: Icon(
-                    Icons.image_outlined,
-                    size: 28,
-                    color: AppColors.neutral400,
-                  ),
-                ),
-        ),
-
-        const SizedBox(width: 10),
-
-        // Product name — Figma node: 245:6085
-        Expanded(
-          child: Text(
-            review.productName ??
-                (StoreConfig.of(context).censorReviewerName
-                    ? censoredReviewerName(review.name)
-                    : review.name),
-            style: TextStyle(
-              fontFamily: 'Roboto',
-              fontWeight: FontWeight.w500,
-              fontSize: 16,
-              color: isDark ? AppColors.neutral200 : AppColors.neutral900,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// Rating badge row: [⭐ 4.5] Average, [Approved] ... Posted on 25 Nov 2024
-  /// Figma node: 152:4078
-  Widget _buildRatingRow(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final l10n = AppLocalizations.of(context)!;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Badges row: status badge + rating badge + label
-        Row(
-          children: [
-            // Status badge
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: review.isApproved
-                    ? const Color(0xFFD4EDDA)
-                    : const Color(0xFFFFF3CD),
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(
-                  color: review.isApproved
-                      ? const Color(0xFFC3E6CB)
-                      : const Color(0xFFFFECB5),
-                ),
-              ),
-              child: Text(
-                review.statusLabel,
-                style: TextStyle(
-                  fontFamily: 'Roboto',
-                  fontWeight: FontWeight.w500,
-                  fontSize: 12,
-                  color: review.isApproved
-                      ? const Color(0xFF155724)
-                      : const Color(0xFF856404),
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            // Orange rating badge — Figma: bg #FE9A00, rounded-6
-            Container(
-              padding: const EdgeInsets.only(
-                left: 4,
-                right: 6,
-                top: 4,
-                bottom: 4,
-              ),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFE9A00),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.star, size: 16, color: AppColors.white),
-                  const SizedBox(width: 1),
-                  Text(
-                    review.rating > 0
-                        ? review.rating.toStringAsFixed(1)
-                        : '0.0',
-                    style: const TextStyle(
-                      fontFamily: 'Roboto',
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14,
-                      color: AppColors.white,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 6),
-            Flexible(
-              child: Text(
-                review.ratingLabel,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontFamily: 'Roboto',
-                  fontWeight: FontWeight.w500,
-                  fontSize: 14,
-                  color: isDark ? AppColors.neutral200 : AppColors.neutral900,
-                ),
-              ),
-            ),
-          ],
-        ),
-
-        // Date row below badges
-        if (review.formattedDate.isNotEmpty) ...[
-          const SizedBox(height: 4),
-          Text(
-            l10n.accountPostedOn(review.formattedDate),
-            style: const TextStyle(
-              fontFamily: 'Roboto',
-              fontWeight: FontWeight.w400,
-              fontSize: 13,
-              color: AppColors.neutral500,
-            ),
-          ),
-        ],
-      ],
     );
   }
 }

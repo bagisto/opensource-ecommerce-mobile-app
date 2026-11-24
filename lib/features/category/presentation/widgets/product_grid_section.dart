@@ -4,11 +4,11 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/error/error_mapper.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/wishlist/wishlist_cubit.dart';
+import '../../../../core/store_config/store_config.dart';
 import '../../data/models/product_model.dart';
 import '../../data/repository/category_repository.dart';
 import '../../../product/presentation/pages/product_detail_page.dart';
 import '../pages/category_products_grid_page.dart';
-import '../../../../core/store_config/store_config.dart';
 
 /// Products grid section
 /// Figma: Frame 21 – "Products" header + 2-column grid
@@ -289,28 +289,34 @@ class _ProductCard extends StatelessWidget {
   }
 
   Widget _buildPriceRow(BuildContext context) {
+    final prefix = product.priceLabelPrefix;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return FittedBox(
       fit: BoxFit.scaleDown,
       alignment: Alignment.centerLeft,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
+          if (prefix != null && prefix.isNotEmpty) ...[
+            Text(
+              '$prefix ',
+              style: TextStyle(
+                fontFamily: 'Roboto',
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+                color: isDark ? AppColors.neutral400 : AppColors.neutral600,
+              ),
+            ),
+          ],
           Text(
             product.formattedDisplayPrice,
             style: AppTextStyles.priceText(context),
           ),
           if (product.originalPrice != null) ...[
-            const SizedBox(width: 3),
+            const SizedBox(width: 4),
             Text(
               product.formattedOriginalPrice ?? '',
               style: AppTextStyles.originalPriceText(context),
-            ),
-          ],
-          if (product.discountPercent != null) ...[
-            const SizedBox(width: 3),
-            Text(
-              '${product.discountPercent}% off',
-              style: AppTextStyles.discountText(context),
             ),
           ],
         ],
@@ -319,9 +325,16 @@ class _ProductCard extends StatelessWidget {
   }
 
   Widget _buildRatingRow(BuildContext context) {
+    final reviewCount = product.totalReviewCount ?? product.reviewCount;
+    if (reviewCount == 0) {
+      return const SizedBox.shrink();
+    }
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final rating = product.averageRating;
-    final reviewCount = product.reviews.length;
+    final summaryCount = StoreConfig.of(context).reviewSummaryCount(
+      reviewCount: reviewCount,
+      starCount: product.reviewStarCount,
+    );
 
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -356,7 +369,7 @@ class _ProductCard extends StatelessWidget {
         // ── Review Count ──
         Flexible(
           child: Text(
-            reviewCount > 0 ? '$reviewCount' : '0',
+            '$summaryCount',
             style: TextStyle(
               fontFamily: 'Roboto',
               fontSize: 14,

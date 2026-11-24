@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../../core/store_config/store_config.dart';
+import '../../../../core/constants/asset_constants.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../l10n/app_localizations.dart';
+import '../../../../core/store_config/store_config.dart';
 import '../../data/models/home_models.dart';
 
 /// Large product card (Figma node 86:962).
@@ -62,7 +62,7 @@ class ProductCardLarge extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildImage(context, w, isDark),
+              _buildImage(context, w),
               const SizedBox(height: 10),
               Text(
                 product.name,
@@ -87,7 +87,7 @@ class ProductCardLarge extends StatelessWidget {
     );
   }
 
-  Widget _buildImage(BuildContext context, double size, bool isDark) {
+  Widget _buildImage(BuildContext context, double size) {
     return Stack(
       children: [
         ClipRRect(
@@ -103,12 +103,39 @@ class ProductCardLarge extends StatelessWidget {
                     fit: BoxFit.cover,
                     width: size,
                     height: size,
+                    loadingBuilder: (context, child, progress) =>
+                        progress == null ? child : _imagePlaceholder(size),
                     errorBuilder: (context, error, stackTrace) =>
-                        _imagePlaceholder(isDark),
+                        _imagePlaceholder(size),
                   )
-                : _imagePlaceholder(isDark),
+                : _imagePlaceholder(size),
           ),
         ),
+        // Product Badge: "Sale" (red) or "New" (dark navy) top-left
+        if (product.hasSaleBadge || product.isNew)
+          Positioned(
+            top: 8,
+            left: 8,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: product.hasSaleBadge
+                    ? const Color(0xFFDC2626)
+                    : const Color(0xFF0F172A),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                product.hasSaleBadge ? 'Sale' : 'New',
+                style: const TextStyle(
+                  fontFamily: 'Roboto',
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                  height: 1.1,
+                ),
+              ),
+            ),
+          ),
         if (showWishlistIcon && StoreConfig.of(context).showWishlist)
           Positioned(
             top: 5,
@@ -143,31 +170,42 @@ class ProductCardLarge extends StatelessWidget {
   }
 
   Widget _buildPriceRow(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    if (product.hasDiscount) {
-      // Figma: flex row (not wrap) with gap-3, items centered vertically
-      // Use FittedBox to scale down when content exceeds card width
-      return FittedBox(
-        fit: BoxFit.scaleDown,
-        alignment: Alignment.centerLeft,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
+    final prefix = product.priceLabelPrefix;
+
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      alignment: Alignment.centerLeft,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          if (prefix != null && prefix.isNotEmpty) ...[
             Text(
-              product.displayPriceLabel,
+              '$prefix ',
               style: TextStyle(
                 fontFamily: 'Roboto',
-                fontWeight: FontWeight.w600,
-                fontSize: 18,
+                fontWeight: FontWeight.w400,
+                fontSize: 14,
                 height: 1.0,
-                color: isDark ? AppColors.white : AppColors.neutral900,
+                color: isDark ? AppColors.neutral400 : AppColors.neutral600,
               ),
             ),
-            const SizedBox(width: 3),
+          ],
+          Text(
+            product.displayPriceLabel,
+            style: TextStyle(
+              fontFamily: 'Roboto',
+              fontWeight: FontWeight.w600,
+              fontSize: 18,
+              height: 1.0,
+              color: isDark ? AppColors.white : AppColors.neutral900,
+            ),
+          ),
+          if (product.originalPriceLabel != null) ...[
+            const SizedBox(width: 4),
             Text(
-              product.originalPriceLabel ?? '',
+              product.originalPriceLabel!,
               style: const TextStyle(
                 fontFamily: 'Roboto',
                 fontWeight: FontWeight.w400,
@@ -177,30 +215,8 @@ class ProductCardLarge extends StatelessWidget {
                 decoration: TextDecoration.lineThrough,
               ),
             ),
-            const SizedBox(width: 3),
-            Text(
-              l10n.homeDiscountOff(product.discountPercent.toString()),
-              style: const TextStyle(
-                fontFamily: 'Roboto',
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
-                height: 1.0,
-                color: AppColors.primary500,
-              ),
-            ),
           ],
-        ),
-      );
-    }
-
-    return Text(
-      product.displayPriceLabel,
-      style: TextStyle(
-        fontFamily: 'Roboto',
-        fontWeight: FontWeight.w600,
-        fontSize: 18,
-        height: 1.0,
-        color: isDark ? AppColors.white : AppColors.neutral900,
+        ],
       ),
     );
   }
@@ -209,6 +225,10 @@ class ProductCardLarge extends StatelessWidget {
   Widget _buildRating(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     if (product.reviewCount == 0) return const SizedBox.shrink();
+    final summaryCount = StoreConfig.of(context).reviewSummaryCount(
+      reviewCount: product.reviewCount,
+      starCount: product.reviewStarCount,
+    );
     final ratingStr = product.averageRating.toStringAsFixed(1);
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -239,7 +259,7 @@ class ProductCardLarge extends StatelessWidget {
         const SizedBox(width: 3),
         Flexible(
           child: Text(
-            '${product.reviewCount}',
+            '$summaryCount',
             style: TextStyle(
               fontFamily: 'Roboto',
               fontWeight: FontWeight.w400,
@@ -254,13 +274,12 @@ class ProductCardLarge extends StatelessWidget {
     );
   }
 
-  Widget _imagePlaceholder(bool isDark) {
-    return Center(
-      child: Icon(
-        Icons.image_outlined,
-        size: 40,
-        color: isDark ? AppColors.neutral500 : AppColors.neutral400,
-      ),
+  Widget _imagePlaceholder(double size) {
+    return Image.asset(
+      AppAssets.largeProductPlaceholder,
+      fit: BoxFit.cover,
+      width: size,
+      height: size,
     );
   }
 }

@@ -25,7 +25,8 @@ class MainShell extends StatefulWidget {
   const MainShell({super.key});
 
   /// GlobalKey for accessing MainShellState from anywhere in the app
-  static final GlobalKey<MainShellState> navigatorKey = GlobalKey<MainShellState>();
+  static final GlobalKey<MainShellState> navigatorKey =
+      GlobalKey<MainShellState>();
 
   @override
   State<MainShell> createState() => MainShellState();
@@ -98,7 +99,7 @@ class MainShellState extends State<MainShell> {
             children: [
               const HomePage(),
               const CategoryPage(),
-              const CartPage(),
+              CartPage(isActive: visibleIndex == AppNavigator.cartTab),
               AccountPage(isActive: _currentIndex == 3),
             ],
           ),
@@ -140,16 +141,16 @@ class MainShellState extends State<MainShell> {
                 label: l10n.mainTabCategories,
               ),
               if (StoreConfig.of(context).showCartPage)
-              _buildNavItemWithBadge(
-                index: 2,
-                icon: Icons.shopping_cart_outlined,
-                activeIcon: Icons.shopping_cart,
-                label: l10n.mainTabCart,
-                badgeCount: StoreConfig.of(context).cartCount(
-                  itemsCount: context.watch<CartBloc>().state.cart.itemsCount,
-                  itemsQty: context.watch<CartBloc>().state.cart.itemsQty,
+                _buildNavItemWithBadge(
+                  index: 2,
+                  icon: Icons.shopping_cart_outlined,
+                  activeIcon: Icons.shopping_cart,
+                  label: l10n.mainTabCart,
+                  badgeCount: StoreConfig.of(context).cartCount(
+                    itemsCount: context.watch<CartBloc>().state.cart.itemsCount,
+                    itemsQty: context.watch<CartBloc>().state.cart.itemsQty,
+                  ),
                 ),
-              ),
               _buildNavItem(
                 index: 3,
                 icon: Icons.person_outline,
@@ -186,8 +187,8 @@ class MainShellState extends State<MainShell> {
               color: isActive
                   ? AppColors.primary500
                   : isDark
-                      ? AppColors.neutral300
-                      : AppColors.neutral800,
+                  ? AppColors.neutral300
+                  : AppColors.neutral800,
             ),
             const SizedBox(height: 2),
             Text(
@@ -199,8 +200,8 @@ class MainShellState extends State<MainShell> {
                 color: isActive
                     ? AppColors.primary500
                     : isDark
-                        ? AppColors.neutral300
-                        : AppColors.neutral800,
+                    ? AppColors.neutral300
+                    : AppColors.neutral800,
               ),
             ),
           ],
@@ -236,8 +237,8 @@ class MainShellState extends State<MainShell> {
                   color: isActive
                       ? AppColors.primary500
                       : isDark
-                          ? AppColors.neutral300
-                          : AppColors.neutral800,
+                      ? AppColors.neutral300
+                      : AppColors.neutral800,
                 ),
                 if (badgeCount > 0)
                   Positioned(
@@ -275,8 +276,8 @@ class MainShellState extends State<MainShell> {
                 color: isActive
                     ? AppColors.primary500
                     : isDark
-                        ? AppColors.neutral300
-                        : AppColors.neutral800,
+                    ? AppColors.neutral300
+                    : AppColors.neutral800,
               ),
             ),
           ],
@@ -284,5 +285,4 @@ class MainShellState extends State<MainShell> {
       ),
     );
   }
-
 }

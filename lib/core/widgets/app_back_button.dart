@@ -43,7 +43,10 @@ class _AppBackButtonState extends State<AppBackButton>
     );
 
     _scaleAnimation = Tween<double>(begin: 1.0, end: 0.85).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeInOutQuad),
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeInOutQuad,
+      ),
     );
   }
 
@@ -67,9 +70,32 @@ class _AppBackButtonState extends State<AppBackButton>
 
   @override
   Widget build(BuildContext context) {
+    // Screen readers and long-press both need a name for the bare icon. It
+    // lives here rather than at each call site so no page can forget it;
+    // Flutter already translates this one for every supported locale.
+    final backLabel =
+        Localizations.of<MaterialLocalizations>(
+          context,
+          MaterialLocalizations,
+        )?.backButtonTooltip ??
+        'Back';
+
+    return Semantics(
+      button: true,
+      label: backLabel,
+      child: Tooltip(
+        message: backLabel,
+        // The Semantics above already names it; Tooltip would say it twice.
+        excludeFromSemantics: true,
+        child: _buildButton(context),
+      ),
+    );
+  }
+
+  Widget _buildButton(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final iconColor = widget.color ??
-        (isDark ? AppColors.neutral200 : AppColors.neutral900);
+    final iconColor =
+        widget.color ?? (isDark ? AppColors.neutral200 : AppColors.neutral900);
 
     return ScaleTransition(
       scale: _scaleAnimation,
@@ -91,9 +117,7 @@ class _AppBackButtonState extends State<AppBackButton>
             width: widget.tapAreaSize,
             height: widget.tapAreaSize,
             child: Icon(
-              widget.isIosStyle
-                  ? Icons.arrow_back_ios_new
-                  : Icons.arrow_back,
+              widget.isIosStyle ? Icons.arrow_back_ios_new : Icons.arrow_back,
               size: widget.size,
               color: iconColor,
             ),

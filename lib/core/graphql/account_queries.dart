@@ -81,6 +81,7 @@ class AccountQueries {
             rating
             comment
             attachments
+            customerImageUrl
             status
             createdAt
             updatedAt
@@ -576,6 +577,7 @@ class AccountQueries {
         _id
         incrementId
         status
+        hasNonCancelableBooking
         channelName
         customerEmail
         customerFirstName
@@ -595,12 +597,14 @@ class AccountQueries {
         discountRefunded
         subTotal
         baseSubTotal
+        subTotalInclTax
         taxAmount
         baseTaxAmount
         discountAmount
         baseDiscountAmount
         shippingAmount
         baseShippingAmount
+        shippingAmountInclTax
         baseCurrencyCode
         channelCurrencyCode
         orderCurrencyCode
@@ -617,7 +621,9 @@ class AccountQueries {
               name
               additional
               price
+              priceInclTax
               total
+              totalInclTax
               qtyOrdered
               qtyShipped
               qtyInvoiced
@@ -666,6 +672,27 @@ class AccountQueries {
     }
   ''';
 
+  /// Refund records for one order, including adjustment amounts that are not
+  /// exposed on `CustomerOrder` itself.
+  static const String getCustomerRefunds = r'''
+    query getCustomerRefunds($orderId: Int, $first: Int, $after: String) {
+      customerRefunds(orderId: $orderId, first: $first, after: $after) {
+        edges {
+          node {
+            _id
+            orderId
+            orderIncrementId
+            adjustmentRefund
+            adjustmentFee
+            grandTotal
+            orderCurrencyCode
+          }
+        }
+        pageInfo { hasNextPage endCursor }
+      }
+    }
+  ''';
+
   // ──────────────────────────────────────────────
   // Create Product Review
   // ──────────────────────────────────────────────
@@ -674,6 +701,8 @@ class AccountQueries {
   /// Bagisto API mutation: createProductReview(input: createProductReviewInput!)
   /// Required: productId, title, comment, rating, name
   /// Optional: email, status, attachments, clientMutationId
+  /// `attachments` is a JSON-encoded string array of Base64 data URIs
+  /// (`data:{MIME_TYPE};base64,{DATA}`), covering both images and videos.
   static const String createProductReview = r'''
     mutation createProductReview($input: createProductReviewInput!) {
       createProductReview(input: $input) {
@@ -717,6 +746,8 @@ class AccountQueries {
             baseSubTotal
             shippingAmount
             baseShippingAmount
+            subTotalInclTax
+            shippingAmountInclTax
             taxAmount
             baseTaxAmount
             discountAmount
@@ -850,7 +881,7 @@ class AccountQueries {
   /// Bagisto API mutation: createReorderOrder(input: reorderOrderInput!)
   /// Required: orderId (Int)
   /// Returns: success, message, orderId, itemsAddedCount
- static const String reorderOrder = r'''
+  static const String reorderOrder = r'''
 mutation createReorderOrder($input: createReorderOrderInput!) {
   createReorderOrder(input: $input) {
     reorderOrder {
@@ -862,25 +893,6 @@ mutation createReorderOrder($input: createReorderOrderInput!) {
   }
 }
 ''';
-
-  /// Cancel an existing order.
-  /// Bagisto API mutation: createCancelOrder(input: createCancelOrderInput!)
-  /// Required: orderId (Int)
-  /// Returns: success, message, orderId, status
-  /// (verified against the live schema; docs list the input type as
-  /// `CancelOrderInput` but the schema uses `createCancelOrderInput`).
-  static const String cancelOrder = r'''
-    mutation createCancelOrder($input: createCancelOrderInput!) {
-      createCancelOrder(input: $input) {
-        cancelOrder {
-          success
-          message
-          orderId
-          status
-        }
-      }
-    }
-  ''';
 
   // ──────────────────────────────────────────────
   // Customer Shipments
@@ -908,6 +920,7 @@ mutation createReorderOrder($input: createReorderOrderInput!) {
                   name
                   sku
                   qty
+                  additional
                 }
               }
             }
@@ -958,6 +971,7 @@ mutation createReorderOrder($input: createReorderOrderInput!) {
               name
               sku
               qty
+              additional
             }
           }
         }
@@ -1090,6 +1104,47 @@ mutation createReorderOrder($input: createReorderOrderInput!) {
           success
           message
         }
+      }
+    }
+  ''';
+
+  /// Cancel an existing order.
+  /// Bagisto API mutation: createCancelOrder(input: createCancelOrderInput!)
+  /// Required: orderId (Int)
+  /// Returns: success, message, orderId, status
+  /// (verified against the live schema; docs list the input type as
+  /// `CancelOrderInput` but the schema uses `createCancelOrderInput`).
+  static const String cancelOrder = r'''
+    mutation createCancelOrder($input: createCancelOrderInput!) {
+      createCancelOrder(input: $input) {
+        cancelOrder {
+          success
+          message
+          orderId
+          status
+        }
+      }
+    }
+  ''';
+
+  /// Orders that still have items eligible for a return. Plain list, no
+  /// pagination; `incrementId` narrows it to one order.
+  ///
+  /// Asked on its own after the order loads, so a server that does not expose
+  /// the field still shows the order — the return button simply stays hidden.
+  static const String getReturnableOrders = r'''
+    query returnableOrders($incrementId: String) {
+      returnableOrders(incrementId: $incrementId) {
+        id
+        _id
+        incrementId
+        status
+        grandTotal
+        orderCurrencyCode
+        totalQtyOrdered
+        totalReturnedQty
+        returnableQty
+        createdAt
       }
     }
   ''';

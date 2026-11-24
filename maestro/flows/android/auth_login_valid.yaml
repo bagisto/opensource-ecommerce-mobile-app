@@ -5,8 +5,8 @@ tags:
   - smoke
   - android
 env:
-  USER_EMAIL: "demo.user@example.com"
-  USER_PASSWORD: "ExamplePass123!"
+  USER_EMAIL: "t@t.com"
+  USER_PASSWORD: "admin123"
 ---
 # Selector rule: keep this flow label-based only.
 - runFlow: helpers/normalize_to_home_attached.yaml

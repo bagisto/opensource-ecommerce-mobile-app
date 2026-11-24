@@ -30,11 +30,19 @@ class LoadProductList extends ProductListEvent {
   /// e.g. '{"new":1}' or '{"featured":1}' or null.
   final String? initialFilter;
 
+  /// Optional initial sort option from themeCustomization.
+  final SortOption? initialSort;
+
+  /// Category display mode from admin ('description_only', 'products_only', 'products_and_description')
+  final String? displayMode;
+
   const LoadProductList({
     required this.categoryId,
     required this.categoryName,
     this.categorySlug = '',
     this.initialFilter,
+    this.initialSort,
+    this.displayMode,
   });
 
   @override
@@ -43,6 +51,8 @@ class LoadProductList extends ProductListEvent {
     categoryName,
     categorySlug,
     initialFilter,
+    initialSort?.key,
+    displayMode,
   ];
 }
 
@@ -142,6 +152,11 @@ class ProductListState extends Equatable {
   /// When true, UI should not show loader but still fetch from network
   final bool isCacheFirstLoad;
 
+  /// Category display mode from admin ('description_only', 'products_only', 'products_and_description')
+  final String? displayMode;
+  final String? bannerUrl;
+  final String? description;
+
   const ProductListState({
     this.status = ProductListStatus.initial,
     this.categoryId = 0,
@@ -160,13 +175,19 @@ class ProductListState extends Equatable {
     this.selectedPriceMax,
     this.currentSort = const SortOption(
       key: 'name-asc',
-      sortKey: 'TITLE',
+      sortKey: 'NAME',
       reverse: false,
     ),
     this.isLoadingFilters = false,
     this.errorMessage,
     this.isCacheFirstLoad = false,
+    this.displayMode,
+    this.bannerUrl,
+    this.description,
   });
+
+  bool get showDescription => displayMode != 'products_only';
+  bool get showProducts => displayMode != 'description_only';
 
   /// Total number of active filter values across all attributes
   int get totalActiveFilterCount {
@@ -264,6 +285,9 @@ class ProductListState extends Equatable {
     bool? isLoadingFilters,
     String? errorMessage,
     bool? isCacheFirstLoad,
+    String? displayMode,
+    String? bannerUrl,
+    String? description,
   }) {
     return ProductListState(
       status: status ?? this.status,
@@ -289,6 +313,9 @@ class ProductListState extends Equatable {
       isLoadingFilters: isLoadingFilters ?? this.isLoadingFilters,
       errorMessage: errorMessage ?? this.errorMessage,
       isCacheFirstLoad: isCacheFirstLoad ?? this.isCacheFirstLoad,
+      displayMode: displayMode ?? this.displayMode,
+      bannerUrl: bannerUrl ?? this.bannerUrl,
+      description: description ?? this.description,
     );
   }
 
@@ -313,6 +340,9 @@ class ProductListState extends Equatable {
     isLoadingFilters,
     errorMessage,
     isCacheFirstLoad,
+    displayMode,
+    bannerUrl,
+    description,
   ];
 }
 
@@ -321,8 +351,19 @@ class ProductListState extends Equatable {
 class ProductListBloc extends Bloc<ProductListEvent, ProductListState> {
   final CategoryRepository repository;
 
-  ProductListBloc({required this.repository})
-    : super(const ProductListState()) {
+  ProductListBloc({
+    required this.repository,
+    SortOption? initialSort,
+  }) : super(
+         ProductListState(
+           currentSort: initialSort ??
+               const SortOption(
+                 key: 'name-asc',
+                 sortKey: 'NAME',
+                 reverse: false,
+               ),
+         ),
+       ) {
     on<LoadProductList>(_onLoadProductList);
     on<ApplySort>(_onApplySort);
     on<ToggleFilter>(_onToggleFilter);
@@ -337,6 +378,41 @@ class ProductListBloc extends Bloc<ProductListEvent, ProductListState> {
     LoadProductList event,
     Emitter<ProductListState> emit,
   ) async {
+    String? resolvedDisplayMode = event.displayMode;
+    String? resolvedBannerUrl;
+    String? resolvedDescription;
+
+    if (resolvedDisplayMode == null && event.categoryId > 0) {
+      final cat = await repository.getCategory(event.categoryId);
+      if (cat != null) {
+        resolvedDisplayMode = cat.displayMode;
+        resolvedBannerUrl = cat.bannerUrl;
+        resolvedDescription = cat.plainDescription;
+      }
+    }
+
+    // If description_only, do not fetch or display products
+    if (resolvedDisplayMode == 'description_only') {
+      emit(
+        state.copyWith(
+          status: ProductListStatus.loaded,
+          categoryId: event.categoryId,
+          categoryName: event.categoryName,
+          categorySlug: event.categorySlug,
+          initialFilter: event.initialFilter,
+          displayMode: resolvedDisplayMode,
+          bannerUrl: resolvedBannerUrl,
+          description: resolvedDescription,
+          products: const [],
+          totalProducts: 0,
+          filterAttributes: const [],
+          isLoadingFilters: false,
+          isCacheFirstLoad: false,
+        ),
+      );
+      return;
+    }
+
     // Build filter string first to check for cached data
     final filterString = state
         .copyWith(
@@ -344,6 +420,9 @@ class ProductListBloc extends Bloc<ProductListEvent, ProductListState> {
           categoryName: event.categoryName,
           categorySlug: event.categorySlug,
           initialFilter: event.initialFilter,
+          displayMode: resolvedDisplayMode,
+          bannerUrl: resolvedBannerUrl,
+          description: resolvedDescription,
         )
         .buildFilterString();
 
@@ -353,20 +432,18 @@ class ProductListBloc extends Bloc<ProductListEvent, ProductListState> {
     );
     debugPrint('[ProductListBloc] filterString=$filterString');
 
+    final resolvedSort = event.initialSort ?? state.currentSort;
+
     // STEP 1: Try to get cached data first (cache-first, no network)
     // This gives us instant loading from cache on subsequent visits
     try {
       final cachedResult = await repository.getFilterProducts(
         filter: filterString,
         first: 12,
-        sortKey: state.currentSort.sortKey,
-        reverse: state.currentSort.reverse,
+        sortKey: resolvedSort.sortKey,
+        reverse: resolvedSort.reverse,
         useCacheFirst: true, // Only check cache, no network
       );
-
-      // Extract price range from cached filter attributes if available
-      double? priceMin;
-      double? priceMax;
 
       // If we have cached products, show them immediately without loader
       if (cachedResult.products.isNotEmpty) {
@@ -383,6 +460,10 @@ class ProductListBloc extends Bloc<ProductListEvent, ProductListState> {
             categoryName: event.categoryName,
             categorySlug: event.categorySlug,
             initialFilter: event.initialFilter,
+            currentSort: resolvedSort,
+            displayMode: resolvedDisplayMode,
+            bannerUrl: resolvedBannerUrl,
+            description: resolvedDescription,
             products: cachedResult.products,
             pageInfo: cachedResult.pageInfo,
             totalProducts: cachedResult.totalCount,
@@ -403,6 +484,10 @@ class ProductListBloc extends Bloc<ProductListEvent, ProductListState> {
             categoryName: event.categoryName,
             categorySlug: event.categorySlug,
             initialFilter: event.initialFilter,
+            currentSort: resolvedSort,
+            displayMode: resolvedDisplayMode,
+            bannerUrl: resolvedBannerUrl,
+            description: resolvedDescription,
             isCacheFirstLoad: false,
             isLoadingFilters: true,
           ),
@@ -420,6 +505,10 @@ class ProductListBloc extends Bloc<ProductListEvent, ProductListState> {
           categoryName: event.categoryName,
           categorySlug: event.categorySlug,
           initialFilter: event.initialFilter,
+          currentSort: resolvedSort,
+          displayMode: resolvedDisplayMode,
+          bannerUrl: resolvedBannerUrl,
+          description: resolvedDescription,
           isCacheFirstLoad: false,
           isLoadingFilters: true,
         ),

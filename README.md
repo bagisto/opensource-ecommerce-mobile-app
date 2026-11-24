@@ -55,8 +55,8 @@ Before beginning with the installation, you will need the following with the men
 
 - Bagisto Version - Bagisto v2.0.0 or higher
 - Android Studio Meerkat | 2024.3.2
-- Flutter Version - 3.38.9
-- Dart - 3.10.8
+- Flutter Version - 3.44.0
+- Dart - 3.12.0
 - Xcode - 26.3
 - Swift - 6.1
 
@@ -118,20 +118,13 @@ flutter run
 
 ### For Setup
 
-Change the baseDomain  as per your store
-
-Go to `lib/core/constants/api_constants.dart` and configure the following:
+In `lib/core/constants/api_constants.dart`, set your Bagisto base URL and
+storefront key in `ApiEnv`:
 
 ```dart
-/// Bagisto GraphQL endpoint (e.g., https://your-bagisto-server.com/graphql)
-const String bagistoEndpoint = 'YOUR_BAGISTO_ENDPOINT_HERE';
-
-/// Storefront key for Bagisto API
-/// Get this from your Bagisto admin panel
-const String storefrontKey = 'YOUR_STOREFRONT_KEY_HERE';
-
-/// Company name (optional metadata)
-const String companyName = 'Your Company Name';
+static const String base = String.fromEnvironment('API_BASE', defaultValue: 'YOUR_BAGISTO_BASE_URL');
+static const String shopGraphql = '$base/api/graphql';
+static const String storefrontKey = String.fromEnvironment('STOREFRONT_KEY', defaultValue: 'YOUR_STOREFRONT_KEY');
 ```
 
 ### For Theme

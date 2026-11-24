@@ -57,6 +57,7 @@ class SubmitReturn extends CreateReturnEvent {
   final int rmaReasonId;
   final String? information;
   final String? packageCondition;
+  final List<String> images;
 
   const SubmitReturn({
     required this.orderItemId,
@@ -64,6 +65,7 @@ class SubmitReturn extends CreateReturnEvent {
     required this.rmaReasonId,
     this.information,
     this.packageCondition,
+    this.images = const [],
   });
 
   @override
@@ -73,6 +75,7 @@ class SubmitReturn extends CreateReturnEvent {
     rmaReasonId,
     information,
     packageCondition,
+    images,
   ];
 }
 
@@ -366,7 +369,9 @@ class CreateReturnBloc extends Bloc<CreateReturnEvent, CreateReturnState> {
     Emitter<CreateReturnState> emit,
   ) async {
     final orderId = state.selectedOrder?.numericId;
-    if (orderId == null || state.status == CreateReturnStatus.submitting) return;
+    if (orderId == null || state.status == CreateReturnStatus.submitting) {
+      return;
+    }
 
     emit(state.copyWith(status: CreateReturnStatus.submitting));
 
@@ -379,6 +384,7 @@ class CreateReturnBloc extends Bloc<CreateReturnEvent, CreateReturnState> {
         rmaReasonId: event.rmaReasonId,
         information: event.information,
         packageCondition: event.packageCondition,
+        images: event.images,
       );
 
       emit(

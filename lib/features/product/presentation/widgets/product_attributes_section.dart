@@ -6,21 +6,24 @@ import 'package:dio/dio.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/api_constants.dart';
 import '../../../../core/error/error_mapper.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/graphql/graphql_client.dart';
 import '../../../../core/wishlist/wishlist_cubit.dart';
+import '../../../../core/store_config/store_config.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../account/data/repository/account_repository.dart';
 import '../../../auth/domain/services/auth_storage.dart';
 import '../../../category/data/models/product_model.dart';
 import '../bloc/product_detail_bloc.dart';
+import '../utils/product_share_links.dart';
 import 'product_booking_options_section.dart';
 import 'product_bundle_options_section.dart';
 import 'product_customizable_options_section.dart';
 import 'product_grouped_products_section.dart';
-import '../../../../core/store_config/store_config.dart';
 
 /// Attributes section: Size swatches, Color swatches, Text swatches,
 /// Quantity picker, and Wishlist/Compare/Share action row
@@ -453,35 +456,35 @@ class ProductAttributesSection extends StatelessWidget {
           child: Row(
             children: [
               if (config.showWishlist)
-              _buildActionItem(
-                context,
-                icon: isWishlisted ? Icons.favorite : Icons.favorite_border,
-                iconColor: isWishlisted
-                    ? Colors.red
-                    : (isDark ? AppColors.neutral200 : AppColors.neutral900),
-                label: l10n.productWishlistAction,
-                isDark: isDark,
-                isLoading: isProcessing,
-                onTap: isProcessing
-                    ? null
-                    : () => _toggleWishlist(context, productId),
-              ),
+                _buildActionItem(
+                  context,
+                  icon: isWishlisted ? Icons.favorite : Icons.favorite_border,
+                  iconColor: isWishlisted
+                      ? Colors.red
+                      : (isDark ? AppColors.neutral200 : AppColors.neutral900),
+                  label: l10n.productWishlistAction,
+                  isDark: isDark,
+                  isLoading: isProcessing,
+                  onTap: isProcessing
+                      ? null
+                      : () => _toggleWishlist(context, productId),
+                ),
               if (config.showCompare)
-              _buildActionItem(
-                context,
-                icon: Icons.compare_arrows,
-                label: l10n.productCompareAction,
-                isDark: isDark,
-                onTap: () => _addToCompare(context),
-              ),
+                _buildActionItem(
+                  context,
+                  icon: Icons.compare_arrows,
+                  label: l10n.productCompareAction,
+                  isDark: isDark,
+                  onTap: () => _addToCompare(context),
+                ),
               if (config.showSocialShare)
-              _buildActionItem(
-                context,
-                icon: Icons.share_outlined,
-                label: l10n.productShareAction,
-                isDark: isDark,
-                onTap: () => _shareProduct(context),
-              ),
+                _buildActionItem(
+                  context,
+                  icon: Icons.share_outlined,
+                  label: l10n.productShareAction,
+                  isDark: isDark,
+                  onTap: () => _shareProduct(context),
+                ),
             ],
           ),
         );
@@ -655,23 +658,142 @@ class ProductAttributesSection extends StatelessWidget {
   }
 
   void _shareProduct(BuildContext context) {
-    final productState = context.read<ProductDetailBloc>().state;
-    final product = productState.product;
-    if (product == null) return;
+    // Use the same model rendered by this section, so share text matches the
+    // product title and URL the customer is currently viewing.
+    final shareProduct = product;
 
-    // Build share text and URL
-    final base = Uri.parse(bagistoEndpoint).origin;
-    final String shareUrl = '$base/${product.urlKey ?? ''}';
+    final config = StoreConfig.of(context, listen: false);
+    final productName = shareProduct.name?.trim() ?? '';
+    final shareUrl =
+        '${Uri.parse(bagistoEndpoint).origin}/${shareProduct.urlKey ?? ''}';
+    final message = config.socialShareMessage?.trim() ?? '';
+    final shareText = [
+      message,
+      productName,
+      shareUrl,
+    ].where((part) => part.isNotEmpty).join('\n\n');
 
-    // Use share_plus to share the product
+    final providers = config.socialShareProviders;
+    if (providers != null) {
+      final supportedProviders = _shareProviderOrder
+          .where(providers.contains)
+          .toList(growable: false);
+      if (supportedProviders.isEmpty) return;
+      _showShareProviders(
+        context,
+        providers: supportedProviders,
+        productName: productName,
+        shareUrl: shareUrl,
+        message: message,
+      );
+      return;
+    }
+
+    // Older servers may omit provider configuration. Keep system sharing there.
     final box = context.findRenderObject() as RenderBox?;
     Share.share(
-      shareUrl,
-      subject: product.name,
+      shareText,
+      subject: productName,
       sharePositionOrigin: box != null
           ? box.localToGlobal(Offset.zero) & box.size
           : Rect.zero,
     );
+  }
+
+  static const Map<String, String> _shareProviderLabels = {
+    'facebook': 'Facebook',
+    'twitter': 'X',
+    'pinterest': 'Pinterest',
+    'linkedin': 'LinkedIn',
+    'whatsapp': 'WhatsApp',
+    'email': 'Email',
+  };
+
+  static const List<String> _shareProviderOrder = [
+    'facebook',
+    'twitter',
+    'pinterest',
+    'linkedin',
+    'whatsapp',
+    'email',
+  ];
+
+  static const Map<String, String> _shareProviderIcons = {
+    'facebook': 'assets/images/facebook_icon.svg',
+    'twitter': 'assets/images/share_x.svg',
+    'pinterest': 'assets/images/share_pinterest.svg',
+    'linkedin': 'assets/images/share_linkedin.svg',
+    'whatsapp': 'assets/images/share_whatsapp.svg',
+    'email': 'assets/images/share_email.svg',
+  };
+
+  void _showShareProviders(
+    BuildContext context, {
+    required List<String> providers,
+    required String productName,
+    required String shareUrl,
+    required String message,
+  }) {
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: providers
+              .map((provider) {
+                return ListTile(
+                  leading: SvgPicture.asset(
+                    _shareProviderIcons[provider]!,
+                    width: 40,
+                    height: 40,
+                  ),
+                  title: Text(_shareProviderLabels[provider]!),
+                  onTap: () {
+                    if (!sheetContext.mounted) return;
+                    Navigator.of(sheetContext).pop();
+                    _launchSocialShare(
+                      context,
+                      provider: provider,
+                      productName: productName,
+                      shareUrl: shareUrl,
+                      message: message,
+                    );
+                  },
+                );
+              })
+              .toList(growable: false),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _launchSocialShare(
+    BuildContext context, {
+    required String provider,
+    required String productName,
+    required String shareUrl,
+    required String message,
+  }) async {
+    final uri = ProductShareLinks.uriForProvider(
+      provider: provider,
+      message: message,
+      productName: productName,
+      productUrl: shareUrl,
+    );
+    if (uri == null) return;
+
+    var launched = false;
+    try {
+      launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      // Show the failure message below.
+    }
+
+    if (!launched && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to open sharing app.')),
+      );
+    }
   }
 
   Widget _buildDownloadableOptions(

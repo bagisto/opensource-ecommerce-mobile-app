@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/wishlist/wishlist_cubit.dart';
+import '../../../../core/store_config/store_config.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../data/models/account_models.dart';
 import '../../data/repository/account_repository.dart';
@@ -10,7 +11,6 @@ import '../bloc/wishlist_bloc.dart';
 import '../pages/wishlist_page.dart';
 import '../../../product/presentation/pages/product_detail_page.dart';
 import 'section_header.dart';
-import '../../../../core/store_config/store_config.dart';
 
 /// Wishlist items horizontal scroll section
 /// Figma: node-id=220-7227

@@ -137,11 +137,13 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
       } else {
         // ── Account page: call getCustomerReviews ──
         final result = await repository.getCustomerReviews(first: 20);
+        final reviews = [...result.reviews]
+          ..sort((a, b) => (a.createdAt ?? '').compareTo(b.createdAt ?? ''));
         emit(
           state.copyWith(
             status: ReviewStatus.loaded,
             mode: ReviewMode.customer,
-            reviews: result.reviews,
+            reviews: reviews,
             totalCount: result.totalCount,
             hasNextPage: result.hasNextPage,
             endCursor: result.endCursor,
@@ -176,11 +178,13 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
         first: 20,
         after: state.endCursor,
       );
+      final reviews = [...state.reviews, ...result.reviews]
+        ..sort((a, b) => (a.createdAt ?? '').compareTo(b.createdAt ?? ''));
 
       emit(
         state.copyWith(
           status: ReviewStatus.loaded,
-          reviews: [...state.reviews, ...result.reviews],
+          reviews: reviews,
           totalCount: result.totalCount,
           hasNextPage: result.hasNextPage,
           endCursor: result.endCursor,

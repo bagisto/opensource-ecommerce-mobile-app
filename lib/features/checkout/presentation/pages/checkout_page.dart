@@ -8,10 +8,12 @@ import '../../../../core/graphql/graphql_client.dart';
 import '../../../../core/currency/currency_formatter.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/selection_sheet.dart';
+import '../../../../core/store_config/store_config.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../account/data/repository/account_repository.dart';
 import '../../../account/presentation/bloc/address_book_bloc.dart';
 import '../../../account/presentation/pages/add_address_page.dart';
+import '../../../account/presentation/pages/order_detail_page.dart';
 import '../../../cart/data/models/cart_model.dart';
 import '../../../cart/presentation/bloc/cart_bloc.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
@@ -19,8 +21,11 @@ import '../../data/models/checkout_model.dart';
 import '../../data/repository/checkout_repository.dart';
 import '../bloc/checkout_bloc.dart';
 import '../helpers/checkout_address_sheet_helpers.dart';
+import '../helpers/payment_method_logo.dart';
 import '../widgets/checkout_address_selection_sheet.dart';
 import '../widgets/checkout_interaction_blocker.dart';
+import 'checkout_payment_page.dart';
+import 'razorpay_payment_page.dart';
 import 'thankyou_page.dart';
 
 class CheckoutPage extends StatelessWidget {
@@ -91,6 +96,7 @@ class _CheckoutPageViewState extends State<_CheckoutPageView> {
   final TextEditingController _couponController = TextEditingController();
   bool _couponApplyPending = false;
   bool _saveToAddressBook = true;
+  bool _taxBreakdownExpanded = false;
 
   bool _requiresShipping(CheckoutState state) => !state.isVirtualOnly;
 
@@ -247,13 +253,89 @@ class _CheckoutPageViewState extends State<_CheckoutPageView> {
               ),
             );
           }
+          if (state.status == CheckoutStatus.paymentReady &&
+              state.paymentLaunch != null) {
+            final launch = state.paymentLaunch!;
+            if (launch.type == 'sdk' &&
+                launch.method.toLowerCase() == 'razorpay') {
+              Navigator.of(context)
+                  .push<RazorpayPaymentResult>(
+                    MaterialPageRoute<RazorpayPaymentResult>(
+                      builder: (_) => RazorpayPaymentPage(launch: launch),
+                    ),
+                  )
+                  .then((result) {
+                    if (!context.mounted) return;
+                    context.read<CheckoutBloc>().add(ClearPaymentLaunch());
+                    if (result?.isSuccess == true) {
+                      context.read<CheckoutBloc>().add(
+                        ConfirmRazorpayPayment(
+                          razorpayOrderId: result!.orderId!,
+                          razorpayPaymentId: result.paymentId!,
+                          razorpaySignature: result.signature!,
+                        ),
+                      );
+                    } else if (result?.errorMessage != null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(result!.errorMessage!)),
+                      );
+                    }
+                  });
+            } else {
+              Navigator.of(context)
+                  .push<CheckoutPaymentReturn>(
+                    MaterialPageRoute<CheckoutPaymentReturn>(
+                      builder: (_) => CheckoutPaymentPage(launch: launch),
+                    ),
+                  )
+                  .then((result) {
+                    if (!context.mounted) return;
+                    context.read<CheckoutBloc>().add(ClearPaymentLaunch());
+                    if (_isStripe(launch.method)) {
+                      final reference = launch.reference;
+                      if (result != CheckoutPaymentReturn.cancelled &&
+                          reference != null &&
+                          reference.isNotEmpty) {
+                        context.read<CheckoutBloc>().add(
+                          ConfirmStripePayment(reference: reference),
+                        );
+                      }
+                      return;
+                    }
+                    if (_isPaypalStandard(launch.method)) {
+                      final reference = launch.reference;
+                      if (result != CheckoutPaymentReturn.cancelled &&
+                          reference != null &&
+                          reference.isNotEmpty) {
+                        context.read<CheckoutBloc>().add(
+                          ConfirmPaypalStandardPayment(reference: reference),
+                        );
+                      } else if (result == CheckoutPaymentReturn.cancelled) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Payment cancelled.')),
+                        );
+                      }
+                      return;
+                    }
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Payment returned. Check your orders for confirmation before trying again.',
+                        ),
+                      ),
+                    );
+                  });
+            }
+          }
+
           // Sync local address selections with bloc state
           if (state.selectedAddress != null &&
               _selectedBillingAddress == null) {
             _selectedBillingAddress = state.selectedAddress;
           }
           if (state.selectedShippingAddress != null &&
-              _selectedShippingAddress?.id != state.selectedShippingAddress?.id) {
+              _selectedShippingAddress?.id !=
+                  state.selectedShippingAddress?.id) {
             _selectedShippingAddress = state.selectedShippingAddress;
           }
           // Reset local selections when bloc resets downstream state
@@ -293,73 +375,102 @@ class _CheckoutPageViewState extends State<_CheckoutPageView> {
                     if (state.isAccountSuspended)
                       Expanded(child: _buildSuspendedNotice(isDark))
                     else
-                    Expanded(
-                      child: SingleChildScrollView(
-                        physics: const BouncingScrollPhysics(),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const SizedBox(height: 16),
-                            // Billing Address
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 20),
-                              child: _buildBillingSection(context, state),
-                            ),
-                            const SizedBox(height: 16),
-                            // Shipping Address (only when NOT using same address and NOT virtual only)
-                            if (_showsSeparateShippingForm(state)) ...[
+                      Expanded(
+                        child: SingleChildScrollView(
+                          physics: const BouncingScrollPhysics(),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 16),
+                              // Billing Address
                               Padding(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 20,
                                 ),
-                                child: _buildShippingAddressSection(
-                                  context,
-                                  state,
-                                ),
+                                child: _buildBillingSection(context, state),
                               ),
                               const SizedBox(height: 16),
-                            ],
-                            // Cart Items
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 20),
-                              child: _buildCartItemsSection(context, cart),
-                            ),
-                            const SizedBox(height: 16),
-                            // Shipping Method (only when NOT virtual only)
-                            if (!state.isVirtualOnly) ...[
+                              // Shipping Address (only when NOT using same address and NOT virtual only)
+                              if (_showsSeparateShippingForm(state)) ...[
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                  ),
+                                  child: _buildShippingAddressSection(
+                                    context,
+                                    state,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                              ],
+                              // Cart Items
                               Padding(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 20,
                                 ),
-                                child: _buildShippingMethodSection(
+                                child: _buildCartItemsSection(context, cart),
+                              ),
+                              const SizedBox(height: 16),
+                              // Shipping Method (only when NOT virtual only)
+                              if (!state.isVirtualOnly) ...[
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                  ),
+                                  child: _buildShippingMethodSection(
+                                    context,
+                                    state,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                              ],
+                              // Payment Method
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                ),
+                                child: _buildPaymentMethodSection(
                                   context,
                                   state,
                                 ),
                               ),
-                              const SizedBox(height: 8),
+                              if (state.status ==
+                                      CheckoutStatus
+                                          .paymentConfirmationPending &&
+                                  state.orderResponse != null) ...[
+                                const SizedBox(height: 16),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                  ),
+                                  child: _buildPaypalPendingNotice(
+                                    context,
+                                    state,
+                                    isDark,
+                                  ),
+                                ),
+                              ],
+                              const SizedBox(height: 32),
+                              // Coupon
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                ),
+                                child: _buildCouponSection(context, state),
+                              ),
+                              const SizedBox(height: 32),
+                              // Price Break
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                ),
+                                child: _buildPriceBreakSection(context, cart),
+                              ),
+                              const SizedBox(height: 100),
                             ],
-                            // Payment Method
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 20),
-                              child: _buildPaymentMethodSection(context, state),
-                            ),
-                            const SizedBox(height: 32),
-                            // Coupon
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 20),
-                              child: _buildCouponSection(context, state),
-                            ),
-                            const SizedBox(height: 32),
-                            // Price Break
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 20),
-                              child: _buildPriceBreakSection(context, cart),
-                            ),
-                            const SizedBox(height: 100),
-                          ],
+                          ),
                         ),
                       ),
-                    ),
                     _buildBottomBar(context, cart, state),
                   ],
                 ),
@@ -374,6 +485,51 @@ class _CheckoutPageViewState extends State<_CheckoutPageView> {
   // =====================================================================
   // APP BAR
   // =====================================================================
+
+  Widget _buildPaypalPendingNotice(
+    BuildContext context,
+    CheckoutState state,
+    bool isDark,
+  ) {
+    final order = state.orderResponse!;
+    final orderNumber = order.orderIncrementId ?? order.orderId;
+    final numericOrderId = int.tryParse(order.orderId ?? '');
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.neutral800 : AppColors.neutral100,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark ? AppColors.neutral700 : AppColors.neutral300,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            orderNumber == null
+                ? 'Order placed, payment confirmation in progress.'
+                : 'Order #$orderNumber placed, payment confirmation in progress.',
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+          if (numericOrderId != null && !state.isGuest) ...[
+            const SizedBox(height: 8),
+            TextButton(
+              onPressed: () => OrderDetailPage.navigate(
+                context,
+                orderId: numericOrderId,
+                orderNumber: orderNumber,
+                repository: context.read<AccountRepository>(),
+              ),
+              child: const Text('View order'),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
 
   Widget _buildAppBar(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -494,8 +650,7 @@ class _CheckoutPageViewState extends State<_CheckoutPageView> {
         state: state,
         label: AppLocalizations.of(context)!.checkoutDeliveredTo,
         address: displayAddr,
-        onChangePressed: () =>
-            _showShippingChangeAddressFlow(context, state),
+        onChangePressed: () => _showShippingChangeAddressFlow(context, state),
         showSameAddressCheckbox: false,
       );
     }
@@ -888,15 +1043,23 @@ class _CheckoutPageViewState extends State<_CheckoutPageView> {
           builder: (sheetContext, scrollController) {
             return CheckoutAddressSelectionSheet(
               title: isBilling
-                  ? AppLocalizations.of(pageContext)!.checkoutSelectBillingAddress
-                  : AppLocalizations.of(pageContext)!.checkoutSelectShippingAddress,
-              addButtonLabel: AppLocalizations.of(pageContext)!.accountAddNewAddress,
+                  ? AppLocalizations.of(
+                      pageContext,
+                    )!.checkoutSelectBillingAddress
+                  : AppLocalizations.of(
+                      pageContext,
+                    )!.checkoutSelectShippingAddress,
+              addButtonLabel: AppLocalizations.of(
+                pageContext,
+              )!.accountAddNewAddress,
               addresses: addresses,
               selectedAddressId: isBilling
                   ? _currentBillingAddress(state)?.id
                   : _currentShippingAddress(state)?.id,
               scrollController: scrollController,
-              phoneLabelBuilder: AppLocalizations.of(pageContext)!.checkoutPhoneValue,
+              phoneLabelBuilder: AppLocalizations.of(
+                pageContext,
+              )!.checkoutPhoneValue,
               onAddressSelected: (address) {
                 Navigator.pop(ctx);
                 _applySavedAddressSelection(
@@ -1300,8 +1463,7 @@ class _CheckoutPageViewState extends State<_CheckoutPageView> {
               : null;
         }
         // Phone fields follow the storefront `PhoneNumber` rule.
-        if (keyboardType == TextInputType.phone &&
-            !isValidPhoneNumber(value)) {
+        if (keyboardType == TextInputType.phone && !isValidPhoneNumber(value)) {
           return AppLocalizations.of(
             context,
           )!.accountPleaseEnterValidContactNumber;
@@ -1628,10 +1790,9 @@ class _CheckoutPageViewState extends State<_CheckoutPageView> {
   /// Checkbox: "Use same address for shipping?"  (Figma node 204:6691)
   Widget _buildSameAddressCheckbox(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final useSameAddress =
-        context.select(
-          (CheckoutBloc bloc) => bloc.state.useSameAddressForShipping,
-        );
+    final useSameAddress = context.select(
+      (CheckoutBloc bloc) => bloc.state.useSameAddressForShipping,
+    );
     return GestureDetector(
       onTap: () {
         context.read<CheckoutBloc>().add(ToggleSameAddress());
@@ -1842,7 +2003,6 @@ class _CheckoutPageViewState extends State<_CheckoutPageView> {
           'shippingPhoneNumber': _shippingPhoneCtrl.text.trim(),
         });
       }
-
     } else {
       input = state.selectedAddress!.toBillingInput(
         useForShipping: useSameAddressForShipping,
@@ -1896,15 +2056,15 @@ class _CheckoutPageViewState extends State<_CheckoutPageView> {
       );
     }
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final config = StoreConfig.of(context);
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          AppLocalizations.of(context)!.cartItemsInCart(
+          l10n.cartItemsInCart(
             items.length,
-            items.length == 1
-                ? AppLocalizations.of(context)!.cartUnit
-                : AppLocalizations.of(context)!.cartUnits,
+            items.length == 1 ? l10n.cartUnit : l10n.cartUnits,
           ),
           style: TextStyle(
             fontFamily: 'Roboto',
@@ -1916,13 +2076,21 @@ class _CheckoutPageViewState extends State<_CheckoutPageView> {
         ...items.asMap().entries.map((entry) {
           final idx = entry.key;
           final item = entry.value;
+          final unitPrice = item.formattedUnitPrice(config);
+          final lineTotal = item.formattedLineTotal(config);
+          final lineTotalSubValue = item.formattedLineTotalSubValue(
+            config,
+            (amount) => l10n.cartExclTax(amount),
+          );
+
           return _buildCartItemWidget(
             imageUrl: item.imageUrl,
             name: item.name,
-            pricePerUnit: item.displayPrice,
+            pricePerUnit: unitPrice,
             quantity: item.quantity,
             isBooking: item.isBooking,
-            totalPrice: item.displayTotal,
+            totalPrice: lineTotal,
+            totalPriceSubValue: lineTotalSubValue,
             showBorder: idx < items.length - 1,
           );
         }),
@@ -1937,6 +2105,7 @@ class _CheckoutPageViewState extends State<_CheckoutPageView> {
     required int quantity,
     required bool isBooking,
     required String totalPrice,
+    String? totalPriceSubValue,
     required bool showBorder,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -2013,28 +2182,56 @@ class _CheckoutPageViewState extends State<_CheckoutPageView> {
                 const SizedBox(height: 8),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      '$pricePerUnit x $quantity ${quantity == 1 ? AppLocalizations.of(context)!.cartUnit : AppLocalizations.of(context)!.cartUnits}',
-                      style: TextStyle(
-                        fontFamily: 'Roboto',
-                        fontWeight: FontWeight.w400,
-                        fontSize: 14,
-                        color: isDark
-                            ? AppColors.neutral300
-                            : AppColors.neutral900,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '$pricePerUnit x $quantity ${quantity == 1 ? AppLocalizations.of(context)!.cartUnit : AppLocalizations.of(context)!.cartUnits}',
+                            style: TextStyle(
+                              fontFamily: 'Roboto',
+                              fontWeight: FontWeight.w400,
+                              fontSize: 14,
+                              color: isDark
+                                  ? AppColors.neutral300
+                                  : AppColors.neutral900,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    Text(
-                      totalPrice,
-                      style: TextStyle(
-                        fontFamily: 'Roboto',
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                        color: isDark
-                            ? AppColors.neutral100
-                            : AppColors.neutral900,
-                      ),
+                    const SizedBox(width: 8),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          totalPrice,
+                          style: TextStyle(
+                            fontFamily: 'Roboto',
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            color: isDark
+                                ? AppColors.neutral100
+                                : AppColors.neutral900,
+                          ),
+                        ),
+                        if (totalPriceSubValue != null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2),
+                            child: Text(
+                              totalPriceSubValue,
+                              style: TextStyle(
+                                fontFamily: 'Roboto',
+                                fontSize: 11,
+                                color: isDark
+                                    ? AppColors.neutral400
+                                    : AppColors.neutral500,
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                   ],
                 ),
@@ -2321,6 +2518,7 @@ class _CheckoutPageViewState extends State<_CheckoutPageView> {
               title: method.title,
               subtitle: method.description ?? '',
               paymentCode: method.method,
+              iconUrl: method.icon,
               onTap: () {
                 setState(() => _selectedPaymentMethod = method.method);
                 context.read<CheckoutBloc>().add(
@@ -2338,47 +2536,8 @@ class _CheckoutPageViewState extends State<_CheckoutPageView> {
   // PAYMENT ICON HELPER
   // =====================================================================
 
-  Widget _getPaymentIcon(String code) {
-    IconData iconData;
-    Color bgColor;
-    Color iconColor;
-
-    switch (code) {
-      case 'paypal_smart_button':
-        iconData = Icons.paypal_outlined;
-        bgColor = const Color(0xFFE8F0FE);
-        iconColor = const Color(0xFF003087);
-        break;
-      case 'cashondelivery':
-        iconData = Icons.local_atm;
-        bgColor = const Color(0xFFE8F5E9);
-        iconColor = const Color(0xFF2E7D32);
-        break;
-      case 'moneytransfer':
-        iconData = Icons.account_balance;
-        bgColor = const Color(0xFFE3F2FD);
-        iconColor = const Color(0xFF1565C0);
-        break;
-      case 'paypal_standard':
-        iconData = Icons.paypal;
-        bgColor = const Color(0xFFFFF3E0);
-        iconColor = const Color(0xFF003087);
-        break;
-      default:
-        iconData = Icons.payment;
-        bgColor = AppColors.white;
-        iconColor = AppColors.neutral800;
-    }
-
-    return Container(
-      width: 40,
-      height: 40,
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Icon(iconData, size: 22, color: iconColor),
-    );
+  Widget _getPaymentIcon(String code, {String? title, String? iconUrl}) {
+    return PaymentMethodLogo(code: code, title: title, iconUrl: iconUrl);
   }
 
   Widget _buildPaymentOptionRow({
@@ -2386,6 +2545,7 @@ class _CheckoutPageViewState extends State<_CheckoutPageView> {
     required String title,
     required String subtitle,
     required String paymentCode,
+    String? iconUrl,
     required VoidCallback onTap,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -2440,7 +2600,8 @@ class _CheckoutPageViewState extends State<_CheckoutPageView> {
                     ],
                   ),
                 ),
-                _getPaymentIcon(paymentCode),
+                const SizedBox(width: 8),
+                _getPaymentIcon(paymentCode, title: title, iconUrl: iconUrl),
               ],
             ),
           ),
@@ -2718,31 +2879,101 @@ class _CheckoutPageViewState extends State<_CheckoutPageView> {
 
   Widget _buildPriceBreakSection(BuildContext context, CartModel cart) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final subtotal = cart.subtotal > 0
-        ? (cart.formattedSubtotal ??
-              CurrencyFormatter.formatAmount(cart.subtotal))
-        : CurrencyFormatter.formatAmount(0);
+    final config = StoreConfig.of(context);
+    final l10n = AppLocalizations.of(context)!;
+
+    // Subtotal
+    final hasSubtotalTaxDiff =
+        cart.subTotalInclTax > 0 &&
+        (cart.subTotalInclTax - cart.subtotal).abs() > 0.001;
+    final String subtotal;
+    final String? subtotalSubValue;
+
+    if (config.showSubtotalBoth && hasSubtotalTaxDiff) {
+      subtotal =
+          cart.formattedSubTotalInclTax ??
+          CurrencyFormatter.formatAmount(cart.subTotalInclTax);
+      final exclFormatted =
+          cart.formattedSubtotal ??
+          CurrencyFormatter.formatAmount(cart.subtotal);
+      subtotalSubValue = l10n.cartExclTax(exclFormatted);
+    } else if (config.showSubtotalInclTax && hasSubtotalTaxDiff) {
+      subtotal =
+          cart.formattedSubTotalInclTax ??
+          CurrencyFormatter.formatAmount(cart.subTotalInclTax);
+      subtotalSubValue = null;
+    } else {
+      subtotal = cart.subtotal > 0
+          ? (cart.formattedSubtotal ??
+                CurrencyFormatter.formatAmount(cart.subtotal))
+          : CurrencyFormatter.formatAmount(0);
+      subtotalSubValue = null;
+    }
+
+    // Discount
     final discount = cart.discountAmount > 0
         ? '-${cart.formattedDiscountAmount ?? CurrencyFormatter.formatAmount(cart.discountAmount)}'
         : CurrencyFormatter.formatAmount(0);
-    final shipping = cart.shippingAmount > 0
-        ? (cart.formattedShippingAmount ??
-              CurrencyFormatter.formatAmount(cart.shippingAmount))
-        : CurrencyFormatter.formatAmount(0);
-    final tax = cart.taxAmount > 0
+
+    // Delivery Charges
+    final hasShippingTaxDiff =
+        cart.shippingAmountInclTax > 0 &&
+        (cart.shippingAmountInclTax - cart.shippingAmount).abs() > 0.001;
+    final String shipping;
+    final String? shippingSubValue;
+
+    if (config.showShippingBoth) {
+      if (cart.shippingAmount > 0) {
+        shipping =
+            cart.formattedShippingAmountInclTax ??
+            CurrencyFormatter.formatAmount(
+              cart.shippingAmountInclTax > 0
+                  ? cart.shippingAmountInclTax
+                  : cart.shippingAmount,
+            );
+        final exclShippingFormatted =
+            cart.formattedShippingAmount ??
+            CurrencyFormatter.formatAmount(cart.shippingAmount);
+        shippingSubValue = l10n.cartExclTax(exclShippingFormatted);
+      } else {
+        shipping = CurrencyFormatter.formatAmount(0);
+        shippingSubValue = l10n.cartExclTax(CurrencyFormatter.formatAmount(0));
+      }
+    } else if (config.showShippingInclTax && hasShippingTaxDiff) {
+      shipping =
+          cart.formattedShippingAmountInclTax ??
+          CurrencyFormatter.formatAmount(cart.shippingAmountInclTax);
+      shippingSubValue = null;
+    } else {
+      shipping = cart.shippingAmount > 0
+          ? (cart.formattedShippingAmount ??
+                CurrencyFormatter.formatAmount(cart.shippingAmount))
+          : CurrencyFormatter.formatAmount(0);
+      shippingSubValue = null;
+    }
+
+    // Tax
+    final taxAmountStr = cart.taxAmount > 0
         ? (cart.formattedTaxAmount ??
               CurrencyFormatter.formatAmount(cart.taxAmount))
         : CurrencyFormatter.formatAmount(0);
+    final tax = (cart.hasTaxIncluded && cart.taxAmount > 0)
+        ? '$taxAmountStr ${l10n.cartTaxIncluded}'
+        : taxAmountStr;
+
+    // Grand Total
     final grandTotal = cart.grandTotal > 0
         ? (cart.formattedGrandTotal ??
               CurrencyFormatter.formatAmount(cart.grandTotal))
         : CurrencyFormatter.formatAmount(0);
 
+    final canShowBreakdown = config.showTaxBreakdown && cart.hasAppliedTaxes;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          AppLocalizations.of(context)!.cartPriceBreak,
+          l10n.cartPriceBreak,
           style: TextStyle(
             fontFamily: 'Roboto',
             fontWeight: FontWeight.w600,
@@ -2752,31 +2983,179 @@ class _CheckoutPageViewState extends State<_CheckoutPageView> {
         ),
         const SizedBox(height: 16),
         _buildPriceRow(
-          AppLocalizations.of(context)!.cartSubTotal,
+          l10n.cartSubTotal,
           subtotal,
+          subValue: subtotalSubValue,
           isDark: isDark,
         ),
         const SizedBox(height: 8),
-        _buildPriceRow(
-          AppLocalizations.of(context)!.checkoutDiscountCoupon,
-          discount,
-          isDark: isDark,
-        ),
+        _buildPriceRow(l10n.checkoutDiscountCoupon, discount, isDark: isDark),
         const SizedBox(height: 8),
         _buildPriceRow(
-          AppLocalizations.of(context)!.cartDeliveryCharges,
+          l10n.cartDeliveryCharges,
           shipping,
+          subValue: shippingSubValue,
           isDark: isDark,
         ),
         const SizedBox(height: 8),
-        _buildPriceRow(
-          AppLocalizations.of(context)!.cartTax,
-          tax,
-          isDark: isDark,
+        // Tax
+        GestureDetector(
+          onTap: canShowBreakdown
+              ? () {
+                  setState(() {
+                    _taxBreakdownExpanded = !_taxBreakdownExpanded;
+                  });
+                }
+              : null,
+          behavior: HitTestBehavior.opaque,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    l10n.cartTax,
+                    style: TextStyle(
+                      fontFamily: 'Roboto',
+                      fontWeight: FontWeight.w400,
+                      fontSize: 14,
+                      color: isDark
+                          ? AppColors.neutral300
+                          : AppColors.neutral800,
+                    ),
+                  ),
+                  if (canShowBreakdown) ...[
+                    const SizedBox(width: 4),
+                    Icon(
+                      _taxBreakdownExpanded
+                          ? Icons.keyboard_arrow_up
+                          : Icons.keyboard_arrow_down,
+                      size: 18,
+                      color: isDark
+                          ? AppColors.neutral400
+                          : AppColors.neutral600,
+                    ),
+                  ],
+                ],
+              ),
+              Text(
+                tax,
+                style: TextStyle(
+                  fontFamily: 'Roboto',
+                  fontWeight: FontWeight.w400,
+                  fontSize: 14,
+                  color: isDark ? AppColors.neutral100 : AppColors.neutral800,
+                ),
+              ),
+            ],
+          ),
         ),
+        if (canShowBreakdown && _taxBreakdownExpanded) ...[
+          const SizedBox(height: 6),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.neutral800 : AppColors.neutral100,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: cart.taxBreakdownLines.map((taxLine) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 2),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            taxLine.rateName,
+                            style: TextStyle(
+                              fontFamily: 'Roboto',
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: isDark
+                                  ? AppColors.neutral300
+                                  : AppColors.neutral700,
+                            ),
+                          ),
+                          if (taxLine.items.isEmpty)
+                            Text(
+                              taxLine.rateTotal,
+                              style: TextStyle(
+                                fontFamily: 'Roboto',
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: isDark
+                                    ? AppColors.neutral300
+                                    : AppColors.neutral700,
+                              ),
+                            ),
+                        ],
+                      ),
+                      for (final item in taxLine.items)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4, left: 8),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  item.name,
+                                  style: TextStyle(
+                                    fontFamily: 'Roboto',
+                                    fontSize: 11,
+                                    color: isDark
+                                        ? AppColors.neutral400
+                                        : AppColors.neutral600,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              RichText(
+                                text: TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text: '${item.taxAmount} ',
+                                      style: TextStyle(
+                                        fontFamily: 'Roboto',
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w500,
+                                        color: isDark
+                                            ? AppColors.neutral300
+                                            : AppColors.neutral700,
+                                      ),
+                                    ),
+                                    TextSpan(
+                                      text: '(${item.taxableAmount})',
+                                      style: TextStyle(
+                                        fontFamily: 'Roboto',
+                                        fontSize: 11,
+                                        fontStyle: FontStyle.italic,
+                                        color: isDark
+                                            ? AppColors.neutral400
+                                            : AppColors.neutral500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ],
         const SizedBox(height: 8),
         _buildPriceRow(
-          AppLocalizations.of(context)!.cartGrandTotal,
+          l10n.cartGrandTotal,
           grandTotal,
           isDark: isDark,
           isBold: true,
@@ -2789,30 +3168,52 @@ class _CheckoutPageViewState extends State<_CheckoutPageView> {
   Widget _buildPriceRow(
     String label,
     String value, {
+    String? subValue,
     bool isDark = false,
     bool isBold = false,
   }) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontFamily: 'Roboto',
-            fontWeight: FontWeight.w400,
-            fontSize: 14,
-            color: isDark ? AppColors.neutral300 : AppColors.neutral800,
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontFamily: 'Roboto',
+                fontWeight: FontWeight.w400,
+                fontSize: 14,
+                color: isDark ? AppColors.neutral300 : AppColors.neutral800,
+              ),
+            ),
+            Text(
+              value,
+              style: TextStyle(
+                fontFamily: 'Roboto',
+                fontWeight: isBold ? FontWeight.w600 : FontWeight.w400,
+                fontSize: 14,
+                color: isDark ? AppColors.neutral100 : AppColors.neutral800,
+              ),
+            ),
+          ],
         ),
-        Text(
-          value,
-          style: TextStyle(
-            fontFamily: 'Roboto',
-            fontWeight: isBold ? FontWeight.w600 : FontWeight.w400,
-            fontSize: 14,
-            color: isDark ? AppColors.neutral100 : AppColors.neutral800,
+        if (subValue != null && subValue.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: Text(
+                subValue,
+                style: TextStyle(
+                  fontFamily: 'Roboto',
+                  fontWeight: FontWeight.w400,
+                  fontSize: 11,
+                  color: isDark ? AppColors.neutral400 : AppColors.neutral500,
+                ),
+              ),
+            ),
           ),
-        ),
       ],
     );
   }
@@ -2936,3 +3337,9 @@ class _CheckoutPageViewState extends State<_CheckoutPageView> {
   // _showOrderSuccessDialog removed — navigation to ThankyouPage is
   // handled directly in the BlocConsumer listener above.
 }
+
+bool _isPaypalStandard(String method) =>
+    method.toLowerCase().replaceAll(RegExp('[^a-z]'), '') == 'paypalstandard';
+
+bool _isStripe(String method) =>
+    method.toLowerCase().replaceAll(RegExp('[^a-z]'), '') == 'stripe';

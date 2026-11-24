@@ -2,9 +2,14 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../../../core/constants/api_constants.dart';
+import '../../../../core/currency/currency_cubit.dart';
 import '../../../../core/graphql/graphql_client.dart';
 import '../../../../core/graphql/checkout_queries.dart';
 import '../../../../core/graphql/account_queries.dart';
+import '../../../../core/locale/locale_cubit.dart';
 import '../models/checkout_model.dart';
 
 List<Map<String, dynamic>> buildCustomerAddressBookInputsFromCheckout(
@@ -176,10 +181,7 @@ class CheckoutRepository {
       throw result.exception!;
     }
 
-    _logCheckoutApiDetails(
-      'getCountries',
-      responseData: result.data,
-    );
+    _logCheckoutApiDetails('getCountries', responseData: result.data);
 
     final edges = result.data?['countries']?['edges'] as List?;
     if (edges == null) return [];
@@ -195,25 +197,34 @@ class CheckoutRepository {
   /// Fetch states/provinces for a specific country by its numeric ID.
   /// API: https://api-docs.bagisto.com/api/graphql-api/shop/queries/get-country-state.html
   /// Tries with countryId first, then falls back to countryCode if available
-  Future<List<BagistoCountryState>> getCountryStates(int countryId, {String? countryCode}) async {
-    debugPrint('[CheckoutRepo] getCountryStates countryId=$countryId, countryCode=$countryCode');
-    
+  Future<List<BagistoCountryState>> getCountryStates(
+    int countryId, {
+    String? countryCode,
+  }) async {
+    debugPrint(
+      '[CheckoutRepo] getCountryStates countryId=$countryId, countryCode=$countryCode',
+    );
+
     // If no valid countryId, try fallback with countryCode
     if (countryId <= 0) {
       if (countryCode != null && countryCode.isNotEmpty) {
-        debugPrint('[CheckoutRepo] countryId invalid, falling back to countryCode=$countryCode');
+        debugPrint(
+          '[CheckoutRepo] countryId invalid, falling back to countryCode=$countryCode',
+        );
         return _getCountryStatesByCode(countryCode);
       }
-      debugPrint('[CheckoutRepo] getCountryStates: invalid countryId=$countryId and no countryCode, returning empty');
+      debugPrint(
+        '[CheckoutRepo] getCountryStates: invalid countryId=$countryId and no countryCode, returning empty',
+      );
       return [];
     }
-    
+
     // Query with countryId (Int! required) — do NOT pass countryCode here
     final Map<String, dynamic> variables = {
       'countryId': countryId,
       'first': 200,
     };
-    
+
     final result = await _authedClient.query(
       QueryOptions(
         document: gql(CheckoutQueries.getCountryStates),
@@ -223,7 +234,7 @@ class CheckoutRepository {
     );
 
     debugPrint('[CheckoutRepo] getCountryStates raw result: ${result.data}');
-    
+
     if (result.hasException) {
       debugPrint('[CheckoutRepo] getCountryStates error: ${result.exception}');
       // Fallback to countryCode query if available
@@ -245,7 +256,9 @@ class CheckoutRepository {
       debugPrint('[CheckoutRepo] getCountryStates: countryStates is null');
       // Try alternative query with countryCode if available
       if (countryCode != null && countryCode.isNotEmpty && countryId <= 0) {
-        debugPrint('[CheckoutRepo] Trying alternative query with countryCode: $countryCode');
+        debugPrint(
+          '[CheckoutRepo] Trying alternative query with countryCode: $countryCode',
+        );
         return _getCountryStatesByCode(countryCode);
       }
       return [];
@@ -256,7 +269,9 @@ class CheckoutRepository {
     if (statesData is List) {
       // Direct array format: countryStates: [{id, _id, ...}, ...]
       statesList = statesData;
-      debugPrint('[CheckoutRepo] getCountryStates: direct array format, ${statesList.length} items');
+      debugPrint(
+        '[CheckoutRepo] getCountryStates: direct array format, ${statesList.length} items',
+      );
     } else if (statesData is Map) {
       // Edge/node format: countryStates: {edges: [{node: {...}}, ...]}
       final edges = statesData['edges'] as List?;
@@ -265,21 +280,24 @@ class CheckoutRepository {
             .map((edge) => edge is Map ? edge['node'] : edge)
             .where((node) => node != null)
             .toList();
-        debugPrint('[CheckoutRepo] getCountryStates: edge/node format, ${statesList.length} items');
+        debugPrint(
+          '[CheckoutRepo] getCountryStates: edge/node format, ${statesList.length} items',
+        );
       } else {
         statesList = [];
         debugPrint('[CheckoutRepo] getCountryStates: edges is null');
       }
     } else {
-      debugPrint('[CheckoutRepo] getCountryStates: unexpected format: $statesData');
+      debugPrint(
+        '[CheckoutRepo] getCountryStates: unexpected format: $statesData',
+      );
       return [];
     }
 
     return statesList
         .map(
-          (e) => BagistoCountryState.fromJson(
-            (e ?? {}) as Map<String, dynamic>,
-          ),
+          (e) =>
+              BagistoCountryState.fromJson((e ?? {}) as Map<String, dynamic>),
         )
         .toList();
   }
@@ -287,8 +305,12 @@ class CheckoutRepository {
   /// Alternative: Fetch states using country code
   /// `countryStates` only accepts a numeric `countryId`, so resolve the
   /// country code through the countries list first.
-  Future<List<BagistoCountryState>> _getCountryStatesByCode(String countryCode) async {
-    debugPrint('[CheckoutRepo] _getCountryStatesByCode countryCode=$countryCode');
+  Future<List<BagistoCountryState>> _getCountryStatesByCode(
+    String countryCode,
+  ) async {
+    debugPrint(
+      '[CheckoutRepo] _getCountryStatesByCode countryCode=$countryCode',
+    );
     final code = countryCode.toUpperCase();
     final countries = await getCountries();
     final country = countries
@@ -298,7 +320,6 @@ class CheckoutRepository {
     // No countryCode here, so a failure cannot loop back into this method.
     return getCountryStates(country.numericId);
   }
-
 
   /// Fetch saved checkout addresses (cursor connection format)
   Future<List<CheckoutAddress>> getCheckoutAddresses() async {
@@ -317,10 +338,7 @@ class CheckoutRepository {
       throw result.exception!;
     }
 
-    _logCheckoutApiDetails(
-      'getCheckoutAddresses',
-      responseData: result.data,
-    );
+    _logCheckoutApiDetails('getCheckoutAddresses', responseData: result.data);
 
     final edges =
         result.data?['collectionGetCheckoutAddresses']?['edges'] as List?;
@@ -360,8 +378,7 @@ class CheckoutRepository {
       responseData: result.data,
     );
 
-    final edges =
-        result.data?['getCustomerAddresses']?['edges'] as List?;
+    final edges = result.data?['getCustomerAddresses']?['edges'] as List?;
     if (edges == null) return [];
 
     return edges.map((e) {
@@ -580,7 +597,9 @@ class CheckoutRepository {
   Future<CheckoutShippingMethodResponse> saveShippingMethod(
     String shippingMethod,
   ) async {
-    debugPrint('[CheckoutRepo] saveShippingMethod: $shippingMethod (authToken present: ${_authToken != null})');
+    debugPrint(
+      '[CheckoutRepo] saveShippingMethod: $shippingMethod (authToken present: ${_authToken != null})',
+    );
     final result = await _authedClient.mutate(
       MutationOptions(
         document: gql(CheckoutMutations.createCheckoutShippingMethod),
@@ -639,7 +658,6 @@ class CheckoutRepository {
       variables: {
         'input': {'paymentMethod': paymentMethod},
       },
-      responseData: result.data,
     );
 
     final data =
@@ -650,6 +668,222 @@ class CheckoutRepository {
     }
 
     return CheckoutPaymentMethodResponse.fromJson(data);
+  }
+
+  /// Request gateway-specific launch instructions after saving the method.
+  Future<CheckoutPaymentInitiationResponse> initiatePayment() async {
+    final result = await _authedClient.mutate(
+      MutationOptions(
+        document: gql(CheckoutMutations.createCheckoutPaymentInitiation),
+        variables: const {'input': <String, dynamic>{}},
+      ),
+    );
+
+    if (result.hasException) throw result.exception!;
+
+    final data =
+        result.data?['createCheckoutPaymentInitiation']?['checkoutPaymentInitiation']
+            as Map<String, dynamic>?;
+    if (data == null) {
+      throw Exception('Payment initiation returned no launch instructions');
+    }
+
+    return CheckoutPaymentInitiationResponse.fromJson(data);
+  }
+
+  /// Start Stripe through the shop REST API, whose response includes the
+  /// reference and return URLs needed to confirm the WebView result.
+  Future<CheckoutPaymentInitiationResponse> initiateStripePayment() async {
+    final base = ApiEnv.base.endsWith('/')
+        ? ApiEnv.base.substring(0, ApiEnv.base.length - 1)
+        : ApiEnv.base;
+    final response = await http
+        .post(
+          Uri.parse('$base/api/shop/checkout-payments/initiate'),
+          headers: await _checkoutRestHeaders(),
+          body: jsonEncode({'paymentMethod': 'stripe'}),
+        )
+        .timeout(const Duration(seconds: 60));
+    final decoded = _decodeCheckoutRestResponse(response, 'Stripe initiation');
+    final launch = CheckoutPaymentInitiationResponse.fromJson(decoded);
+    if (launch.reference == null ||
+        launch.reference!.isEmpty ||
+        launch.redirectUrl == null ||
+        launch.successUrl == null ||
+        launch.failureUrl == null) {
+      throw Exception('Stripe initiation returned incomplete instructions.');
+    }
+    return launch;
+  }
+
+  /// Start PayPal Standard using the already-saved payment method on the cart.
+  Future<CheckoutPaymentInitiationResponse>
+  initiatePaypalStandardPayment() async {
+    final result = await _authedClient.mutate(
+      MutationOptions(
+        document: gql(CheckoutMutations.createPaypalStandardPaymentInitiation),
+        variables: const {'input': <String, dynamic>{}},
+      ),
+    );
+
+    if (result.hasException) throw result.exception!;
+
+    final data =
+        result.data?['createCheckoutPaymentInitiation']?['checkoutPaymentInitiation']
+            as Map<String, dynamic>?;
+    if (data == null) {
+      throw Exception('PayPal Standard initiation returned no instructions.');
+    }
+    final launch = CheckoutPaymentInitiationResponse.fromJson(data);
+    if (launch.type != 'form' ||
+        launch.formAction == null ||
+        launch.formAction!.isEmpty ||
+        launch.formFields.isEmpty ||
+        launch.reference == null ||
+        launch.reference!.isEmpty ||
+        launch.successUrl == null ||
+        launch.failureUrl == null) {
+      throw Exception(
+        'PayPal Standard returned incomplete payment instructions.',
+      );
+    }
+    return launch;
+  }
+
+  /// Confirm Stripe using the reference issued for this customer/cart.
+  Future<CheckoutOrderResponse> confirmStripePayment({
+    required String reference,
+  }) async {
+    final base = ApiEnv.base.endsWith('/')
+        ? ApiEnv.base.substring(0, ApiEnv.base.length - 1)
+        : ApiEnv.base;
+    final response = await http
+        .post(
+          Uri.parse('$base/api/shop/checkout-payments/confirm'),
+          headers: await _checkoutRestHeaders(),
+          body: jsonEncode({'reference': reference}),
+        )
+        .timeout(const Duration(seconds: 60));
+    final decoded = _decodeCheckoutRestResponse(
+      response,
+      'Stripe confirmation',
+    );
+    final data = _asJsonMap(decoded['data']) ?? decoded;
+    return CheckoutOrderResponse.fromJson(data);
+  }
+
+  Future<Map<String, String>> _checkoutRestHeaders() async {
+    final prefs = await SharedPreferences.getInstance();
+    final headers = <String, String>{
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'X-STOREFRONT-KEY': storefrontKey,
+      'X-CHANNEL': channelCode,
+    };
+    final locale = prefs.getString(LocaleCubit.localeKey);
+    if (locale != null && locale.isNotEmpty) headers['X-LOCALE'] = locale;
+    final currency = prefs.getString(CurrencyCubit.currencyKey);
+    if (currency != null && currency.isNotEmpty) {
+      headers['X-CURRENCY'] = currency;
+    }
+    if (_authToken != null && _authToken!.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $_authToken';
+    }
+    return headers;
+  }
+
+  Map<String, dynamic> _decodeCheckoutRestResponse(
+    http.Response response,
+    String operation,
+  ) {
+    final dynamic decoded;
+    try {
+      decoded = jsonDecode(utf8.decode(response.bodyBytes));
+    } catch (_) {
+      throw Exception('$operation returned an invalid response.');
+    }
+    if (decoded is! Map) {
+      throw Exception('$operation returned an invalid response.');
+    }
+    final root = Map<String, dynamic>.from(decoded);
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception(
+        root['message']?.toString() ??
+            '$operation failed (HTTP ${response.statusCode}).',
+      );
+    }
+    return root;
+  }
+
+  /// Submit Razorpay's SDK callback fields for server-side signature checks.
+  Future<CheckoutOrderResponse> confirmRazorpayPayment({
+    required String razorpayOrderId,
+    required String razorpayPaymentId,
+    required String razorpaySignature,
+  }) async {
+    final result = await _authedClient.mutate(
+      MutationOptions(
+        document: gql(CheckoutMutations.createCheckoutPaymentConfirmation),
+        variables: {
+          'input': {
+            'razorpayOrderId': razorpayOrderId,
+            'razorpayPaymentId': razorpayPaymentId,
+            'razorpaySignature': razorpaySignature,
+          },
+        },
+      ),
+    );
+
+    if (result.hasException) throw result.exception!;
+
+    final data =
+        result.data?['createCheckoutPaymentConfirmation']?['checkoutPaymentConfirmation']
+            as Map<String, dynamic>?;
+    if (data == null) {
+      throw Exception('Payment confirmation returned no order result');
+    }
+
+    return CheckoutOrderResponse.fromJson(data);
+  }
+
+  /// Confirm PayPal Standard using the reference returned by initiation.
+  Future<CheckoutOrderResponse> confirmPaypalStandardPayment({
+    required String reference,
+  }) async {
+    final result = await _authedClient.mutate(
+      MutationOptions(
+        document: gql(
+          CheckoutMutations.createPaypalStandardPaymentConfirmation,
+        ),
+        variables: {
+          'input': {'reference': reference},
+        },
+      ),
+    );
+
+    if (result.hasException) throw result.exception!;
+
+    final data =
+        result.data?['createCheckoutPaymentConfirmation']?['checkoutPaymentConfirmation']
+            as Map<String, dynamic>?;
+    if (data == null) {
+      throw Exception('PayPal confirmation returned no order result.');
+    }
+
+    return CheckoutOrderResponse.fromJson(data);
+  }
+
+  static Map<String, dynamic>? _asJsonMap(dynamic value) {
+    if (value is! Map) return null;
+    return Map<String, dynamic>.from(value);
+  }
+
+  static String? _firstValue(Iterable<dynamic> values) {
+    for (final value in values) {
+      final text = value?.toString().trim();
+      if (text != null && text.isNotEmpty) return text;
+    }
+    return null;
   }
 
   /// Place the final order
@@ -664,10 +898,7 @@ class CheckoutRepository {
       throw result.exception!;
     }
 
-    _logCheckoutApiDetails(
-      'placeOrder',
-      responseData: result.data,
-    );
+    _logCheckoutApiDetails('placeOrder', responseData: result.data);
 
     final data =
         result.data?['createCheckoutOrder']?['checkoutOrder']

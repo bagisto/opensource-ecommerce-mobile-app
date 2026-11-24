@@ -5,7 +5,7 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../category/data/models/product_model.dart';
 import '../bloc/product_detail_bloc.dart';
 
-/// "More Informations" section with key-value pairs
+/// Additional information section with the product's brand.
 /// Figma: Frame 1984079209 – info rows like Category, Material, etc.
 class ProductMoreInfoSection extends StatelessWidget {
   final ProductModel product;
@@ -21,8 +21,9 @@ class ProductMoreInfoSection extends StatelessWidget {
     return BlocBuilder<ProductDetailBloc, ProductDetailState>(
       builder: (context, state) {
         final isExpanded = state.isMoreInfoExpanded;
-        final displayItems =
-            isExpanded ? infoItems : infoItems.take(4).toList();
+        final displayItems = isExpanded
+            ? infoItems
+            : infoItems.take(4).toList();
         final needsExpand = infoItems.length > 4;
 
         return Padding(
@@ -61,20 +62,9 @@ class ProductMoreInfoSection extends StatelessWidget {
   List<(String, String)> _buildInfoItems(AppLocalizations l10n) {
     final items = <(String, String)>[];
 
-    if (product.sku != null && product.sku!.isNotEmpty) {
-      items.add((l10n.productSku, product.sku!));
-    }
-    if (product.type != null && product.type!.isNotEmpty) {
-      items.add((l10n.productType, product.type!));
-    }
-    if (product.brand != null && product.brand!.isNotEmpty) {
-      items.add((l10n.productBrand, product.brand!));
-    }
-    if (product.color != null && product.color!.isNotEmpty) {
-      items.add((l10n.productColor, product.color!));
-    }
-    if (product.size != null && product.size!.isNotEmpty) {
-      items.add((l10n.productSize, product.size!));
+    final brand = product.brand?.trim();
+    if (brand != null && brand.isNotEmpty) {
+      items.add((l10n.productBrand, brand));
     }
 
     return items;
@@ -113,8 +103,11 @@ class ProductMoreInfoSection extends StatelessWidget {
     );
   }
 
-  Widget _buildLoadMoreButton(BuildContext context, AppLocalizations l10n,
-      {bool isCollapse = false}) {
+  Widget _buildLoadMoreButton(
+    BuildContext context,
+    AppLocalizations l10n, {
+    bool isCollapse = false,
+  }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return GestureDetector(

@@ -32,6 +32,26 @@ class ErrorMapper {
     }
   }
 
+  /// Message shown when a product is fetched but is no longer active --
+  /// treated the same as not found, since neither should be purchasable.
+  static String get productUnavailableMessage => _l10n().productNotFound;
+
+  /// Gives invalid or missing coupon codes a clear message while preserving
+  /// specific server errors such as expired or ineligible coupons.
+  static String couponFailureMessage(String? message) {
+    final text = message?.trim() ?? '';
+    final lower = text.toLowerCase();
+    if (text.isEmpty ||
+        lower.contains('not found') ||
+        lower.contains('does not exist') ||
+        lower.contains('invalid coupon') ||
+        lower.contains('not valid') ||
+        lower.contains('failed to apply coupon')) {
+      return _l10n().cartCouponNotFound;
+    }
+    return text;
+  }
+
   // ──────────────────────────────────────────────────────────────────────
   //  Public API
   // ──────────────────────────────────────────────────────────────────────
@@ -95,6 +115,9 @@ class ErrorMapper {
     // e.g. Exception: Failed to merge cart
     if (raw.startsWith('Exception:')) {
       final cleaned = raw.replaceFirst('Exception: ', '').trim();
+      if (cleaned.toLowerCase().contains('coupon')) {
+        return couponFailureMessage(cleaned);
+      }
       return _humanize(cleaned, context: context);
     }
 
@@ -179,6 +202,11 @@ class ErrorMapper {
       return message; // validation messages are usually readable
     }
 
+    // ── Coupon / discount ──
+    if (lower.contains('coupon') || lower.contains('discount')) {
+      return couponFailureMessage(message);
+    }
+
     // ── Resource not found ──
     if (lower.contains('not found') || lower.contains('does not exist')) {
       return message; // "Order not found", "Product not found" etc. are fine
@@ -193,11 +221,6 @@ class ErrorMapper {
     }
     if (lower.contains('quantity') && lower.contains('exceed')) {
       return message; // "Requested quantity exceeds available stock"
-    }
-
-    // ── Coupon / discount ──
-    if (lower.contains('coupon') || lower.contains('discount')) {
-      return message; // Usually already readable
     }
 
     // ── Rate limiting ──

@@ -10,7 +10,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 
 void main() {
   testWidgets('account add address form shows only one Set as Default toggle', (
-    tester,
+    WidgetTester tester,
   ) async {
     await tester.pumpWidget(_buildTestApp());
     await tester.pumpAndSettle();
@@ -22,7 +22,7 @@ void main() {
 
   testWidgets(
     'account edit address form also shows only one Set as Default toggle',
-    (tester) async {
+    (WidgetTester tester) async {
       await tester.pumpWidget(
         _buildTestApp(
           editingAddress: const CustomerAddress(

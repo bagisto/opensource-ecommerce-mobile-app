@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -43,10 +45,7 @@ class ShipmentDetailBottomSheet extends StatefulWidget {
       backgroundColor: Colors.transparent,
       builder: (_) => BlocProvider.value(
         value: bloc,
-        child: ShipmentDetailBottomSheet(
-          shipment: shipment,
-          bloc: bloc,
-        ),
+        child: ShipmentDetailBottomSheet(shipment: shipment, bloc: bloc),
       ),
     );
   }
@@ -76,9 +75,7 @@ class _ShipmentDetailBottomSheetState extends State<ShipmentDetailBottomSheet> {
         return Container(
           decoration: BoxDecoration(
             color: isDark ? AppColors.neutral900 : AppColors.white,
-            borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(16),
-            ),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
           ),
           child: DraggableScrollableSheet(
             initialChildSize: 0.65,
@@ -105,7 +102,9 @@ class _ShipmentDetailBottomSheetState extends State<ShipmentDetailBottomSheet> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              l10n.accountShipmentNumber(displayShipment.shipmentNumber),
+                              l10n.accountShipmentNumber(
+                                displayShipment.shipmentNumber,
+                              ),
                               style: TextStyle(
                                 fontFamily: 'Roboto',
                                 fontWeight: FontWeight.w500,
@@ -131,24 +130,23 @@ class _ShipmentDetailBottomSheetState extends State<ShipmentDetailBottomSheet> {
 
                       // ─── Tracking Number Card ───
                       // Figma: bg #F5F5F5, border #E5E5E5, rounded-10, p-12
-                      _TrackingNumberCard(
-                        shipment: displayShipment,
-                      ),
+                      _TrackingNumberCard(shipment: displayShipment),
 
                       const SizedBox(height: 8),
 
                       // ─── "N Item(s)" header with toggle ───
                       GestureDetector(
-                        onTap: () => setState(
-                            () => _itemsExpanded = !_itemsExpanded),
+                        onTap: () =>
+                            setState(() => _itemsExpanded = !_itemsExpanded),
                         child: Padding(
                           padding: const EdgeInsets.symmetric(vertical: 8),
                           child: Row(
-                            mainAxisAlignment:
-                                MainAxisAlignment.spaceBetween,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                l10n.accountItemsCount(displayShipment.items.length),
+                                l10n.accountItemsCount(
+                                  displayShipment.items.length,
+                                ),
                                 style: TextStyle(
                                   fontFamily: 'Roboto',
                                   fontWeight: FontWeight.w500,
@@ -317,10 +315,244 @@ class _ShipmentItemCard extends StatelessWidget {
 
   const _ShipmentItemCard({required this.item});
 
+  List<String> _selectedOptionLines() {
+    final additional = item.additional;
+    if (additional == null || additional.isEmpty) return const [];
+
+    final optionSources = [
+      additional['attributes'],
+      additional['options'],
+      additional['selected_options'],
+      additional['selectedOptions'],
+    ];
+
+    final lines = <String>[];
+    for (final source in optionSources) {
+      lines.addAll(_extractOptionLines(source));
+    }
+
+    if (lines.isEmpty) {
+      final superAttribute =
+          additional['super_attribute'] ?? additional['superAttribute'];
+      lines.addAll(_extractSuperAttributeLines(superAttribute));
+    }
+
+    return lines.toSet().toList();
+  }
+
+  List<String> _extractSuperAttributeLines(dynamic value) {
+    if (value == null) return const [];
+
+    if (value is String) {
+      final trimmed = value.trim();
+      if (trimmed.isEmpty) return const [];
+      try {
+        return _extractSuperAttributeLines(jsonDecode(trimmed));
+      } catch (_) {
+        return <String>[trimmed];
+      }
+    }
+
+    if (value is List) {
+      return value
+          .map((entry) => _formatOptionValue(entry))
+          .where((entry) => entry.isNotEmpty)
+          .toSet()
+          .toList();
+    }
+
+    if (value is Map) {
+      return value.values
+          .map((entry) => _formatOptionValue(entry))
+          .where((entry) => entry.isNotEmpty)
+          .toSet()
+          .toList();
+    }
+
+    final text = value.toString().trim();
+    return text.isEmpty ? const [] : <String>[text];
+  }
+
+  List<String> _extractOptionLines(dynamic value) {
+    if (value == null) return const [];
+
+    if (value is String) {
+      final trimmed = value.trim();
+      if (trimmed.isEmpty) return const [];
+      try {
+        return _extractOptionLines(jsonDecode(trimmed));
+      } catch (_) {
+        return <String>[trimmed];
+      }
+    }
+
+    if (value is List) {
+      return value
+          .expand(_extractOptionLines)
+          .map((line) => line.trim())
+          .where((line) => line.isNotEmpty)
+          .toSet()
+          .toList();
+    }
+
+    if (value is Map) {
+      final label = value['label']?.toString().trim();
+      final rawOptionValue =
+          value['value'] ?? value['optionValue'] ?? value['option_value'];
+      final formattedValue = _formatOptionValue(rawOptionValue);
+
+      if ((label ?? '').isNotEmpty && formattedValue.isNotEmpty) {
+        return <String>['${label!} : $formattedValue'];
+      }
+
+      final attrName =
+          (value['attributeName'] ??
+                  value['attribute_name'] ??
+                  value['attributename'])
+              ?.toString()
+              .trim();
+      final optLabel =
+          (value['optionLabel'] ??
+                  value['option_label'] ??
+                  value['optionlabel'])
+              ?.toString()
+              .trim();
+
+      if ((attrName ?? '').isNotEmpty && (optLabel ?? '').isNotEmpty) {
+        return <String>['$attrName : $optLabel'];
+      }
+
+      final lines = <String>[];
+      value.forEach((key, entryValue) {
+        final entryKey = '$key';
+        if (entryKey == '__typename' ||
+            entryKey == 'optionId' ||
+            entryKey == 'option_id' ||
+            entryKey == 'optionid' ||
+            entryKey == 'id' ||
+            entryKey == 'product_id' ||
+            entryKey == 'cart_id' ||
+            entryKey == 'locale' ||
+            entryKey == 'quantity') {
+          return;
+        }
+
+        final entryFormatted = _formatOptionValue(entryValue);
+        if (entryFormatted.isNotEmpty &&
+            entryValue is! Map &&
+            entryValue is! List &&
+            entryKey != 'label') {
+          lines.add('${_normalizeOptionLabel(entryKey)} : $entryFormatted');
+        } else {
+          lines.addAll(_extractOptionLines(entryValue));
+        }
+      });
+      return lines;
+    }
+
+    final text = value.toString().trim();
+    return text.isEmpty ? const [] : <String>[text];
+  }
+
+  String _formatOptionValue(dynamic value) {
+    if (value == null) return '';
+
+    if (value is String) {
+      final trimmed = value.trim();
+      if (trimmed.isEmpty) return '';
+      try {
+        return _formatOptionValue(jsonDecode(trimmed));
+      } catch (_) {
+        return trimmed;
+      }
+    }
+
+    if (value is List) {
+      return value
+          .map(_formatOptionValue)
+          .where((entry) => entry.isNotEmpty)
+          .join(', ');
+    }
+
+    if (value is Map) {
+      if (value.containsKey('label') && value.containsKey('value')) {
+        return _formatOptionValue(value['value']);
+      }
+
+      final pieces = <String>[];
+      value.forEach((key, entryValue) {
+        if ('$key' == '__typename' ||
+            '$key' == 'product_id' ||
+            '$key' == 'cart_id') {
+          return;
+        }
+        final entryFormatted = _formatOptionValue(entryValue);
+        if (entryFormatted.isEmpty) return;
+        if (entryValue is Map || entryValue is List) {
+          pieces.add(entryFormatted);
+        } else {
+          pieces.add('${_normalizeOptionLabel('$key')}: $entryFormatted');
+        }
+      });
+      return pieces.join(', ');
+    }
+
+    return value.toString();
+  }
+
+  String _normalizeOptionLabel(String raw) {
+    return raw
+        .replaceAll('_', ' ')
+        .replaceAllMapped(
+          RegExp(r'([a-z])([A-Z])'),
+          (match) => '${match.group(1)} ${match.group(2)}',
+        )
+        .trim();
+  }
+
+  Widget _buildOptionLine(String line, bool isDark) {
+    final separatorIndex = line.indexOf(':');
+    if (separatorIndex <= 0) {
+      return Text(
+        line,
+        style: TextStyle(
+          fontFamily: 'Roboto',
+          fontWeight: FontWeight.w500,
+          fontSize: 14,
+          color: isDark ? AppColors.neutral200 : AppColors.neutral900,
+        ),
+      );
+    }
+
+    final label = line.substring(0, separatorIndex).trim();
+    final value = line.substring(separatorIndex + 1).trim();
+
+    return RichText(
+      text: TextSpan(
+        style: TextStyle(
+          fontFamily: 'Roboto',
+          fontSize: 14,
+          color: isDark ? AppColors.neutral200 : AppColors.neutral900,
+        ),
+        children: [
+          TextSpan(
+            text: '$label : ',
+            style: const TextStyle(fontWeight: FontWeight.w700),
+          ),
+          TextSpan(
+            text: value,
+            style: const TextStyle(fontWeight: FontWeight.w400),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context)!;
+    final optionLines = _selectedOptionLines();
 
     return Container(
       width: double.infinity,
@@ -346,6 +578,14 @@ class _ShipmentItemCard extends StatelessWidget {
               color: isDark ? AppColors.neutral200 : AppColors.neutral900,
             ),
           ),
+          if (optionLines.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            for (final line in optionLines)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 2),
+                child: _buildOptionLine(line, isDark),
+              ),
+          ],
           const SizedBox(height: 6),
           // "SKU : {sku}" — Figma: Roboto Regular 14, #171717
           Text(

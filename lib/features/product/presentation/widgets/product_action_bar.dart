@@ -1,19 +1,50 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/store_config/store_config.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/navigation/app_navigator.dart';
+import '../../../../core/store_config/store_config.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../category/data/models/product_model.dart';
 import '../../../cart/presentation/bloc/cart_bloc.dart';
+import '../../../checkout/presentation/helpers/checkout_access_guard.dart';
+import '../../../checkout/presentation/pages/checkout_page.dart';
 import '../../domain/models/customizable_file_selection.dart';
 import '../bloc/product_detail_bloc.dart';
 
 /// Sticky bottom bar with "Add to Cart" and "Buy Now" buttons
 /// Figma: navigation-bar/add-to-cart component
 /// Light: neutral/50 bg | Dark: neutral/800 bg
-class ProductActionBar extends StatelessWidget {
+class ProductActionBar extends StatefulWidget {
   const ProductActionBar({super.key});
+
+  @override
+  State<ProductActionBar> createState() => _ProductActionBarState();
+}
+
+class _ProductActionBarState extends State<ProductActionBar> {
+  // Bridges the gap between a tap and CartBloc's async isAddingToCart flag
+  // catching up. Without this, a fast double-tap can slip both taps through
+  // before the bloc-driven disable takes effect, dispatching AddToCart
+  // twice for one tap and showing two success toasts.
+  bool _dispatchGuard = false;
+  bool _buyNowPending = false;
+
+  void _guardedAddToCart(BuildContext context) {
+    if (_dispatchGuard) return;
+    setState(() => _dispatchGuard = true);
+    if (!_addToCart(context) && mounted) {
+      setState(() => _dispatchGuard = false);
+    }
+  }
+
+  void _guardedBuyNow(BuildContext context) {
+    if (_dispatchGuard) return;
+    setState(() => _dispatchGuard = true);
+    _buyNow(context);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,30 +56,46 @@ class ProductActionBar extends StatelessWidget {
 
     return BlocListener<CartBloc, CartState>(
       listener: (context, cartState) {
-        if (ModalRoute.of(context)?.isCurrent != true) return;
-
+        if (_dispatchGuard &&
+            (cartState.isAddingToCart ||
+                cartState.successMessage != null ||
+                cartState.errorMessage != null)) {
+          _dispatchGuard = false;
+        }
+        if (_buyNowPending && cartState.successMessage != null) {
+          _buyNowPending = false;
+          unawaited(_finishBuyNow(context));
+        } else if (_buyNowPending && cartState.errorMessage != null) {
+          _buyNowPending = false;
+        }
         if (cartState.successMessage != null) {
           final message = _localizedCartMessage(
             context,
             cartState.successMessage!,
           );
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(message),
-              backgroundColor: AppColors.successGreen,
-              duration: const Duration(seconds: 2),
-            ),
-          );
+          // Dismiss any toast still on screen (or mid-exit-animation) before
+          // showing this one, so two never render at once.
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(
+                content: Text(message),
+                backgroundColor: AppColors.successGreen,
+                duration: const Duration(seconds: 2),
+              ),
+            );
           context.read<CartBloc>().add(ClearCartMessage());
         }
         if (cartState.errorMessage != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(cartState.errorMessage!),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 2),
-            ),
-          );
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(
+                content: Text(cartState.errorMessage!),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 2),
+              ),
+            );
           context.read<CartBloc>().add(ClearCartMessage());
         }
       },
@@ -67,7 +114,7 @@ class ProductActionBar extends StatelessWidget {
           top: false,
           child: BlocBuilder<CartBloc, CartState>(
             builder: (context, cartState) {
-              final isAdding = cartState.isAddingToCart;
+              final isAdding = cartState.isAddingToCart || _dispatchGuard;
               // Out of stock: both actions dimmed and disabled, like the web.
               final isOutOfStock = context.select<ProductDetailBloc, bool>(
                 (bloc) => bloc.state.isOutOfStock,
@@ -84,7 +131,7 @@ class ProductActionBar extends StatelessWidget {
                     child: GestureDetector(
                       onTap: isAdding || isOutOfStock
                           ? null
-                          : () => _addToCart(context),
+                          : () => _guardedAddToCart(context),
                       child: Container(
                         key: isOutOfStock
                             ? const ValueKey('product_add_to_cart_disabled')
@@ -124,35 +171,38 @@ class ProductActionBar extends StatelessWidget {
                   ),
 
                   if (showBuyNow) ...[
-                  const SizedBox(width: 16),
+                    const SizedBox(width: 16),
 
-                  // ── Buy Now (primary) ──
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: isAdding || isOutOfStock
-                          ? null
-                          : () => _buyNow(context),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        decoration: BoxDecoration(
-                          color: isOutOfStock
-                              ? disabledColor
-                              : AppColors.primary500,
-                          borderRadius: BorderRadius.circular(54),
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          l10n.productBuyNow,
-                          style: TextStyle(
-                            fontFamily: 'Roboto',
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.white,
+                    // ── Buy Now (primary) ──
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: isAdding || isOutOfStock
+                            ? null
+                            : () => _guardedBuyNow(context),
+                        child: Container(
+                          key: isOutOfStock
+                              ? const ValueKey('product_buy_now_disabled')
+                              : null,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          decoration: BoxDecoration(
+                            color: isOutOfStock
+                                ? disabledColor
+                                : AppColors.primary500,
+                            borderRadius: BorderRadius.circular(54),
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            l10n.productBuyNow,
+                            style: TextStyle(
+                              fontFamily: 'Roboto',
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.white,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
                   ],
                 ],
               );
@@ -163,10 +213,10 @@ class ProductActionBar extends StatelessWidget {
     );
   }
 
-  void _addToCart(BuildContext context) {
+  bool _addToCart(BuildContext context) {
     final productState = context.read<ProductDetailBloc>().state;
     final product = productState.product;
-    if (product == null) return;
+    if (product == null) return false;
 
     final productId =
         product.numericId ?? int.tryParse(product.id.split('/').last) ?? 0;
@@ -176,7 +226,7 @@ class ProductActionBar extends StatelessWidget {
       product: product,
       selections: productState.customizableOptionValues,
     );
-    if (customizableOptions == null) return;
+    if (customizableOptions == null) return false;
 
     if (product.isGrouped) {
       final groupedItems = product.groupedProducts
@@ -200,7 +250,7 @@ class ProductActionBar extends StatelessWidget {
             duration: Duration(seconds: 2),
           ),
         );
-        return;
+        return false;
       }
 
       context.read<CartBloc>().add(
@@ -222,7 +272,7 @@ class ProductActionBar extends StatelessWidget {
             duration: Duration(seconds: 2),
           ),
         );
-        return;
+        return false;
       }
 
       final bookingPayload = _buildBookingPayload(
@@ -233,7 +283,7 @@ class ProductActionBar extends StatelessWidget {
       );
 
       if (bookingPayload == null) {
-        return;
+        return false;
       }
 
       context.read<CartBloc>().add(
@@ -257,7 +307,7 @@ class ProductActionBar extends StatelessWidget {
               duration: const Duration(seconds: 2),
             ),
           );
-          return;
+          return false;
         }
       }
 
@@ -298,7 +348,7 @@ class ProductActionBar extends StatelessWidget {
             duration: Duration(seconds: 2),
           ),
         );
-        return;
+        return false;
       }
 
       context.read<CartBloc>().add(
@@ -324,7 +374,7 @@ class ProductActionBar extends StatelessWidget {
               duration: const Duration(seconds: 2),
             ),
           );
-          return;
+          return false;
         }
         // Legacy: send variant ID as productId
         final variantNumericId =
@@ -336,7 +386,7 @@ class ProductActionBar extends StatelessWidget {
             customizableOptions: customizableOptions,
           ),
         );
-        return;
+        return true;
       }
 
       // Build superAttribute from combinations using numeric attribute IDs
@@ -376,7 +426,7 @@ class ProductActionBar extends StatelessWidget {
             duration: const Duration(seconds: 2),
           ),
         );
-        return;
+        return false;
       }
 
       // Get integer IDs for selected links
@@ -404,6 +454,7 @@ class ProductActionBar extends StatelessWidget {
         ),
       );
     }
+    return true;
   }
 
   Map<String, dynamic>? _buildCustomizableOptionsPayload({
@@ -663,20 +714,35 @@ class ProductActionBar extends StatelessWidget {
   }
 
   void _buyNow(BuildContext context) {
-    // Add to cart, then navigate to cart page on success
-    _addToCart(context);
+    _buyNowPending = true;
+    if (!_addToCart(context)) {
+      _buyNowPending = false;
+      if (mounted) setState(() => _dispatchGuard = false);
+    }
+  }
 
-    // Listen for the cart success and navigate to the Cart tab
-    late final void Function(CartState) listener;
+  Future<void> _finishBuyNow(BuildContext context) async {
     final cartBloc = context.read<CartBloc>();
-    listener = (CartState state) {
-      if (state.successMessage != null) {
-        cartBloc.stream.listen((_) {}).cancel(); // clean up
-        AppNavigator.navigateToCart(context);
-      }
-    };
-    final sub = cartBloc.stream.listen(listener);
-    // Auto-cancel after 10s to avoid leaks
-    Future.delayed(const Duration(seconds: 10), () => sub.cancel());
+    final authBloc = context.read<AuthBloc>();
+    if (authBloc.state is! AuthAuthenticated &&
+        !await CheckoutAccessGuard.ensureGuestCheckoutAllowed(
+          context,
+          cartBloc,
+        )) {
+      return;
+    }
+    if (!mounted || !context.mounted) return;
+
+    AppNavigator.navigateToTabPage(
+      context,
+      AppNavigator.cartTab,
+      (_) => MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: cartBloc),
+          BlocProvider.value(value: authBloc),
+        ],
+        child: const CheckoutPage(),
+      ),
+    );
   }
 }

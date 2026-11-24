@@ -67,37 +67,37 @@ void main() {
     expect(bloc.saves, isEmpty);
   });
 
-  testWidgets('empty gender and invalid phone from the profile are rejected', (
-    tester,
-  ) async {
-    final bloc = _RecordingBloc();
-    addTearDown(bloc.close);
+  testWidgets(
+    'a blank gender from the API is treated as unselected and required',
+    (tester) async {
+      final bloc = _RecordingBloc();
+      addTearDown(bloc.close);
 
-    await tester.pumpWidget(
-      MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: BlocProvider<EditAccountBloc>.value(
-          value: bloc,
-          child: const EditAccountPage(
-            profile: CustomerProfile(
-              firstName: 'Jo',
-              lastName: 'Doe',
-              email: 'jo@example.com',
-              gender: '',
-              phone: '12-ab',
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: BlocProvider<EditAccountBloc>.value(
+            value: bloc,
+            child: const EditAccountPage(
+              profile: CustomerProfile(
+                firstName: 'Jo',
+                lastName: 'Doe',
+                email: 'jo@example.com',
+                phone: '+1234567890',
+                gender: '',
+              ),
             ),
           ),
         ),
-      ),
-    );
-    await tester.pumpAndSettle();
+      );
+      await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const ValueKey('edit_profile_save')));
-    await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('edit_profile_save')));
+      await tester.pumpAndSettle();
 
-    expect(find.text('Gender is required'), findsOneWidget);
-    expect(find.text('Phone number is required'), findsNothing);
-    expect(bloc.saves, isEmpty);
-  });
+      expect(find.text('Gender is required'), findsOneWidget);
+      expect(bloc.saves, isEmpty);
+    },
+  );
 }

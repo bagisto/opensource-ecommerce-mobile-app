@@ -27,8 +27,8 @@ android {
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
-        versionCode = 246
-        versionName = "2.4.6"
+        versionCode = 119
+        versionName = "1.1.8"
     }
 
     buildTypes {
@@ -53,6 +53,9 @@ configurations.all {
 }
 
 dependencies {
+    // DataStore 1.2.1 fixes 16 KB native RELRO alignment without changing its API.
+    implementation("androidx.datastore:datastore:1.2.1")
+    implementation("androidx.datastore:datastore-preferences:1.2.1")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("com.google.android.material:material:1.12.0")
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")

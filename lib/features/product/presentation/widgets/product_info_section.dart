@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_html/flutter_html.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/currency/currency_formatter.dart';
+import '../../../../core/store_config/store_config.dart';
 import '../../../../l10n/app_localizations.dart';
-import '../../../category/data/models/product_model.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../account/presentation/pages/add_review_page.dart';
+import '../../../category/data/models/product_model.dart';
 import '../bloc/product_detail_bloc.dart';
 import 'review_entry.dart';
 
@@ -40,11 +41,6 @@ class ProductInfoSection extends StatelessWidget {
             ),
           ),
 
-          const SizedBox(height: 12),
-
-          // ── Price Row ──
-          _buildPriceRow(context),
-
           // ── Short Description (any product type, HTML like the web) ──
           if (_hasText(product.shortDescription))
             Padding(
@@ -55,11 +51,21 @@ class ProductInfoSection extends StatelessWidget {
 
           const SizedBox(height: 12),
 
-          // ── Rating + Stock Row ──
+          // ── Price Row (stock chip sits at its end) ──
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [_buildRatingGroup(context), _buildStockChip(context)],
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(child: _buildPriceRow(context)),
+              const SizedBox(width: 8),
+              _buildStockChip(context),
+            ],
           ),
+
+          // ── Rating Row ──
+          if ((product.totalReviewCount ?? product.reviewCount) > 0) ...[
+            const SizedBox(height: 12),
+            _buildRatingGroup(context),
+          ],
         ],
       ),
     );
@@ -103,7 +109,7 @@ class ProductInfoSection extends StatelessWidget {
     return html
         .replaceAll(RegExp(r'<[^>]*>'), '')
         .replaceAll('&nbsp;', ' ')
-        .replaceAll('\u00A0', ' ')
+        .replaceAll(' ', ' ')
         .replaceAll('&amp;', '&')
         .replaceAll('&lt;', '<')
         .replaceAll('&gt;', '>')
@@ -112,7 +118,6 @@ class ProductInfoSection extends StatelessWidget {
   }
 
   Widget _buildPriceRow(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     final displayPriceLabel = selectedVariant != null
         ? selectedVariant!.displayPriceLabel
         : product.formattedDisplayPrice;
@@ -126,18 +131,27 @@ class ProductInfoSection extends StatelessWidget {
         ? selectedVariant!.displayPrice
         : product.displayPrice;
 
-    // Discount percentage
-    final discountPercent = (originalPrice != null && originalPrice > 0)
-        ? ((originalPrice - displayPrice) / originalPrice * 100).round()
-        : product.discountPercent;
+    final prefix = selectedVariant == null ? product.priceLabelPrefix : null;
 
     return Wrap(
       spacing: 6,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
+        if (prefix != null && prefix.isNotEmpty)
+          Text(
+            '$prefix ',
+            style: const TextStyle(
+              fontFamily: 'Roboto',
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
+              color: AppColors.neutral500,
+            ),
+          ),
         // Current price (Text-1: 24px bold)
         Text(
-          displayPriceLabel,
+          displayPriceLabel.isNotEmpty
+              ? displayPriceLabel
+              : CurrencyFormatter.formatAmount(displayPrice),
           style: AppTextStyles.text1(context),
         ),
 
@@ -153,20 +167,7 @@ class ProductInfoSection extends StatelessWidget {
               color: AppColors.neutral500,
               decoration: TextDecoration.lineThrough,
             ),
-          ),
-
-        // Discount percentage
-        if (discountPercent != null && discountPercent > 0)
-          Text(
-            l10n.productDiscountOff(discountPercent.toString()),
-            style: TextStyle(
-              fontFamily: 'Roboto',
-              fontWeight: FontWeight.w600,
-              fontSize: 16,
-              height: 1.17,
-              color: AppColors.primary500,
-            ),
-          ),
+        ),
       ],
     );
   }
@@ -175,9 +176,13 @@ class ProductInfoSection extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final rating = product.averageRating;
-    final count = product.reviewCount;
+    final reviewCount = product.totalReviewCount ?? product.reviewCount;
+    final count = StoreConfig.of(context).reviewSummaryCount(
+      reviewCount: reviewCount,
+      starCount: product.reviewStarCount,
+    );
 
-    if (count == 0) {
+    if (reviewCount == 0) {
       final reviewEntry = reviewEntryOf(context);
       return Row(
         children: [
@@ -229,7 +234,7 @@ class ProductInfoSection extends StatelessWidget {
                 },
                 child: Text(
                   '•  ${l10n.accountAddReview}',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontFamily: 'Roboto',
                     fontSize: 14,
                     fontWeight: FontWeight.w500,

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer' as developer;
 import 'package:equatable/equatable.dart';
+import '../../../../core/currency/product_price_display.dart';
 
 /// Represents a theme customization entry from the Bagisto API.
 /// Each node defines a section of the homepage (image_carousel, product_carousel,
@@ -83,9 +84,11 @@ class ThemeCustomization extends Equatable {
     );
   }
 
-  /// Carousel filters (`options.filters`). The API sends an empty JSON list
-  /// (`[]`) when a section was saved without filters, so anything that is
-  /// not a map means "no filters".
+  /// The section's configured filters.
+  ///
+  /// A section saved with no filters comes back as an empty JSON list rather
+  /// than an object, so a bare cast to a map throws and the section silently
+  /// disappears. Anything that is not a map reads as "no filters".
   Map<String, dynamic> get filters {
     final raw = options['filters'];
     return raw is Map ? Map<String, dynamic>.from(raw) : const {};
@@ -109,7 +112,11 @@ class HomeCategory extends Equatable {
   final String name;
   final String slug;
   final String? logoUrl;
+  final String? bannerUrl;
+  final String? description;
   final int position;
+  final String? status;
+  final String? displayMode;
 
   /// Whether the category has active sub-categories. Tapping it then opens
   /// the Categories tab instead of the product list.
@@ -121,9 +128,27 @@ class HomeCategory extends Equatable {
     required this.name,
     required this.slug,
     this.logoUrl,
+    this.bannerUrl,
+    this.description,
     required this.position,
+    this.status,
+    this.displayMode,
     this.hasChildren = false,
   });
+
+  bool get isActive => status != '0' && status != 'false';
+
+  String get plainDescription => (description ?? '')
+      .replaceAll(RegExp(r'<[^>]*>'), ' ')
+      .replaceAll('&nbsp;', ' ')
+      .replaceAll('&amp;', '&')
+      .replaceAll('&lt;', '<')
+      .replaceAll('&gt;', '>')
+      .replaceAll('&quot;', '"')
+      .replaceAll('&#39;', "'")
+      .replaceAll(RegExp(r'\s+'), ' ')
+      .replaceAll(RegExp(r' (?=[,.;:!?])'), '')
+      .trim();
 
   factory HomeCategory.fromJson(
     Map<String, dynamic> json, {
@@ -136,7 +161,11 @@ class HomeCategory extends Equatable {
       name: translation['name'] as String? ?? '',
       slug: translation['slug'] as String? ?? '',
       logoUrl: json['logoUrl'] as String?,
+      bannerUrl: json['bannerUrl'] as String?,
+      description: translation['description'] as String?,
       position: (json['position'] as num?)?.toInt() ?? 0,
+      status: json['status']?.toString(),
+      displayMode: json['displayMode'] as String?,
       hasChildren: hasChildren,
     );
   }
@@ -148,7 +177,11 @@ class HomeCategory extends Equatable {
     name,
     slug,
     logoUrl,
+    bannerUrl,
+    description,
     position,
+    status,
+    displayMode,
     hasChildren,
   ];
 }
@@ -159,6 +192,7 @@ class HomeProduct extends Equatable {
   final int? numericId;
   final String sku;
   final String type;
+  final String? bookingType;
   final String name;
   final String urlKey;
   final String? baseImageUrl;
@@ -169,18 +203,37 @@ class HomeProduct extends Equatable {
   final String? formattedMinimumPrice;
   final String? formattedSpecialPrice;
 
+  /// Maximum prices (for bundle price ranges)
+  final double? maximumPrice;
+  final String? formattedMaximumPrice;
+
   /// Lowest price before discounts (`regularMinimumPrice`).
   final double? regularMinimumPrice;
   final String? formattedRegularMinimumPrice;
+
+  /// Regular maximum price before discounts
+  final double? regularMaximumPrice;
+  final String? formattedRegularMaximumPrice;
+
+  /// Starting prices (for booking event/rental products)
+  final double? startingPrice;
+  final String? formattedStartingPrice;
+  final double? startingRegularPrice;
+  final String? formattedStartingRegularPrice;
+
   final bool isSaleable;
+  final bool isNew;
+  final bool isFeatured;
   final double averageRating;
   final int reviewCount;
+  final int reviewStarCount;
 
   const HomeProduct({
     required this.id,
     this.numericId,
     required this.sku,
     required this.type,
+    this.bookingType,
     required this.name,
     required this.urlKey,
     this.baseImageUrl,
@@ -190,11 +243,22 @@ class HomeProduct extends Equatable {
     this.formattedPrice,
     this.formattedMinimumPrice,
     this.formattedSpecialPrice,
+    this.maximumPrice,
+    this.formattedMaximumPrice,
     this.regularMinimumPrice,
     this.formattedRegularMinimumPrice,
+    this.regularMaximumPrice,
+    this.formattedRegularMaximumPrice,
+    this.startingPrice,
+    this.formattedStartingPrice,
+    this.startingRegularPrice,
+    this.formattedStartingRegularPrice,
     required this.isSaleable,
+    this.isNew = false,
+    this.isFeatured = false,
     this.averageRating = 0,
     this.reviewCount = 0,
+    this.reviewStarCount = 0,
   });
 
   factory HomeProduct.fromJson(Map<String, dynamic> json) {
@@ -235,13 +299,40 @@ class HomeProduct extends Equatable {
     final avgRating = ratings.isNotEmpty
         ? ratings.reduce((a, b) => a + b) / ratings.length
         : fallbackRating;
-    final fallbackReviewCount = (json['reviewCount'] as num?)?.toInt() ?? 0;
+    final rawReviewCount =
+        json['reviews']?['totalCount'] ?? json['reviewCount'];
+    final fallbackReviewCount = rawReviewCount is num
+        ? rawReviewCount.toInt()
+        : int.tryParse(rawReviewCount?.toString() ?? '') ?? ratings.length;
+    final starCount = ratings.isNotEmpty
+        ? ratings.fold<int>(0, (sum, rating) => sum + rating.round())
+        : (fallbackRating * fallbackReviewCount).round();
+
+    final rawNew = json['new'] ?? json['is_new'] ?? json['isNew'];
+    final parsedNew =
+        rawNew == true || rawNew == '1' || rawNew == 1 || rawNew == 'true';
+
+    final rawFeatured =
+        json['featured'] ?? json['is_featured'] ?? json['isFeatured'];
+    final parsedFeatured =
+        rawFeatured == true ||
+        rawFeatured == '1' ||
+        rawFeatured == 1 ||
+        rawFeatured == 'true';
+
+    // Parse first booking product node if available
+    final bookingEdges = json['bookingProducts']?['edges'] as List? ?? [];
+    Map<String, dynamic>? firstBookingNode;
+    if (bookingEdges.isNotEmpty && bookingEdges.first is Map) {
+      firstBookingNode = (bookingEdges.first['node'] as Map<String, dynamic>?);
+    }
 
     return HomeProduct(
       id: json['id']?.toString() ?? '',
       numericId: numId,
       sku: json['sku'] as String? ?? '',
       type: json['type'] as String? ?? 'simple',
+      bookingType: json['bookingType']?.toString(),
       name: json['name'] as String? ?? '',
       urlKey: json['urlKey'] as String? ?? '',
       baseImageUrl: json['baseImageUrl'] as String?,
@@ -253,14 +344,48 @@ class HomeProduct extends Equatable {
       formattedPrice: json['formattedPrice'] as String?,
       formattedMinimumPrice: json['formattedMinimumPrice'] as String?,
       formattedSpecialPrice: json['formattedSpecialPrice'] as String?,
+      maximumPrice: json['maximumPrice'] != null
+          ? _toDouble(json['maximumPrice'])
+          : null,
+      formattedMaximumPrice: json['formattedMaximumPrice'] as String?,
       regularMinimumPrice: json['regularMinimumPrice'] != null
           ? _toDouble(json['regularMinimumPrice'])
           : null,
       formattedRegularMinimumPrice:
           json['formattedRegularMinimumPrice'] as String?,
-      isSaleable: json['isSaleable'] == true,
+      regularMaximumPrice: json['regularMaximumPrice'] != null
+          ? _toDouble(json['regularMaximumPrice'])
+          : null,
+      formattedRegularMaximumPrice:
+          json['formattedRegularMaximumPrice'] as String?,
+      startingPrice:
+          firstBookingNode != null && firstBookingNode['startingPrice'] != null
+          ? _toDouble(firstBookingNode['startingPrice'])
+          : json['startingPrice'] != null
+          ? _toDouble(json['startingPrice'])
+          : null,
+      formattedStartingPrice:
+          firstBookingNode?['formattedStartingPrice'] as String? ??
+          json['formattedStartingPrice'] as String?,
+      startingRegularPrice:
+          firstBookingNode != null &&
+              firstBookingNode['startingRegularPrice'] != null
+          ? _toDouble(firstBookingNode['startingRegularPrice'])
+          : json['startingRegularPrice'] != null
+          ? _toDouble(json['startingRegularPrice'])
+          : null,
+      formattedStartingRegularPrice:
+          firstBookingNode?['formattedStartingRegularPrice'] as String? ??
+          json['formattedStartingRegularPrice'] as String?,
+      isSaleable:
+          json['isSaleable'] == true ||
+          json['isSaleable'] == '1' ||
+          json['isSaleable'] == 1,
+      isNew: parsedNew,
+      isFeatured: parsedFeatured,
       averageRating: avgRating,
-      reviewCount: ratings.isNotEmpty ? ratings.length : fallbackReviewCount,
+      reviewCount: fallbackReviewCount,
+      reviewStarCount: starCount,
     );
   }
 
@@ -270,6 +395,7 @@ class HomeProduct extends Equatable {
       '_id': numericId,
       'sku': sku,
       'type': type,
+      'bookingType': bookingType,
       'name': name,
       'urlKey': urlKey,
       'baseImageUrl': baseImageUrl,
@@ -279,13 +405,34 @@ class HomeProduct extends Equatable {
       'formattedPrice': formattedPrice,
       'formattedMinimumPrice': formattedMinimumPrice,
       'formattedSpecialPrice': formattedSpecialPrice,
+      'maximumPrice': maximumPrice,
+      'formattedMaximumPrice': formattedMaximumPrice,
       'regularMinimumPrice': regularMinimumPrice,
       'formattedRegularMinimumPrice': formattedRegularMinimumPrice,
+      'regularMaximumPrice': regularMaximumPrice,
+      'formattedRegularMaximumPrice': formattedRegularMaximumPrice,
+      'startingPrice': startingPrice,
+      'formattedStartingPrice': formattedStartingPrice,
+      'startingRegularPrice': startingRegularPrice,
+      'formattedStartingRegularPrice': formattedStartingRegularPrice,
       'isSaleable': isSaleable,
+      'isNew': isNew,
+      'isFeatured': isFeatured,
+      'new': isNew ? '1' : '0',
+      'featured': isFeatured ? '1' : '0',
       'averageRating': averageRating,
       'reviewCount': reviewCount,
+      'reviewStarCount': reviewStarCount,
     };
   }
+
+  /// Calculates presentation price, prefix label, and strikethrough price
+  /// strictly following Bagisto Web price rules.
+  ProductPriceDisplay get priceDisplay =>
+      ProductPriceDisplay.fromHomeProduct(this);
+
+  /// Prefix label such as "Starting at", "Starting from", "As low as", or null.
+  String? get priceLabelPrefix => priceDisplay.label;
 
   /// The effective display price: specialPrice > minimumPrice > price
   double get displayPrice {
@@ -296,60 +443,42 @@ class HomeProduct extends Equatable {
     return price;
   }
 
-  /// Whether the API reports a lower final price than the regular one
-  /// (`minimumPrice` below `regularMinimumPrice`). Covers special prices,
-  /// catalog rules and configurable/bundle products.
-  bool get _hasRegularPriceDiscount =>
-      regularMinimumPrice != null &&
-      minimumPrice != null &&
-      minimumPrice! > 0 &&
-      minimumPrice! < regularMinimumPrice!;
+  /// Whether a strikethrough price / discount exists.
+  bool get hasDiscount => priceDisplay.hasDiscount;
 
-  /// Whether a discount exists.
-  bool get hasDiscount =>
-      _hasRegularPriceDiscount ||
-      (specialPrice != null && specialPrice! > 0 && specialPrice! < price);
+  /// Whether product cards should show the Sale badge. Grouped products do
+  /// not use a strikethrough price, but their API still reports current and
+  /// regular minimum prices when one of their items is discounted.
+  bool get hasSaleBadge =>
+      hasDiscount ||
+      (type.toLowerCase() == 'grouped' &&
+          minimumPrice != null &&
+          minimumPrice! > 0 &&
+          regularMinimumPrice != null &&
+          regularMinimumPrice! > minimumPrice!);
 
   /// Discount percentage (0–100).
   int get discountPercent {
-    if (_hasRegularPriceDiscount) {
+    if (regularMinimumPrice != null &&
+        minimumPrice != null &&
+        minimumPrice! > 0 &&
+        minimumPrice! < regularMinimumPrice!) {
       return (((regularMinimumPrice! - minimumPrice!) / regularMinimumPrice!) *
               100)
           .round();
     }
     if (!hasDiscount) return 0;
-    return (((price - specialPrice!) / price) * 100).round();
+    if (specialPrice != null && specialPrice! > 0 && specialPrice! < price) {
+      return (((price - specialPrice!) / price) * 100).round();
+    }
+    return 0;
   }
 
-  String get displayPriceLabel {
-    if (_hasRegularPriceDiscount &&
-        (formattedMinimumPrice?.isNotEmpty ?? false)) {
-      return formattedMinimumPrice!;
-    }
-    if (specialPrice != null &&
-        specialPrice! > 0 &&
-        (formattedSpecialPrice?.isNotEmpty ?? false)) {
-      return formattedSpecialPrice!;
-    }
-    if (type == 'configurable' &&
-        minimumPrice != null &&
-        minimumPrice! > 0 &&
-        (formattedMinimumPrice?.isNotEmpty ?? false)) {
-      return formattedMinimumPrice!;
-    }
-    return formattedPrice ?? price.toStringAsFixed(2);
-  }
+  /// Formatted price to display (e.g. "$150.00" or "$20.00 To $50.00" for bundle).
+  String get displayPriceLabel => priceDisplay.displayPrice;
 
-  String? get originalPriceLabel {
-    if (_hasRegularPriceDiscount &&
-        (formattedRegularMinimumPrice?.isNotEmpty ?? false)) {
-      return formattedRegularMinimumPrice;
-    }
-    if (hasDiscount && (formattedPrice?.isNotEmpty ?? false)) {
-      return formattedPrice;
-    }
-    return null;
-  }
+  /// Formatted strikethrough price if regular > current (null for grouped or when no discount).
+  String? get originalPriceLabel => priceDisplay.strikethroughPrice;
 
   @override
   List<Object?> get props => [
@@ -357,15 +486,31 @@ class HomeProduct extends Equatable {
     numericId,
     sku,
     type,
+    bookingType,
     name,
     urlKey,
     baseImageUrl,
     price,
     formattedPrice,
+    minimumPrice,
     formattedMinimumPrice,
+    maximumPrice,
+    formattedMaximumPrice,
+    specialPrice,
     formattedSpecialPrice,
+    regularMinimumPrice,
+    formattedRegularMinimumPrice,
+    regularMaximumPrice,
+    formattedRegularMaximumPrice,
+    startingPrice,
+    formattedStartingPrice,
+    startingRegularPrice,
+    formattedStartingRegularPrice,
+    isNew,
+    isFeatured,
     averageRating,
     reviewCount,
+    reviewStarCount,
   ];
 }
 
@@ -410,14 +555,38 @@ class BannerImage extends Equatable {
 
 /// Category or product slug an admin-configured home link points to: the
 /// last path segment of [link], which may be a bare slug (`fashion`) or a
-/// full storefront URL. Null when there is no usable segment.
+/// full storefront URL. Null when there is no usable segment, or when [link]
+/// is a hash-based URL (e.g. `#`, `#formal-wear-men`, `/#...`), which does
+/// not navigate on web.
 String? homeLinkSlug(String link) {
   final trimmed = link.trim();
   if (trimmed.isEmpty) return null;
-  final segments = (Uri.tryParse(trimmed)?.pathSegments ?? [trimmed]).where(
-    (s) => s.isNotEmpty,
-  );
-  return segments.isEmpty ? null : segments.last;
+
+  // Hash-based URLs (in-page anchors / placeholders like `#`, `#formal-wear-men`, `/#`)
+  // do not navigate anywhere on the web storefront.
+  if (trimmed.startsWith('#') || trimmed.startsWith('/#')) {
+    return null;
+  }
+
+  final uri = Uri.tryParse(trimmed);
+  if (uri != null) {
+    if (uri.hasFragment && (uri.path.isEmpty || uri.path == '/')) {
+      return null;
+    }
+    final segments = uri.pathSegments.where((s) => s.isNotEmpty);
+    if (segments.isNotEmpty) {
+      return segments.last;
+    }
+  }
+
+  // Bare slug without slashes, colons, or hashes (e.g. "fashion" or "random")
+  if (!trimmed.contains('/') &&
+      !trimmed.contains(':') &&
+      !trimmed.contains('#')) {
+    return trimmed;
+  }
+
+  return null;
 }
 
 /// One entry of a `services_content` customization (icon, title, text).
@@ -454,18 +623,25 @@ class HomeService extends Equatable {
   List<Object?> get props => [title, description, icon];
 }
 
-/// A footer link configured in one of the section's columns.
+/// A single link of a `footer_links` section, as configured in one of the
+/// section's two columns.
 class HomeFooterLink extends Equatable {
   final String title;
   final String url;
 
   const HomeFooterLink({required this.title, required this.url});
 
+  /// Reads `options['column_1']` and `options['column_2']` in that order,
+  /// skipping malformed entries and entries missing a title or a url. The
+  /// returned list always has one entry per column, possibly empty.
   static List<List<HomeFooterLink>> columnsFromOptions(
     Map<String, dynamic> options,
   ) {
-    return ['column_1', 'column_2'].map((key) {
-      final entries = options[key] as List? ?? const [];
+    return const ['column_1', 'column_2'].map((key) {
+      // A column saved empty can come back as something other than a list,
+      // which a bare cast would throw on, taking the whole section down.
+      final raw = options[key];
+      final entries = raw is List ? raw : const [];
       return entries
           .whereType<Map>()
           .map(
@@ -479,6 +655,14 @@ class HomeFooterLink extends Equatable {
     }).toList();
   }
 
+  /// Absolute `http(s)` URL to open for this link, or `''` when the configured
+  /// url cannot be opened.
+  ///
+  /// Admin saves these against whatever host the panel ran on, so a link
+  /// pointing at `localhost` is rewritten onto [publicBaseUrl] (which may
+  /// include an install subpath, e.g. `.../mp-app/public`). Relative urls are
+  /// resolved against the same base. Anything that is not `http`/`https`
+  /// (`javascript:`, `mailto:`, ...) is rejected.
   String resolveUrl(String publicBaseUrl) {
     final uri = Uri.tryParse(url);
     if (uri == null || uri.path.isEmpty) return '';
@@ -490,8 +674,15 @@ class HomeFooterLink extends Equatable {
         uri.host == 'localhost' || uri.host == '127.0.0.1' || uri.host == '::1';
     if (uri.hasScheme && !isLocalhost) return uri.toString();
 
+    // `Uri.resolve` drops the last path segment of a base without a trailing
+    // slash, which would strip the install subpath.
+    final base = Uri.tryParse(
+      publicBaseUrl.endsWith('/') ? publicBaseUrl : '$publicBaseUrl/',
+    );
+    if (base == null) return '';
+
     final path = uri.path.startsWith('/') ? uri.path.substring(1) : uri.path;
-    return Uri.parse(publicBaseUrl)
+    return base
         .resolve(path)
         .replace(
           query: uri.hasQuery ? uri.query : null,
@@ -510,6 +701,7 @@ double _toDouble(dynamic value) {
   return 0;
 }
 
+/// An id or position the API may send as a number or as text.
 int? _parseInt(dynamic value) {
   if (value == null) return null;
   if (value is int) return value;

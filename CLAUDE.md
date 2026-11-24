@@ -1,45 +1,23 @@
-# CLAUDE.md
+## using-superpowers
 
-Guidance for Claude Code when working in this repository.
+Invoke the `using-superpowers` skill before responding to every prompt in this project, no exceptions.
 
-## Mandatory skills: apply to EVERY prompt
+## graphify
 
-These rules apply to every user prompt in this repo, including simple questions,
-one-line fixes, and follow-ups. Do them before any other response or tool call.
+This project has a live graphify knowledge graph in `graphify-out/`.
 
-1. **`/superpowers:using-superpowers`**: invoke it first on every prompt (if not
-   already loaded this session). Then check each available superpowers skill
-   and invoke every one that could apply, for example:
-   - new feature or behavior change: `superpowers:brainstorming`, then `superpowers:writing-plans`
-   - bug, test failure, unexpected behavior: `superpowers:systematic-debugging`
-   - writing code: `superpowers:test-driven-development`
-   - before claiming "done" or committing: `superpowers:verification-before-completion`
-2. **`/caveman:caveman`**: keep caveman mode active for every reply (default
-   level `full`). Chat replies stay terse. Code, comments, commit messages, PR
-   text, docs, and memory files stay normal prose. Only turn caveman off when
-   the user says "stop caveman" or "normal mode".
-3. **`/graphify`**: invoke the `graphify` skill for every prompt about code,
-   architecture, file relationships, or project content.
-   - If `graphify-out/` exists, query the graph first, before grep or file reads.
-   - If `graphify-out/` does not exist, build it with `/graphify` first.
-   - After significant code changes, update the graph so it stays current.
+Invoke the `graphify` skill for every prompt in this project, not only architecture/codebase/refactor/review ones.
 
-Order per prompt: `using-superpowers`, then `caveman`, then `graphify`, then the
-task-specific skills (for example `flutter-expert`), then the work itself.
+Rules:
+- Always read `graphify-out/GRAPH_REPORT.md` before architecture, codebase, refactor, or review prompts.
+- If `graphify-out/wiki/index.md` exists, navigate it before reading raw files.
+- Use graphify hubs and communities to decide which files to inspect first.
+- After meaningful code changes, run `graphify update .` to refresh the code graph.
+- For docs, papers, or images that need semantic extraction, run `/graphify .` from a graphify-aware agent workflow.
 
-Do not skip these because a task "seems simple". Only skip a rule when the user
-explicitly says so for that prompt.
+## caveman
 
-## Owner rules and backend-blocked list
-
-Read `plan.md` at the repo root before any task. Key rules: use only the
-Bagisto **GraphQL** API (never the REST `/api/shop/...` endpoints), use only
-live API data (no hardcoded values), validate every query against the
-configured server, and never commit or push without the owner's permission.
-`plan.md` also lists features that are blocked because the GraphQL schema
-lacks the field.
-
-## Project
+Caveman response mode is ON for every prompt in this project by default, not only when the user explicitly asks.
 
 Bagisto open-source e-commerce mobile app. Flutter (Dart SDK ^3.10.8), package
 name `bagisto_flutter`, talks to a Bagisto backend over GraphQL.
@@ -99,3 +77,8 @@ Maestro E2E flows live in `maestro/` (see `maestro/LABEL_BASED_INSTRUCTIONS.md`)
   and search files. Do not treat these as regressions.
 - `test/address_debug_payload_test.dart` fails on a clean tree.
 - Image upload for returns/messages is REST multipart only, not in GraphQL.
+Rules:
+- keep response short
+- keep technical meaning exact
+- drop fluff
+- return to normal only when the user asks for normal mode

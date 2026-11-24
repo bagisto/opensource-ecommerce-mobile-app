@@ -66,7 +66,8 @@ class RecentOrdersSection extends StatelessWidget {
                     onTap: () {
                       // The detail query needs the order database id, not
                       // the increment id shown as the order number.
-                      final numId = order.numericId;
+                      final numId = order.numericId ??
+                          int.tryParse(order.incrementId ?? '');
                       debugPrint(
                         '📦 RecentOrder tap: id=${order.id}, '
                         'incrementId=${order.incrementId}, numId=$numId',
@@ -144,7 +145,7 @@ class RecentOrdersSection extends StatelessWidget {
               children: [
                 // Order number
                 Text(
-                  order.orderNumber,
+                  order.orderNumber.replaceFirst(RegExp(r'^#'), ''),
                   style: TextStyle(
                     fontFamily: 'Roboto',
                     fontWeight: FontWeight.w500,

@@ -9,12 +9,11 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../cart/presentation/bloc/cart_bloc.dart';
 import '../../data/models/account_models.dart';
 import '../../data/repository/account_repository.dart';
+import '../../../../core/store_config/store_config.dart';
 import '../bloc/order_detail_bloc.dart';
-import 'create_return_page.dart';
 import 'invoice_detail_page.dart';
 import 'shipment_detail_bottom_sheet.dart';
-import '../../../../core/store_config/store_config.dart';
-import '../widgets/address_form_field.dart';
+import 'eu_withdrawal_receipt_page.dart';
 
 /// Order Detail Page — Figma node-id=233-5499
 ///
@@ -47,11 +46,10 @@ class OrderDetailPage extends StatelessWidget {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => BlocProvider(
-          create: (_) =>
-              OrderDetailBloc(repository: repository)
-                ..add(LoadOrderDetail(orderId))
-                ..add(LoadOrderInvoices(orderId))
-                ..add(LoadOrderShipments(orderId)),
+          create: (_) => OrderDetailBloc(repository: repository)
+            ..add(LoadOrderDetail(orderId))
+            ..add(LoadOrderInvoices(orderId))
+            ..add(LoadOrderShipments(orderId)),
           child: OrderDetailPage(orderId: orderId, orderNumber: orderNumber),
         ),
       ),
@@ -76,7 +74,9 @@ class OrderDetailPage extends StatelessWidget {
           buildWhen: (prev, curr) => prev.order != curr.order,
           builder: (context, state) {
             final title =
-                state.order?.orderNumber ?? orderNumber ?? l10n.accountOrderSingular;
+                state.order?.orderNumber ??
+                orderNumber ??
+                l10n.accountOrderSingular;
             return Text(
               l10n.accountOrdersWithNumber(title),
               style: TextStyle(
@@ -123,7 +123,10 @@ class OrderDetailPage extends StatelessWidget {
                 title: Text(l10n.accountReorderSuccessful),
                 content: Text(
                   itemsCount > 0
-                      ? l10n.accountReorderItemsAdded(state.successMessage!, itemsCount)
+                      ? l10n.accountReorderItemsAdded(
+                          state.successMessage!,
+                          itemsCount,
+                        )
                       : state.successMessage!,
                 ),
                 actions: [
@@ -278,6 +281,15 @@ class _OrderDetailBodyState extends State<_OrderDetailBody> {
         ? _selectedTab
         : _OrderTab.details;
 
+    // Two sources say the same thing: the order's own flag, and the
+    // per-product `allowCancellation` probe the bloc runs for servers that
+    // do not expose the flag. Either one shows the notice, once.
+    final hasNonCancelableBooking =
+        widget.order.hasNonCancelableBooking ||
+        context.select<OrderDetailBloc, bool>(
+          (bloc) => bloc.state.hasNonCancelableBooking,
+        );
+
     return Column(
       children: [
         // Scrollable content
@@ -293,6 +305,11 @@ class _OrderDetailBodyState extends State<_OrderDetailBody> {
                 _buildStatusRow(isDark),
 
                 const SizedBox(height: 16),
+
+                if (hasNonCancelableBooking) ...[
+                  _NonCancelableBookingNotice(isDark: isDark),
+                  const SizedBox(height: 16),
+                ],
 
                 // Tab chips
                 _buildTabChips(isDark, tabs, selectedTab),
@@ -430,7 +447,9 @@ class _OrderDetailBodyState extends State<_OrderDetailBody> {
                     size: 24,
                     color: isActive
                         ? AppColors.primary500
-                        : (isDark ? AppColors.neutral200 : AppColors.neutral900),
+                        : (isDark
+                              ? AppColors.neutral200
+                              : AppColors.neutral900),
                   ),
                   const SizedBox(width: 4),
                   Text(
@@ -441,7 +460,9 @@ class _OrderDetailBodyState extends State<_OrderDetailBody> {
                       fontSize: 14,
                       color: isActive
                           ? AppColors.primary500
-                          : (isDark ? AppColors.neutral200 : AppColors.neutral900),
+                          : (isDark
+                                ? AppColors.neutral200
+                                : AppColors.neutral900),
                     ),
                   ),
                 ],
@@ -457,18 +478,17 @@ class _OrderDetailBodyState extends State<_OrderDetailBody> {
   Widget _buildDetailsTab(bool isDark) {
     final order = widget.order;
     final l10n = AppLocalizations.of(context)!;
-    final hasNonCancelableBooking = context.select<OrderDetailBloc, bool>(
-      (bloc) => bloc.state.hasNonCancelableBooking,
-    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (hasNonCancelableBooking) ...[
-          _BookingNotCanceledNote(isDark: isDark),
-          const SizedBox(height: 16),
-        ],
-        _EuWithdrawalSection(orderId: widget.orderId, isDark: isDark),
+        // The non-cancelable booking notice sits above the tab chips, so it
+        // is not repeated here.
+        _EuWithdrawalSection(
+          orderId: widget.orderId,
+          isDark: isDark,
+          customerEmail: order.customerEmail,
+        ),
         // "N Items Ordered" header — Figma: Roboto SemiBold 16, #262626
         Text(
           l10n.accountItemsOrdered(order.items.length),
@@ -503,28 +523,36 @@ class _OrderDetailBodyState extends State<_OrderDetailBody> {
           name: order.billingAddress?.fullName ?? l10n.accountNotAvailable,
           details: order.billingAddress?.formattedAddress,
         ),
-        const SizedBox(height: 8),
+        if (!order.hasOnlyNonShippableItems) ...[
+          const SizedBox(height: 8),
 
-        // Shipping Address
-        _InfoCard(
-          title: l10n.accountShippingAddress,
-          name: order.shippingAddress?.fullName ?? l10n.accountNotAvailable,
-          details: order.shippingAddress?.formattedAddress,
-        ),
-        const SizedBox(height: 8),
+          // Shipping Address
+          _InfoCard(
+            title: l10n.accountShippingAddress,
+            name: order.shippingAddress?.fullName ?? l10n.accountNotAvailable,
+            details: order.shippingAddress?.formattedAddress,
+          ),
+          const SizedBox(height: 8),
 
-        // Shipping Method
-        _InfoCard(
-          title: l10n.accountShippingMethod,
-          name: order.shippingTitle ?? order.shippingMethod ?? l10n.accountNotAvailable,
-          details: null,
-        ),
+          // Shipping Method
+          _InfoCard(
+            title: l10n.accountShippingMethod,
+            name:
+                order.shippingTitle ??
+                order.shippingMethod ??
+                l10n.accountNotAvailable,
+            details: null,
+          ),
+        ],
         const SizedBox(height: 8),
 
         // Payment Method
         _InfoCard(
           title: l10n.accountPaymentMethod,
-          name: order.payment?.methodTitle ?? order.payment?.method ?? l10n.accountNotAvailable,
+          name:
+              order.payment?.methodTitle ??
+              order.payment?.method ??
+              l10n.accountNotAvailable,
           details: null,
         ),
       ],
@@ -619,7 +647,9 @@ class _OrderDetailBodyState extends State<_OrderDetailBody> {
     );
 
     final orderShipments = widget.order.shipments;
-    final displayShipments = apiShipments.isNotEmpty ? apiShipments : orderShipments;
+    final displayShipments = apiShipments.isNotEmpty
+        ? apiShipments
+        : orderShipments;
 
     if (isLoading && displayShipments.isEmpty) {
       return const Padding(
@@ -686,13 +716,29 @@ class _OrderDetailBodyState extends State<_OrderDetailBody> {
     );
   }
 
-  // ─── Refunds Tab ───
-  // Mirrors the storefront Refunds view: refunded items (name, SKU, item
-  // quantities, price, subtotal; laid out like invoice item cards) followed
-  // by the order summary. All values come from the customerOrder API.
+  /// The refunded items and the paid/refunded/due totals, as the storefront's
+  /// Refunds tab lists them. Only reachable when `totalRefunded > 0`.
   Widget _buildRefundsTab(bool isDark) {
     final order = widget.order;
     final l10n = AppLocalizations.of(context)!;
+    final refunds = context.select<OrderDetailBloc, List<CustomerRefund>>(
+      (bloc) => bloc.state.refunds,
+    );
+    final adjustmentRefund = refunds.fold<double>(
+      0,
+      (total, refund) => total + (refund.adjustmentRefund ?? 0),
+    );
+    final adjustmentFee = refunds.fold<double>(
+      0,
+      (total, refund) => total + (refund.adjustmentFee ?? 0),
+    );
+    final refundGrandTotal = refunds.fold<double>(
+      0,
+      (total, refund) => total + (refund.grandTotal ?? 0),
+    );
+    final hasRefundGrandTotal = refunds.any(
+      (refund) => refund.grandTotal != null,
+    );
     final textColor = isDark ? AppColors.neutral200 : AppColors.neutral900;
     final mutedColor = isDark ? AppColors.neutral400 : AppColors.neutral500;
     final cardDecoration = BoxDecoration(
@@ -736,35 +782,64 @@ class _OrderDetailBodyState extends State<_OrderDetailBody> {
       ),
     );
 
-    // One column of the storefront refund table: label above value.
-    Widget column(String label, String value, {bool bold = false}) => Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontFamily: 'Roboto',
-            fontSize: 12,
-            color: mutedColor,
+    // Same quantity rows and price column as the invoice item cards.
+    Widget qtyRow(String label, int qty) => Padding(
+      padding: const EdgeInsets.only(top: 6),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 90,
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontFamily: 'Roboto',
+                fontSize: 14,
+                color: AppColors.neutral500,
+              ),
+            ),
           ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          value,
-          style: TextStyle(
-            fontFamily: 'Roboto',
-            fontSize: 14,
-            fontWeight: bold ? FontWeight.w600 : FontWeight.w400,
-            color: textColor,
+          Text(
+            ': $qty',
+            style: TextStyle(
+              fontFamily: 'Roboto',
+              fontSize: 14,
+              color: isDark ? AppColors.neutral200 : AppColors.neutral800,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
 
-    // Refund totals come from the order's *Refunded fields (the API has no
-    // refund / credit memo resource, so no refund number or adjustments).
-    final taxRefunded = order.taxAmountRefunded ?? 0;
-    final discountRefunded = order.discountRefunded ?? 0;
+    Widget priceRow(String label, String value, {bool bold = false}) => Padding(
+      padding: const EdgeInsets.only(top: 6),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: 80,
+            child: Text(
+              label,
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                fontFamily: 'Roboto',
+                fontSize: 14,
+                color: isDark ? AppColors.neutral400 : AppColors.neutral700,
+              ),
+            ),
+          ),
+          const SizedBox(width: 4),
+          Text(
+            value,
+            style: TextStyle(
+              fontFamily: 'Roboto',
+              fontSize: 14,
+              fontWeight: bold ? FontWeight.w700 : FontWeight.w400,
+              color: isDark ? AppColors.neutral200 : AppColors.neutral700,
+            ),
+          ),
+        ],
+      ),
+    );
 
     return Column(
       key: const ValueKey('order_refunds_tab'),
@@ -788,18 +863,6 @@ class _OrderDetailBodyState extends State<_OrderDetailBody> {
                     color: textColor,
                   ),
                 ),
-                for (final line in _ItemCard.optionLinesFor(item))
-                  Padding(
-                    padding: const EdgeInsets.only(top: 2),
-                    child: Text(
-                      line,
-                      style: TextStyle(
-                        fontFamily: 'Roboto',
-                        fontSize: 12,
-                        color: textColor,
-                      ),
-                    ),
-                  ),
                 if ((item.sku ?? '').isNotEmpty) ...[
                   const SizedBox(height: 4),
                   Text(
@@ -811,26 +874,37 @@ class _OrderDetailBodyState extends State<_OrderDetailBody> {
                     ),
                   ),
                 ],
-                const SizedBox(height: 10),
+                const SizedBox(height: 4),
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
-                      child: column(
-                        l10n.accountPrice,
-                        order.formatAmount(item.price),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          qtyRow(l10n.accountOrderedQty, item.qtyOrdered),
+                          if (!item.requiresShipping == false)
+                            qtyRow(l10n.accountShippedQty, item.qtyShipped),
+                          qtyRow(l10n.accountInvoicedQty, item.qtyInvoiced),
+                          qtyRow(l10n.accountRefundedQty, item.qtyRefunded),
+                          if (item.qtyCanceled > 0)
+                            qtyRow(l10n.accountCanceledQty, item.qtyCanceled),
+                        ],
                       ),
                     ),
-                    Expanded(
-                      child: column(l10n.accountQty, '${item.qtyRefunded}'),
-                    ),
-                    Expanded(
-                      child: column(
-                        l10n.accountSubTotalWithSpace,
-                        order.formatAmount(
-                          item.amountRefunded ?? item.price * item.qtyRefunded,
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        priceRow(
+                          l10n.accountUnitPriceWithColon,
+                          order.formatAmount(item.price),
                         ),
-                        bold: true,
-                      ),
+                        priceRow(
+                          l10n.accountSubTotalWithColon,
+                          order.formatAmount(item.total),
+                          bold: true,
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -844,23 +918,23 @@ class _OrderDetailBodyState extends State<_OrderDetailBody> {
           child: Column(
             children: [
               row(
-                l10n.cartSubTotal,
-                order.formatAmount(order.subTotalRefunded ?? 0),
+                l10n.accountRefundSubtotal,
+                order.formatAmount(order.subTotal),
               ),
               row(
                 l10n.accountShippingAndHandling,
-                order.formatAmount(order.shippingRefunded ?? 0),
+                order.formatAmount(order.shippingAmount ?? 0),
               ),
-              if (taxRefunded > 0)
-                row(l10n.cartTax, order.formatAmount(taxRefunded)),
-              if (discountRefunded > 0)
-                row(
-                  l10n.cartDiscount,
-                  '-${order.formatAmount(discountRefunded)}',
-                ),
+              row(
+                l10n.accountAdjustmentRefund,
+                order.formatAmount(adjustmentRefund),
+              ),
+              row(l10n.accountAdjustmentFee, order.formatAmount(adjustmentFee)),
               row(
                 l10n.cartGrandTotal,
-                order.formatAmount(order.totalRefunded),
+                order.formatAmount(
+                  hasRefundGrandTotal ? refundGrandTotal : order.grandTotal,
+                ),
                 bold: true,
               ),
             ],
@@ -900,7 +974,6 @@ class _OrderDetailBodyState extends State<_OrderDetailBody> {
   // Figma: bg #FAFAFA, px-16 py-7, gap-16
   // Reorder: bg #FF6900, rounded-54, Bold 16, white text
   Widget _buildBottomBar(bool isDark) {
-    final l10n = AppLocalizations.of(context)!;
     // Use the orderId passed to the _OrderDetailBody widget
     final isReordering = context.select<OrderDetailBloc, bool>(
       (bloc) => bloc.state.status == OrderDetailStatus.reordering,
@@ -908,12 +981,22 @@ class _OrderDetailBodyState extends State<_OrderDetailBody> {
     final isCanceling = context.select<OrderDetailBloc, bool>(
       (bloc) => bloc.state.status == OrderDetailStatus.canceling,
     );
-    final canCancel = context.select<OrderDetailBloc, bool>(
-      (bloc) => bloc.state.order?.canCancel ?? false,
+    final hasNonCancelableBooking =
+        widget.order.hasNonCancelableBooking ||
+        context.select<OrderDetailBloc, bool>(
+          (bloc) => bloc.state.hasNonCancelableBooking,
+        );
+    final bookingRulesLoaded = context.select<OrderDetailBloc, bool>(
+      (bloc) => bloc.state.bookingRulesLoaded,
     );
-    final returnableOrder = context.select<OrderDetailBloc, CustomerOrder?>(
-      (bloc) => bloc.state.returnableOrder,
-    );
+    final canCancel =
+        !hasNonCancelableBooking &&
+        context.select<OrderDetailBloc, bool>(
+          (bloc) =>
+              (!widget.order.hasBookingItems || bookingRulesLoaded) &&
+              (bloc.state.order?.canCancel ?? false),
+        );
+    final l10n = AppLocalizations.of(context)!;
     final busy = isReordering || isCanceling;
 
     final reorderButton = SizedBox(
@@ -922,7 +1005,9 @@ class _OrderDetailBodyState extends State<_OrderDetailBody> {
         onPressed: busy
             ? null
             : () {
-                context.read<OrderDetailBloc>().add(ReorderOrder(widget.orderId));
+                context.read<OrderDetailBloc>().add(
+                  ReorderOrder(widget.orderId),
+                );
               },
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary500,
@@ -987,44 +1072,13 @@ class _OrderDetailBodyState extends State<_OrderDetailBody> {
       ),
     );
 
-    final returnButton = SizedBox(
-      height: 48,
-      child: OutlinedButton(
-        key: const ValueKey('order_request_return'),
-        onPressed: busy || returnableOrder == null
-            ? null
-            : () => CreateReturnPage.navigate(
-                context,
-                repository: context.read<OrderDetailBloc>().repository,
-                order: returnableOrder,
-              ),
-        style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.primary500,
-          side: const BorderSide(color: AppColors.primary500),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(54),
-          ),
-        ),
-        child: Text(
-          l10n.accountRequestReturn,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            fontFamily: 'Roboto',
-            fontWeight: FontWeight.w700,
-            fontSize: 15,
-          ),
-        ),
-      ),
-    );
-    final secondaryButton = canCancel
-        ? cancelButton
-        : returnableOrder != null
-        ? returnButton
-        : null;
+    final secondaryButton = canCancel ? cancelButton : null;
     // Reorder fills the cart, so it also needs the cart page.
     final config = StoreConfig.of(context);
-    final showReorder = config.showReorder && config.showCartPage;
+    final showReorder =
+        config.showReorder &&
+        config.showCartPage &&
+        !widget.order.hasOnlyBookingItems;
     if (!showReorder && secondaryButton == null) {
       return const SizedBox.shrink();
     }
@@ -1095,7 +1149,8 @@ class _OrderDetailBodyState extends State<_OrderDetailBody> {
                   color: isDark ? AppColors.neutral400 : AppColors.neutral500,
                 ),
               ),
-              if (bloc.state.hasNonCancelableBooking) ...[
+              if (bloc.state.hasNonCancelableBooking ||
+                  widget.order.hasNonCancelableBooking) ...[
                 const SizedBox(height: 12),
                 _BookingNotCanceledNote(isDark: isDark),
               ],
@@ -1191,10 +1246,6 @@ class _ItemCard extends StatelessWidget {
 
   const _ItemCard({required this.item, required this.currencySymbol});
 
-  /// Option / booking lines for [item] (e.g. "Booking From : ...").
-  static List<String> optionLinesFor(OrderItem item) =>
-      _ItemCard(item: item, currencySymbol: '')._selectedOptionLines();
-
   String _formatPrice(double amount) {
     return '$currencySymbol${amount.toStringAsFixed(2)}';
   }
@@ -1217,7 +1268,8 @@ class _ItemCard extends StatelessWidget {
       }
     }
 
-    final superAttribute = additional['super_attribute'] ?? additional['superAttribute'];
+    final superAttribute =
+        additional['super_attribute'] ?? additional['superAttribute'];
     final superAttributeLines = _extractSuperAttributeLines(superAttribute);
     if (superAttributeLines.isNotEmpty) {
       return superAttributeLines;
@@ -1291,16 +1343,18 @@ class _ItemCard extends StatelessWidget {
         return <String>['${label!} : $formattedValue'];
       }
 
-      final attrName = (value['attributeName'] ??
-              value['attribute_name'] ??
-              value['attributename'])
-          ?.toString()
-          .trim();
-      final optLabel = (value['optionLabel'] ??
-              value['option_label'] ??
-              value['optionlabel'])
-          ?.toString()
-          .trim();
+      final attrName =
+          (value['attributeName'] ??
+                  value['attribute_name'] ??
+                  value['attributename'])
+              ?.toString()
+              .trim();
+      final optLabel =
+          (value['optionLabel'] ??
+                  value['option_label'] ??
+                  value['optionlabel'])
+              ?.toString()
+              .trim();
 
       if ((attrName ?? '').isNotEmpty && (optLabel ?? '').isNotEmpty) {
         return <String>['$attrName : $optLabel'];
@@ -1392,9 +1446,7 @@ class _ItemCard extends StatelessWidget {
           final separatorIndex = line.indexOf(':');
           if (separatorIndex <= 0) {
             final text = line.trim();
-            return text.isEmpty
-                ? null
-                : MapEntry<String, String>('', text);
+            return text.isEmpty ? null : MapEntry<String, String>('', text);
           }
 
           final label = line.substring(0, separatorIndex).trim();
@@ -1424,9 +1476,7 @@ class _ItemCard extends StatelessWidget {
         return Container(
           decoration: BoxDecoration(
             color: isDark ? AppColors.neutral900 : AppColors.white,
-            borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(24),
-            ),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
           child: ConstrainedBox(
             constraints: BoxConstraints(
@@ -1681,7 +1731,8 @@ class _ItemCard extends StatelessWidget {
                   children: [
                     _qtyRow(l10n.accountOrderedQty, item.qtyOrdered, isDark),
                     const SizedBox(height: 4),
-                    _qtyRow(l10n.accountShipped, item.qtyShipped, isDark),
+                    if (!item.requiresShipping == false)
+                      _qtyRow(l10n.accountShipped, item.qtyShipped, isDark),
                     const SizedBox(height: 4),
                     _qtyRow(l10n.accountInvoiced, item.qtyInvoiced, isDark),
                     if (item.qtyRefunded > 0) ...[
@@ -1690,7 +1741,11 @@ class _ItemCard extends StatelessWidget {
                     ],
                     if (item.qtyCanceled > 0) ...[
                       const SizedBox(height: 4),
-                      _qtyRow(l10n.accountCanceledQty, item.qtyCanceled, isDark),
+                      _qtyRow(
+                        l10n.accountCanceledQty,
+                        item.qtyCanceled,
+                        isDark,
+                      ),
                     ],
                   ],
                 ),
@@ -1715,7 +1770,12 @@ class _ItemCard extends StatelessWidget {
                   const SizedBox(height: 2),
                   // Price — Roboto Regular 14, #262626
                   Text(
-                    _formatPrice(item.price),
+                    _formatPrice(
+                      StoreConfig.of(context).showOrderItemPriceBoth ||
+                              StoreConfig.of(context).showOrderItemPriceInclTax
+                          ? item.priceInclTax
+                          : item.price,
+                    ),
                     style: TextStyle(
                       fontFamily: 'Roboto',
                       fontWeight: FontWeight.w400,
@@ -1725,6 +1785,21 @@ class _ItemCard extends StatelessWidget {
                           : AppColors.neutral800,
                     ),
                   ),
+                  if (StoreConfig.of(context).showOrderItemPriceBoth &&
+                      item.priceInclTax != item.price) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      l10n.cartExclTax(_formatPrice(item.price)),
+                      style: TextStyle(
+                        fontFamily: 'Roboto',
+                        fontWeight: FontWeight.w400,
+                        fontSize: 11,
+                        color: isDark
+                            ? AppColors.neutral400
+                            : AppColors.neutral500,
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 8),
                   // "Sub Total" label — Roboto Regular 12, #737373
                   Text(
@@ -1741,7 +1816,12 @@ class _ItemCard extends StatelessWidget {
                   const SizedBox(height: 2),
                   // Sub total — Roboto SemiBold 14, #262626
                   Text(
-                    _formatPrice(item.total),
+                    _formatPrice(
+                      StoreConfig.of(context).showOrderItemPriceBoth ||
+                              StoreConfig.of(context).showOrderItemPriceInclTax
+                          ? item.totalInclTax
+                          : item.total,
+                    ),
                     style: TextStyle(
                       fontFamily: 'Roboto',
                       fontWeight: FontWeight.w600,
@@ -1751,6 +1831,21 @@ class _ItemCard extends StatelessWidget {
                           : AppColors.neutral800,
                     ),
                   ),
+                  if (StoreConfig.of(context).showOrderItemPriceBoth &&
+                      item.totalInclTax != item.total) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      l10n.cartExclTax(_formatPrice(item.total)),
+                      style: TextStyle(
+                        fontFamily: 'Roboto',
+                        fontWeight: FontWeight.w400,
+                        fontSize: 11,
+                        color: isDark
+                            ? AppColors.neutral400
+                            : AppColors.neutral500,
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ],
@@ -1802,6 +1897,28 @@ class _PriceBreakSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context)!;
+    final config = StoreConfig.of(context);
+
+    final showSubtotalBoth = config.showOrderSubtotalBoth;
+    final showSubtotalIncl = config.showOrderSubtotalInclTax;
+    final hasSubtotalDiff = order.subTotalInclTax != order.subTotal;
+    final subtotalDisplay = (showSubtotalBoth || showSubtotalIncl)
+        ? order.formatAmount(order.subTotalInclTax)
+        : order.formatAmount(order.subTotal);
+    final subtotalSubValue = showSubtotalBoth && hasSubtotalDiff
+        ? l10n.cartExclTax(order.formatAmount(order.subTotal))
+        : null;
+
+    final showShippingBoth = config.showOrderShippingBoth;
+    final showShippingIncl = config.showOrderShippingInclTax;
+    final hasShippingDiff =
+        order.shippingAmountInclTax != (order.shippingAmount ?? 0);
+    final shippingDisplay = (showShippingBoth || showShippingIncl)
+        ? order.formatAmount(order.shippingAmountInclTax)
+        : order.formatAmount(order.shippingAmount ?? 0);
+    final shippingSubValue = showShippingBoth && hasShippingDiff
+        ? l10n.cartExclTax(order.formatAmount(order.shippingAmount ?? 0))
+        : null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1818,18 +1935,22 @@ class _PriceBreakSection extends StatelessWidget {
         const SizedBox(height: 12),
         _priceRow(
           l10n.cartSubTotal,
-          order.formatAmount(order.subTotal),
+          subtotalDisplay,
           isDark,
           isBold: false,
+          subValue: subtotalSubValue,
         ),
         const SizedBox(height: 8),
-        _priceRow(
-          l10n.cartDeliveryCharges,
-          order.formatAmount(order.shippingAmount ?? 0),
-          isDark,
-          isBold: false,
-        ),
-        const SizedBox(height: 8),
+        if (!order.hasOnlyNonShippableItems) ...[
+          _priceRow(
+            l10n.accountShippingAndHandling,
+            shippingDisplay,
+            isDark,
+            isBold: false,
+            subValue: shippingSubValue,
+          ),
+          const SizedBox(height: 8),
+        ],
         _priceRow(
           l10n.cartTax,
           order.formatAmount(order.taxAmount ?? 0),
@@ -1846,7 +1967,12 @@ class _PriceBreakSection extends StatelessWidget {
           ),
         ],
         const SizedBox(height: 8),
-        _priceRow(l10n.cartGrandTotal, order.formattedTotal, isDark, isBold: true),
+        _priceRow(
+          l10n.cartGrandTotal,
+          order.formattedTotal,
+          isDark,
+          isBold: true,
+        ),
         const SizedBox(height: 8),
         _priceRow(
           l10n.accountTotalPaid,
@@ -1871,8 +1997,43 @@ class _PriceBreakSection extends StatelessWidget {
           isBold: false,
           valueColor: isDark ? AppColors.neutral400 : AppColors.neutral500,
         ),
+        if (order.totalRefunded > 0) ..._refundBreakdown(l10n, isDark),
       ],
     );
+  }
+
+  /// Refunded amounts per component, as returned by the order API.
+  List<Widget> _refundBreakdown(AppLocalizations l10n, bool isDark) {
+    final rows = <(String, double?)>[
+      (l10n.accountSubtotalRefunded, order.subTotalRefunded),
+      (l10n.accountShippingRefunded, order.shippingRefunded),
+      (l10n.accountTaxRefunded, order.taxAmountRefunded),
+      (l10n.accountDiscountRefunded, order.discountRefunded),
+    ].where((row) => (row.$2 ?? 0) > 0);
+
+    return [
+      const SizedBox(height: 16),
+      Text(
+        l10n.accountRefundBreakdown,
+        style: TextStyle(
+          fontFamily: 'Roboto',
+          fontWeight: FontWeight.w600,
+          fontSize: 16,
+          color: isDark ? AppColors.neutral200 : AppColors.neutral800,
+        ),
+      ),
+      for (final row in rows) ...[
+        const SizedBox(height: 8),
+        _priceRow(row.$1, order.formatAmount(row.$2), isDark, isBold: false),
+      ],
+      const SizedBox(height: 8),
+      _priceRow(
+        l10n.accountTotalRefunded,
+        order.formatAmount(order.totalRefunded),
+        isDark,
+        isBold: true,
+      ),
+    ];
   }
 
   Widget _priceRow(
@@ -1881,9 +2042,12 @@ class _PriceBreakSection extends StatelessWidget {
     bool isDark, {
     required bool isBold,
     Color? valueColor,
+    String? subValue,
   }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment:
+          subValue != null ? CrossAxisAlignment.start : CrossAxisAlignment.center,
       children: [
         Text(
           label,
@@ -1894,16 +2058,33 @@ class _PriceBreakSection extends StatelessWidget {
             color: isDark ? AppColors.neutral200 : AppColors.neutral800,
           ),
         ),
-        Text(
-          value,
-          style: TextStyle(
-            fontFamily: 'Roboto',
-            fontWeight: isBold ? FontWeight.w600 : FontWeight.w400,
-            fontSize: 14,
-            color:
-                valueColor ??
-                (isDark ? AppColors.neutral200 : AppColors.neutral800),
-          ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              value,
+              style: TextStyle(
+                fontFamily: 'Roboto',
+                fontWeight: isBold ? FontWeight.w600 : FontWeight.w400,
+                fontSize: 14,
+                color:
+                    valueColor ??
+                    (isDark ? AppColors.neutral200 : AppColors.neutral800),
+              ),
+            ),
+            if (subValue != null) ...[
+              const SizedBox(height: 2),
+              Text(
+                subValue,
+                style: TextStyle(
+                  fontFamily: 'Roboto',
+                  fontWeight: FontWeight.w400,
+                  fontSize: 11,
+                  color: isDark ? AppColors.neutral400 : AppColors.neutral500,
+                ),
+              ),
+            ],
+          ],
         ),
       ],
     );
@@ -1995,10 +2176,7 @@ class _InvoiceListCard extends StatelessWidget {
   final OrderInvoice invoice;
   final VoidCallback onTap;
 
-  const _InvoiceListCard({
-    required this.invoice,
-    required this.onTap,
-  });
+  const _InvoiceListCard({required this.invoice, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -2059,10 +2237,7 @@ class _ShipmentListCard extends StatelessWidget {
   final OrderShipment shipment;
   final VoidCallback onTap;
 
-  const _ShipmentListCard({
-    required this.shipment,
-    required this.onTap,
-  });
+  const _ShipmentListCard({required this.shipment, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -2148,11 +2323,7 @@ class _BookingNotCanceledNote extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
-            Icons.info_outline,
-            size: 20,
-            color: AppColors.primary500,
-          ),
+          const Icon(Icons.info_outline, size: 20, color: AppColors.primary500),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -2175,8 +2346,13 @@ class _BookingNotCanceledNote extends StatelessWidget {
 class _EuWithdrawalSection extends StatelessWidget {
   final int orderId;
   final bool isDark;
+  final String? customerEmail;
 
-  const _EuWithdrawalSection({required this.orderId, required this.isDark});
+  const _EuWithdrawalSection({
+    required this.orderId,
+    required this.isDark,
+    this.customerEmail,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -2207,16 +2383,37 @@ class _EuWithdrawalSection extends StatelessWidget {
           return Padding(
             key: const ValueKey('order_eu_withdrawal_status'),
             padding: const EdgeInsets.only(bottom: 16),
-            child: Text(
-              [
-                l10n.accountEuWithdrawStatus(withdrawal.status),
-                if ((withdrawal.declinedReason ?? '').isNotEmpty)
-                  withdrawal.declinedReason!,
-              ].join('\n'),
-              style: TextStyle(
-                fontFamily: 'Roboto',
-                fontSize: 14,
-                color: isDark ? AppColors.neutral200 : AppColors.neutral800,
+            child: SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: OutlinedButton(
+                key: const ValueKey('order_view_eu_withdrawal'),
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => EuWithdrawalReceiptPage(
+                        withdrawal: withdrawal,
+                        customerEmail:
+                            withdrawal.customerEmail ?? customerEmail,
+                      ),
+                    ),
+                  );
+                },
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.primary500,
+                  side: const BorderSide(color: AppColors.primary500),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(54),
+                  ),
+                ),
+                child: Text(
+                  l10n.accountEuWithdrawView,
+                  style: const TextStyle(
+                    fontFamily: 'Roboto',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                  ),
+                ),
               ),
             ),
           );
@@ -2267,16 +2464,11 @@ class _EuWithdrawalSection extends StatelessWidget {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(l10n.accountEuWithdraw),
-        // Top padding leaves room for the field's floating label.
-        content: Padding(
-          padding: const EdgeInsets.only(top: 12),
-          child: AddressFormField(
-            controller: reasonController,
-            label: l10n.accountEuWithdrawReason,
-            keyboardType: TextInputType.multiline,
-            textInputAction: TextInputAction.newline,
-            maxLines: 4,
-          ),
+        content: TextField(
+          controller: reasonController,
+          minLines: 2,
+          maxLines: 4,
+          decoration: InputDecoration(labelText: l10n.accountEuWithdrawReason),
         ),
         actions: [
           TextButton(
@@ -2285,7 +2477,7 @@ class _EuWithdrawalSection extends StatelessWidget {
           ),
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(l10n.accountEuWithdrawSubmit),
+            child: Text(l10n.accountSubmit),
           ),
         ],
       ),
@@ -2294,5 +2486,49 @@ class _EuWithdrawalSection extends StatelessWidget {
     reasonController.dispose();
     if (confirmed != true) return;
     bloc.add(WithdrawFromContract(orderId: orderId, reasonText: reason));
+  }
+}
+
+/// Web's "Booking Items Will Not Be Canceled" notice, shown when the order
+/// holds a booking item the customer may not cancel.
+class _NonCancelableBookingNotice extends StatelessWidget {
+  const _NonCancelableBookingNotice({required this.isDark});
+
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final text = isDark ? const Color(0xFFFCD34D) : const Color(0xFF713F12);
+
+    return Container(
+      key: const Key('orderNonCancelableBookingNotice'),
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF2A2412) : const Color(0xFFFFFBEB),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFFCD34D)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.accountBookingNotCanceledTitle,
+            style: TextStyle(
+              fontFamily: 'Roboto',
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: text,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            l10n.accountBookingNotCanceledBody,
+            style: TextStyle(fontFamily: 'Roboto', fontSize: 13, color: text),
+          ),
+        ],
+      ),
+    );
   }
 }

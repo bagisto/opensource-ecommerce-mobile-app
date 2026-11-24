@@ -179,7 +179,9 @@ class AppTheme {
       scaffoldBackgroundColor: AppColors.white,
       colorScheme: const ColorScheme.light(
         primary: AppColors.primary500,
+        onPrimary: AppColors.white,
         secondary: AppColors.primary600,
+        onSecondary: AppColors.white,
         surface: AppColors.white,
         onSurface: AppColors.neutral900,
         outline: AppColors.neutral200,
@@ -223,7 +225,9 @@ class AppTheme {
       scaffoldBackgroundColor: AppColors.neutral900,
       colorScheme: const ColorScheme.dark(
         primary: AppColors.primary500,
+        onPrimary: AppColors.white,
         secondary: AppColors.primary600,
+        onSecondary: AppColors.white,
         surface: AppColors.neutral900,
         onSurface: AppColors.neutral200,
         outline: AppColors.neutral800,

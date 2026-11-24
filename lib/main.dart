@@ -5,6 +5,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'l10n/app_localizations.dart';
 import 'core/locale/locale_resolution.dart';
@@ -13,6 +14,7 @@ import 'core/graphql/graphql_client.dart';
 import 'core/currency/currency_cubit.dart';
 import 'core/currency/currency_formatter.dart';
 import 'core/locale/locale_cubit.dart';
+import 'core/channel/channel_logo_cubit.dart';
 import 'core/navigation/route_observer.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_cubit.dart';
@@ -41,86 +43,93 @@ import 'features/splash/presentation/splash_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Firebase
-  try {
-    await FirebaseService.initialize();
-    // Register background message handler
-    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-  } catch (e) {
-    debugPrint('Firebase initialization error: $e');
-    // Continue anyway - Firebase is optional for other features
-  }
+  // Only what the first frame genuinely needs is awaited here. Anything that
+  // talks to the network or to a native SDK is bounded, because a stall
+  // before runApp leaves the app on the splash screen with no way out.
 
-  // Initialize Hive cache
   try {
     await initHiveForFlutter();
   } catch (e) {
     debugPrint('Hive init failed (using in-memory cache): $e');
   }
 
-  // Initialize SharedPreferences
   final prefs = await SharedPreferences.getInstance();
   CurrencyFormatter.initialize(prefs);
 
+  // The channel supplies the default locale and currency, so the first frame
+  // is better with it -- but not at the cost of never arriving.
   try {
     await ChannelBootstrapService(
       client: GraphQLClientProvider.buildClient(),
       prefs: prefs,
-    ).bootstrap();
+    ).bootstrap().timeout(const Duration(seconds: 8));
   } catch (e) {
     debugPrint('Channel bootstrap error: $e');
   }
 
-  // Initialize FCM notifications in the background.
-  // Must NOT be awaited before runApp(): with a placeholder/dummy Firebase
-  // config (e.g. open-source builds) iOS token retrieval can hang, which would
-  // otherwise block the first frame and freeze the app on the launch screen.
-  unawaited(_initializeFcmNotifications());
-
   runApp(BagistoApp(prefs: prefs));
+
+  // Notifications start after the first frame, never before it.
+  //
+  // FCM can stall indefinitely when Firebase is in a half-configured state --
+  // getInitialMessage and getToken both wait on the native SDK -- and
+  // awaiting it here left the app on the splash screen with no UI at all.
+  // Push is optional; the store is not.
+  unawaited(_startNotifications());
 }
 
-/// Sets up FCM messaging + device token retrieval without blocking startup.
-Future<void> _initializeFcmNotifications() async {
-  // This must be done after Firebase initialization
+/// Brings Firebase up away from the startup path.
+///
+/// The native side may already have configured a default app, which makes a
+/// second call throw `duplicate-app`; that is a state to accept rather than
+/// an error, so an existing app is reused.
+Future<void> _startFirebase() async {
   try {
-    await FCMService().initialize(
-      onForegroundMessage: _handleForegroundNotification,
-      onBackgroundMessage: _handleBackgroundNotification,
-      onMessageOpenedApp: _handleMessageOpenedApp,
-      onLocalNotificationTapped: _handleLocalNotificationTapped,
+    if (Firebase.apps.isEmpty) {
+      await FirebaseService.initialize().timeout(const Duration(seconds: 15));
+    } else {
+      debugPrint('🔥 Firebase already configured natively; reusing it');
+    }
+
+    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+  } catch (e) {
+    debugPrint('Firebase initialization error: $e');
+  }
+}
+
+/// Brings up push notifications in the background, bounded so a stalled SDK
+/// costs a delayed token rather than a dead app.
+Future<void> _startNotifications() async {
+  // Firebase has to be up before FCM will answer.
+  await _startFirebase();
+
+  try {
+    await FCMService()
+        .initialize(
+          onForegroundMessage: _handleForegroundNotification,
+          onBackgroundMessage: _handleBackgroundNotification,
+          onMessageOpenedApp: _handleMessageOpenedApp,
+          onLocalNotificationTapped: _handleLocalNotificationTapped,
+        )
+        .timeout(
+          const Duration(seconds: 20),
+          onTimeout: () => debugPrint('⚠️ FCM setup timed out; will retry'),
+        );
+
+    debugPrint('⏳ Retrieving device token from FCMService...');
+    final deviceToken = await FCMService().getDeviceToken().timeout(
+      const Duration(seconds: 15),
+      onTimeout: () => null,
     );
 
-    // Token retrieval is now handled by FCMService with iOS APNS support
-    // Get the token from FCMService after initialization
-    debugPrint('⏳ Retrieving device token from FCMService...');
-    try {
-      final deviceToken = await FCMService().getDeviceToken();
-      if (deviceToken != null && deviceToken.isNotEmpty) {
-        debugPrint('✅ FCM device token is available');
-      } else {
-        debugPrint(
-          '⚠️ Token not yet available, FCMService will retry automatically',
-        );
-      }
-    } catch (e) {
-      debugPrint('⚠️ Token retrieval note: $e');
-      // Continue anyway - token will be obtained via retry mechanism
+    if (deviceToken != null && deviceToken.isNotEmpty) {
+      debugPrint('✅ FCM device token is available');
+    } else {
+      debugPrint('⚠️ No token yet; FCMService will retry automatically');
     }
   } catch (e) {
     debugPrint('FCM initialization error: $e');
-    // Continue anyway - notifications are optional
   }
-
-  // Test notification to verify system is working
-  Future.delayed(const Duration(seconds: 2), () async {
-    try {
-      debugPrint('📢 Sending test notification...');
-      await _sendTestNotification();
-    } catch (e) {
-      debugPrint('Test notification error: $e');
-    }
-  });
 }
 
 /// Handle notification when app is in foreground
@@ -423,36 +432,6 @@ Future<void> _navigateFromNotification(RemoteMessage message) async {
   }
 }
 
-/// Send test notification (for debugging)
-Future<void> _sendTestNotification() async {
-  try {
-    // Create a mock RemoteMessage for testing
-    debugPrint(
-      '✅ Test notification system ready! Token subscribed to bagisto_mobikul topic',
-    );
-    debugPrint('📢 Send notifications from Firebase Console with data:');
-    debugPrint('   1. FOR CATEGORY PRODUCTS:');
-    debugPrint('      - notificationType: category');
-    debugPrint('      - categoryId: <category_id>');
-    debugPrint('      - categoryName: <category_name>');
-    debugPrint('      - categorySlug: <optional_slug>');
-    debugPrint('   2. FOR PRODUCT DETAIL (by URL key):');
-    debugPrint('      - notificationType: product');
-    debugPrint('      - productUrlKey: <product_url_key>');
-    debugPrint('      - productName: <product_name>');
-    debugPrint('   3. FOR PRODUCT DETAIL (by ID):');
-    debugPrint('      - notificationType: product');
-    debugPrint('      - productId: <product_id>');
-    debugPrint('      - productName: <product_name> (optional)');
-    debugPrint('   4. FOR ORDER DETAIL:');
-    debugPrint('      - notificationType: order OR type: order_status');
-    debugPrint('      - orderId: <order_id>');
-    debugPrint('      - orderNumber: <order_number> (optional)');
-  } catch (e) {
-    debugPrint('❌ Test notification error: $e');
-  }
-}
-
 class BagistoApp extends StatelessWidget {
   final SharedPreferences prefs;
 
@@ -484,6 +463,7 @@ class BagistoApp extends StatelessWidget {
             BlocProvider(create: (_) => ThemeCubit()..initialize(prefs)),
             BlocProvider(create: (_) => CurrencyCubit()..initialize(prefs)),
             BlocProvider(create: (_) => LocaleCubit()..initialize(prefs)),
+            BlocProvider(create: (_) => ChannelLogoCubit()..initialize(prefs)),
             BlocProvider(
               create: (ctx) =>
                   AuthBloc(repository: ctx.read<AuthRepository>())
@@ -635,7 +615,8 @@ class _AppWithAuthCartSyncState extends State<_AppWithAuthCartSync> {
         ],
         child: BlocBuilder<ThemeCubit, ThemeMode>(
           builder: (context, themeMode) => BlocBuilder<LocaleCubit, Locale?>(
-            builder: (context, locale) {
+            builder: (context, appLocale) {
+              final locale = appLocale;
               ErrorMapper.updateLocale(
                 resolveAppLocale(locale, AppLocalizations.supportedLocales),
               );
@@ -662,8 +643,9 @@ class _AppWithAuthCartSyncState extends State<_AppWithAuthCartSync> {
                   // system font-size / Dynamic Type setting so layouts stay
                   // consistent and don't overflow on large-font devices.
                   return MediaQuery(
-                    data: MediaQuery.of(context)
-                        .copyWith(textScaler: TextScaler.noScaling),
+                    data: MediaQuery.of(
+                      context,
+                    ).copyWith(textScaler: TextScaler.noScaling),
                     child: child ?? const SizedBox.shrink(),
                   );
                 },

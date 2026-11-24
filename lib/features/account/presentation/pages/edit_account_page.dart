@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/utils/phone_validation.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/app_back_button.dart';
+import '../../../../core/store_config/store_config.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../data/models/account_models.dart';
 import '../bloc/edit_account_bloc.dart';
 import '../widgets/edit_account_form_field.dart';
-import '../../../../core/widgets/app_back_button.dart';
-import '../../../../core/store_config/store_config.dart';
 
 /// Edit Account Page — Figma node-id=245-6502
 ///
@@ -204,7 +204,8 @@ class _EditAccountPageState extends State<EditAccountPage> {
                                 return l10n.accountPhoneNumberRequired;
                               }
                               if (!isValidPhoneNumber(v)) {
-                                return l10n.accountPleaseEnterValidContactNumber;
+                                return l10n
+                                    .accountPleaseEnterValidContactNumber;
                               }
                               return null;
                             },
@@ -369,16 +370,17 @@ class _EditAccountPageState extends State<EditAccountPage> {
                             color: _selectedGender != null
                                 ? textColor
                                 : (isDark
-                                    ? AppColors.neutral500
-                                    : AppColors.neutral500),
+                                      ? AppColors.neutral500
+                                      : AppColors.neutral500),
                           ),
                         ),
                       ),
                       Icon(
                         Icons.keyboard_arrow_down,
                         size: 24,
-                        color:
-                            isDark ? AppColors.neutral400 : AppColors.neutral500,
+                        color: isDark
+                            ? AppColors.neutral400
+                            : AppColors.neutral500,
                       ),
                     ],
                   ),
@@ -411,7 +413,9 @@ class _EditAccountPageState extends State<EditAccountPage> {
     // Gender * (required, like the storefront profile).
     return FormField<String>(
       validator: (_) =>
-          _selectedGender == null ? l10n.accountGenderRequired : null,
+          _selectedGender == null || _selectedGender!.trim().isEmpty
+              ? l10n.accountGenderRequired
+              : null,
       builder: (state) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -476,30 +480,32 @@ class _EditAccountPageState extends State<EditAccountPage> {
                   ],
                 ),
               ),
-              ..._genderOptions.map((gender) => ListTile(
-                    title: Text(
-                      _genderLabel(gender, l10n),
-                      style: TextStyle(
-                        fontFamily: 'Roboto',
-                        fontSize: 16,
-                        fontWeight: _selectedGender == gender
-                            ? FontWeight.w600
-                            : FontWeight.w400,
-                        color: _selectedGender == gender
-                            ? AppColors.primary500
-                            : (isDark
+              ..._genderOptions.map(
+                (gender) => ListTile(
+                  title: Text(
+                    _genderLabel(gender, l10n),
+                    style: TextStyle(
+                      fontFamily: 'Roboto',
+                      fontSize: 16,
+                      fontWeight: _selectedGender == gender
+                          ? FontWeight.w600
+                          : FontWeight.w400,
+                      color: _selectedGender == gender
+                          ? AppColors.primary500
+                          : (isDark
                                 ? AppColors.neutral200
                                 : AppColors.neutral800),
-                      ),
                     ),
-                    trailing: _selectedGender == gender
-                        ? const Icon(Icons.check, color: AppColors.primary500)
-                        : null,
-                    onTap: () {
-                      setState(() => _selectedGender = gender);
-                      Navigator.pop(ctx, gender);
-                    },
-                  )),
+                  ),
+                  trailing: _selectedGender == gender
+                      ? const Icon(Icons.check, color: AppColors.primary500)
+                      : null,
+                  onTap: () {
+                    setState(() => _selectedGender = gender);
+                    Navigator.pop(ctx, gender);
+                  },
+                ),
+              ),
               const SizedBox(height: 16),
             ],
           ),
@@ -549,16 +555,17 @@ class _EditAccountPageState extends State<EditAccountPage> {
                             color: _selectedDob != null
                                 ? textColor
                                 : (isDark
-                                    ? AppColors.neutral500
-                                    : AppColors.neutral500),
+                                      ? AppColors.neutral500
+                                      : AppColors.neutral500),
                           ),
                         ),
                       ),
                       Icon(
                         Icons.calendar_today_outlined,
                         size: 24,
-                        color:
-                            isDark ? AppColors.neutral400 : AppColors.neutral800,
+                        color: isDark
+                            ? AppColors.neutral400
+                            : AppColors.neutral800,
                       ),
                     ],
                   ),
@@ -599,9 +606,9 @@ class _EditAccountPageState extends State<EditAccountPage> {
       builder: (ctx, child) {
         return Theme(
           data: Theme.of(ctx).copyWith(
-            colorScheme: Theme.of(ctx).colorScheme.copyWith(
-                  primary: AppColors.primary500,
-                ),
+            colorScheme: Theme.of(
+              ctx,
+            ).colorScheme.copyWith(primary: AppColors.primary500),
           ),
           child: child!,
         );
@@ -669,11 +676,7 @@ class _EditAccountPageState extends State<EditAccountPage> {
                       ),
               ),
               child: _subscribedToNewsLetter
-                  ? const Icon(
-                      Icons.check,
-                      size: 18,
-                      color: AppColors.white,
-                    )
+                  ? const Icon(Icons.check, size: 18, color: AppColors.white)
                   : null,
             ),
             const SizedBox(width: 4),
@@ -754,7 +757,10 @@ class _EditAccountPageState extends State<EditAccountPage> {
   // ── Save Profile Button — Figma: navigation-bar/add-to-cart (246:7562) ──
 
   Widget _buildSaveButton(
-      BuildContext context, bool isDark, EditAccountState state) {
+    BuildContext context,
+    bool isDark,
+    EditAccountState state,
+  ) {
     final l10n = AppLocalizations.of(context)!;
 
     return Container(
@@ -783,8 +789,9 @@ class _EditAccountPageState extends State<EditAccountPage> {
                           width: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(AppColors.white),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              AppColors.white,
+                            ),
                           ),
                         )
                       : Text(
@@ -810,16 +817,18 @@ class _EditAccountPageState extends State<EditAccountPage> {
   void _onSaveProfile(BuildContext context) {
     if (!_formKey.currentState!.validate()) return;
 
-    context.read<EditAccountBloc>().add(SaveProfile(
-          firstName: _firstNameCtrl.text.trim(),
-          lastName: _lastNameCtrl.text.trim(),
-          gender: _selectedGender,
-          phone: _phoneCtrl.text.trim().isNotEmpty
-              ? _phoneCtrl.text.trim()
-              : null,
-          dateOfBirth: _formatDobForApi(_selectedDob),
-          subscribedToNewsLetter: _subscribedToNewsLetter,
-        ));
+    context.read<EditAccountBloc>().add(
+      SaveProfile(
+        firstName: _firstNameCtrl.text.trim(),
+        lastName: _lastNameCtrl.text.trim(),
+        gender: _selectedGender,
+        phone: _phoneCtrl.text.trim().isNotEmpty
+            ? _phoneCtrl.text.trim()
+            : null,
+        dateOfBirth: _formatDobForApi(_selectedDob),
+        subscribedToNewsLetter: _subscribedToNewsLetter,
+      ),
+    );
   }
 
   void _updateFormFields(CustomerProfile profile) {
@@ -846,9 +855,7 @@ class _EditAccountPageState extends State<EditAccountPage> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: isDark ? AppColors.neutral800 : AppColors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
           l10n.accountChangeEmail,
           style: TextStyle(
@@ -925,10 +932,12 @@ class _EditAccountPageState extends State<EditAccountPage> {
             onPressed: () {
               if (dialogFormKey.currentState!.validate()) {
                 Navigator.pop(dialogContext);
-                context.read<EditAccountBloc>().add(ChangeEmail(
-                      newEmail: emailCtrl.text.trim(),
-                      currentPassword: passwordCtrl.text,
-                    ));
+                context.read<EditAccountBloc>().add(
+                  ChangeEmail(
+                    newEmail: emailCtrl.text.trim(),
+                    currentPassword: passwordCtrl.text,
+                  ),
+                );
               }
             },
             child: Text(
@@ -960,9 +969,7 @@ class _EditAccountPageState extends State<EditAccountPage> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: isDark ? AppColors.neutral800 : AppColors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
           l10n.accountChangePassword,
           style: TextStyle(
@@ -1056,11 +1063,13 @@ class _EditAccountPageState extends State<EditAccountPage> {
             onPressed: () {
               if (dialogFormKey.currentState!.validate()) {
                 Navigator.pop(dialogContext);
-                context.read<EditAccountBloc>().add(ChangePassword(
-                      currentPassword: currentPwdCtrl.text,
-                      newPassword: newPwdCtrl.text,
-                      confirmPassword: confirmPwdCtrl.text,
-                    ));
+                context.read<EditAccountBloc>().add(
+                  ChangePassword(
+                    currentPassword: currentPwdCtrl.text,
+                    newPassword: newPwdCtrl.text,
+                    confirmPassword: confirmPwdCtrl.text,
+                  ),
+                );
               }
             },
             child: Text(
@@ -1090,9 +1099,7 @@ class _EditAccountPageState extends State<EditAccountPage> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: isDark ? AppColors.neutral800 : AppColors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
           l10n.accountDeleteAccount,
           style: TextStyle(
@@ -1156,8 +1163,8 @@ class _EditAccountPageState extends State<EditAccountPage> {
               if (dialogFormKey.currentState!.validate()) {
                 Navigator.pop(dialogContext);
                 context.read<EditAccountBloc>().add(
-                      DeleteAccount(password: passwordCtrl.text),
-                    );
+                  DeleteAccount(password: passwordCtrl.text),
+                );
               }
             },
             child: Text(

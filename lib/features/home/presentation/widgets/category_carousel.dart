@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/category_circular_image.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../data/models/home_models.dart';
 
@@ -26,7 +27,7 @@ class CategoryCarousel extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         itemCount: categories.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 20),
+        separatorBuilder: (_, _) => const SizedBox(width: 20),
         itemBuilder: (context, index) {
           final category = categories[index];
           return _CategoryItem(
@@ -62,17 +63,10 @@ class _CategoryItem extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // 64×64 circular category image
-              ClipOval(
-                child: category.logoUrl != null && category.logoUrl!.isNotEmpty
-                    ? Image.network(
-                        category.logoUrl!,
-                        width: 64,
-                        height: 64,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _placeholder(context),
-                      )
-                    : _placeholder(context),
+              // 64×64 circular category image with web placeholder fallback
+              CategoryCircularImage(
+                imageUrl: category.logoUrl,
+                size: 64,
               ),
               const SizedBox(height: 7),
               // Category name
@@ -91,22 +85,6 @@ class _CategoryItem extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _placeholder(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      width: 64,
-      height: 64,
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.neutral800 : AppColors.neutral200,
-        shape: BoxShape.circle,
-      ),
-      child: Icon(
-        Icons.category_outlined,
-        color: isDark ? AppColors.neutral500 : AppColors.neutral500,
       ),
     );
   }

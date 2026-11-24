@@ -4,16 +4,22 @@
 import 'dart:convert';
 
 import '../../../../core/currency/currency_formatter.dart';
+import '../../../../core/store_config/store_config.dart';
+import '../../../checkout/data/models/checkout_model.dart';
 
 class CartModel {
   final int id;
   final String? cartToken;
   final double subtotal;
   final String? formattedSubtotal;
+  final double subTotalInclTax;
+  final String? formattedSubTotalInclTax;
   final double taxAmount;
   final String? formattedTaxAmount;
   final double shippingAmount;
   final String? formattedShippingAmount;
+  final double shippingAmountInclTax;
+  final String? formattedShippingAmountInclTax;
   final double grandTotal;
   final String? formattedGrandTotal;
   final double discountAmount;
@@ -23,16 +29,21 @@ class CartModel {
   final int itemsQty;
   final bool isGuest;
   final List<CartItemModel> items;
+  final Map<String, String> appliedTaxes;
 
   const CartModel({
     required this.id,
     this.cartToken,
     this.subtotal = 0,
     this.formattedSubtotal,
+    this.subTotalInclTax = 0,
+    this.formattedSubTotalInclTax,
     this.taxAmount = 0,
     this.formattedTaxAmount,
     this.shippingAmount = 0,
     this.formattedShippingAmount,
+    this.shippingAmountInclTax = 0,
+    this.formattedShippingAmountInclTax,
     this.grandTotal = 0,
     this.formattedGrandTotal,
     this.discountAmount = 0,
@@ -42,6 +53,7 @@ class CartModel {
     this.itemsQty = 0,
     this.isGuest = true,
     this.items = const [],
+    this.appliedTaxes = const {},
   });
 
   factory CartModel.fromJson(Map<String, dynamic> json) {
@@ -51,14 +63,46 @@ class CartModel {
       subtotal: _parseDouble(_read(json, 'subtotal', 'sub_total')),
       formattedSubtotal:
           _read(json, 'formattedSubtotal', 'formatted_sub_total') as String?,
-      taxAmount: _parseDouble(_read(json, 'taxAmount', 'tax_total')),
-      formattedTaxAmount:
-          _read(json, 'formattedTaxAmount', 'formatted_tax_total') as String?,
+      subTotalInclTax: _parseDouble(
+        _read(json, 'subTotalInclTax', 'sub_total_incl_tax'),
+      ),
+      formattedSubTotalInclTax:
+          _read(
+                json,
+                'formattedSubTotalInclTax',
+                'formatted_sub_total_incl_tax',
+              )
+              as String?,
+      taxAmount: () {
+        final taxTot = _parseDouble(_read(json, 'taxTotal', 'tax_total'));
+        if (taxTot > 0) return taxTot;
+        return _parseDouble(_read(json, 'taxAmount', 'tax_amount'));
+      }(),
+      formattedTaxAmount: () {
+        final taxTot = _parseDouble(_read(json, 'taxTotal', 'tax_total'));
+        final fmtTot =
+            _read(json, 'formattedTaxTotal', 'formatted_tax_total') as String?;
+        if (taxTot > 0 && fmtTot != null && fmtTot.isNotEmpty) return fmtTot;
+        final fmtAmt =
+            _read(json, 'formattedTaxAmount', 'formatted_tax_amount')
+                as String?;
+        return (taxTot > 0) ? (fmtTot ?? fmtAmt) : (fmtAmt ?? fmtTot);
+      }(),
       shippingAmount: _parseDouble(
         _read(json, 'shippingAmount', 'shipping_amount'),
       ),
       formattedShippingAmount:
           _read(json, 'formattedShippingAmount', 'formatted_shipping_amount')
+              as String?,
+      shippingAmountInclTax: _parseDouble(
+        _read(json, 'shippingAmountInclTax', 'shipping_amount_incl_tax'),
+      ),
+      formattedShippingAmountInclTax:
+          _read(
+                json,
+                'formattedShippingAmountInclTax',
+                'formatted_shipping_amount_incl_tax',
+              )
               as String?,
       grandTotal: _parseDouble(_read(json, 'grandTotal', 'grand_total')),
       formattedGrandTotal:
@@ -75,7 +119,19 @@ class CartModel {
       itemsQty: _parseInt(_read(json, 'itemsQty', 'items_qty')),
       isGuest: _parseBool(_read(json, 'isGuest', 'is_guest')) ?? true,
       items: _parseItems(json['items']),
+      appliedTaxes: _parseAppliedTaxes(
+        _read(json, 'appliedTaxes', 'applied_taxes'),
+      ),
     );
+  }
+
+  static Map<String, String> _parseAppliedTaxes(dynamic value) {
+    if (value is Map) {
+      return value.map(
+        (key, val) => MapEntry(key.toString(), val?.toString() ?? ''),
+      );
+    }
+    return const {};
   }
 
   /// Empty cart
@@ -85,6 +141,12 @@ class CartModel {
 
   bool get hasCoupon => couponCode != null && couponCode!.isNotEmpty;
 
+  /// Whether tax is included in the subtotal / prices
+  bool get hasTaxIncluded => subTotalInclTax > 0 && subTotalInclTax > subtotal;
+
+  /// Whether the cart has applied taxes breakdown from the backend
+  bool get hasAppliedTaxes => appliedTaxes.isNotEmpty;
+
   /// Whether the cart contains only virtual or downloadable products (no shipping needed)
   bool get isVirtualOnly =>
       items.isNotEmpty &&
@@ -92,15 +154,22 @@ class CartModel {
         (item) => item.isVirtual || item.isDownloadable || item.isBooking,
       );
 
+  /// Whether the cart has physical items that require shipping estimation
+  bool get hasStockableItems => !isEmpty && !isVirtualOnly;
+
   CartModel copyWith({
     int? id,
     String? cartToken,
     double? subtotal,
     String? formattedSubtotal,
+    double? subTotalInclTax,
+    String? formattedSubTotalInclTax,
     double? taxAmount,
     String? formattedTaxAmount,
     double? shippingAmount,
     String? formattedShippingAmount,
+    double? shippingAmountInclTax,
+    String? formattedShippingAmountInclTax,
     double? grandTotal,
     String? formattedGrandTotal,
     double? discountAmount,
@@ -110,6 +179,7 @@ class CartModel {
     int? itemsQty,
     bool? isGuest,
     List<CartItemModel>? items,
+    Map<String, String>? appliedTaxes,
     bool clearCoupon = false,
   }) {
     return CartModel(
@@ -117,11 +187,18 @@ class CartModel {
       cartToken: cartToken ?? this.cartToken,
       subtotal: subtotal ?? this.subtotal,
       formattedSubtotal: formattedSubtotal ?? this.formattedSubtotal,
+      subTotalInclTax: subTotalInclTax ?? this.subTotalInclTax,
+      formattedSubTotalInclTax:
+          formattedSubTotalInclTax ?? this.formattedSubTotalInclTax,
       taxAmount: taxAmount ?? this.taxAmount,
       formattedTaxAmount: formattedTaxAmount ?? this.formattedTaxAmount,
       shippingAmount: shippingAmount ?? this.shippingAmount,
       formattedShippingAmount:
           formattedShippingAmount ?? this.formattedShippingAmount,
+      shippingAmountInclTax:
+          shippingAmountInclTax ?? this.shippingAmountInclTax,
+      formattedShippingAmountInclTax:
+          formattedShippingAmountInclTax ?? this.formattedShippingAmountInclTax,
       grandTotal: grandTotal ?? this.grandTotal,
       formattedGrandTotal: formattedGrandTotal ?? this.formattedGrandTotal,
       discountAmount: discountAmount ?? this.discountAmount,
@@ -132,6 +209,7 @@ class CartModel {
       itemsQty: itemsQty ?? this.itemsQty,
       isGuest: isGuest ?? this.isGuest,
       items: items ?? this.items,
+      appliedTaxes: appliedTaxes ?? this.appliedTaxes,
     );
   }
 
@@ -174,6 +252,68 @@ class CartModel {
     return null;
   }
 
+  /// Generates the itemized breakdown for each applied tax rate, matching Web Cart Summary:
+  /// e.g.
+  /// tax-in (20%)
+  ///   simple product                       $77.60 ($388.00)
+  ///   Delivery Charges                      $2.40 ($12.00)
+  List<CartTaxBreakdownLine> get taxBreakdownLines {
+    if (!hasAppliedTaxes) return const [];
+
+    final symbol = _extractCurrencySymbol();
+
+    // Check if delivery charges have tax
+    final shippingTax =
+        (shippingAmountInclTax > 0 && shippingAmountInclTax > shippingAmount)
+        ? (shippingAmountInclTax - shippingAmount)
+        : 0.0;
+
+    return appliedTaxes.entries.map((entry) {
+      final rateName = entry.key;
+      final rateTotal = entry.value;
+
+      final breakdownItems = <CartTaxBreakdownItem>[];
+      for (final item in items) {
+        if (item.taxAmount > 0) {
+          final taxable =
+              item.formattedTotal ?? '$symbol${item.total.toStringAsFixed(2)}';
+          breakdownItems.add(
+            CartTaxBreakdownItem(
+              name: item.name,
+              taxAmount: '$symbol${item.taxAmount.toStringAsFixed(2)}',
+              taxableAmount: taxable,
+            ),
+          );
+        }
+      }
+
+      if (shippingTax > 0) {
+        final shippingTaxable =
+            formattedShippingAmount ??
+            '$symbol${shippingAmount.toStringAsFixed(2)}';
+        breakdownItems.add(
+          CartTaxBreakdownItem(
+            name: 'Delivery Charges',
+            taxAmount: '$symbol${shippingTax.toStringAsFixed(2)}',
+            taxableAmount: shippingTaxable,
+          ),
+        );
+      }
+
+      return CartTaxBreakdownLine(
+        rateName: rateName,
+        rateTotal: rateTotal,
+        items: breakdownItems,
+      );
+    }).toList();
+  }
+
+  String _extractCurrencySymbol() {
+    final sample = formattedGrandTotal ?? formattedSubtotal ?? '';
+    final match = RegExp(r'^([^\d\s]+)').firstMatch(sample.trim());
+    return match != null ? match.group(1)! : '\$';
+  }
+
   static double _parseDouble(dynamic value) {
     if (value == null) return 0;
     if (value is double) return value;
@@ -191,6 +331,32 @@ class CartModel {
   }
 }
 
+/// Itemized breakdown line for an applied tax rate (matches Web cart summary)
+class CartTaxBreakdownLine {
+  final String rateName;
+  final String rateTotal;
+  final List<CartTaxBreakdownItem> items;
+
+  const CartTaxBreakdownLine({
+    required this.rateName,
+    required this.rateTotal,
+    required this.items,
+  });
+}
+
+/// Item within an applied tax rate breakdown (matches Web cart summary)
+class CartTaxBreakdownItem {
+  final String name;
+  final String taxAmount;
+  final String taxableAmount;
+
+  const CartTaxBreakdownItem({
+    required this.name,
+    required this.taxAmount,
+    required this.taxableAmount,
+  });
+}
+
 class CartItemModel {
   final int id;
   final int cartId;
@@ -198,8 +364,13 @@ class CartItemModel {
   final String name;
   final double price;
   final String? formattedPrice;
+  final double priceInclTax;
+  final String? formattedPriceInclTax;
   final double total;
   final String? formattedTotal;
+  final double totalInclTax;
+  final String? formattedTotalInclTax;
+  final double taxAmount;
   final String? baseImage; // JSON string with image URLs
   final String? sku;
   final int quantity;
@@ -215,8 +386,13 @@ class CartItemModel {
     required this.name,
     required this.price,
     this.formattedPrice,
+    this.priceInclTax = 0,
+    this.formattedPriceInclTax,
     this.total = 0,
     this.formattedTotal,
+    this.totalInclTax = 0,
+    this.formattedTotalInclTax,
+    this.taxAmount = 0,
     this.baseImage,
     this.sku,
     required this.quantity,
@@ -238,9 +414,32 @@ class CartItemModel {
       price: CartModel._parseDouble(json['price']),
       formattedPrice:
           CartModel._read(json, 'formattedPrice', 'formatted_price') as String?,
+      priceInclTax: CartModel._parseDouble(
+        CartModel._read(json, 'priceInclTax', 'price_incl_tax'),
+      ),
+      formattedPriceInclTax:
+          CartModel._read(
+                json,
+                'formattedPriceInclTax',
+                'formatted_price_incl_tax',
+              )
+              as String?,
       total: CartModel._parseDouble(json['total']),
       formattedTotal:
           CartModel._read(json, 'formattedTotal', 'formatted_total') as String?,
+      totalInclTax: CartModel._parseDouble(
+        CartModel._read(json, 'totalInclTax', 'total_incl_tax'),
+      ),
+      formattedTotalInclTax:
+          CartModel._read(
+                json,
+                'formattedTotalInclTax',
+                'formatted_total_incl_tax',
+              )
+              as String?,
+      taxAmount: CartModel._parseDouble(
+        CartModel._read(json, 'taxAmount', 'tax_amount'),
+      ),
       baseImage: baseImageValue is String
           ? baseImageValue
           : (baseImageValue == null ? null : jsonEncode(baseImageValue)),
@@ -281,6 +480,60 @@ class CartItemModel {
   String get displayTotal =>
       formattedTotal ??
       CurrencyFormatter.formatAmount(total > 0 ? total : totalPrice);
+
+  String get displayPriceInclTax =>
+      formattedPriceInclTax ??
+      CurrencyFormatter.formatAmount(priceInclTax > 0 ? priceInclTax : price);
+
+  String get displayTotalInclTax =>
+      formattedTotalInclTax ??
+      CurrencyFormatter.formatAmount(
+        totalInclTax > 0
+            ? totalInclTax
+            : (priceInclTax > 0 ? priceInclTax * quantity : totalPrice),
+      );
+
+  /// Unit price formatted according to StoreConfig taxCartDisplayPrices
+  String formattedUnitPrice(StoreConfig config) {
+    if (config.showItemPriceInclTax && priceInclTax > 0) {
+      return displayPriceInclTax;
+    }
+    return displayPrice;
+  }
+
+  /// Optional subtitle for unit price when StoreConfig taxCartDisplayPrices is 'both'
+  String? formattedUnitPriceSubValue(
+    StoreConfig config,
+    String Function(String) exclTaxFormatter,
+  ) {
+    if (config.showItemPriceBoth &&
+        priceInclTax > 0 &&
+        (priceInclTax - price).abs() > 0.001) {
+      return exclTaxFormatter(displayPrice);
+    }
+    return null;
+  }
+
+  /// Line total formatted according to StoreConfig taxCartDisplayPrices
+  String formattedLineTotal(StoreConfig config) {
+    if (config.showItemPriceInclTax && totalInclTax > 0) {
+      return displayTotalInclTax;
+    }
+    return displayTotal;
+  }
+
+  /// Optional subtitle for line total when StoreConfig taxCartDisplayPrices is 'both'
+  String? formattedLineTotalSubValue(
+    StoreConfig config,
+    String Function(String) exclTaxFormatter,
+  ) {
+    if (config.showItemPriceBoth &&
+        totalInclTax > 0 &&
+        (totalInclTax - total).abs() > 0.001) {
+      return exclTaxFormatter(displayTotal);
+    }
+    return null;
+  }
 
   /// Whether this is a virtual product
   bool get isVirtual => type == 'virtual';
@@ -457,4 +710,17 @@ class CartTokenResponse {
       message: json['message'] as String?,
     );
   }
+}
+
+/// Result of createEstimateShipping mutation containing updated cart and shipping rates.
+class EstimateShippingResult {
+  final CartModel cart;
+  final List<ShippingRate> shippingMethods;
+  final String? selectedShippingRate;
+
+  const EstimateShippingResult({
+    required this.cart,
+    this.shippingMethods = const [],
+    this.selectedShippingRate,
+  });
 }

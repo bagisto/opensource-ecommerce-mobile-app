@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import '../../../../core/constants/api_constants.dart';
+import '../../../../core/store_config/store_config.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_back_button.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -1004,7 +1005,12 @@ class _InvoiceItemCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        _formatPrice(invoiceItem?.price ?? orderItem.price),
+                        _formatPrice(
+                          StoreConfig.of(context).showOrderItemPriceBoth ||
+                                  StoreConfig.of(context).showOrderItemPriceInclTax
+                              ? (invoiceItem?.priceInclTax ?? orderItem.priceInclTax)
+                              : (invoiceItem?.price ?? orderItem.price),
+                        ),
                         style: TextStyle(
                           fontFamily: 'Roboto',
                           fontWeight: FontWeight.w400,
@@ -1016,6 +1022,24 @@ class _InvoiceItemCard extends StatelessWidget {
                       ),
                     ],
                   ),
+                  if (StoreConfig.of(context).showOrderItemPriceBoth &&
+                      (invoiceItem?.priceInclTax ?? orderItem.priceInclTax) !=
+                          (invoiceItem?.price ?? orderItem.price)) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      l10n.cartExclTax(
+                        _formatPrice(invoiceItem?.price ?? orderItem.price),
+                      ),
+                      style: TextStyle(
+                        fontFamily: 'Roboto',
+                        fontWeight: FontWeight.w400,
+                        fontSize: 11,
+                        color: isDark
+                            ? AppColors.neutral400
+                            : AppColors.neutral500,
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 6),
                   // Sub Total row
                   Row(
@@ -1038,7 +1062,12 @@ class _InvoiceItemCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        _formatPrice(invoiceItem?.total ?? orderItem.total),
+                        _formatPrice(
+                          StoreConfig.of(context).showOrderItemPriceBoth ||
+                                  StoreConfig.of(context).showOrderItemPriceInclTax
+                              ? (invoiceItem?.totalInclTax ?? orderItem.totalInclTax)
+                              : (invoiceItem?.total ?? orderItem.total),
+                        ),
                         style: TextStyle(
                           fontFamily: 'Roboto',
                           fontWeight: FontWeight.w700,
@@ -1050,6 +1079,24 @@ class _InvoiceItemCard extends StatelessWidget {
                       ),
                     ],
                   ),
+                  if (StoreConfig.of(context).showOrderItemPriceBoth &&
+                      (invoiceItem?.totalInclTax ?? orderItem.totalInclTax) !=
+                          (invoiceItem?.total ?? orderItem.total)) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      l10n.cartExclTax(
+                        _formatPrice(invoiceItem?.total ?? orderItem.total),
+                      ),
+                      style: TextStyle(
+                        fontFamily: 'Roboto',
+                        fontWeight: FontWeight.w400,
+                        fontSize: 11,
+                        color: isDark
+                            ? AppColors.neutral400
+                            : AppColors.neutral500,
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ],
@@ -1110,6 +1157,31 @@ class _InvoicePriceBreak extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context)!;
+    final config = StoreConfig.of(context);
+
+    final showSubtotalBoth = config.showOrderSubtotalBoth;
+    final showSubtotalIncl = config.showOrderSubtotalInclTax;
+    final hasSubtotalDiff = invoice.subTotalInclTax != null &&
+        invoice.subTotalInclTax != invoice.subTotal;
+    final subtotalDisplay = (showSubtotalBoth || showSubtotalIncl) &&
+            invoice.subTotalInclTax != null
+        ? _formatAmount(invoice.subTotalInclTax)
+        : _formatAmount(invoice.subTotal);
+    final subtotalSubValue = showSubtotalBoth && hasSubtotalDiff
+        ? l10n.cartExclTax(_formatAmount(invoice.subTotal))
+        : null;
+
+    final showShippingBoth = config.showOrderShippingBoth;
+    final showShippingIncl = config.showOrderShippingInclTax;
+    final hasShippingDiff = invoice.shippingAmountInclTax != null &&
+        invoice.shippingAmountInclTax != invoice.shippingAmount;
+    final shippingDisplay = (showShippingBoth || showShippingIncl) &&
+            invoice.shippingAmountInclTax != null
+        ? _formatAmount(invoice.shippingAmountInclTax)
+        : _formatAmount(invoice.shippingAmount ?? 0);
+    final shippingSubValue = showShippingBoth && hasShippingDiff
+        ? l10n.cartExclTax(_formatAmount(invoice.shippingAmount ?? 0))
+        : null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1126,12 +1198,18 @@ class _InvoicePriceBreak extends StatelessWidget {
         ),
         const SizedBox(height: 8),
 
-        _priceRow(l10n.cartSubTotal, _formatAmount(invoice.subTotal), isDark),
+        _priceRow(
+          l10n.cartSubTotal,
+          subtotalDisplay,
+          isDark,
+          subValue: subtotalSubValue,
+        ),
         const SizedBox(height: 6),
         _priceRow(
           l10n.cartDeliveryCharges,
-          _formatAmount(invoice.shippingAmount ?? 0),
+          shippingDisplay,
           isDark,
+          subValue: shippingSubValue,
         ),
         const SizedBox(height: 6),
         _priceRow(l10n.cartTax, _formatAmount(invoice.taxAmount ?? 0), isDark),
@@ -1169,9 +1247,12 @@ class _InvoicePriceBreak extends StatelessWidget {
     String value,
     bool isDark, {
     bool isBold = false,
+    String? subValue,
   }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment:
+          subValue != null ? CrossAxisAlignment.start : CrossAxisAlignment.center,
       children: [
         Text(
           label,
@@ -1182,14 +1263,31 @@ class _InvoicePriceBreak extends StatelessWidget {
             color: isDark ? AppColors.neutral200 : AppColors.neutral800,
           ),
         ),
-        Text(
-          value,
-          style: TextStyle(
-            fontFamily: 'Roboto',
-            fontWeight: isBold ? FontWeight.w600 : FontWeight.w400,
-            fontSize: 14,
-            color: isDark ? AppColors.neutral200 : AppColors.neutral800,
-          ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              value,
+              style: TextStyle(
+                fontFamily: 'Roboto',
+                fontWeight: isBold ? FontWeight.w600 : FontWeight.w400,
+                fontSize: 14,
+                color: isDark ? AppColors.neutral200 : AppColors.neutral800,
+              ),
+            ),
+            if (subValue != null) ...[
+              const SizedBox(height: 2),
+              Text(
+                subValue,
+                style: TextStyle(
+                  fontFamily: 'Roboto',
+                  fontWeight: FontWeight.w400,
+                  fontSize: 11,
+                  color: isDark ? AppColors.neutral400 : AppColors.neutral500,
+                ),
+              ),
+            ],
+          ],
         ),
       ],
     );

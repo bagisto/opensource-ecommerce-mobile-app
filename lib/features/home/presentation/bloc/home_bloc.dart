@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/error/error_mapper.dart';
+import '../../../category/data/models/filter_model.dart';
 import '../../data/models/home_models.dart';
 import '../../data/repository/home_repository.dart';
 
@@ -31,10 +32,14 @@ enum HomeStatus { initial, loading, loaded, refreshing, error }
 class HomeState extends Equatable {
   final HomeStatus status;
   final List<ThemeCustomization> customizations;
-  /// All categories shown by the category carousels (used to resolve links).
+
+  /// Every category shown by any category carousel, de-duplicated. Used to
+  /// resolve admin-configured banner/content links to a category.
   final List<HomeCategory> categories;
 
-  /// Keyed by customization `id` → categories for that carousel.
+  /// Keyed by customization `id` → categories for that carousel. Each
+  /// carousel has its own `parent_id`/`limit` filters, so two carousels on
+  /// the same page show different categories.
   final Map<String, List<HomeCategory>> categorySections;
 
   /// Keyed by customization `id` → products for that section.
@@ -151,9 +156,12 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   }
 
   Future<void> _doLoad(Emitter<HomeState> emit) async {
-    // 1) Fetch theme customizations, then each category carousel's
-    //    categories using its own `parent_id` and `limit` filters (none
-    //    means every active category, as on the storefront).
+    // 1) Fetch theme customizations, then each category carousel's own
+    //    categories using that section's `parent_id` and `limit` filters.
+    //    Reading the filters of only the first carousel made every carousel
+    //    on the page show the same categories; a section with no `parent_id`
+    //    falls back to the root's direct children, so a sub-category is
+    //    never listed as a top-level one.
     final customizations = await _repository.fetchSections();
     final categoryResults = await Future.wait(
       customizations.where((tc) => tc.type == 'category_carousel').map((
@@ -170,6 +178,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       }),
     );
     final categorySections = Map.fromEntries(categoryResults);
+    // Flattened, de-duplicated by id — what link resolution searches.
     final categories = {
       for (final list in categorySections.values)
         for (final category in list) category.id: category,
@@ -202,32 +211,15 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
               ? jsonEncode(filterMap)
               : null;
 
-          String sortKey = 'NEWEST';
-          bool reverse = true;
-          if (sort == 'created_at-desc') {
-            sortKey = 'NEWEST';
-            reverse = true;
-          } else if (sort == 'price-desc') {
-            sortKey = 'PRICE';
-            reverse = true;
-          } else if (sort == 'price-asc') {
-            sortKey = 'PRICE';
-            reverse = false;
-          } else if (sort == 'name-asc') {
-            sortKey = 'TITLE';
-            reverse = false;
-          } else if (sort == 'name-desc') {
-            sortKey = 'TITLE';
-            reverse = true;
-          }
+          final sortOption = sortOptionFromKey(sort);
 
           return MapEntry(
             tc.id,
             await _repository.fetchProducts(
               first: limit,
               filter: filterJson,
-              sortKey: sortKey,
-              reverse: reverse,
+              sortKey: sortOption?.sortKey,
+              reverse: sortOption?.reverse,
             ),
           );
         } catch (e) {

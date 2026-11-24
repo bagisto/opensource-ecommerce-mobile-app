@@ -8,6 +8,7 @@ import '../../../cart/presentation/bloc/cart_bloc.dart';
 import '../../../account/data/repository/account_repository.dart';
 import '../../../account/presentation/pages/order_detail_page.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../../core/store_config/store_config.dart';
 import 'dart:math' as math;
 
 /// Thank You page — Figma node-id=206:7578
@@ -27,6 +28,11 @@ class ThankyouPage extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final authState = context.read<AuthBloc>().state;
     final showViewOrderButton = authState is AuthAuthenticated;
+    final storeConfig = StoreConfig.of(context);
+    final formattedOrderNumber = storeConfig.formatOrderNumber(
+      orderId,
+      orderIncrementId: orderIncrementId,
+    );
 
     return Scaffold(
       backgroundColor: isDark ? AppColors.neutral900 : AppColors.white,
@@ -84,10 +90,10 @@ class ThankyouPage extends StatelessWidget {
                       const SizedBox(height: 20),
 
                       // ── Order Number ──
-                      if (orderIncrementId != null || orderId != null)
+                      if (formattedOrderNumber.isNotEmpty)
                         Text(
                           AppLocalizations.of(context)!.thankYouOrderNumber(
-                            orderIncrementId ?? orderId ?? '',
+                            formattedOrderNumber,
                           ),
                           style: TextStyle(
                             fontFamily: 'Roboto',
@@ -108,7 +114,10 @@ class ThankyouPage extends StatelessWidget {
                         SizedBox(
                           height: 48,
                           child: ElevatedButton(
-                            onPressed: () => _onViewOrder(context),
+                            onPressed: () => _onViewOrder(
+                              context,
+                              formattedOrderNumber: formattedOrderNumber,
+                            ),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.primary500,
                               foregroundColor: AppColors.white,
@@ -220,7 +229,10 @@ class ThankyouPage extends StatelessWidget {
     );
   }
 
-  void _onViewOrder(BuildContext context) {
+  void _onViewOrder(
+    BuildContext context, {
+    String? formattedOrderNumber,
+  }) {
     // Reload cart
     context.read<CartBloc>().add(LoadCart());
 
@@ -251,7 +263,12 @@ class ThankyouPage extends StatelessWidget {
       OrderDetailPage.navigate(
         context,
         orderId: orderIdNum,
-        orderNumber: orderIncrementId != null ? '#$orderIncrementId' : '#$orderId',
+        orderNumber: (formattedOrderNumber != null &&
+                formattedOrderNumber.isNotEmpty)
+            ? (formattedOrderNumber.startsWith('#')
+                ? formattedOrderNumber
+                : '#$formattedOrderNumber')
+            : (orderIncrementId != null ? '#$orderIncrementId' : '#$orderId'),
         repository: repository,
       );
     } else {

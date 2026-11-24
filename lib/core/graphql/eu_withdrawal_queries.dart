@@ -13,6 +13,31 @@ class EuWithdrawalQueries {
     }
   ''';
 
+  /// A single withdrawal declaration by IRI.
+  static const String getWithdrawal = r'''
+    query euWithdrawal($id: ID!) {
+      euWithdrawal(id: $id) {
+        id
+        _id
+        uuid
+        orderId
+        orderIncrementId
+        isGuest
+        customerEmail
+        status
+        reasonText
+        receivedAt
+        confirmationSentAt
+        declinedAt
+        declinedReason
+        refundedAt
+        refundNote
+        createdAt
+        updatedAt
+      }
+    }
+  ''';
+
   /// The logged-in customer's withdrawal requests.
   static const String getWithdrawals = r'''
     query euWithdrawals($first: Int, $after: String) {
@@ -21,11 +46,21 @@ class EuWithdrawalQueries {
           node {
             id
             _id
+            uuid
             orderId
             orderIncrementId
+            isGuest
+            customerEmail
             status
+            reasonText
             receivedAt
+            confirmationSentAt
+            declinedAt
             declinedReason
+            refundedAt
+            refundNote
+            createdAt
+            updatedAt
           }
         }
         pageInfo {
@@ -43,26 +78,33 @@ class EuWithdrawalQueries {
         euWithdrawal {
           id
           _id
+          uuid
           orderId
           orderIncrementId
+          isGuest
+          customerEmail
           status
+          reasonText
           receivedAt
+          confirmationSentAt
+          declinedAt
           declinedReason
+          refundedAt
+          refundNote
+          createdAt
+          updatedAt
         }
       }
     }
   ''';
 
-  /// Guest withdrawal, identified by order number and order email.
-  static const String createGuestWithdrawal = r'''
-    mutation createGuestEuWithdrawal($input: createGuestEuWithdrawalInput!) {
-      createGuestEuWithdrawal(input: $input) {
-        guestEuWithdrawal {
-          id
-          uuid
-          orderIncrementId
-          status
-          receivedAt
+  /// Sends a guest an email link to withdraw from a contract.
+  static const String createGuestWithdrawalLink = r'''
+    mutation CreateGuestEuWithdrawalLink($input: createGuestEuWithdrawalLinkInput!) {
+      createGuestEuWithdrawalLink(input: $input) {
+        guestEuWithdrawalLink {
+          success
+          message
         }
       }
     }

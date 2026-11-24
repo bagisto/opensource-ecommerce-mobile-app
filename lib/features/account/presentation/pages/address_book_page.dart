@@ -3,12 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/app_back_button.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../data/repository/account_repository.dart';
 import '../bloc/address_book_bloc.dart';
 import '../helpers/address_book_navigation_helpers.dart';
 import '../widgets/address_card.dart';
-import '../../../../core/widgets/app_back_button.dart';
 import 'add_address_page.dart';
 
 /// Address Book Page — Figma node-id=204-4487
@@ -371,10 +371,10 @@ class _AddressListWithScrollState extends State<_AddressListWithScroll> {
   }
 
   void _onScroll() {
-    final hasScrollableContent =
-        _scrollController.position.maxScrollExtent > 0;
+    final hasScrollableContent = _scrollController.position.maxScrollExtent > 0;
     final atTop = _scrollController.position.pixels <= 0;
-    final atBottom = _scrollController.position.pixels >=
+    final atBottom =
+        _scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 10;
 
     setState(() {
@@ -541,10 +541,8 @@ class _AddressListWithScrollState extends State<_AddressListWithScroll> {
                               }
                             },
                       onEdit: () async {
-                        final repository =
-                            context.read<AccountRepository>();
-                        final bloc =
-                            context.read<AddressBookBloc>();
+                        final repository = context.read<AccountRepository>();
+                        final bloc = context.read<AddressBookBloc>();
                         await refreshAddressBookAfterForm(
                           openForm: () {
                             return Navigator.of(context).push<bool>(
@@ -553,7 +551,9 @@ class _AddressListWithScrollState extends State<_AddressListWithScroll> {
                                   value: repository,
                                   child: BlocProvider.value(
                                     value: bloc,
-                                    child: AddAddressPage(editingAddress: address),
+                                    child: AddAddressPage(
+                                      editingAddress: address,
+                                    ),
                                   ),
                                 ),
                               ),

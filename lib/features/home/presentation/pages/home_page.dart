@@ -1,8 +1,6 @@
 import 'dart:convert';
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../core/widgets/channel_logo.dart';
@@ -11,8 +9,14 @@ import '../../../../core/constants/api_constants.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/navigation/app_navigator.dart';
 import '../../../../core/wishlist/wishlist_cubit.dart';
+import '../../../../core/store_config/store_config.dart';
+import '../../../../core/store_config/store_config_cubit.dart';
+import '../../../../core/channel/channel_logo_cubit.dart';
+import '../../../../core/recently_viewed/recently_viewed_products_service.dart';
+import '../../../../core/graphql/graphql_client.dart';
 import '../../data/models/home_models.dart';
 import '../../../product/presentation/pages/product_detail_page.dart';
+import '../../../category/data/models/filter_model.dart';
 import '../../../category/presentation/pages/category_products_grid_page.dart';
 import '../../../category/data/repository/category_repository.dart';
 import '../../../category/presentation/bloc/category_bloc.dart';
@@ -21,15 +25,14 @@ import '../../../search/presentation/pages/search_page.dart';
 import '../bloc/home_bloc.dart';
 import '../widgets/category_carousel.dart';
 import '../widgets/footer_links_section.dart';
+import '../widgets/header_offer_bar.dart';
 import '../widgets/image_carousel.dart';
+import '../widgets/newsletter_subscribe_section.dart';
 import '../widgets/product_card_large.dart';
-import '../widgets/product_card_small.dart';
 import '../widgets/recently_viewed_products_section.dart';
 import '../widgets/section_header.dart';
 import '../widgets/services_content_section.dart';
 import '../widgets/static_content_widget.dart';
-import '../../../../core/store_config/store_config_cubit.dart';
-import '../home_refresh.dart';
 
 /// The main Home page of the Bagisto Flutter app.
 ///
@@ -86,6 +89,103 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     );
   }
 
+  /// Handle tap on the header announcement offer bar ("SHOP NOW").
+  /// Follows the configured admin link (category, product, or web URL).
+  /// If unconfigured, default, or pointing to home/admin, smoothly scrolls down to
+  /// the shopping products on the home screen (or back to top if scrolled).
+  Future<void> _handleHeaderOfferTap(BuildContext context, String? link) async {
+    final cleanLink = link?.trim() ?? '';
+
+    // Recognize admin-only / backend paths that are not consumer shop links
+    final isAdminLink =
+        cleanLink.contains('/admin') ||
+        cleanLink.endsWith('/admin') ||
+        cleanLink.contains('admin/login');
+
+    final isHomeLink =
+        cleanLink.isEmpty ||
+        cleanLink == '#' ||
+        cleanLink == '/' ||
+        cleanLink.toLowerCase() == 'home' ||
+        isAdminLink;
+
+    if (isHomeLink) {
+      _navigateOrScrollHome(context);
+      return;
+    }
+
+    // Try resolving as category or product slug first
+    final slug = homeLinkSlug(cleanLink);
+    if (slug != null && slug.isNotEmpty && slug != 'login') {
+      final homeCategories = context.read<HomeBloc>().state.categories;
+      final isHomeCategory = homeCategories.any((c) => c.slug == slug);
+      if (isHomeCategory) {
+        await _openLink(context, cleanLink);
+        return;
+      }
+    }
+
+    // If it's a web URL (http / https), attempt to open it
+    if (cleanLink.startsWith('http://') || cleanLink.startsWith('https://')) {
+      final uri = Uri.tryParse(cleanLink);
+      if (uri != null) {
+        try {
+          final launched = await launchUrl(
+            uri,
+            mode: LaunchMode.externalApplication,
+          );
+          if (launched) return;
+        } catch (e) {
+          debugPrint('[HeaderOfferBar] external launch failed: $e');
+        }
+        try {
+          final launched = await launchUrl(
+            uri,
+            mode: LaunchMode.inAppBrowserView,
+          );
+          if (launched) return;
+        } catch (e) {
+          debugPrint('[HeaderOfferBar] in-app browser launch failed: $e');
+        }
+      }
+    }
+
+    if (!context.mounted) return;
+
+    // Try opening as product/category link
+    if (slug != null && slug.isNotEmpty && slug != 'login') {
+      await _openLink(context, cleanLink);
+      return;
+    }
+
+    if (!context.mounted) return;
+
+    // Fallback: navigate / scroll to shop
+    _navigateOrScrollHome(context);
+  }
+
+  /// Navigate or scroll to the shopping section on home page.
+  void _navigateOrScrollHome(BuildContext context) {
+    if (_scrollController.hasClients) {
+      if (_scrollController.offset > 50) {
+        _scrollController.animateTo(
+          0,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeOut,
+        );
+      } else {
+        // Scroll down to the first product section so user sees products to shop
+        _scrollController.animateTo(
+          380,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
+      }
+    } else {
+      AppNavigator.goHome(context);
+    }
+  }
+
   /// Navigate to the Search page.
   void _openSearchPage(BuildContext context) {
     Navigator.of(
@@ -107,17 +207,20 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     );
   }
 
-  /// Open a home category: one with sub-categories opens in the Categories
-  /// tab; one without opens its product catalog.
+  /// Open a home category: navigates directly to the category's product grid
+  /// with its own products, banner, and description (matching web behaviour).
   void _openCategoryProducts(BuildContext context, HomeCategory category) {
     final categoryId = category.numericId ?? 0;
     if (categoryId <= 0) return;
-    if (category.hasChildren && AppNavigator.maybeOf(context) != null) {
-      context.read<CategoryBloc>().add(ShowCategory(categoryId));
-      AppNavigator.goCategories(context);
-      return;
-    }
-    _openCategoryGrid(context, categoryId, category.name, category.slug);
+    _openCategoryGrid(
+      context,
+      categoryId,
+      category.name,
+      category.slug,
+      category.bannerUrl,
+      category.plainDescription,
+      category.displayMode,
+    );
   }
 
   void _openCategoryGrid(
@@ -125,7 +228,10 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     int categoryId,
     String name,
     String slug,
-  ) {
+    String? bannerUrl,
+    String description, [
+    String? displayMode,
+  ]) {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => RepositoryProvider.value(
@@ -134,6 +240,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
             categoryId: categoryId,
             categoryName: name,
             categorySlug: slug,
+            categoryBannerUrl: bannerUrl,
+            categoryDescription: description,
+            displayMode: displayMode,
           ),
         ),
       ),
@@ -166,23 +275,35 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       for (final top in categories) {
         final topId = top.numericId ?? 0;
         if (top.slug == slug && topId > 0) {
-          _openCategoryProducts(
+          if (top.children.isNotEmpty &&
+              AppNavigator.maybeOf(context) != null) {
+            context.read<CategoryBloc>().add(ShowCategory(topId));
+            AppNavigator.goCategories(context);
+            return;
+          }
+          _openCategoryGrid(
             context,
-            HomeCategory(
-              id: top.id,
-              numericId: topId,
-              name: top.name,
-              slug: top.slug,
-              position: top.position ?? 0,
-              hasChildren: top.children.isNotEmpty,
-            ),
+            topId,
+            top.name,
+            top.slug,
+            top.bannerUrl,
+            top.plainDescription,
+            top.displayMode,
           );
           return;
         }
         for (final child in top.children) {
           final childId = child.numericId ?? 0;
           if (child.slug == slug && childId > 0) {
-            _openCategoryGrid(context, childId, child.name, child.slug);
+            _openCategoryGrid(
+              context,
+              childId,
+              child.name,
+              child.slug,
+              child.bannerUrl,
+              child.plainDescription,
+              child.displayMode,
+            );
             return;
           }
         }
@@ -195,12 +316,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     Navigator.of(
       context,
     ).push(MaterialPageRoute(builder: (_) => ProductDetailPage(urlKey: slug)));
-  }
-
-  Future<void> _openFooterLink(HomeFooterLink link) async {
-    final uri = Uri.tryParse(link.resolveUrl(bagistoPublicBaseUrl));
-    if (uri == null || (uri.scheme != 'http' && uri.scheme != 'https')) return;
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
   /// Quick-add a product to cart (for simple products only).
@@ -282,6 +397,17 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     }
   }
 
+  /// Open a footer link in the device browser.
+  ///
+  /// Footer links point at storefront pages (CMS pages, policies, ...) the app
+  /// has no native screen for, so they open externally. Anything that does not
+  /// resolve to an `http(s)` URL is ignored.
+  Future<void> _openFooterLink(HomeFooterLink link) async {
+    final uri = Uri.tryParse(link.resolveUrl(ApiEnv.base));
+    if (uri == null || (uri.scheme != 'http' && uri.scheme != 'https')) return;
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
   /// Navigate to catalog page showing all products with sort/filter.
   /// [title] is used as the page header (e.g. "Featured Products").
   /// [filters] is the raw filter map from themeCustomization options
@@ -305,6 +431,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     }
 
     final initialFilter = apiFilter.isNotEmpty ? json.encode(apiFilter) : null;
+    final sortRaw = filters['sort']?.toString();
+    final initialSort = sortOptionFromKey(sortRaw);
 
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -314,6 +442,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
             categoryId: 0,
             categoryName: title,
             initialFilter: initialFilter,
+            initialSort: initialSort,
           ),
         ),
       ),
@@ -328,8 +457,20 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       body: SafeArea(
         child: Column(
           children: [
+            // ── Announcement offer bar (above search bar) ──
+            if (StoreConfig.of(context).hasHeaderOffer) ...[
+              HeaderOfferBar(
+                onTap: () => _handleHeaderOfferTap(
+                  context,
+                  StoreConfig.of(context).headerOfferLink,
+                ),
+              ),
+              const SizedBox(height: 6),
+            ],
+
             // ── Top bar ──
             _buildTopBar(context),
+            const SizedBox(height: 6),
 
             // ── Scrollable content ──
             Expanded(
@@ -406,41 +547,31 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Channel logo from admin, else Bagisto logo + text
-                    ChannelLogo(
-                      height: 24,
-                      fallback: Row(
-                        children: [
-                          SvgPicture.asset(
-                            'assets/images/bagisto_logo.svg',
-                            width: 20,
-                            height: 20,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            'bagisto',
-                            style: TextStyle(
-                              fontFamily: 'Montserrat',
-                              fontWeight: FontWeight.w700,
-                              fontSize: 13,
-                              color: isDark
-                                  ? AppColors.neutral100
-                                  : AppColors.black,
-                            ),
-                          ),
-                        ],
+                    // Channel logo from admin, else Velocity logo
+                    const Expanded(
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: ChannelLogo(
+                          height: 24,
+                          width: 140,
+                          alignment: Alignment.centerLeft,
+                        ),
                       ),
                     ),
-                    // Search icon
-                    GestureDetector(
-                      onTap: () => _openSearchPage(context),
-                      child: Icon(
-                        Icons.search,
-                        size: 24,
-                        color: isDark
-                            ? AppColors.neutral400
-                            : AppColors.neutral800,
-                      ),
+                    const SizedBox(width: 12),
+                    Row(
+                      children: [
+                        GestureDetector(
+                          onTap: () => _openSearchPage(context),
+                          child: Icon(
+                            Icons.search,
+                            size: 24,
+                            color: isDark
+                                ? AppColors.neutral400
+                                : AppColors.neutral800,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -511,18 +642,13 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   // ──────────────────────────────────────────────────────────────────────
-  // MAIN CONTENT — Fixed Figma order (node 86:930)
+  // MAIN CONTENT — admin order
   //
-  //  1. Category carousel
-  //  2. Banner carousel (first set)
-  //  3. "Featured Products" — horizontal large cards
-  //  4. 3-image editorial grid
-  //  5. "Hot Deals" — 3×2 small card grid
-  //  6. Banner carousel (second set / reuse first)
-  //  7. "New Products" — 2×2 large card grid
-  //  8. 2-image editorial row
-  //  9. "Recently Viewed Products" — horizontal large cards
-  // 10. "Back to Top" pill button
+  // Every storefront section (category carousel, banners, product carousels,
+  // static/services content, footer links) is rendered strictly in the
+  // `sortOrder` the merchant configured in admin — nothing is hoisted to the
+  // top and nothing is injected. The only app-owned rows are the trailing
+  // "Recently Viewed", newsletter, "Back to Top" and footer-link blocks.
   // ──────────────────────────────────────────────────────────────────────
 
   Widget _buildContent(BuildContext context, HomeState state) {
@@ -530,6 +656,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     // ── Build sections dynamically based on sortOrder from API ──
     // The API returns sections in sortOrder, so we render them in that order
     final List<Widget> sections = [];
+    // Footer links always sit at the very bottom, after the app-owned rows,
+    // like the storefront footer.
     final List<Widget> footerSections = [];
 
     // Process each customization in sortOrder
@@ -562,6 +690,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
             final title = tc.title.isNotEmpty
                 ? tc.title
                 : l10n.homeDefaultProducts;
+            // Product carousels (Featured Products, New Products, etc.)
+            // scroll horizontally in a single row, matching the web storefront.
             sections.add(
               _buildHorizontalProductSection(
                 title: title,
@@ -580,7 +710,12 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               StaticContentWidget(
                 html: htmlRaw,
                 css: cssRaw,
-                baseUrl: bagistoPublicBaseUrl,
+                // `Uri.parse(bagistoEndpoint).origin` drops an install's
+                // subpath (e.g. "/mp-app/public"), 404ing every relative
+                // image path on anything not served from the domain root.
+                // `ApiEnv.base` is the configured base including that
+                // subpath, matching the channel's real hostname.
+                baseUrl: ApiEnv.base,
                 onViewAllPressed: () => _openViewAll(context, tc.name),
                 onLinkTap: (link) => _openLink(context, link),
               ),
@@ -596,7 +731,11 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
           break;
 
         case 'category_carousel':
-          final carouselCategories = state.categorySections[tc.id] ?? [];
+          // Each carousel renders the categories fetched for its own
+          // `parent_id`/`limit` filters; `categories` is the flattened
+          // fallback for states built before the per-section fetch landed.
+          final carouselCategories =
+              state.categorySections[tc.id] ?? state.categories;
           if (carouselCategories.isNotEmpty) {
             sections.add(
               CategoryCarousel(
@@ -613,7 +752,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
           if (columns.any((column) => column.isNotEmpty)) {
             footerSections.add(
               FooterLinksSection(
-                title: tc.name,
+                title: tc.title,
                 columns: columns,
                 onLinkTap: _openFooterLink,
               ),
@@ -629,6 +768,12 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       ),
     );
 
+    // Newsletter subscribe -- shown to every visitor, signed in or not,
+    // same as web.
+    if (StoreConfig.of(context).showNewsletter) {
+      sections.add(const NewsletterSubscribeSection());
+    }
+
     // Add Back to Top button
     sections.add(_buildBackToTopButton());
     sections.addAll(footerSections);
@@ -641,29 +786,37 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         StoreConfigCubit? storeConfig;
         try {
           storeConfig = context.read<StoreConfigCubit>();
-        } on ProviderNotFoundException {
+        } catch (_) {
           storeConfig = null;
         }
 
-        await refreshHomeData(
-          storeConfig: storeConfig,
-          reloadHome: () async {
-            // Subscribe BEFORE dispatching to avoid missing the loaded emission
-            final future = bloc.stream
-                .firstWhere(
-                  (s) =>
-                      s.status == HomeStatus.loaded ||
-                      s.status == HomeStatus.error,
-                )
-                .timeout(
-                  const Duration(seconds: 15),
-                  onTimeout: () => bloc.state, // fallback to current state
-                );
+        // Subscribe BEFORE dispatching to avoid missing the loaded emission
+        final future = bloc.stream
+            .firstWhere(
+              (s) =>
+                  s.status == HomeStatus.loaded || s.status == HomeStatus.error,
+            )
+            .timeout(
+              const Duration(seconds: 15),
+              onTimeout: () => bloc.state, // fallback to current state
+            );
 
-            bloc.add(const RefreshHome());
-            await future;
-          },
-        );
+        ChannelLogoCubit? channelLogo;
+        try {
+          channelLogo = context.read<ChannelLogoCubit>();
+        } catch (_) {
+          channelLogo = null;
+        }
+
+        bloc.add(const RefreshHome());
+        await Future.wait([
+          future,
+          if (storeConfig != null) storeConfig.load(),
+          if (channelLogo != null) channelLogo.refresh(),
+          RecentlyViewedProductsService.pruneInactive(
+            GraphQLClientProvider.buildClient(),
+          ),
+        ]);
       },
       child: ListView.separated(
         controller: _scrollController,
@@ -678,72 +831,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   // ──────────────────────────────────────────────────────────────────────
   // SECTION BUILDERS
-  // ──────────────────────────────────────────────────────────────────────
-
-  /// Featured Products grid section with 6 products in random order.
-  /// Uses Wrap instead of GridView to avoid fixed-height overflow.
-  /// Matches Figma node 86:976 flex-wrap layout.
-  Widget _buildFeaturedProductsGridSection({
-    required BuildContext context,
-    required String title,
-    required List<HomeProduct> products,
-  }) {
-    // Shuffle products randomly
-    final random = Random();
-    final shuffledProducts = List<HomeProduct>.from(products)..shuffle(random);
-
-    // Take first 6 products (or less if not enough)
-    final displayProducts = shuffledProducts.take(6).toList();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SectionHeader(
-          title: title,
-          onSeeAll: () =>
-              _openViewAll(context, title, filters: const {'featured': 1}),
-        ),
-        const SizedBox(height: 16),
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final screenWidth = constraints.maxWidth > 0
-                ? constraints.maxWidth
-                : MediaQuery.of(context).size.width;
-            // 3 columns: 20px padding each side + 2×12px gaps → available / 3
-            final cardWidth = (screenWidth - 40 - 24) / 3;
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Wrap(
-                spacing: 12, // horizontal gap between cards (Figma 12px)
-                runSpacing: 18, // vertical gap between rows (Figma 18px)
-                children: displayProducts.map((product) {
-                  return BlocBuilder<WishlistCubit, WishlistCubitState>(
-                    builder: (context, wishlistState) {
-                      final pid =
-                          product.numericId ??
-                          int.tryParse(product.id.split('/').last) ??
-                          0;
-                      return ProductCardSmall(
-                        key: ValueKey('featured_${product.id}'),
-                        product: product,
-                        cardWidth: cardWidth,
-                        onTap: () => _openProductDetail(context, product),
-                        isWishlisted:
-                            pid > 0 && wishlistState.isWishlisted(pid),
-                        isWishlistProcessing:
-                            pid > 0 && wishlistState.isProcessing(pid),
-                        onWishlistTap: () => _toggleWishlist(context, product),
-                      );
-                    },
-                  );
-                }).toList(),
-              ),
-            );
-          },
-        ),
-      ],
-    );
-  }
 
   /// Horizontal scrolling product section (Featured Products, Recently Viewed).
   Widget _buildHorizontalProductSection({

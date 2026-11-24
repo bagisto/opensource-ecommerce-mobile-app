@@ -8,8 +8,8 @@ import '../../../../l10n/app_localizations.dart';
 import '../../data/models/account_models.dart';
 import '../bloc/compare_bloc.dart';
 import '../../../cart/presentation/bloc/cart_bloc.dart';
-import '../../../product/presentation/pages/product_detail_page.dart';
 import '../../../../core/store_config/store_config.dart';
+import '../../../product/presentation/pages/product_detail_page.dart';
 
 String _localizedCartMessage(BuildContext context, String message) {
   final l10n = AppLocalizations.of(context)!;
@@ -25,7 +25,7 @@ String _localizedCartMessage(BuildContext context, String message) {
 ///
 /// Displays a horizontally scrollable comparison table:
 ///   - Fixed left column with attribute labels
-///     (Products, SKU, Description, Short Description, Activity, Seller)
+///     (Products, SKU, Description, Short Description, Activity)
 ///   - One column per product showing product card + attribute values
 ///   - Each product column: 162px image, name, price, rating, Add to Cart + delete
 ///   - Attribute rows alternate between gray headers (#F5F5F5) and white value rows
@@ -61,8 +61,6 @@ class CompareProductsPage extends StatelessWidget {
       ),
       body: BlocListener<CartBloc, CartState>(
         listener: (context, cartState) {
-          if (ModalRoute.of(context)?.isCurrent != true) return;
-
           if (cartState.errorMessage != null) {
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
@@ -77,8 +75,10 @@ class CompareProductsPage extends StatelessWidget {
             context.read<CartBloc>().add(ClearCartMessage());
           }
           if (cartState.successMessage != null) {
-            final message =
-                _localizedCartMessage(context, cartState.successMessage!);
+            final message = _localizedCartMessage(
+              context,
+              cartState.successMessage!,
+            );
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
               ..showSnackBar(
@@ -234,14 +234,7 @@ class CompareProductsPage extends StatelessWidget {
 // ──────────────────────────────────────────────
 
 /// Attribute row types matching the Figma design order
-enum _AttrType {
-  productCard,
-  sku,
-  description,
-  shortDescription,
-  activity,
-  seller,
-}
+enum _AttrType { productCard, sku, description, shortDescription, activity }
 
 /// Width of each product column (Figma: 162px content + 20px padding each side)
 const double _kProductColumnWidth = 202.0;
@@ -305,8 +298,6 @@ class _CompareTable extends StatelessWidget {
         return l10n.accountShortDescription;
       case _AttrType.activity:
         return l10n.accountActivity;
-      case _AttrType.seller:
-        return l10n.accountSeller;
     }
   }
 
@@ -411,13 +402,14 @@ class _ProductCard extends StatelessWidget {
                               ? Image.network(
                                   item.baseImageUrl!,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) => Center(
-                                    child: Icon(
-                                      Icons.image_not_supported_outlined,
-                                      size: 48,
-                                      color: AppColors.neutral400,
-                                    ),
-                                  ),
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      Center(
+                                        child: Icon(
+                                          Icons.image_not_supported_outlined,
+                                          size: 48,
+                                          color: AppColors.neutral400,
+                                        ),
+                                      ),
                                 )
                               : Center(
                                   child: Icon(
@@ -544,9 +536,14 @@ class _ProductCard extends StatelessWidget {
   }
 
   Widget _buildRatingRow(BuildContext context) {
+    final reviews = item.reviewCount ?? 0;
+    if (reviews == 0) return const SizedBox.shrink();
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final rating = item.averageRating ?? 0;
-    final reviews = item.reviewCount ?? 0;
+    final summaryCount = StoreConfig.of(context).reviewSummaryCount(
+      reviewCount: reviews,
+      starCount: (rating * reviews).round(),
+    );
 
     return Row(
       children: [
@@ -578,7 +575,7 @@ class _ProductCard extends StatelessWidget {
         const SizedBox(width: 3),
 
         Text(
-          reviews.toString(),
+          summaryCount.toString(),
           style: TextStyle(
             fontFamily: 'Roboto',
             fontWeight: FontWeight.w400,
@@ -604,50 +601,50 @@ class _ProductCard extends StatelessWidget {
             if (!StoreConfig.of(context).showCartPage)
               const Spacer()
             else
-            Expanded(
-              child: BlocBuilder<CartBloc, CartState>(
-                builder: (context, cartState) {
-                  final isAddingToCart = cartState.isAddingToCart;
+              Expanded(
+                child: BlocBuilder<CartBloc, CartState>(
+                  builder: (context, cartState) {
+                    final isAddingToCart = cartState.isAddingToCart;
 
-                  return SizedBox(
-                    height: 36,
-                    child: ElevatedButton(
-                      onPressed: isAddingToCart
-                          ? null
-                          : () => _addProductToCart(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary500,
-                        foregroundColor: AppColors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(54),
+                    return SizedBox(
+                      height: 36,
+                      child: ElevatedButton(
+                        onPressed: isAddingToCart
+                            ? null
+                            : () => _addProductToCart(context),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary500,
+                          foregroundColor: AppColors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(54),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
                         ),
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                      ),
-                      child: isAddingToCart
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  AppColors.white,
+                        child: isAddingToCart
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    AppColors.white,
+                                  ),
+                                ),
+                              )
+                            : Text(
+                                l10n.productAddToCart,
+                                style: TextStyle(
+                                  fontFamily: 'Roboto',
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 14,
                                 ),
                               ),
-                            )
-                          : Text(
-                              l10n.productAddToCart,
-                              style: TextStyle(
-                                fontFamily: 'Roboto',
-                                fontWeight: FontWeight.w700,
-                                fontSize: 14,
-                              ),
-                            ),
-                    ),
-                  );
-                },
+                      ),
+                    );
+                  },
+                ),
               ),
-            ),
 
             const SizedBox(width: 8),
 
@@ -760,14 +757,6 @@ class _ValueCell extends StatelessWidget {
             item.attributes['activity'] ??
             l10n.accountNotAvailable;
         break;
-      case _AttrType.seller:
-        value =
-            item.attributes['Seller'] ??
-            item.attributes['seller'] ??
-            item.attributes['Brand'] ??
-            item.attributes['brand'] ??
-            l10n.accountNotAvailable;
-        break;
     }
 
     return Container(
@@ -857,9 +846,9 @@ class _WishlistIcon extends StatelessWidget {
                 ? null
                 : () async {
                     try {
-                      final result = await context.read<WishlistCubit>().toggleWishlist(
-                        productId: productId,
-                      );
+                      final result = await context
+                          .read<WishlistCubit>()
+                          .toggleWishlist(productId: productId);
                       if (!context.mounted) return;
 
                       final l10n = AppLocalizations.of(context)!;
@@ -941,5 +930,4 @@ class _WishlistIcon extends StatelessWidget {
       },
     );
   }
-
 }

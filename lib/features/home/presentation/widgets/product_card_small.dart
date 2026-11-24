@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../../core/store_config/store_config.dart';
+import '../../../../core/constants/asset_constants.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/store_config/store_config.dart';
 import '../../data/models/home_models.dart';
 
 /// Small product card for "Hot Deals" grid (Figma node 86:977).
@@ -72,41 +73,75 @@ class ProductCardSmall extends StatelessWidget {
                               fit: BoxFit.cover,
                               width: w,
                               height: w,
-                            errorBuilder: (_, __, ___) => _placeholder(isDark),
-                          )
-                        : _placeholder(isDark),
+                              errorBuilder: (_, _, _) => _placeholder(),
+                              loadingBuilder: (context, child, progress) =>
+                                  progress == null ? child : _placeholder(),
+                            )
+                          : _placeholder(),
                     ),
                   ),
-                  // Wishlist heart icon (top-right)
-                  if (StoreConfig.of(context).showWishlist)
-                  Positioned(
-                    top: 4,
-                    right: 4,
-                    child: GestureDetector(
-                      onTap: isWishlistProcessing ? null : onWishlistTap,
+                  // Product Badge: "Sale" (red) or "New" (dark navy) top-left
+                  if (product.hasSaleBadge || product.isNew)
+                    Positioned(
+                      top: 4,
+                      left: 4,
                       child: Container(
-                        width: 22,
-                        height: 22,
-                        decoration: BoxDecoration(
-                          color: AppColors.white.withValues(alpha: 0.9),
-                          shape: BoxShape.circle,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
                         ),
-                        child: isWishlistProcessing
-                            ? const Padding(
-                                padding: EdgeInsets.all(4),
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 1.5,
-                                  color: AppColors.neutral400,
-                                ),
-                              )
-                            : Icon(
-                                isWishlisted ? Icons.favorite : Icons.favorite_border,
-                                size: 13,
-                                color: isWishlisted ? Colors.red : AppColors.neutral800,
-                              ),
+                        decoration: BoxDecoration(
+                          color: product.hasSaleBadge
+                              ? const Color(0xFFDC2626)
+                              : const Color(0xFF0F172A),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          product.hasSaleBadge ? 'Sale' : 'New',
+                          style: const TextStyle(
+                            fontFamily: 'Roboto',
+                            fontSize: 9,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                            height: 1.1,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+                  // Wishlist heart icon (top-right)
+                  if (StoreConfig.of(context).showWishlist)
+                    Positioned(
+                      top: 4,
+                      right: 4,
+                      child: GestureDetector(
+                        onTap: isWishlistProcessing ? null : onWishlistTap,
+                        child: Container(
+                          width: 22,
+                          height: 22,
+                          decoration: BoxDecoration(
+                            color: AppColors.white.withValues(alpha: 0.9),
+                            shape: BoxShape.circle,
+                          ),
+                          child: isWishlistProcessing
+                              ? const Padding(
+                                  padding: EdgeInsets.all(4),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 1.5,
+                                    color: AppColors.neutral400,
+                                  ),
+                                )
+                              : Icon(
+                                  isWishlisted
+                                      ? Icons.favorite
+                                      : Icons.favorite_border,
+                                  size: 13,
+                                  color: isWishlisted
+                                      ? Colors.red
+                                      : AppColors.neutral800,
+                                ),
+                        ),
+                      ),
+                    ),
                 ],
               ),
               const SizedBox(height: 10),
@@ -122,16 +157,50 @@ class ProductCardSmall extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 6),
-              Text(
-                _priceLabel(),
-                style: TextStyle(
-                  fontFamily: 'Roboto',
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
-                  color: isDark ? AppColors.white : AppColors.neutral900,
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (product.priceLabelPrefix != null &&
+                        product.priceLabelPrefix!.isNotEmpty) ...[
+                      Text(
+                        '${product.priceLabelPrefix!} ',
+                        style: TextStyle(
+                          fontFamily: 'Roboto',
+                          fontWeight: FontWeight.w400,
+                          fontSize: 11,
+                          color: isDark
+                              ? AppColors.neutral400
+                              : AppColors.neutral600,
+                        ),
+                      ),
+                    ],
+                    Text(
+                      product.displayPriceLabel,
+                      style: TextStyle(
+                        fontFamily: 'Roboto',
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                        color: isDark ? AppColors.white : AppColors.neutral900,
+                      ),
+                    ),
+                    if (product.originalPriceLabel != null) ...[
+                      const SizedBox(width: 4),
+                      Text(
+                        product.originalPriceLabel!,
+                        style: const TextStyle(
+                          fontFamily: 'Roboto',
+                          fontWeight: FontWeight.w400,
+                          fontSize: 12,
+                          color: AppColors.neutral500,
+                          decoration: TextDecoration.lineThrough,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 6),
               _buildRating(context),
@@ -146,6 +215,10 @@ class ProductCardSmall extends StatelessWidget {
   Widget _buildRating(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     if (product.reviewCount == 0) return const SizedBox.shrink();
+    final summaryCount = StoreConfig.of(context).reviewSummaryCount(
+      reviewCount: product.reviewCount,
+      starCount: product.reviewStarCount,
+    );
     final ratingStr = product.averageRating.toStringAsFixed(1);
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -176,7 +249,7 @@ class ProductCardSmall extends StatelessWidget {
         const SizedBox(width: 3),
         Flexible(
           child: Text(
-            '${product.reviewCount}',
+            '$summaryCount',
             style: TextStyle(
               fontFamily: 'Roboto',
               fontWeight: FontWeight.w400,
@@ -191,17 +264,7 @@ class ProductCardSmall extends StatelessWidget {
     );
   }
 
-  String _priceLabel() {
-    return product.displayPriceLabel;
-  }
-
-  Widget _placeholder(bool isDark) {
-    return Center(
-      child: Icon(
-        Icons.image_outlined,
-        size: 32,
-        color: isDark ? AppColors.neutral500 : AppColors.neutral400,
-      ),
-    );
+  Widget _placeholder() {
+    return Image.asset(AppAssets.largeProductPlaceholder, fit: BoxFit.cover);
   }
 }

@@ -242,8 +242,8 @@ class ReturnsQueries {
 
   /// Add a customer message to the return conversation thread.
   static const String createCustomerReturnMessage = r'''
-    mutation createCustomerReturnMessage($returnId: Int!, $message: String!) {
-      createCustomerReturnMessage(input: { returnId: $returnId, message: $message }) {
+    mutation createCustomerReturnMessage($input: createCustomerReturnMessageInput!) {
+      createCustomerReturnMessage(input: $input) {
         customerReturnMessage {
           _id
           rmaId

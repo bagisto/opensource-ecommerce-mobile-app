@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../account/data/models/review_attachment.dart';
+import '../../../account/presentation/widgets/review_attachments_strip.dart';
 import '../../../../core/graphql/graphql_client.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
@@ -9,11 +11,10 @@ import '../../../account/data/repository/account_repository.dart';
 import '../../../account/presentation/bloc/review_bloc.dart';
 import '../../../account/presentation/pages/add_review_page.dart';
 import '../../../account/presentation/pages/reviews_page.dart';
-import '../../../account/presentation/widgets/review_attachments_strip.dart';
 import '../../../category/data/models/product_model.dart';
-import '../bloc/product_detail_bloc.dart';
 import '../../../../core/store_config/store_config.dart';
 import 'review_entry.dart';
+import '../bloc/product_detail_bloc.dart';
 
 /// Reviews section with rating summary, bars, and individual review cards
 /// Figma: Frame 1984079219 – Reviews with rating breakdown and review list
@@ -79,28 +80,27 @@ class ProductReviewsSection extends StatelessWidget {
   ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final avgRating = product.averageRating;
-    final totalCount = reviews.length;
+    final totalCount = product.totalReviewCount ?? reviews.length;
+    final totalStars = reviews.fold<int>(
+      0,
+      (sum, review) => sum + review.rating.round(),
+    );
+    final summaryCount = StoreConfig.of(
+      context,
+    ).reviewSummaryCount(reviewCount: totalCount, starCount: totalStars);
 
-    // Rating distribution
+    // Rating distribution for 5 Stars to 1 Stars
     final dist = <String, int>{
-      l10n.productVeryGood: 0,
-      l10n.productGood: 0,
-      l10n.productAverage: 0,
-      l10n.productBad: 0,
-      l10n.productVeryBad: 0,
+      '5 Stars': 0,
+      '4 Stars': 0,
+      '3 Stars': 0,
+      '2 Stars': 0,
+      '1 Stars': 0,
     };
     for (final r in reviews) {
-      if (r.rating >= 4.5) {
-        dist[l10n.productVeryGood] = (dist[l10n.productVeryGood] ?? 0) + 1;
-      } else if (r.rating >= 3.5) {
-        dist[l10n.productGood] = (dist[l10n.productGood] ?? 0) + 1;
-      } else if (r.rating >= 2.5) {
-        dist[l10n.productAverage] = (dist[l10n.productAverage] ?? 0) + 1;
-      } else if (r.rating >= 1.5) {
-        dist[l10n.productBad] = (dist[l10n.productBad] ?? 0) + 1;
-      } else {
-        dist[l10n.productVeryBad] = (dist[l10n.productVeryBad] ?? 0) + 1;
-      }
+      final star = r.rating.round().clamp(1, 5);
+      final key = '$star Stars';
+      dist[key] = (dist[key] ?? 0) + 1;
     }
 
     return Container(
@@ -135,7 +135,7 @@ class ProductReviewsSection extends StatelessWidget {
                       const SizedBox(width: 6),
                       Text(
                         avgRating.toStringAsFixed(1),
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontFamily: 'Roboto',
                           fontWeight: FontWeight.w700,
                           fontSize: 24,
@@ -150,18 +150,22 @@ class ProductReviewsSection extends StatelessWidget {
                   padding: const EdgeInsets.all(10),
                   child: Column(
                     children: [
-                      Text(
-                        l10n.productRating(totalCount),
-                        style: TextStyle(
-                          fontFamily: 'Roboto',
-                          fontSize: 12,
-                          color: isDark
-                              ? AppColors.neutral400
-                              : AppColors.neutral700,
-                        ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          for (var star = 1; star <= 5; star++)
+                            Icon(
+                              star <= avgRating.floor()
+                                  ? Icons.star_rounded
+                                  : Icons.star_outline_rounded,
+                              size: 14,
+                              color: const Color(0xFFFE9A00),
+                            ),
+                        ],
                       ),
+                      const SizedBox(height: 4),
                       Text(
-                        l10n.productReviewsCount(totalCount),
+                        l10n.productRating(summaryCount),
                         style: TextStyle(
                           fontFamily: 'Roboto',
                           fontSize: 12,
@@ -188,10 +192,8 @@ class ProductReviewsSection extends StatelessWidget {
                 final fraction = totalCount > 0 ? count / totalCount : 0.0;
                 return _buildRatingBar(
                   context,
-                  l10n: l10n,
                   label: entry.key,
                   fraction: fraction,
-                  count: count,
                 );
               }).toList(),
             ),
@@ -203,40 +205,18 @@ class ProductReviewsSection extends StatelessWidget {
 
   Widget _buildRatingBar(
     BuildContext context, {
-    required AppLocalizations l10n,
     required String label,
     required double fraction,
-    required int count,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    Color barColor;
-    switch (label) {
-      case 'Very Good':
-        barColor = AppColors.successGreen;
-        break;
-      case 'Good':
-        barColor = const Color(0xFF7CCF00); // lime/500
-        break;
-      case 'Average':
-        barColor = const Color(0xFFFE9A00); // status-info/500
-        break;
-      case 'Bad':
-        barColor = const Color(0xFFFE9A00);
-        break;
-      case 'Very Bad':
-        barColor = const Color(0xFFFB2C36); // status-error/500
-        break;
-      default:
-        barColor = AppColors.neutral400;
-    }
+    const barColor = Color(0xFFFE9A00);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
       child: Row(
         children: [
           SizedBox(
-            width: 56,
+            width: 48,
             child: Text(
               label,
               style: TextStyle(
@@ -249,13 +229,13 @@ class ProductReviewsSection extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Container(
-              height: 4,
+              height: 6,
               decoration: BoxDecoration(
                 color: isDark ? AppColors.neutral700 : AppColors.neutral200,
                 borderRadius: BorderRadius.circular(30),
               ),
               child: FractionallySizedBox(
-                widthFactor: fraction,
+                widthFactor: fraction.clamp(0.0, 1.0),
                 alignment: Alignment.centerLeft,
                 child: Container(
                   decoration: BoxDecoration(
@@ -266,47 +246,45 @@ class ProductReviewsSection extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 8),
-          SizedBox(
-            width: 30,
-            child: Text(
-              '$count',
-              style: TextStyle(
-                fontFamily: 'Roboto',
-                fontSize: 12,
-                color: isDark ? AppColors.neutral400 : AppColors.neutral700,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
         ],
       ),
     );
   }
 
+  /// The product query answers null for a review's `attachments`, so the
+  /// media comes from the bloc's side fetch, keyed by review id. Whatever the
+  /// review already carries wins, for a server that does fill the field in.
+  List<ReviewAttachment> _attachmentsFor(
+    BuildContext context,
+    ProductReview review,
+  ) {
+    if (review.attachments.isNotEmpty) return review.attachments;
+    final byId = context.read<ProductDetailBloc>().state.reviewAttachments;
+    return byId[reviewIdKey(review.id)] ?? const [];
+  }
+
   Widget _buildReviewCard(BuildContext context, ProductReview review) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final reviewerInitials = (review.name ?? '')
+        .trim()
+        .split(RegExp(r'\s+'))
+        .where((word) => word.isNotEmpty)
+        .take(2)
+        .map((word) => word[0].toUpperCase())
+        .join();
 
-    Color ratingBgColor;
-    final rating = review.rating;
-    if (rating >= 4.5) {
-      ratingBgColor = AppColors.successGreen;
-    } else if (rating >= 3.5) {
-      ratingBgColor = const Color(0xFF7CCF00);
-    } else if (rating >= 2.5) {
-      ratingBgColor = const Color(0xFFFE9A00);
-    } else if (rating >= 1.5) {
-      ratingBgColor = AppColors.primary500;
-    } else {
-      ratingBgColor = const Color(0xFFFB2C36);
-    }
+    final reviewerName = review.name != null && review.name!.isNotEmpty
+        ? (StoreConfig.of(context).censorReviewerName
+            ? censoredReviewerName(review.name!)
+            : review.name!)
+        : '';
 
-    // Parse date
+    // Parse date: e.g. "Oct 19, 2026"
     String dateStr = '';
-    if (review.createdAt != null) {
+    if (review.createdAt != null && review.createdAt!.isNotEmpty) {
       try {
         final dt = DateTime.parse(review.createdAt!);
-        final months = [
+        const months = [
           '',
           'Jan',
           'Feb',
@@ -321,14 +299,14 @@ class ProductReviewsSection extends StatelessWidget {
           'Nov',
           'Dec',
         ];
-        dateStr = 'Posted on ${dt.day} ${months[dt.month]} ${dt.year}';
+        dateStr = '${months[dt.month]} ${dt.day}, ${dt.year}';
       } catch (_) {
-        dateStr = '';
+        dateStr = review.createdAt!;
       }
     }
 
     return Container(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
@@ -337,132 +315,134 @@ class ProductReviewsSection extends StatelessWidget {
           ),
         ),
       ),
-      margin: const EdgeInsets.only(bottom: 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Header: rating badge + label + date ──
+          // ── Header: Avatar (rounded square) + Name + Date + 5 Stars ──
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: ratingBgColor,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.star,
-                            size: 16,
-                            color: AppColors.white,
-                          ),
-                          const SizedBox(width: 1),
-                          Text(
-                            rating.toStringAsFixed(1),
-                            style: const TextStyle(
-                              fontFamily: 'Roboto',
-                              fontSize: 14,
-                              fontWeight: FontWeight.w400,
-                              color: AppColors.white,
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: Container(
+                  width: 48,
+                  height: 48,
+                  color: isDark ? AppColors.neutral800 : AppColors.neutral100,
+                  alignment: Alignment.center,
+                  child: review.customerImageUrl != null &&
+                          review.customerImageUrl!.isNotEmpty
+                      ? Image.network(
+                          review.customerImageUrl!,
+                          width: 48,
+                          height: 48,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) => Text(
+                            reviewerInitials,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: isDark
+                                  ? AppColors.neutral300
+                                  : AppColors.neutral700,
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Flexible(
-                      child: Text(
-                        review.ratingLabel,
+                        )
+                      : Text(
+                          reviewerInitials,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: isDark
+                                ? AppColors.neutral300
+                                : AppColors.neutral700,
+                          ),
+                        ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (reviewerName.isNotEmpty)
+                      Text(
+                        reviewerName,
                         style: TextStyle(
                           fontFamily: 'Roboto',
                           fontSize: 14,
-                          fontWeight: FontWeight.w400,
+                          fontWeight: FontWeight.w700,
                           color: isDark
                               ? AppColors.neutral100
-                              : AppColors.neutral800,
+                              : AppColors.neutral900,
                         ),
-                        overflow: TextOverflow.ellipsis,
                       ),
+                    if (dateStr.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        dateStr,
+                        style: const TextStyle(
+                          fontFamily: 'Roboto',
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                          color: AppColors.neutral500,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 4),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        for (var star = 1; star <= 5; star++)
+                          Icon(
+                            star <= review.rating.round()
+                                ? Icons.star_rounded
+                                : Icons.star_outline_rounded,
+                            size: 16,
+                            color: const Color(0xFFFE9A00),
+                          ),
+                      ],
                     ),
                   ],
                 ),
               ),
-              if (dateStr.isNotEmpty)
-                Flexible(
-                  child: Text(
-                    dateStr,
-                    style: TextStyle(
-                      fontFamily: 'Roboto',
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      color: AppColors.neutral500,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.right,
-                  ),
-                ),
             ],
           ),
 
-          const SizedBox(height: 12),
-
           // ── Title ──
-          if (review.title != null && review.title!.isNotEmpty)
+          if (review.title != null && review.title!.isNotEmpty) ...[
+            const SizedBox(height: 12),
             Text(
               review.title!,
               style: TextStyle(
                 fontFamily: 'Roboto',
                 fontSize: 14,
-                fontWeight: FontWeight.w400,
-                color: isDark ? AppColors.neutral200 : AppColors.neutral800,
+                fontWeight: FontWeight.w700,
+                color: isDark ? AppColors.neutral100 : AppColors.neutral900,
               ),
             ),
-
-          if (review.title != null && review.title!.isNotEmpty)
-            const SizedBox(height: 8),
+          ],
 
           // ── Comment ──
-          if (review.comment != null && review.comment!.isNotEmpty)
+          if (review.comment != null && review.comment!.isNotEmpty) ...[
+            const SizedBox(height: 6),
             Text(
               review.comment!,
               style: TextStyle(
                 fontFamily: 'Roboto',
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
-                color: isDark ? AppColors.neutral300 : AppColors.neutral800,
+                color: isDark ? AppColors.neutral300 : AppColors.neutral700,
               ),
             ),
-
-          if (review.attachments.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            ReviewAttachmentsStrip(attachments: review.attachments),
           ],
 
-          const SizedBox(height: 12),
-
-          // ── Author ──
-          if (review.name != null && review.name!.isNotEmpty)
-            Text(
-              // Admin "Censoring Reviewer Name" hides who wrote it.
-              '— ${StoreConfig.of(context).censorReviewerName ? censoredReviewerName(review.name!) : review.name!}',
-              style: TextStyle(
-                fontFamily: 'Roboto',
-                fontSize: 14,
-                fontWeight: FontWeight.w400,
-                color: isDark ? AppColors.neutral300 : AppColors.neutral800,
-              ),
+          // ── Attachments ──
+          if (_attachmentsFor(context, review).isNotEmpty) ...[
+            const SizedBox(height: 12),
+            ReviewAttachmentsStrip(
+              attachments: _attachmentsFor(context, review),
             ),
+          ],
         ],
       ),
     );
@@ -518,7 +498,7 @@ class ProductReviewsSection extends StatelessWidget {
             ),
             child: Text(
               AppLocalizations.of(context)!.productWriteReview,
-              style: TextStyle(
+              style: const TextStyle(
                 fontFamily: 'Roboto',
                 fontSize: 14,
                 fontWeight: FontWeight.w500,

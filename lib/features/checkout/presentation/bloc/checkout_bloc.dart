@@ -98,6 +98,49 @@ class ToggleSameAddress extends CheckoutEvent {}
 /// Place the order (saves payment first, then creates order)
 class PlaceOrder extends CheckoutEvent {}
 
+/// Clears one-shot gateway launch data after returning from its WebView.
+class ClearPaymentLaunch extends CheckoutEvent {}
+
+/// Submit a successful Razorpay SDK callback for server verification.
+class ConfirmRazorpayPayment extends CheckoutEvent {
+  final String razorpayOrderId;
+  final String razorpayPaymentId;
+  final String razorpaySignature;
+
+  const ConfirmRazorpayPayment({
+    required this.razorpayOrderId,
+    required this.razorpayPaymentId,
+    required this.razorpaySignature,
+  });
+
+  @override
+  List<Object?> get props => [
+    razorpayOrderId,
+    razorpayPaymentId,
+    razorpaySignature,
+  ];
+}
+
+/// Ask Bagisto to verify a PayPal Standard return by its initiation reference.
+class ConfirmPaypalStandardPayment extends CheckoutEvent {
+  final String reference;
+
+  const ConfirmPaypalStandardPayment({required this.reference});
+
+  @override
+  List<Object?> get props => [reference];
+}
+
+/// Confirm Stripe only after the WebView reaches one of Bagisto's return URLs.
+class ConfirmStripePayment extends CheckoutEvent {
+  final String reference;
+
+  const ConfirmStripePayment({required this.reference});
+
+  @override
+  List<Object?> get props => [reference];
+}
+
 /// Clear messages
 class ClearCheckoutMessage extends CheckoutEvent {}
 
@@ -143,6 +186,9 @@ enum CheckoutStatus {
   shippingSaved,
   paymentMethodsFetched,
   paymentSaved,
+  paymentReady,
+  paymentConfirming,
+  paymentConfirmationPending,
   orderPlaced,
   error,
 }
@@ -184,6 +230,7 @@ class CheckoutState extends Equatable {
   /// The logged-in customer is suspended: browsing only, no checkout.
   final bool isAccountSuspended;
   final CheckoutOrderResponse? orderResponse;
+  final CheckoutPaymentInitiationResponse? paymentLaunch;
 
   // Countries & states from Bagisto API
   final List<BagistoCountry> countries;
@@ -214,6 +261,7 @@ class CheckoutState extends Equatable {
     this.isPlacingOrder = false,
     this.isAccountSuspended = false,
     this.orderResponse,
+    this.paymentLaunch,
     this.countries = const [],
     this.billingStates = const [],
     this.shippingStates = const [],
@@ -251,6 +299,7 @@ class CheckoutState extends Equatable {
     bool? isPlacingOrder,
     bool? isAccountSuspended,
     CheckoutOrderResponse? orderResponse,
+    CheckoutPaymentInitiationResponse? paymentLaunch,
     List<BagistoCountry>? countries,
     List<BagistoCountryState>? billingStates,
     List<BagistoCountryState>? shippingStates,
@@ -262,6 +311,7 @@ class CheckoutState extends Equatable {
     bool clearSelectedShippingAddress = false,
     bool clearSelectedShippingMethod = false,
     bool clearSelectedPaymentMethod = false,
+    bool clearPaymentLaunch = false,
   }) {
     return CheckoutState(
       status: status ?? this.status,
@@ -295,6 +345,9 @@ class CheckoutState extends Equatable {
       isPlacingOrder: isPlacingOrder ?? this.isPlacingOrder,
       isAccountSuspended: isAccountSuspended ?? this.isAccountSuspended,
       orderResponse: orderResponse ?? this.orderResponse,
+      paymentLaunch: clearPaymentLaunch
+          ? null
+          : (paymentLaunch ?? this.paymentLaunch),
       countries: countries ?? this.countries,
       billingStates: billingStates ?? this.billingStates,
       shippingStates: shippingStates ?? this.shippingStates,
@@ -327,6 +380,7 @@ class CheckoutState extends Equatable {
     isPlacingOrder,
     isAccountSuspended,
     orderResponse,
+    paymentLaunch,
     countries,
     billingStates,
     shippingStates,
@@ -362,6 +416,17 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
     on<RemoveCheckoutCoupon>(_onRemoveCoupon);
     on<ToggleSameAddress>(_onToggleSameAddress);
     on<PlaceOrder>(_onPlaceOrder);
+    on<ConfirmRazorpayPayment>(_onConfirmRazorpayPayment);
+    on<ConfirmPaypalStandardPayment>(_onConfirmPaypalStandardPayment);
+    on<ConfirmStripePayment>(_onConfirmStripePayment);
+    on<ClearPaymentLaunch>((event, emit) {
+      emit(
+        state.copyWith(
+          status: CheckoutStatus.paymentMethodsFetched,
+          clearPaymentLaunch: true,
+        ),
+      );
+    });
     on<ClearCheckoutMessage>(_onClearMessage);
     on<ResetAddressConfirmation>(_onResetAddressConfirmation);
     on<FetchCountries>(_onFetchCountries);
@@ -404,7 +469,29 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
       return accountAddresses;
     }
 
-    return checkoutAddresses;
+    // No saved address book entry exists yet, so fall back to the cart-scoped
+    // addresses. 'use for shipping' mirrors the billing address into a
+    // separate cart_shipping row with identical content, so dedupe by
+    // content here rather than by type — a genuinely different shipping
+    // address (when 'use for shipping' was unchecked) must still show up.
+    final seen = <String>{};
+    final deduped = <CheckoutAddress>[];
+    for (final address in checkoutAddresses) {
+      final key = [
+        address.firstName,
+        address.lastName,
+        address.address,
+        address.city,
+        address.state,
+        address.country,
+        address.postcode,
+        address.phone,
+      ].join('|');
+      if (seen.add(key)) {
+        deduped.add(address);
+      }
+    }
+    return deduped;
   }
 
   /// 1) Store cart, determine guest/logged-in, fetch addresses only for logged-in
@@ -1397,7 +1484,8 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
     emit(state.copyWith(selectedPaymentMethod: event.paymentMethodCode));
   }
 
-  /// 5) Place order: save payment method → create order.
+  /// 5) Online payment: save selection → initiate provider → hand off to WebView.
+  ///    Offline payment keeps the original save selection → create order flow.
   ///    Only the Bearer auth token is needed (no `$token` variable).
   Future<void> _onPlaceOrder(
     PlaceOrder event,
@@ -1439,7 +1527,58 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
           return;
         }
       }
-      // Place the order
+      final method = state.selectedPaymentMethod!.toLowerCase();
+      final normalizedMethod = method.replaceAll(RegExp('[^a-z]'), '');
+      final isOffline =
+          method.contains('cash') ||
+          method.contains('cod') ||
+          method == 'moneytransfer';
+
+      if (!isOffline) {
+        final launch = switch (normalizedMethod) {
+          'stripe' => await repository.initiateStripePayment(),
+          'paypalstandard' => await repository.initiatePaypalStandardPayment(),
+          _ => await repository.initiatePayment(),
+        };
+        final hasRedirect =
+            launch.type == 'redirect' &&
+            launch.redirectUrl != null &&
+            launch.redirectUrl!.isNotEmpty;
+        final hasForm =
+            launch.type == 'form' &&
+            launch.formAction != null &&
+            launch.formAction!.isNotEmpty &&
+            launch.formFields.isNotEmpty;
+        final hasSdk =
+            launch.type == 'sdk' &&
+            launch.method.toLowerCase() == 'razorpay' &&
+            launch.sdkData['key']?.toString().isNotEmpty == true &&
+            launch.sdkData['order_id']?.toString().isNotEmpty == true &&
+            launch.sdkData['amount'] != null &&
+            launch.sdkData['currency']?.toString().isNotEmpty == true;
+        if (!hasRedirect && !hasForm && !hasSdk) {
+          emit(
+            state.copyWith(
+              isPlacingOrder: false,
+              errorMessage:
+                  'This payment method did not return a supported payment page.',
+            ),
+          );
+          return;
+        }
+
+        emit(
+          state.copyWith(
+            status: CheckoutStatus.paymentReady,
+            isPlacingOrder: false,
+            paymentLaunch: launch,
+            clearError: true,
+          ),
+        );
+        return;
+      }
+
+      // Offline methods are placed immediately, as before.
       final response = await repository.placeOrder();
       debugPrint('[CheckoutBloc] placeOrder orderId=${response.orderId}');
       if (response.success) {
@@ -1473,6 +1612,192 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
     }
   }
 
+  Future<void> _onConfirmRazorpayPayment(
+    ConfirmRazorpayPayment event,
+    Emitter<CheckoutState> emit,
+  ) async {
+    if (state.isAccountSuspended) return;
+    emit(
+      state.copyWith(
+        status: CheckoutStatus.paymentConfirming,
+        isPlacingOrder: true,
+        clearError: true,
+        clearSuccess: true,
+      ),
+    );
+    _refreshAuthToken();
+
+    try {
+      final response = await repository.confirmRazorpayPayment(
+        razorpayOrderId: event.razorpayOrderId,
+        razorpayPaymentId: event.razorpayPaymentId,
+        razorpaySignature: event.razorpaySignature,
+      );
+      if (response.success && response.orderId != null) {
+        emit(
+          state.copyWith(
+            status: CheckoutStatus.orderPlaced,
+            isPlacingOrder: false,
+            orderResponse: response,
+            successMessage: response.message ?? 'Order placed successfully!',
+          ),
+        );
+      } else {
+        emit(
+          state.copyWith(
+            isPlacingOrder: false,
+            errorMessage:
+                response.message ?? 'Bagisto could not confirm the payment.',
+          ),
+        );
+      }
+    } catch (error) {
+      emit(
+        state.copyWith(
+          isPlacingOrder: false,
+          errorMessage: ErrorMapper.getUserMessage(
+            error,
+            context: 'confirming your Razorpay payment',
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _onConfirmPaypalStandardPayment(
+    ConfirmPaypalStandardPayment event,
+    Emitter<CheckoutState> emit,
+  ) async {
+    if (state.isAccountSuspended) return;
+    emit(
+      state.copyWith(
+        status: CheckoutStatus.paymentConfirming,
+        isPlacingOrder: true,
+        clearError: true,
+        clearSuccess: true,
+      ),
+    );
+    _refreshAuthToken();
+
+    try {
+      CheckoutOrderResponse response;
+      final deadline = DateTime.now().add(const Duration(seconds: 60));
+      do {
+        response = await repository.confirmPaypalStandardPayment(
+          reference: event.reference,
+        );
+        if (response.paymentStatus == 'pending' &&
+            response.orderId != null &&
+            DateTime.now().isBefore(deadline)) {
+          await Future<void>.delayed(const Duration(seconds: 4));
+        }
+      } while (response.paymentStatus == 'pending' &&
+          response.orderId != null &&
+          DateTime.now().isBefore(deadline));
+
+      if (response.paymentStatus == 'success' && response.orderId != null) {
+        emit(
+          state.copyWith(
+            status: CheckoutStatus.orderPlaced,
+            isPlacingOrder: false,
+            orderResponse: response,
+            successMessage: response.message ?? 'Order placed successfully!',
+          ),
+        );
+      } else {
+        if (response.paymentStatus == 'pending' && response.orderId != null) {
+          emit(
+            state.copyWith(
+              status: CheckoutStatus.paymentConfirmationPending,
+              isPlacingOrder: false,
+              orderResponse: response,
+              clearPaymentLaunch: true,
+              successMessage:
+                  'Order placed. Payment confirmation is still in progress.',
+              clearError: true,
+            ),
+          );
+        } else {
+          emit(
+            state.copyWith(
+              status: CheckoutStatus.paymentMethodsFetched,
+              isPlacingOrder: false,
+              clearPaymentLaunch: true,
+              errorMessage:
+                  response.message ??
+                  'PayPal payment was not completed. Please try again.',
+            ),
+          );
+        }
+      }
+    } catch (error) {
+      emit(
+        state.copyWith(
+          isPlacingOrder: false,
+          errorMessage: ErrorMapper.getUserMessage(
+            error,
+            context: 'confirming your PayPal payment',
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _onConfirmStripePayment(
+    ConfirmStripePayment event,
+    Emitter<CheckoutState> emit,
+  ) async {
+    if (state.isAccountSuspended) return;
+    emit(
+      state.copyWith(
+        status: CheckoutStatus.paymentConfirming,
+        isPlacingOrder: true,
+        clearError: true,
+        clearSuccess: true,
+      ),
+    );
+    _refreshAuthToken();
+
+    try {
+      final response = await repository.confirmStripePayment(
+        reference: event.reference,
+      );
+      if (response.paymentStatus == 'success' && response.orderId != null) {
+        emit(
+          state.copyWith(
+            status: CheckoutStatus.orderPlaced,
+            isPlacingOrder: false,
+            orderResponse: response,
+            successMessage: response.message ?? 'Order placed successfully!',
+          ),
+        );
+      } else {
+        emit(
+          state.copyWith(
+            status: CheckoutStatus.paymentMethodsFetched,
+            isPlacingOrder: false,
+            clearPaymentLaunch: true,
+            errorMessage:
+                response.message ??
+                'Payment is not confirmed yet. Please check again before retrying.',
+          ),
+        );
+      }
+    } catch (error) {
+      emit(
+        state.copyWith(
+          status: CheckoutStatus.paymentMethodsFetched,
+          isPlacingOrder: false,
+          clearPaymentLaunch: true,
+          errorMessage: ErrorMapper.getUserMessage(
+            error,
+            context: 'confirming your Stripe payment',
+          ),
+        ),
+      );
+    }
+  }
+
   Future<void> _onApplyCoupon(
     ApplyCheckoutCoupon event,
     Emitter<CheckoutState> emit,
@@ -1492,7 +1817,7 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
         emit(
           state.copyWith(
             isLoading: false,
-            errorMessage: response.message ?? 'Invalid coupon code',
+            errorMessage: ErrorMapper.couponFailureMessage(response.message),
           ),
         );
       }

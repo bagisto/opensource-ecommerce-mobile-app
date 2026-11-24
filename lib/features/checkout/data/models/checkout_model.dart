@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import '../../../../core/currency/currency_formatter.dart';
 
 // Checkout models matching the real Bagisto Headless Commerce GraphQL schema.
@@ -224,7 +226,8 @@ class ShippingRate {
     );
   }
 
-  String get displayPrice => formattedPrice ?? CurrencyFormatter.formatAmount(price);
+  String get displayPrice =>
+      formattedPrice ?? CurrencyFormatter.formatAmount(price);
   String get displayLabel => label.isNotEmpty ? label : (methodTitle ?? method);
 }
 
@@ -330,12 +333,78 @@ class CheckoutPaymentMethodResponse {
   }
 }
 
+/// Provider launch instructions returned by createCheckoutPaymentInitiation.
+/// `formFields` and `sdkData` are GraphQL scalar values and may arrive as either
+/// decoded JSON objects or JSON strings, depending on the Bagisto serializer.
+class CheckoutPaymentInitiationResponse {
+  final String method;
+  final String type;
+  final String? redirectUrl;
+  final String? reference;
+  final String? successUrl;
+  final String? failureUrl;
+  final String? formAction;
+  final Map<String, String> formFields;
+  final Map<String, dynamic> sdkData;
+
+  const CheckoutPaymentInitiationResponse({
+    required this.method,
+    required this.type,
+    this.redirectUrl,
+    this.reference,
+    this.successUrl,
+    this.failureUrl,
+    this.formAction,
+    this.formFields = const {},
+    this.sdkData = const {},
+  });
+
+  factory CheckoutPaymentInitiationResponse.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    return CheckoutPaymentInitiationResponse(
+      method: json['method']?.toString() ?? '',
+      type: json['type']?.toString().toLowerCase() ?? '',
+      redirectUrl: json['redirectUrl']?.toString(),
+      reference: json['reference']?.toString(),
+      successUrl: json['successUrl']?.toString(),
+      failureUrl: json['failureUrl']?.toString(),
+      formAction: json['formAction']?.toString(),
+      formFields: _parseStringMap(json['formFields']),
+      sdkData: _parseDynamicMap(json['sdkData']),
+    );
+  }
+
+  static Map<String, String> _parseStringMap(dynamic value) {
+    final map = _parseDynamicMap(value);
+    return map.map((key, value) => MapEntry(key, value?.toString() ?? ''));
+  }
+
+  static Map<String, dynamic> _parseDynamicMap(dynamic value) {
+    dynamic decoded = value;
+    if (decoded is String && decoded.isNotEmpty) {
+      try {
+        decoded = jsonDecode(decoded);
+      } catch (_) {
+        return const {};
+      }
+    }
+    if (decoded is Map) {
+      return decoded.map((key, value) => MapEntry(key.toString(), value));
+    }
+    return const {};
+  }
+}
+
+enum CheckoutPaymentReturn { successUrl, failureUrl, cancelled }
+
 /// Response from createCheckoutOrder
 class CheckoutOrderResponse {
   final String? id;
   final String? orderId;
   final String? orderIncrementId;
   final bool success;
+  final String? paymentStatus;
   final String? message;
 
   const CheckoutOrderResponse({
@@ -343,15 +412,21 @@ class CheckoutOrderResponse {
     this.orderId,
     this.orderIncrementId,
     this.success = false,
+    this.paymentStatus,
     this.message,
   });
 
   factory CheckoutOrderResponse.fromJson(Map<String, dynamic> json) {
+    final orderId = json['orderId']?.toString();
+    final paymentStatus = json['paymentStatus']?.toString().toLowerCase();
     return CheckoutOrderResponse(
       id: json['id']?.toString(),
-      orderId: json['orderId']?.toString(),
+      orderId: orderId,
       orderIncrementId: json['orderIncrementId']?.toString(),
-      success: json['success'] as bool? ?? (json['orderId'] != null),
+      success:
+          json['success'] as bool? ??
+          (paymentStatus == 'success' && orderId != null),
+      paymentStatus: paymentStatus,
       message: json['message'] as String?,
     );
   }
@@ -400,8 +475,23 @@ class CouponResponse {
       formattedGrandTotal: json['formattedGrandTotal'] as String?,
       subtotal: _parseDouble(json['subtotal']),
       formattedSubtotal: json['formattedSubtotal'] as String?,
-      taxAmount: _parseDouble(json['taxAmount']),
-      formattedTaxAmount: json['formattedTaxAmount'] as String?,
+      taxAmount: () {
+        final total = _parseDouble(json['taxTotal'] ?? json['tax_total']);
+        if (total > 0) return total;
+        return _parseDouble(json['taxAmount'] ?? json['tax_amount']);
+      }(),
+      formattedTaxAmount: () {
+        final total = _parseDouble(json['taxTotal'] ?? json['tax_total']);
+        final fmtTotal =
+            (json['formattedTaxTotal'] ?? json['formatted_tax_total'])
+                as String?;
+        if (total > 0 && fmtTotal != null && fmtTotal.isNotEmpty)
+          return fmtTotal;
+        final fmtAmt =
+            (json['formattedTaxAmount'] ?? json['formatted_tax_amount'])
+                as String?;
+        return (total > 0) ? (fmtTotal ?? fmtAmt) : (fmtAmt ?? fmtTotal);
+      }(),
       shippingAmount: _parseDouble(json['shippingAmount']),
       formattedShippingAmount: json['formattedShippingAmount'] as String?,
     );

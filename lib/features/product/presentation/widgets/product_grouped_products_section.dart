@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/constants/asset_constants.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../category/data/models/product_model.dart';
 import '../bloc/product_detail_bloc.dart';
@@ -284,18 +285,17 @@ class _GroupedProductImage extends StatelessWidget {
         height: 72,
         color: isDark ? AppColors.neutral700 : AppColors.neutral100,
         child: imageUrl == null || imageUrl!.isEmpty
-            ? Icon(
-                Icons.image_not_supported_outlined,
-                size: 22,
-                color: isDark ? AppColors.neutral500 : AppColors.neutral400,
-              )
+            ? Image.asset(AppAssets.largeProductPlaceholder, fit: BoxFit.cover)
             : CachedNetworkImage(
                 imageUrl: imageUrl!,
                 fit: BoxFit.cover,
-                errorWidget: (context, image, error) => Icon(
-                  Icons.broken_image_outlined,
-                  size: 22,
-                  color: isDark ? AppColors.neutral500 : AppColors.neutral400,
+                placeholder: (context, image) => Image.asset(
+                  AppAssets.largeProductPlaceholder,
+                  fit: BoxFit.cover,
+                ),
+                errorWidget: (context, image, error) => Image.asset(
+                  AppAssets.largeProductPlaceholder,
+                  fit: BoxFit.cover,
                 ),
               ),
       ),

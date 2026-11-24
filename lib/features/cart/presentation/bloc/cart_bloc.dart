@@ -4,6 +4,8 @@ import 'package:equatable/equatable.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/error/error_mapper.dart';
 import '../../../auth/domain/services/auth_storage.dart';
+import '../../../checkout/data/models/checkout_model.dart';
+import '../../../category/data/models/product_model.dart';
 import '../../data/models/cart_model.dart';
 import '../../data/repository/cart_repository.dart';
 
@@ -109,6 +111,50 @@ class OnUserLoggedOut extends CartEvent {
   const OnUserLoggedOut();
 }
 
+/// Estimate shipping and tax for the destination
+class EstimateShippingEvent extends CartEvent {
+  final String country;
+  final String? state;
+  final String? postcode;
+
+  const EstimateShippingEvent({
+    required this.country,
+    this.state,
+    this.postcode,
+  });
+
+  @override
+  List<Object?> get props => [country, state, postcode];
+}
+
+/// Select a specific estimated shipping rate
+class SelectEstimatedShippingMethodEvent extends CartEvent {
+  final String method;
+  final String country;
+  final String? state;
+  final String? postcode;
+
+  const SelectEstimatedShippingMethodEvent({
+    required this.method,
+    required this.country,
+    this.state,
+    this.postcode,
+  });
+
+  @override
+  List<Object?> get props => [method, country, state, postcode];
+}
+
+/// Fetch cross-sell products for the current cart
+class FetchCartCrossSellProductsEvent extends CartEvent {
+  const FetchCartCrossSellProductsEvent();
+}
+
+/// Reset estimated shipping state and fields when leaving cart screen
+class ResetEstimateShippingEvent extends CartEvent {
+  const ResetEstimateShippingEvent();
+}
+
 // ─── State ─────────────────────────────────────────────────────────────────
 
 enum CartStatus { initial, loading, loaded, error }
@@ -132,6 +178,15 @@ class CartState extends Equatable {
   final bool isAddingToCart;
   final int? updatingItemId;
   final bool isApplyingCoupon;
+  final List<ShippingRate> estimatedShippingMethods;
+  final String? selectedEstimatedShippingRate;
+  final bool isEstimatingShipping;
+  final String? estimateShippingError;
+  final String? estimatedCountry;
+  final String? estimatedState;
+  final String? estimatedPostcode;
+  final List<ProductModel> crossSellProducts;
+  final bool isLoadingCrossSells;
 
   const CartState({
     this.status = CartStatus.initial,
@@ -144,6 +199,15 @@ class CartState extends Equatable {
     this.isAddingToCart = false,
     this.updatingItemId,
     this.isApplyingCoupon = false,
+    this.estimatedShippingMethods = const [],
+    this.selectedEstimatedShippingRate,
+    this.isEstimatingShipping = false,
+    this.estimateShippingError,
+    this.estimatedCountry,
+    this.estimatedState,
+    this.estimatedPostcode,
+    this.crossSellProducts = const [],
+    this.isLoadingCrossSells = false,
   });
 
   int get itemCount => cart.itemsQty;
@@ -159,10 +223,21 @@ class CartState extends Equatable {
     bool? isAddingToCart,
     int? updatingItemId,
     bool? isApplyingCoupon,
+    List<ShippingRate>? estimatedShippingMethods,
+    String? selectedEstimatedShippingRate,
+    bool? isEstimatingShipping,
+    String? estimateShippingError,
+    String? estimatedCountry,
+    String? estimatedState,
+    String? estimatedPostcode,
+    List<ProductModel>? crossSellProducts,
+    bool? isLoadingCrossSells,
     bool clearMessage = false,
     bool clearUpdatingItem = false,
     bool clearError = false,
     bool clearCartId = false,
+    bool clearEstimateError = false,
+    bool clearEstimatedShipping = false,
   }) {
     return CartState(
       status: status ?? this.status,
@@ -179,6 +254,28 @@ class CartState extends Equatable {
           ? null
           : (updatingItemId ?? this.updatingItemId),
       isApplyingCoupon: isApplyingCoupon ?? this.isApplyingCoupon,
+      estimatedShippingMethods: clearEstimatedShipping
+          ? const []
+          : (estimatedShippingMethods ?? this.estimatedShippingMethods),
+      selectedEstimatedShippingRate: clearEstimatedShipping
+          ? null
+          : (selectedEstimatedShippingRate ??
+                this.selectedEstimatedShippingRate),
+      isEstimatingShipping: isEstimatingShipping ?? this.isEstimatingShipping,
+      estimateShippingError: (clearEstimateError || clearEstimatedShipping)
+          ? null
+          : (estimateShippingError ?? this.estimateShippingError),
+      estimatedCountry: clearEstimatedShipping
+          ? null
+          : (estimatedCountry ?? this.estimatedCountry),
+      estimatedState: clearEstimatedShipping
+          ? null
+          : (estimatedState ?? this.estimatedState),
+      estimatedPostcode: clearEstimatedShipping
+          ? null
+          : (estimatedPostcode ?? this.estimatedPostcode),
+      crossSellProducts: crossSellProducts ?? this.crossSellProducts,
+      isLoadingCrossSells: isLoadingCrossSells ?? this.isLoadingCrossSells,
     );
   }
 
@@ -194,6 +291,15 @@ class CartState extends Equatable {
     isAddingToCart,
     updatingItemId,
     isApplyingCoupon,
+    estimatedShippingMethods,
+    selectedEstimatedShippingRate,
+    isEstimatingShipping,
+    estimateShippingError,
+    estimatedCountry,
+    estimatedState,
+    estimatedPostcode,
+    crossSellProducts,
+    isLoadingCrossSells,
   ];
 }
 
@@ -221,6 +327,10 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     on<ClearCartMessage>(_onClearCartMessage);
     on<OnUserLoggedIn>(_onUserLoggedIn);
     on<OnUserLoggedOut>(_onUserLoggedOut);
+    on<EstimateShippingEvent>(_onEstimateShipping);
+    on<SelectEstimatedShippingMethodEvent>(_onSelectEstimatedShippingMethod);
+    on<FetchCartCrossSellProductsEvent>(_onFetchCartCrossSellProducts);
+    on<ResetEstimateShippingEvent>(_onResetEstimateShipping);
   }
 
   // ─── Token persistence helpers ───────────────────────────────────────
@@ -848,7 +958,9 @@ class CartBloc extends Bloc<CartEvent, CartState> {
           state.copyWith(
             cart: cart,
             isApplyingCoupon: false,
-            errorMessage: 'Invalid coupon code',
+            errorMessage: ErrorMapper.couponFailureMessage(
+              'Invalid coupon code',
+            ),
           ),
         );
       }
@@ -899,5 +1011,115 @@ class CartBloc extends Bloc<CartEvent, CartState> {
 
   void _onClearCartMessage(ClearCartMessage event, Emitter<CartState> emit) {
     emit(state.copyWith(clearMessage: true, clearError: true));
+  }
+
+  Future<void> _onEstimateShipping(
+    EstimateShippingEvent event,
+    Emitter<CartState> emit,
+  ) async {
+    emit(state.copyWith(isEstimatingShipping: true, clearEstimateError: true));
+    try {
+      _syncRepoToken();
+      final result = await repository.estimateShipping(
+        country: event.country,
+        state: event.state,
+        postcode: event.postcode,
+      );
+      emit(
+        state.copyWith(
+          isEstimatingShipping: false,
+          cart: result.cart,
+          estimatedShippingMethods: result.shippingMethods,
+          selectedEstimatedShippingRate: result.selectedShippingRate,
+          estimatedCountry: event.country,
+          estimatedState: event.state,
+          estimatedPostcode: event.postcode,
+          clearEstimateError: true,
+        ),
+      );
+    } catch (e) {
+      debugPrint('[CartBloc] EstimateShipping error: $e');
+      emit(
+        state.copyWith(
+          isEstimatingShipping: false,
+          estimateShippingError: ErrorMapper.getUserMessage(
+            e,
+            context: 'estimating shipping',
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _onSelectEstimatedShippingMethod(
+    SelectEstimatedShippingMethodEvent event,
+    Emitter<CartState> emit,
+  ) async {
+    emit(state.copyWith(isEstimatingShipping: true, clearEstimateError: true));
+    try {
+      _syncRepoToken();
+      final result = await repository.estimateShipping(
+        country: event.country,
+        state: event.state,
+        postcode: event.postcode,
+        shippingMethod: event.method,
+      );
+      emit(
+        state.copyWith(
+          isEstimatingShipping: false,
+          cart: result.cart,
+          estimatedShippingMethods: result.shippingMethods.isNotEmpty
+              ? result.shippingMethods
+              : state.estimatedShippingMethods,
+          selectedEstimatedShippingRate:
+              result.selectedShippingRate ?? event.method,
+          estimatedCountry: event.country,
+          estimatedState: event.state,
+          estimatedPostcode: event.postcode,
+          clearEstimateError: true,
+        ),
+      );
+    } catch (e) {
+      debugPrint('[CartBloc] SelectEstimatedShippingMethod error: $e');
+      emit(
+        state.copyWith(
+          isEstimatingShipping: false,
+          estimateShippingError: ErrorMapper.getUserMessage(
+            e,
+            context: 'selecting shipping method',
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _onFetchCartCrossSellProducts(
+    FetchCartCrossSellProductsEvent event,
+    Emitter<CartState> emit,
+  ) async {
+    if (state.cart.items.isEmpty) {
+      emit(state.copyWith(crossSellProducts: const []));
+      return;
+    }
+    emit(state.copyWith(isLoadingCrossSells: true));
+    try {
+      _syncRepoToken();
+      final products = await repository.getCartCrossSellProducts();
+      emit(
+        state.copyWith(crossSellProducts: products, isLoadingCrossSells: false),
+      );
+    } catch (e) {
+      debugPrint('[CartBloc] _onFetchCartCrossSellProducts error: $e');
+      emit(state.copyWith(isLoadingCrossSells: false));
+    }
+  }
+
+  void _onResetEstimateShipping(
+    ResetEstimateShippingEvent event,
+    Emitter<CartState> emit,
+  ) {
+    emit(
+      state.copyWith(clearEstimatedShipping: true, isEstimatingShipping: false),
+    );
   }
 }

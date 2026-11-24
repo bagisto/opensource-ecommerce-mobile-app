@@ -18,9 +18,10 @@ migrate_working_dir/
 *.iws
 .idea/
 
-# Local editor/agent connection configs
-.vscode/mcp.json
-.kilocode/mcp.json
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be included in version control, so this line
+# is commented out by default.
+#.vscode/
 
 # Flutter/Dart/Pub related
 **/doc/api/
@@ -46,27 +47,45 @@ app.*.map.json
 # YoYo AI version control directory
 .yoyo/
 
-# Local tooling, artifacts, and backups
-maestro_run_outputs/
-xcodebuild_log.txt
-test_maestro_mcp.sh
-*.bak
-*.jks
-*.keystore
-jks_details/
-
 # ML models - large files not needed in git
-assets/ml/
-# Images - ignore by default, but keep docs assets used in GitHub/README tracked
+assets/ml/*
+!assets/ml/.gitkeep
+# Images are ignored by default, except documentation assets used by README.
 **/*.png
 **/*.jpg
 **/*.jpeg
 **/*.webp
 !Docs/features_images/
 !Docs/features_images/**
-# Google Services configuration files - ignore by default,
-# but keep the sanitized placeholder files tracked in this repo.
-# **/google-services.json
-# **/GoogleService-Info.plist
-# !android/app/google-services.json
-# !ios/Runner/GoogleService-Info.plist
+!ios/Runner/Assets.xcassets/**
+!android/app/src/main/res/**
+!assets/images/small-product-placeholder-CMT26fOX.webp
+!assets/images/product_placeholder.webp
+!assets/images/default_seller_banner.webp
+!assets/images/default_seller_logo.webp
+!assets/images/cash-on-delivery.png
+!assets/images/money-transfer.png
+!assets/images/paypal.png
+!assets/images/payu.png
+!assets/images/phonepe.png
+!assets/images/razorpay.png
+!assets/images/stripe.png
+!assets/images/splash.png
+# Firebase placeholders from the reference project are tracked; keep other
+# local Firebase configurations out of source control.
+**/google-services.json
+**/GoogleService-Info.plist
+!android/app/google-services.json
+!ios/Runner/GoogleService-Info.plist
+
+# Local signing credentials and generated run artifacts
+jks_details/
+
+xcodebuild_log.txt
+
+# Graphify generated internals
+graphify-out/cache/
+graphify-out/.graphify_detect.json
+graphify-out/.graphify_python
+graphify-out/graph.json
+graphify-out/**/graph.json

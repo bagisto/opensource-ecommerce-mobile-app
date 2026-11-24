@@ -88,9 +88,14 @@ class CurrencyFormatter {
   static String formatAmount(
     num? amount, {
     String? currencyCode,
+    String? currencySymbol,
     int fractionDigits = 2,
   }) {
     final value = (amount ?? 0).toDouble();
-    return '${symbolFor(currencyCode)}${value.toStringAsFixed(fractionDigits)}';
+    final configuredSymbol = currencySymbol?.trim();
+    final symbol = configuredSymbol == null || configuredSymbol.isEmpty
+        ? symbolFor(currencyCode)
+        : configuredSymbol;
+    return '$symbol${value.toStringAsFixed(fractionDigits)}';
   }
 }

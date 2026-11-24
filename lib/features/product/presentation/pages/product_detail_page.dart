@@ -5,6 +5,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/navigation/app_navigator.dart';
 import '../../../../core/wishlist/wishlist_cubit.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../core/store_config/store_config.dart';
 import '../../../category/data/models/product_model.dart';
 import '../../../category/data/repository/category_repository.dart';
 import '../../../cart/presentation/bloc/cart_bloc.dart';
@@ -20,7 +21,6 @@ import '../widgets/product_reviews_section.dart';
 import '../widgets/product_related_section.dart';
 import '../widgets/product_detail_shimmer.dart';
 import '../../../../core/widgets/app_back_button.dart';
-import '../../../../core/store_config/store_config.dart';
 
 /// Product Detail Page matching Figma design
 /// Light: node 119-5125 | Dark: node 152-3594
@@ -98,15 +98,19 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   Widget build(BuildContext context) {
     final repository = context.read<CategoryRepository>();
 
-    return BlocProvider(
-      create: (_) => ProductDetailBloc(repository: repository)
-        ..add(
-          LoadProductDetail(
-            urlKey: widget.urlKey,
-            productId: widget.productId,
-            productType: widget.productType,
-          ),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) => ProductDetailBloc(repository: repository)
+            ..add(
+              LoadProductDetail(
+                urlKey: widget.urlKey,
+                productId: widget.productId,
+                productType: widget.productType,
+              ),
+            ),
         ),
+      ],
       child: _ProductDetailView(
         productName: widget.productName,
         urlKey: widget.urlKey,
@@ -136,7 +140,8 @@ class _ProductDetailView extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return BlocListener<ProductDetailBloc, ProductDetailState>(
-      listenWhen: (previous, current) => previous.product?.id != current.product?.id,
+      listenWhen: (previous, current) =>
+          previous.product?.id != current.product?.id,
       listener: (context, state) {
         final product = state.product;
         if (product != null) {
@@ -147,53 +152,62 @@ class _ProductDetailView extends StatelessWidget {
         backgroundColor: isDark ? AppColors.neutral900 : AppColors.white,
         body: Column(
           children: [
-          // ── AppBar ──
-          _buildAppBar(context, isDark, l10n),
+            // ── AppBar ──
+            _buildAppBar(context, isDark, l10n),
 
-          // ── Scrollable Content ──
-          Expanded(
-            child: BlocBuilder<ProductDetailBloc, ProductDetailState>(
-              builder: (context, state) {
-                if (state.status == ProductDetailStatus.loading ||
-                    state.status == ProductDetailStatus.initial) {
-                  return const ProductDetailShimmer();
-                }
+            // ── Scrollable Content ──
+            Expanded(
+              child: BlocBuilder<ProductDetailBloc, ProductDetailState>(
+                builder: (context, state) {
+                  if (state.status == ProductDetailStatus.loading ||
+                      state.status == ProductDetailStatus.initial) {
+                    return const ProductDetailShimmer();
+                  }
 
-                if (state.status == ProductDetailStatus.error) {
-                  return Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.error_outline,
-                            size: 48,
-                            color: AppColors.neutral400,
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            l10n.productFailedToLoad,
-                            style: AppTextStyles.text4(context),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            state.errorMessage ?? '',
-                            style: AppTextStyles.text6(context),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
+                  if (state.status == ProductDetailStatus.error) {
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.error_outline,
+                              size: 48,
+                              color: AppColors.neutral400,
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              l10n.productFailedToLoad,
+                              style: AppTextStyles.text4(context),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              state.errorMessage ?? '',
+                              style: AppTextStyles.text6(context),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
+                    );
+                  }
+
+                  final product = state.product;
+                  if (product == null) {
+                    return Center(child: Text(l10n.productNotFound));
+                  }
+                  final storeConfig = StoreConfig.of(context);
+                  final relatedProducts = storeConfig.limitProducts(
+                    state.relatedProducts,
+                    storeConfig.relatedProductsLimit,
                   );
-                }
+                  final upSellProducts = storeConfig.limitProducts(
+                    product.upSells,
+                    storeConfig.upSellProductsLimit,
+                  );
 
-                final product = state.product;
-                if (product == null) {
-                  return Center(child: Text(l10n.productNotFound));
-                }
-
-                return RefreshIndicator(
+                  return RefreshIndicator(
                     onRefresh: () async {
                       context.read<ProductDetailBloc>().add(
                         RefreshProductDetail(
@@ -227,6 +241,8 @@ class _ProductDetailView extends StatelessWidget {
                             selectedVariant: state.selectedVariant,
                           ),
 
+                          const SizedBox(height: 24),
+
                           const SizedBox(height: 32),
 
                           // Attributes (size, color, text swatches, quantity)
@@ -237,10 +253,10 @@ class _ProductDetailView extends StatelessWidget {
                           // Description
                           ProductDescriptionSection(product: product),
 
-                          const SizedBox(height: 32),
-
-                          // More information
-                          ProductMoreInfoSection(product: product),
+                          if (product.brand?.trim().isNotEmpty == true) ...[
+                            const SizedBox(height: 32),
+                            ProductMoreInfoSection(product: product),
+                          ],
 
                           const SizedBox(height: 32),
 
@@ -250,9 +266,10 @@ class _ProductDetailView extends StatelessWidget {
                           const SizedBox(height: 32),
 
                           // Related products
-                          if (state.relatedProducts.isNotEmpty)
-                            ProductRelatedSection(
-                              relatedProducts: state.relatedProducts,
+                          if (relatedProducts.isNotEmpty)
+                            ProductRecommendationSection(
+                              title: l10n.productRelatedProduct,
+                              products: relatedProducts,
                               onProductTap: (relatedProduct) {
                                 if (relatedProduct.urlKey != null) {
                                   Navigator.of(context).push(
@@ -272,24 +289,49 @@ class _ProductDetailView extends StatelessWidget {
                               },
                             ),
 
+                          if (upSellProducts.isNotEmpty) ...[
+                            const SizedBox(height: 32),
+                            ProductRecommendationSection(
+                              title: l10n.productUpsellRecommendation,
+                              products: upSellProducts,
+                              onProductTap: (upsellProduct) {
+                                if (upsellProduct.urlKey != null) {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) => ProductDetailPage(
+                                        urlKey: upsellProduct.urlKey!,
+                                        productId:
+                                            upsellProduct.numericId
+                                                ?.toString() ??
+                                            upsellProduct.id,
+                                        productName: upsellProduct.name,
+                                        productType: upsellProduct.type,
+                                      ),
+                                    ),
+                                  );
+                                }
+                              },
+                            ),
+                          ],
+
                           const SizedBox(height: 16),
                         ],
                       ),
                     ),
                   );
+                },
+              ),
+            ),
+
+            // ── Sticky Bottom Action Bar ──
+            BlocBuilder<ProductDetailBloc, ProductDetailState>(
+              builder: (context, state) {
+                if (state.status != ProductDetailStatus.loaded) {
+                  return const SizedBox.shrink();
+                }
+                return const ProductActionBar();
               },
             ),
-          ),
-
-          // ── Sticky Bottom Action Bar ──
-          BlocBuilder<ProductDetailBloc, ProductDetailState>(
-            builder: (context, state) {
-              if (state.status != ProductDetailStatus.loaded) {
-                return const SizedBox.shrink();
-              }
-              return const ProductActionBar();
-            },
-          ),
           ],
         ),
       ),
@@ -321,22 +363,11 @@ class _ProductDetailView extends StatelessWidget {
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsetsDirectional.only(start: 0, end: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
-              // Back button with increased tap area
-              const Padding(
-                padding: EdgeInsetsDirectional.only(start: 8),
-                child: SizedBox(
-                  width: 40,
-                  height: 40,
-                  child: OverflowBox(
-                    maxWidth: 60,
-                    maxHeight: 60,
-                    child: AppBackButton(tapAreaSize: 60),
-                  ),
-                ),
-              ),
+              // Back button
+              const AppBackButton(tapAreaSize: 44),
 
               // Title
               Expanded(
@@ -378,59 +409,59 @@ class _ProductDetailView extends StatelessWidget {
 
               // Cart icon with dynamic badge
               if (StoreConfig.of(context).showCartPage)
-              BlocBuilder<CartBloc, CartState>(
-                builder: (context, cartState) {
-                  final count = StoreConfig.of(context).cartCount(
-                    itemsCount: cartState.cart.itemsCount,
-                    itemsQty: cartState.cart.itemsQty,
-                  );
-                  return GestureDetector(
-                    onTap: () {
-                      // Pop back to MainShell and switch to Cart tab
-                      AppNavigator.navigateToCart(context);
-                    },
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Icon(
-                            Icons.shopping_cart_outlined,
-                            size: 24,
-                            color: isDark
-                                ? AppColors.neutral200
-                                : AppColors.neutral900,
+                BlocBuilder<CartBloc, CartState>(
+                  builder: (context, cartState) {
+                    final count = StoreConfig.of(context).cartCount(
+                      itemsCount: cartState.cart.itemsCount,
+                      itemsQty: cartState.cart.itemsQty,
+                    );
+                    return GestureDetector(
+                      onTap: () {
+                        // Pop back to MainShell and switch to Cart tab
+                        AppNavigator.navigateToCart(context);
+                      },
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Icon(
+                              Icons.shopping_cart_outlined,
+                              size: 24,
+                              color: isDark
+                                  ? AppColors.neutral200
+                                  : AppColors.neutral900,
+                            ),
                           ),
-                        ),
-                        if (count > 0)
-                          Positioned(
-                            top: 0,
-                            right: 0,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 4,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.primary500,
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                '$count',
-                                style: const TextStyle(
-                                  fontFamily: 'Roboto',
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w400,
-                                  color: AppColors.white,
+                          if (count > 0)
+                            Positioned(
+                              top: 0,
+                              right: 0,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary500,
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  '$count',
+                                  style: const TextStyle(
+                                    fontFamily: 'Roboto',
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w400,
+                                    color: AppColors.white,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                      ],
-                    ),
-                  );
-                },
-              ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
             ],
           ),
         ),

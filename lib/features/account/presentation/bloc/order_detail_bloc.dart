@@ -99,6 +99,7 @@ class OrderDetailState extends Equatable {
   final OrderDetailStatus status;
   final OrderDetail? order;
   final List<OrderInvoice> invoices;
+  final List<CustomerRefund> refunds;
   final List<OrderShipment> shipments;
   final OrderShipment? shipmentDetail;
   final bool shipmentsLoading;
@@ -115,6 +116,8 @@ class OrderDetailState extends Equatable {
   /// cancellation, so canceling the order will not cancel that booking.
   final bool hasNonCancelableBooking;
 
+  final bool bookingRulesLoaded;
+
   /// EU withdrawal is enabled for the channel (`euWithdrawalStatus`).
   final bool euWithdrawalEnabled;
 
@@ -126,6 +129,7 @@ class OrderDetailState extends Equatable {
     this.status = OrderDetailStatus.initial,
     this.order,
     this.invoices = const [],
+    this.refunds = const [],
     this.shipments = const [],
     this.shipmentDetail,
     this.shipmentsLoading = false,
@@ -135,6 +139,7 @@ class OrderDetailState extends Equatable {
     this.reorderItemsCount,
     this.returnableOrder,
     this.hasNonCancelableBooking = false,
+    this.bookingRulesLoaded = false,
     this.euWithdrawalEnabled = false,
     this.euWithdrawal,
     this.isWithdrawing = false,
@@ -144,6 +149,7 @@ class OrderDetailState extends Equatable {
     OrderDetailStatus? status,
     OrderDetail? order,
     List<OrderInvoice>? invoices,
+    List<CustomerRefund>? refunds,
     List<OrderShipment>? shipments,
     OrderShipment? shipmentDetail,
     bool? shipmentsLoading,
@@ -153,14 +159,17 @@ class OrderDetailState extends Equatable {
     int? reorderItemsCount,
     CustomerOrder? returnableOrder,
     bool? hasNonCancelableBooking,
+    bool? bookingRulesLoaded,
     bool? euWithdrawalEnabled,
     EuWithdrawal? euWithdrawal,
+    bool clearEuWithdrawal = false,
     bool? isWithdrawing,
   }) {
     return OrderDetailState(
       status: status ?? this.status,
       order: order ?? this.order,
       invoices: invoices ?? this.invoices,
+      refunds: refunds ?? this.refunds,
       shipments: shipments ?? this.shipments,
       shipmentDetail: shipmentDetail ?? this.shipmentDetail,
       shipmentsLoading: shipmentsLoading ?? this.shipmentsLoading,
@@ -172,8 +181,10 @@ class OrderDetailState extends Equatable {
       returnableOrder: returnableOrder ?? this.returnableOrder,
       hasNonCancelableBooking:
           hasNonCancelableBooking ?? this.hasNonCancelableBooking,
+      bookingRulesLoaded: bookingRulesLoaded ?? this.bookingRulesLoaded,
       euWithdrawalEnabled: euWithdrawalEnabled ?? this.euWithdrawalEnabled,
-      euWithdrawal: euWithdrawal ?? this.euWithdrawal,
+      euWithdrawal:
+          clearEuWithdrawal ? null : (euWithdrawal ?? this.euWithdrawal),
       isWithdrawing: isWithdrawing ?? this.isWithdrawing,
     );
   }
@@ -183,6 +194,7 @@ class OrderDetailState extends Equatable {
     status,
     order,
     invoices,
+    refunds,
     shipments,
     shipmentDetail,
     shipmentsLoading,
@@ -192,6 +204,7 @@ class OrderDetailState extends Equatable {
     reorderItemsCount,
     returnableOrder,
     hasNonCancelableBooking,
+    bookingRulesLoaded,
     euWithdrawalEnabled,
     euWithdrawal,
     isWithdrawing,
@@ -228,28 +241,43 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
     LoadOrderDetail event,
     Emitter<OrderDetailState> emit,
   ) async {
-    emit(state.copyWith(status: OrderDetailStatus.loading));
+    emit(
+      state.copyWith(
+        status: OrderDetailStatus.loading,
+        refunds: const [],
+        hasNonCancelableBooking: false,
+        bookingRulesLoaded: false,
+        euWithdrawalEnabled: false,
+        clearEuWithdrawal: true,
+      ),
+    );
 
     try {
       final order = await repository.getCustomerOrder(event.orderId);
 
-      emit(state.copyWith(status: OrderDetailStatus.loaded, order: order));
+      var refunds = const <CustomerRefund>[];
+      if (order.totalRefunded > 0 && order.numericId != null) {
+        try {
+          refunds = await repository.getCustomerRefunds(order.numericId!);
+        } on Object catch (error) {
+          // Refund details should not prevent the rest of an order from
+          // loading if a server does not support the customerRefunds query.
+          debugPrint(
+            '⚠️ OrderDetailBloc refund adjustments unavailable: $error',
+          );
+        }
+      }
 
+      emit(
+        state.copyWith(
+          status: OrderDetailStatus.loaded,
+          order: order,
+          refunds: refunds,
+        ),
+      );
       await _checkBookingCancellation(order, emit);
       await _checkEuWithdrawal(order, emit);
-
-      // Ask the backend whether this order still accepts a return.
-      try {
-        final returnable = await repository.getReturnableOrders(
-          incrementId: order.incrementId,
-        );
-        final match = returnable
-            .where((o) => o.numericId == order.numericId)
-            .firstOrNull;
-        if (match != null) emit(state.copyWith(returnableOrder: match));
-      } catch (e) {
-        debugPrint('⚠️ OrderDetailBloc return eligibility check failed: $e');
-      }
+      await _checkReturnEligibility(order, emit);
     } catch (e) {
       debugPrint('❌ OrderDetailBloc._onLoad error: $e');
       emit(
@@ -272,10 +300,16 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
     final orderId = order.numericId;
     if (orderId == null) return;
     try {
-      if (!await repository.isEuWithdrawalEnabled()) return;
-      emit(state.copyWith(euWithdrawalEnabled: true));
+      final isEnabled = await repository.isEuWithdrawalEnabled();
+      if (!isEnabled) return;
       final existing = await repository.getEuWithdrawalForOrder(orderId);
-      if (existing != null) emit(state.copyWith(euWithdrawal: existing));
+      emit(
+        state.copyWith(
+          euWithdrawalEnabled: true,
+          euWithdrawal: existing,
+          clearEuWithdrawal: existing == null,
+        ),
+      );
     } catch (e) {
       debugPrint('⚠️ OrderDetailBloc EU withdrawal check failed: $e');
     }
@@ -306,27 +340,65 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
     }
   }
 
-  /// Flags orders holding a booking whose product has cancellation turned
-  /// off (`BookingProduct.allowCancellation`).
+  /// Asks the backend whether this order still accepts a return, so the
+  /// detail page only offers "Request a Return" when one would be accepted.
+  ///
+  /// A server without `returnableOrders` leaves [OrderDetailState.returnableOrder]
+  /// null and the button hidden, rather than failing the whole screen.
+  Future<void> _checkReturnEligibility(
+    OrderDetail order,
+    Emitter<OrderDetailState> emit,
+  ) async {
+    try {
+      final returnable = await repository.getReturnableOrders(
+        incrementId: order.incrementId,
+      );
+      final match = returnable
+          .where((o) => o.numericId == order.numericId)
+          .firstOrNull;
+      if (match != null) emit(state.copyWith(returnableOrder: match));
+    } catch (e) {
+      debugPrint('⚠️ OrderDetailBloc return eligibility check failed: $e');
+    }
+  }
+
+  /// Loads cancellation and booking-type rules for ordered booking products.
   Future<void> _checkBookingCancellation(
     OrderDetail order,
     Emitter<OrderDetailState> emit,
   ) async {
-    final productIds = order.items
-        .where((item) => item.type == 'booking' && item.productId != null)
-        .map((item) => item.productId!)
-        .toSet();
+    final bookingItems = order.items
+        .where(
+          (item) =>
+              item.type?.toLowerCase().trim() == 'booking' &&
+              item.productId != null,
+        )
+        .toList();
+    final hasBookingItemWithoutProductId = order.items.any(
+      (item) =>
+          item.type?.toLowerCase().trim() == 'booking' &&
+          item.productId == null,
+    );
+    final productIds = bookingItems.map((item) => item.productId!).toSet();
+    var bookingRulesLoaded = !hasBookingItemWithoutProductId;
     for (final productId in productIds) {
       try {
-        if (await repository.getBookingAllowsCancellation(productId) ==
-            false) {
+        final rules = await repository.getBookingProductOrderRules(productId);
+        if (rules == null) {
+          bookingRulesLoaded = false;
+          continue;
+        }
+
+        if (rules.allowCancellation == false &&
+            !state.hasNonCancelableBooking) {
           emit(state.copyWith(hasNonCancelableBooking: true));
-          return;
         }
       } catch (e) {
+        bookingRulesLoaded = false;
         debugPrint('⚠️ OrderDetailBloc booking cancellation check failed: $e');
       }
     }
+    emit(state.copyWith(bookingRulesLoaded: bookingRulesLoaded));
   }
 
   Future<void> _onLoadInvoices(

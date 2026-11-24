@@ -45,9 +45,8 @@ post_install do |installer|
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
     end
     
-    # Architecture Configuration - Ensure arm64 is used for simulators on Apple Silicon
+    # Let Flutter choose the simulator architecture so Runner and Pods match.
     installer.pods_project.build_configurations.each do |config|
-      config.build_settings["ARCHS[sdk=iphonesimulator*]"] = "arm64"
       config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = "i386"
     end
 

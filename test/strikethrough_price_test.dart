@@ -72,8 +72,34 @@ void main() {
         isNull);
   });
 
-  test('home product queries request the regular price', () {
+  test('home product queries request the regular price, new, and featured fields', () {
     expect(ProductQueries.getProducts, contains('formattedRegularMinimumPrice'));
+    expect(ProductQueries.getProducts, contains('new\n'));
+    expect(ProductQueries.getProducts, contains('featured\n'));
+  });
+
+  test('home product parses new and featured attributes correctly', () {
+    final productWithNew = HomeProduct.fromJson({
+      ..._noDiscount,
+      'new': '1',
+      'featured': '1',
+    });
+    expect(productWithNew.isNew, isTrue);
+    expect(productWithNew.isFeatured, isTrue);
+    expect(productWithNew.hasDiscount, isFalse);
+
+    // Serialization survives round-trip
+    final restored = HomeProduct.fromJson(productWithNew.toJson());
+    expect(restored.isNew, isTrue);
+    expect(restored.isFeatured, isTrue);
+
+    final productModel = ProductModel.fromJson({
+      ..._noDiscount,
+      'is_new': true,
+      'featured': true,
+    });
+    expect(productModel.isNew, isTrue);
+    expect(productModel.isFeatured, isTrue);
   });
 
   test('regular price survives the recently viewed round trip', () {
@@ -82,3 +108,4 @@ void main() {
     expect(restored.originalPriceLabel, r'$5,990.00');
   });
 }
+

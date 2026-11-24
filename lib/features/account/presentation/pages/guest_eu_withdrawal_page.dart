@@ -6,10 +6,8 @@ import '../../../../core/widgets/app_back_button.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../data/repository/account_repository.dart';
 import '../bloc/guest_eu_withdrawal_cubit.dart';
-import '../widgets/address_form_field.dart';
 
-/// Guest EU contract withdrawal: order number, order email and an optional
-/// reason (`createGuestEuWithdrawal`).
+/// Guest EU contract withdrawal link request: order number and email.
 class GuestEuWithdrawalPage extends StatefulWidget {
   const GuestEuWithdrawalPage({super.key});
 
@@ -36,13 +34,11 @@ class _GuestEuWithdrawalPageState extends State<GuestEuWithdrawalPage> {
   final _formKey = GlobalKey<FormState>();
   final _orderController = TextEditingController();
   final _emailController = TextEditingController();
-  final _reasonController = TextEditingController();
 
   @override
   void dispose() {
     _orderController.dispose();
     _emailController.dispose();
-    _reasonController.dispose();
     super.dispose();
   }
 
@@ -51,7 +47,6 @@ class _GuestEuWithdrawalPageState extends State<GuestEuWithdrawalPage> {
     context.read<GuestEuWithdrawalCubit>().submit(
       orderIncrementId: _orderController.text.trim(),
       email: _emailController.text.trim(),
-      reasonText: _reasonController.text.trim(),
     );
   }
 
@@ -74,7 +69,7 @@ class _GuestEuWithdrawalPageState extends State<GuestEuWithdrawalPage> {
         leadingWidth: 60,
         titleSpacing: 0,
         title: Text(
-          l10n.accountEuWithdraw,
+          l10n.accountEuWithdrawGuestTitle,
           style: TextStyle(
             fontFamily: 'Roboto',
             fontWeight: FontWeight.w600,
@@ -83,25 +78,14 @@ class _GuestEuWithdrawalPageState extends State<GuestEuWithdrawalPage> {
           ),
         ),
       ),
-      body: BlocBuilder<GuestEuWithdrawalCubit, GuestEuWithdrawalState>(
-        builder: (context, state) {
-          if (state.withdrawal != null) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(32),
-                child: Text(
-                  l10n.accountEuWithdrawSubmitted,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontFamily: 'Roboto',
-                    fontSize: 16,
-                    color: isDark ? AppColors.neutral200 : AppColors.neutral800,
-                  ),
-                ),
-              ),
-            );
+      body: BlocConsumer<GuestEuWithdrawalCubit, GuestEuWithdrawalState>(
+        listener: (context, state) {
+          if (state.response?.success == true) {
+            _orderController.clear();
+            _emailController.clear();
           }
-
+        },
+        builder: (context, state) {
           return SingleChildScrollView(
             padding: const EdgeInsets.all(20),
             child: Form(
@@ -119,27 +103,54 @@ class _GuestEuWithdrawalPageState extends State<GuestEuWithdrawalPage> {
                           : AppColors.neutral700,
                     ),
                   ),
+                  if (state.response?.success == true) ...[
+                    const SizedBox(height: 20),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFECFDF5),
+                        border: Border.all(color: const Color(0xFF86EFAC)),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(
+                            Icons.check_box_outlined,
+                            color: Color(0xFF047857),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              l10n.accountEuWithdrawSubmitted,
+                              style: const TextStyle(
+                                fontFamily: 'Roboto',
+                                fontSize: 14,
+                                height: 1.4,
+                                color: Color(0xFF065F46),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 20),
-                  // Labels already carry the "*" for required fields.
-                  AddressFormField(
+                  TextFormField(
                     controller: _orderController,
-                    label: l10n.accountEuWithdrawOrderNumber,
+                    decoration: InputDecoration(
+                      labelText: l10n.accountEuWithdrawOrderNumber,
+                    ),
                     validator: required,
                   ),
-                  const SizedBox(height: 20),
-                  AddressFormField(
+                  const SizedBox(height: 16),
+                  TextFormField(
                     controller: _emailController,
-                    label: l10n.accountEuWithdrawEmail,
                     keyboardType: TextInputType.emailAddress,
+                    decoration: InputDecoration(
+                      labelText: l10n.accountEuWithdrawEmail,
+                    ),
                     validator: required,
-                  ),
-                  const SizedBox(height: 20),
-                  AddressFormField(
-                    controller: _reasonController,
-                    label: l10n.accountEuWithdrawReason,
-                    keyboardType: TextInputType.multiline,
-                    textInputAction: TextInputAction.newline,
-                    maxLines: 4,
                   ),
                   if (state.errorMessage != null) ...[
                     const SizedBox(height: 16),
