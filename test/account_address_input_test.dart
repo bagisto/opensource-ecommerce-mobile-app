@@ -1,6 +1,6 @@
+import 'package:bagisto_flutter/features/account/data/models/account_models.dart';
 import 'package:bagisto_flutter/features/account/data/repository/account_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:bagisto_flutter/features/account/data/models/account_models.dart';
 
 void main() {
   test(

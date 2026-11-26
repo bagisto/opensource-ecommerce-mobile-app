@@ -1,10 +1,8 @@
 import 'dart:convert';
 
 import 'package:bagisto_flutter/core/channel/channel_bootstrap_service.dart';
-import 'package:bagisto_flutter/core/channel/channel_logo_cubit.dart';
 import 'package:bagisto_flutter/core/widgets/channel_logo.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:http/http.dart' as http;
@@ -96,54 +94,4 @@ void main() {
     await tester.pump();
     expect(find.byKey(const ValueKey('channel_logo_image')), findsOneWidget);
   });
-
-  testWidgets('ChannelLogo renders VelocityLogo when fallback is omitted', (
-    tester,
-  ) async {
-    SharedPreferences.setMockInitialValues({});
-    await tester.pumpWidget(
-      const MaterialApp(
-        home: Scaffold(
-          body: ChannelLogo(height: 20),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-    expect(find.byType(VelocityLogo), findsOneWidget);
-  });
-
-  test('ChannelLogoCubit initializes from prefs and emits cached value', () async {
-    SharedPreferences.setMockInitialValues({
-      ChannelBootstrapService.logoUrlCacheKey: 'https://shop.test/cached_logo.png',
-    });
-    final prefs = await SharedPreferences.getInstance();
-    final cubit = ChannelLogoCubit()..initialize(prefs);
-    expect(cubit.state, 'https://shop.test/cached_logo.png');
-  });
-
-  testWidgets(
-    'ChannelLogo reacts immediately when ChannelLogoCubit emits new logo',
-    (tester) async {
-      final cubit = ChannelLogoCubit();
-      await tester.pumpWidget(
-        MaterialApp(
-          home: BlocProvider.value(
-            value: cubit,
-            child: const Scaffold(
-              body: ChannelLogo(height: 20),
-            ),
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
-      expect(find.byType(VelocityLogo), findsOneWidget);
-      expect(find.byKey(const ValueKey('channel_logo_image')), findsNothing);
-
-      cubit.emit('https://shop.test/new_logo.png');
-      await tester.pump();
-      await tester.pump();
-
-      expect(find.byKey(const ValueKey('channel_logo_image')), findsOneWidget);
-    },
-  );
 }

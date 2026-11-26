@@ -3,6 +3,17 @@ import 'package:bagisto_flutter/features/home/presentation/helpers/main_shell_na
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('cart tab request is ignored when the cart page is disabled', () {
+    final action = resolveMainShellTabRequest(
+      currentIndex: AppNavigator.homeTab,
+      requestedIndex: AppNavigator.cartTab,
+      cartPageEnabled: false,
+    );
+
+    expect(action.shouldSwitchTabs, isFalse);
+    expect(action.shouldReloadCart, isFalse);
+  });
+
   test('re-requesting cart tab while already on cart still refreshes cart', () {
     final action = resolveMainShellTabRequest(
       currentIndex: AppNavigator.cartTab,

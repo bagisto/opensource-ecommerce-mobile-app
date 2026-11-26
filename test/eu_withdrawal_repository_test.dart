@@ -80,19 +80,21 @@ void main() {
     expect(await repository.getEuWithdrawalForOrder(9), isNull);
   });
 
-  test('guest withdrawal link sends order number and email', () async {
+  test('guest withdrawal sends order number, email and reason', () async {
     Map<String, dynamic>? sent;
     final repository = _repository((body) {
       sent = body;
       return {
         'data': {
-          'createGuestEuWithdrawalLink': {
-            '__typename': 'createGuestEuWithdrawalLinkPayload',
-            'guestEuWithdrawalLink': {
-              '__typename': 'GuestEuWithdrawalLink',
-              'success': true,
-              'message':
-                  'If the order number and email match a guest order, we have emailed a link to withdraw from it.',
+          'createGuestEuWithdrawal': {
+            '__typename': 'createGuestEuWithdrawalPayload',
+            'guestEuWithdrawal': {
+              '__typename': 'GuestEuWithdrawal',
+              'id': '/api/shop/guest-eu-withdrawals/1',
+              'uuid': 'abc',
+              'orderIncrementId': '1001',
+              'status': 'received',
+              'receivedAt': '2026-09-30',
             },
           },
         },
@@ -102,14 +104,15 @@ void main() {
     final result = await repository.createGuestEuWithdrawal(
       orderIncrementId: '1001',
       email: 'guest@example.com',
+      reasonText: 'Changed my mind',
     );
 
-    expect(result.success, isTrue);
-    expect(result.message, contains('emailed a link'));
+    expect(result.status, 'received');
     expect(sent?['variables'], {
       'input': {
         'orderIncrementId': '1001',
         'email': 'guest@example.com',
+        'reasonText': 'Changed my mind',
       },
     });
   });

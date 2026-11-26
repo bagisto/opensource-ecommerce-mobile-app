@@ -61,8 +61,6 @@ assets/ml/*
 !android/app/src/main/res/**
 !assets/images/small-product-placeholder-CMT26fOX.webp
 !assets/images/product_placeholder.webp
-!assets/images/default_seller_banner.webp
-!assets/images/default_seller_logo.webp
 !assets/images/cash-on-delivery.png
 !assets/images/money-transfer.png
 !assets/images/paypal.png

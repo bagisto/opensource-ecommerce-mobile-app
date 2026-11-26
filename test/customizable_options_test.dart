@@ -80,29 +80,6 @@ void main() {
   });
 
   group('Cart custom option payload', () {
-    test('buying a seller offer sends seller_info in additional', () {
-      final request = CartRepository.buildAddToCartRequest(
-        productId: 744,
-        quantity: 1,
-        additional: const {
-          'seller_info': {'product_id': 715, 'seller_id': 38, 'is_owner': 0},
-        },
-      );
-
-      expect(request.mutation, CartMutations.addSimpleProductToCart);
-      expect(request.variables['additional'], {
-        'seller_info': {'product_id': 715, 'seller_id': 38, 'is_owner': 0},
-      });
-      expect(CartMutations.addSimpleProductToCart, contains('\$additional'));
-
-      // A plain add leaves it out entirely.
-      final plain = CartRepository.buildAddToCartRequest(
-        productId: 744,
-        quantity: 1,
-      );
-      expect(plain.variables.containsKey('additional'), isFalse);
-    });
-
     test('simple add-to-cart variables include customizableOptions', () {
       final request = CartRepository.buildAddToCartRequest(
         productId: 2493,
@@ -197,27 +174,5 @@ void main() {
         'aurora-cream-winter-blazer-coat',
       );
     });
-
-    test('prioritizes taxTotal over taxAmount when taxAmount is 0', () {
-      final cart = CartModel.fromJson({
-        'id': 375,
-        'subtotal': 900,
-        'formattedSubtotal': r'$900.00',
-        'taxAmount': 0,
-        'formattedTaxAmount': r'$0.00',
-        'taxTotal': 180,
-        'formattedTaxTotal': r'$180.00',
-        'shippingAmount': 12,
-        'formattedShippingAmount': r'$12.00',
-        'grandTotal': 1092,
-        'formattedGrandTotal': r'$1,092.00',
-        'items': [],
-      });
-
-      expect(cart.taxAmount, 180);
-      expect(cart.formattedTaxAmount, r'$180.00');
-      expect(cart.grandTotal, 1092);
-    });
   });
 }
-

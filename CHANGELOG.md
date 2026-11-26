@@ -1,18 +1,106 @@
 #### This changelog consists the bug & security fixes and new features being included in the releases listed below
 
+# CHANGELOG for v2.5.3
+
+## **v2.5.3 (26th of November, 2026)** - *Release*
+
+* [Enhancement] Added a receipt page for EU contract withdrawals and image evidence support for return requests.
+* [Enhancement] Added checkout payment support for Razorpay and clearer payment method identification.
+* [Enhancement] Added newsletter subscription and the configurable header offer bar.
+* [Improvement] Improved product price, currency, and tax presentation across the storefront.
+* [Improvement] Refined home, category, product, account, checkout, and return flows to better match storefront configuration and behavior.
+* [Fixed] Resolved storefront issues affecting navigation, product display, checkout, and order actions.
+
+# CHANGELOG for v2.5.2
+
+## **v2.5.2 (19th of October, 2026)** - *Release*
+
+* [Enhancement] Added support for Bagisto admin store configuration, so the app now follows settings for wishlist, compare, image search, social sharing, reviews, guest checkout, reorder, newsletter, minimum order amount, and login redirects.
+* [Improvement] Cart, Buy Now, and related cart actions now follow the admin cart page setting; the cart badge and summary follow the selected cart summary mode.
+* [Improvement] Refreshed store configuration at app startup and when the language or currency changes.
+* [Improvement] Applied the admin reviewer name censoring setting to product reviews.
+* [Improvement] Updated order detail tabs and refund information to match available order data and storefront behavior.
+* [Fixed] Improved order detail handling for invoices, shipments, and refunded quantities.
+
+# CHANGELOG for v2.5.1
+
+## **v2.5.1 (14th of October, 2026)** - *Release*
+
+* [Enhancement] Added EU contract withdrawal: logged-in customers can withdraw from an order on the order detail page, and guests can submit a withdrawal from the account screen, when it is enabled in the admin.
+* [Enhancement] Added a "Request a Return" button on the order detail page for orders that are eligible for a return.
+* [Enhancement] Added a Refunds tab on the order detail page with the refunded items and the order totals, including the amount paid, refunded, and due.
+* [Enhancement] Added the Services Content and Footer Links homepage sections from the theme settings.
+* [Enhancement] Added pull-to-refresh to the profile, account dashboard, orders, wishlist, reviews, and downloadable products screens.
+* [Enhancement] Showed the category description on the Categories tab.
+* [Enhancement] Showed the store logo configured for the channel in the admin.
+* [Enhancement] Homepage banner and content links now open the linked category or product.
+* [Enhancement] Tapping a category on the homepage opens the Categories tab when it has sub-categories, and its product list otherwise.
+* [Improvement] Matched the Contact Us form to the storefront: the same fields, labels, placeholders, and required fields, with the phone number optional.
+* [Improvement] Applied the storefront phone number rule (digits with an optional leading +) to contact, address, checkout, and profile forms instead of a fixed 10-digit limit.
+* [Improvement] Phone and gender are now required on the edit profile form.
+* [Improvement] Out-of-stock products now show a disabled Add to Cart and Buy Now on the product page.
+* [Improvement] Discounted products now show the original price with a strikethrough, including configurable products, bundles, and catalog price rules.
+* [Improvement] Logged-in orders now use the customer's account email.
+* [Improvement] Suspended customers can browse the store but can no longer check out.
+* [Improvement] Guests are asked to sign in before checkout when a product in the cart does not allow guest checkout.
+* [Improvement] Booking products now grey out dates with no available slots, show "Cancellation Not Allowed" and "View on Map" where relevant, and no longer show availability details the storefront does not show.
+* [Improvement] Order details now show a note when a booking in the order cannot be canceled, and show refunded and canceled quantities for each item.
+* [Improvement] Error messages now say which step failed instead of a generic "Something went wrong".
+* [Improvement] Language and currency lists refresh from the store when the settings sheet opens; a language without app translations falls back to English.
+* [Fixed] Fixed the homepage showing outdated content after changes in the admin, and sorted homepage sections in the order set in the admin.
+* [Fixed] Fixed homepage product carousels saved without filters not appearing.
+* [Fixed] Fixed the homepage category carousel showing the wrong categories, including sub-categories shown as top-level categories.
+* [Fixed] Fixed shipment details not loading on the order detail page.
+* [Fixed] Fixed the return request flow so only eligible orders and items can be selected.
+* [Fixed] Fixed the cart badge not updating right after Reorder.
+* [Fixed] Fixed a failed order cancellation hiding the order; the reason is now shown instead.
+* [Fixed] Fixed the coupon code being cleared from the input box while it is being applied.
+* [Fixed] Fixed booking quantities showing as "N/A" in the cart and at checkout.
+* [Fixed] Fixed add to cart reporting success when the requested booking quantity is not available.
+* [Fixed] Fixed account deletion and the loading of states by country code, which were failing because of invalid requests.
+* [Fixed] Fixed a crash when the API returns numeric IDs or positions as text.
+* [Known Limitation] Some admin settings are not available through the Bagisto GraphQL API yet, so the app cannot follow them: wishlist, compare, image search, Buy Now, and social share toggles, cart summary mode, cart page toggle, redirect after login, reviewer name censoring, and the header and mini cart offer texts. These will be supported once the API exposes them.
+* [Known Limitation] The Refunds tab combines all refunds on an order, because the API does not yet list individual refunds or adjustment amounts.
+
+# CHANGELOG for v2.5.0
+
+## **v2.5.0 (18th of September, 2026)** - *Release*
+
+* [Enhancement] Implemented review attachments: Users can now pick photos and videos (with preview and thumbnails) when adding a product review.
+* [Enhancement] Added a media strip to review cards on the product page to display uploaded photos and play videos.
+* [Enhancement] Displayed the short description on every product detail page.
+* [Enhancement] Added required field indicators (asterisks) to the Contact Us form.
+* [Fixed] Fixed the checkout page where saving an address to the address book caused a GraphQL error.
+* [Fixed] Fixed the product detail page to show only its own approved reviews instead of mixing reviews from other products.
+* [Fixed] Hid categories that are disabled in the admin backend from showing up in the app.
+* [Fixed] Fixed the category page layout, banner display, and empty category data handling.
+* [Fixed] Fixed the keyboard interaction on the Add Review screen so it dismisses when tapping outside fields but stays open while scrolling.
+* [Fixed] Fixed review video uploads to properly convert iOS video formats (.mov, .m4v) to .mp4.
+* [Fixed] Fixed the custom back button icon, padding, and spacing issues across pages.
+* [Fixed] Fixed the review section to properly show or hide the nickname based on the flow.
+
 # CHANGELOG for v2.4.9
 
-## **v2.4.9 (8th of September, 2026)** - *Release*
+## **v2.4.9 (10th of September, 2026)** - *Release*
 
-* [Enhancement] Added marketplace browsing with seller shop pages, seller information on products, customer messaging, and shop social links.
-* [Improvement] Redesigned the seller dashboard and drawer navigation, with access controlled by seller permissions and marketplace settings.
-* [Enhancement] Added seller shop logo and banner uploads, and expanded order details with addresses, payment and shipping methods, invoices, shipments, and advanced filters.
-* [Improvement] Improved configurable product creation and variant editing, preserved product type details when editing, and added downloadable product previews.
-* [Improvement] Added a weekly booking calendar with date-range, booking ID, quantity, order, and product filters, plus clearer customer information.
-* [Enhancement] Expanded bulk pricing and inventory tools, including percentage-based price adjustments, customer group pricing, discount rules, and checkout coupon management.
-* [Fixed] Fixed bulk upload freezes and repeated validation loops, and added clearer row errors, required-column guidance, and XML sample downloads.
-* [Enhancement] Added customer return request screens, status tracking, and return messaging, with available items and actions determined by backend eligibility.
-* [Fixed] Fixed dark theme styling, date fields, discount and count displays, and layout overflow across seller screens.
+* [Enhancement] Added "View" and "Cancel Request" actions to the returns list, with cancellation confirmation, loading feedback, and translated action labels.
+* [Fixed] Fixed loading returnable items and submitting or cancelling return requests by aligning GraphQL queries and mutations with the Bagisto API.
+* [Fixed] Fixed the returns list not refreshing after creating a request or returning from the detail screen after cancelling, reopening, or marking a request as solved.
+* [Fixed] Prevented outdated responses from skipping return list items or replacing refreshed data when loading more requests overlaps with a refresh.
+* [Fixed] Fixed duplicate returns list screens after submitting a request, so Back returns directly to the account page.
+* [Fixed] Allowed cancellation of solved returns in line with the API and storefront, while preventing cancellation of requests that are already cancelled.
+* [Improvement] Prevented duplicate cancellation submissions and kept the returns list available when cancellation fails, with an error message and the option to retry.
+
+# CHANGELOG for v2.4.8
+
+## **v2.4.8 (4th of September, 2026)** - *Release*
+
+* [Enhancement] Added RMA (returns) support: customers can view their return requests, open a request detail with status, item information, attachments, and a two-way message thread with the store, and cancel, reopen, or mark a return as solved.
+* [Enhancement] Added a "Create Request" flow for returns that starts by selecting an order, then choosing the item, resolution (return or cancel items), quantity, reason, package condition, and additional information before submitting.
+* [Enhancement] Added order cancellation from the order detail screen for orders that are still pending or processing, with a confirmation prompt and live status update after cancelling.
+* [Fixed] Fixed adding and editing account addresses by removing the `useForShipping` field that the API no longer returns, which was causing the save to fail.
+* [Fixed] Fixed placing an order at checkout by removing the `orderIncrementId` field that the API no longer returns for the create-order response.
+* [Known Limitation] Return image uploads and message attachments are not supported yet because the Bagisto GraphQL API handles file uploads only over REST. Once GraphQL support is available, these will be implemented as well.
 
 # CHANGELOG for v2.4.7
 

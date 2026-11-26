@@ -26,9 +26,7 @@ class _FakeCategoryRepository extends CategoryRepository {
   final filters = <String>[];
 
   @override
-  Future<List<CategoryModel>> getCategoryTabCategories({
-    FetchPolicy? fetchPolicy,
-  }) async {
+  Future<List<CategoryModel>> getCategoryTabCategories() async {
     loadCalls++;
     return [_category(8, 'Electronics'), _category(23, 'Furniture')];
   }
