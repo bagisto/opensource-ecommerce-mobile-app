@@ -118,6 +118,7 @@ class AccountQueries {
               _id
               sku
               type
+              urlKey
               name
               baseImageUrl
               images {

@@ -10,12 +10,16 @@ import 'section_header.dart';
 /// Opens the product a customer review belongs to.
 void openReviewedProduct(BuildContext context, ProductReview review) {
   final productId = review.productId;
-  if (productId == null || productId <= 0) return;
+  final urlKey = review.productUrlKey?.trim();
+  final hasUrlKey = urlKey != null && urlKey.isNotEmpty;
+  if (!hasUrlKey && (productId == null || productId <= 0)) return;
   Navigator.of(context).push(
     MaterialPageRoute(
       builder: (_) => ProductDetailPage(
-        productId: productId.toString(),
+        urlKey: hasUrlKey ? urlKey : '',
+        productId: productId?.toString(),
         productName: review.productName,
+        productType: review.productType,
       ),
     ),
   );
@@ -69,7 +73,11 @@ class ProductReviewsSection extends StatelessWidget {
                         padding: const EdgeInsets.only(bottom: 8),
                         child: GestureDetector(
                           behavior: HitTestBehavior.opaque,
-                          onTap: onReviewTap == null || review.productId == null
+                          onTap:
+                              onReviewTap == null ||
+                                  (review.productUrlKey?.trim().isNotEmpty !=
+                                          true &&
+                                      review.productId == null)
                               ? null
                               : () => onReviewTap!(review),
                           child: _buildReviewCard(context, review),
@@ -138,7 +146,8 @@ class ProductReviewsSection extends StatelessWidget {
                   width: 62,
                   height: 62,
                   color: isDark ? AppColors.neutral700 : AppColors.neutral200,
-                  child: review.productImageUrl != null &&
+                  child:
+                      review.productImageUrl != null &&
                           review.productImageUrl!.isNotEmpty
                       ? CachedNetworkImage(
                           imageUrl: review.productImageUrl!,

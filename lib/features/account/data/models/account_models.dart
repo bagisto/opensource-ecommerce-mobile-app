@@ -591,6 +591,8 @@ class WishlistItem {
 class ProductReview {
   final String? id;
   final int? productId; // numeric product _id for API calls
+  final String? productUrlKey;
+  final String? productType;
   final String name;
   final String title;
   final int rating;
@@ -604,6 +606,8 @@ class ProductReview {
   const ProductReview({
     this.id,
     this.productId,
+    this.productUrlKey,
+    this.productType,
     required this.name,
     required this.title,
     required this.rating,
@@ -620,11 +624,15 @@ class ProductReview {
     String? pName;
     String? pImage;
     int? pId;
+    String? pUrlKey;
+    String? pType;
     final product = json['product'];
     if (product is Map<String, dynamic>) {
       // Product name & id
       pName = product['name']?.toString();
       pId = _parseInt(product['_id']);
+      pUrlKey = product['urlKey']?.toString();
+      pType = product['type']?.toString();
 
       // 1. Prefer baseImageUrl (full URL from API)
       pImage = product['baseImageUrl']?.toString();
@@ -659,6 +667,8 @@ class ProductReview {
     return ProductReview(
       id: json['id']?.toString(),
       productId: pId,
+      productUrlKey: pUrlKey,
+      productType: pType,
       name: json['name']?.toString() ?? '',
       title: json['title']?.toString() ?? '',
       rating: _parseInt(json['rating']) ?? 0,
@@ -1474,9 +1484,13 @@ class OrderItem {
       qtyCanceled: _parseInt(json['qtyCanceled']) ?? 0,
       qtyRefunded: _parseInt(json['qtyRefunded']) ?? 0,
       price: _parseDouble(json['price']) ?? 0,
-      priceInclTax: _parseDouble(json['priceInclTax'] ?? json['price_incl_tax']) ?? (_parseDouble(json['price']) ?? 0),
+      priceInclTax:
+          _parseDouble(json['priceInclTax'] ?? json['price_incl_tax']) ??
+          (_parseDouble(json['price']) ?? 0),
       total: _parseDouble(json['total']) ?? 0,
-      totalInclTax: _parseDouble(json['totalInclTax'] ?? json['total_incl_tax']) ?? (_parseDouble(json['total']) ?? 0),
+      totalInclTax:
+          _parseDouble(json['totalInclTax'] ?? json['total_incl_tax']) ??
+          (_parseDouble(json['total']) ?? 0),
       totalInvoiced: _parseDouble(json['totalInvoiced']),
       amountRefunded: _parseDouble(json['amountRefunded']),
       discountAmount: _parseDouble(json['discountAmount']),
@@ -2202,11 +2216,17 @@ class OrderDetail {
       taxAmountRefunded: _parseDouble(json['taxAmountRefunded']),
       discountRefunded: _parseDouble(json['discountRefunded']),
       subTotal: sub,
-      subTotalInclTax: _parseDouble(json['subTotalInclTax'] ?? json['sub_total_incl_tax']) ?? sub,
+      subTotalInclTax:
+          _parseDouble(json['subTotalInclTax'] ?? json['sub_total_incl_tax']) ??
+          sub,
       taxAmount: _parseDouble(json['taxAmount']),
       discountAmount: _parseDouble(json['discountAmount']),
       shippingAmount: _parseDouble(json['shippingAmount']),
-      shippingAmountInclTax: _parseDouble(json['shippingAmountInclTax'] ?? json['shipping_amount_incl_tax']) ?? (_parseDouble(json['shippingAmount']) ?? 0),
+      shippingAmountInclTax:
+          _parseDouble(
+            json['shippingAmountInclTax'] ?? json['shipping_amount_incl_tax'],
+          ) ??
+          (_parseDouble(json['shippingAmount']) ?? 0),
       shippingTitle: json['shippingTitle']?.toString(),
       shippingMethod: json['shippingMethod']?.toString(),
       couponCode: json['couponCode']?.toString(),

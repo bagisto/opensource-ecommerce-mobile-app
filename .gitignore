@@ -54,7 +54,6 @@ assets/ml/*
 **/*.png
 **/*.jpg
 **/*.jpeg
-**/*.webp
 !Docs/features_images/
 !Docs/features_images/**
 !ios/Runner/Assets.xcassets/**

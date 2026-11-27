@@ -1,5 +1,10 @@
 #### This changelog consists the bug & security fixes and new features being included in the releases listed below
 
+# CHANGELOG for v2.5.4
+
+* [Fixed] Fixed review cards opening the associated product using its URL key and product type, with product ID fallback.
+* [Enhancement] Added product placeholder images.
+
 # CHANGELOG for v2.5.3
 
 ## **v2.5.3 (26th of November, 2026)** - *Release*
